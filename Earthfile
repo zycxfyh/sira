@@ -1,4 +1,4 @@
-# Earthfile for Nexus Verse (V12 - Final Confirmed Version)
+# Earthfile for Nexus Verse (V13 - The Final Fix)
 
 VERSION 0.8
 
@@ -99,10 +99,12 @@ frontend-image:
     COPY apps/frontend/nginx.conf /etc/nginx/conf.d/default.conf
     SAVE IMAGE nexus-verse/frontend:latest
 
-# --- 6. 聚合目标 ---
+# --- 6. 聚合目标 (The Final Fix) ---
+# 关键修正：在每个 BUILD 命令前都加上 ./
+# 这会强制 Earthly 在本地寻找依赖，而不是去远程仓库
 all:
-    BUILD +nexus-engine-image
-    BUILD +creation-agent-image
-    BUILD +logic-agent-image
-    BUILD +narrative-agent-image
-    BUILD +frontend-image
+    BUILD ./+nexus-engine-image
+    BUILD ./+creation-agent-image
+    BUILD ./+logic-agent-image
+    BUILD ./+narrative-agent-image
+    BUILD ./+frontend-image
