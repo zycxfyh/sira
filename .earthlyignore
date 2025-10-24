@@ -1,0 +1,14 @@
+# 文件路径: ./.earthlyignore
+
+.git
+.idea
+.vscode
+.devbox
+.direnv
+.DS_Store
+/nexus-data
+/node_modules
+apps/**/node_modules
+packages/**/node_modules
+dist
+coverage

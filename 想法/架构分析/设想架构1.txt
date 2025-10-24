@@ -1,0 +1,49 @@
+Nexus Verse - 云原生AI驱动架构 (V-Ultimate)
+├── Ⅰ. 本地开发循环 (The Inner Loop) - “思想即代码，所见即所得”
+│   ├── A. 环境一致性层 (Environment Consistency): Devbox
+│   │   └── 职责: 通过 `devbox.json` 统一所有开发者和CI的工具链 (Node, pnpm, Go, Earthly, Skaffold, kubectl, Docker)。
+│   ├── B. 智能编排层 (Intelligent Orchestration): Skaffold
+│   │   └── 职责: 监听全代码库变更，智能触发增量构建(通过Earthly)，并自动将变更热同步/热部署到本地Kubernetes集群。
+│   └── C. 本地集群 (Local Cluster)
+│       └── 职责: 在本地运行一个轻量级的Kubernetes (如 k3d, Minikube, or Docker Desktop K8s)，1:1 模拟生产环境。
+│
+├── Ⅱ. 构建与交付系统 (The Build & Delivery System) - “代码即制品，Git即真理”
+│   ├── A. 构建核心 (Build Core): Earthly
+│   │   └── 职责: 通过 `Earthfile` 定义可复现、高缓存、并行的构建流程，生成所有服务的Docker镜像。
+│   ├── B. 持续集成 (Continuous Integration): GitHub Actions (or similar)
+│   │   └── 职责: 在`devbox`环境中运行 `earthly --ci +all`，构建镜像并推送至镜像仓库。
+│   └── C. 持续交付 (Continuous Delivery): Argo CD (GitOps核心)
+│       ├── 职责: 监控一个专门的Git配置仓库。当配置变更时，自动将应用同步到Kubernetes集群的目标状态。
+│       └── 机制: "你只管推送YAML，Argo CD负责搞定一切"。
+│
+├── Ⅲ. 生产运行时架构 (The Production Runtime Architecture) - “弹性、可观测、安全的分布式系统”
+│   ├── A. 编排与基础层 (Orchestration & Foundation): Kubernetes (e.g., GKE, EKS, AKS)
+│   │   └── 职责: 容器生命周期管理，服务发现，配置管理，自动扩缩容 (HPA)。
+│   ├── B. 服务治理层 (Service Governance): Istio (服务网格)
+│   │   ├── 职责: 接管所有服务间流量，提供mTLS安全、智能路由、熔断、超时、重试、负载均衡。
+│   │   └── 机制: Sidecar代理模式，将网络逻辑从应用代码中剥离。
+│   ├── C. 应用服务层 (Application Services)
+│   │   ├── 1. API & 实时网关 (nexus-engine)
+│   │   │   ├── 角色: Kubernetes Deployment + Service。通过Istio Gateway对外暴露。
+│   │   │   └── 职责: HTTP/WebSocket入口，认证鉴权，请求初步校验。
+│   │   ├── 2. 业务流程编排器 (Orchestrator Service - 新服务)
+│   │   │   ├── 角色: 独立的NestJS服务，或集成在nexus-engine中。
+│   │   │   └── 职责: 运行Saga或工作流引擎 (如 Temporal, Zeebe)，管理长时运行的分布式事务，取代脆弱的“编舞”模式。
+│   │   ├── 3. AI Agent服务 (BentoML Services)
+│   │   │   ├── 角色: 将 `creation-agent`, `logic-agent`, `narrative-agent` 重构为BentoML服务，并部署为独立的K8s Deployment。
+│   │   │   └── 职责: 专注于AI模型推理，享受BentoML带来的动态批处理、模型版本管理、GPU优化等能力。
+│   │   └── 4. 异步通信 (Asynchronous Communication)
+│   │       └── 角色: RabbitMQ (或 NATS, Kafka) 依然作为事件总线，但主要用于触发工作流和发送非关键通知，而非核心流程控制。
+│   └── D. 数据与状态层 (Data & State Layer)
+│       ├── 1. PostgreSQL + pgvector (主数据库)
+│       ├── 2. Redis (高速缓存)
+│       └── 3. TimescaleDB (或 Prometheus) (时序数据库)
+│           └── 职责: 存储Istio生成的服务性能指标(Metrics)，用于监控和告警。
+│
+└── Ⅳ. 观测性架构 (The Observability Architecture) - “系统的一切尽在掌握”
+    ├── A. 日志 (Logging): Fluentd + Loki + Grafana (PLG Stack)
+    │   └── 职责: 自动收集所有容器的日志，聚合、索引，并提供可视化查询界面。
+    ├── B. 指标 (Metrics): Prometheus + Grafana
+    │   └── 职责: Istio自动暴露所有服务的黄金指标(延迟, 流量, 错误率)，Prometheus负责抓取和存储，Grafana负责可视化。
+    └── C. 追踪 (Tracing): Jaeger (或 Tempo) + OpenTelemetry
+        └── 职责: Istio自动生成和传播Trace上下文，应用代码只需集成OpenTelemetry SDK进行少量业务埋点，即可实现端到端的分布式追踪。

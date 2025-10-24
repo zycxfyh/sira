@@ -1,0 +1,129 @@
+# 文件路径: docker-compose.yml (V4 - 纯运行版)
+# 职责: 只负责编排和运行由 Earthly 预先构建好的服务镜像。
+
+services:
+  # --- Nexus & 基础服务 ---
+  # 这部分保持不变，因为它们是我们的基础依赖。
+  nexus:
+    image: sonatype/nexus3
+    container_name: nexus_repository
+    restart: always
+    ports:
+      - "8081:8081"
+      - "5000:5000"
+    volumes:
+      - ./nexus-data:/nexus-data
+
+  postgres:
+    image: localhost:5000/pgvector/pgvector:pg15
+    container_name: nexus_postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: nexusdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nexusdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: localhost:5000/rabbitmq:3-management
+    container_name: nexus_rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running", "-q"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:alpine
+    container_name: nexus_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # --- 应用服务 ---
+  # 核心改变：所有应用服务不再包含 'build:' 块。
+  # 它们直接引用由 Earthly 构建并标记好的镜像。
+  nexus-engine:
+    image: nexus-verse/nexus-engine:latest
+    container_name: nexus_engine
+    restart: always
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/nexusdb?schema=public
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  creation-agent:
+    image: nexus-verse/creation-agent:latest
+    container_name: nexus_creation_agent
+    restart: always
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      nexus-engine: { condition: service_healthy }
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - GATEWAY_URL=http://nexus-engine:3000/gateway/send-to-user
+
+  logic-agent:
+    image: nexus-verse/logic-agent:latest
+    container_name: nexus_logic_agent
+    restart: always
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/nexusdb?schema=public
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+
+  narrative-agent:
+    image: nexus-verse/narrative-agent:latest
+    container_name: nexus_narrative_agent
+    restart: always
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      nexus-engine: { condition: service_healthy }
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/nexusdb?schema=public
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - GATEWAY_URL=http://nexus-engine:3000/gateway/send-to-user
+
+  frontend:
+    image: nexus-verse/frontend:latest
+    container_name: nexus_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      nexus-engine: { condition: service_healthy }
+
+volumes:
+  postgres_data:

@@ -1,0 +1,157 @@
+好的，我们来根据您提供的详尽文件快照，构建一个清晰的图形化架构树，并深入解读这个项目的整体设计。
+
+核心架构概览
+
+这是一个设计精良、高度模块化的 Monorepo 项目，其核心是一个由 AI 驱动的动态叙事引擎。它采用前后端分离的微服务架构，后端通过事件总线 (RabbitMQ) 进行异步通信，前端则通过 WebSocket 接收实时更新。整个系统被设计为可通过 Docker 进行容器化部署，并利用 Nexus 作为私有镜像仓库以提高构建的稳定性和速度。
+
+Nexus-Verse 项目架构树
+code
+Code
+download
+content_copy
+expand_less
+🌳 Nexus-Verse (Monorepo - PNPM Workspace)
+├── 📦 Tooling & CI/CD (DevOps 基础设施)
+│   ├── 🐳 Docker & Docker Compose   (docker-compose.yml, */Dockerfile)
+│   ├── 🏛️ Nexus Repository          (用于缓存基础镜像)
+│   ├── 🚀 PNPM & Turbo              (package.json, pnpm-workspace.yaml, turbo.json)
+│   └── 🤖 GitHub Actions            (.github/workflows/ci.yml)
+│
+├── 📂 apps (应用层)
+│   ├── 🖥️ frontend (Vue 3 SPA)
+│   │   ├── 🏗️ Vite                  (vite.config.js)
+│   │   ├── 🗺️ Vue Router             (router/index.js)
+│   │   ├── 🗃️ Pinia                 (stores/*.store.js)
+│   │   │   ├── 👤 auth.store.js    (管理用户认证)
+│   │   │   ├── 🎮 game.store.js    (管理游戏状态)
+│   │   │   └── 📡 realtime.store.js (处理 WebSocket 事件)
+│   │   ├── 🌐 Axios + Socker.IO-client (services/api.service.js)
+│   │   └── 📊 Sentry                (main.js - 错误监控)
+│   │
+│   └── ☁️ backend (NestJS 微服务集群)
+│       ├── libs
+│       │   └── 📚 common (@app/common - 共享库)
+│       │       ├── 🗄️ PrismaModule      (数据库访问)
+│       │       ├── 🚌 EventBusModule     (RabbitMQ 事件发布/订阅)
+│       │       ├── 📖 PromptManagerModule (管理 AI Prompts)
+│       │       └── 🧠 AI 核心
+│       │           └── 📜 prompts/*.md (AI 人格与指令)
+│       │
+│       ├── prisma (数据库层)
+│       │   ├── 📝 schema.prisma       (数据模型定义)
+│       │   └── 🌱 seed.ts             (初始数据填充)
+│       │
+│       └── apps (各个微服务)
+│           ├── 🔗 nexus-engine (API 网关 & 核心引擎)
+│           │   ├── 🚪 职责: API Gateway, 用户认证 (Auth), WebSocket 网关
+│           │   ├── 🔌 接入: 外部 HTTP 请求, WebSocket 连接
+│           │   └── 📢 输出: 向 RabbitMQ 发布任务事件
+│           │
+│           ├── 🌍 creation-agent (创世智能体)
+│           │   ├── 🚪 职责: 根据用户概念生成新世界
+│           │   ├── 🔌 接入: 监听 RabbitMQ [creation_queue]
+│           │   └── 📢 输出: 通过 HTTP 回调 nexus-engine -> WebSocket
+│           │
+│           ├── ⚙️ logic-agent (逻辑智能体)
+│           │   ├── 🚪 职责: 解析玩家行动，更新世界状态
+│           │   ├── 🔌 接入: 监听 RabbitMQ [logic_queue]
+│           │   └── 📢 输出: 向 RabbitMQ 发布 [narrative_queue] 任务
+│           │
+│           └── 📜 narrative-agent (叙事智能体)
+│               ├── 🚪 职责: 根据状态变更生成故事描述和新选项
+│               ├── 🔌 接入: 监听 RabbitMQ [narrative_queue]
+│               └── 📢 输出: 通过 HTTP 回调 nexus-engine -> WebSocket
+│
+└── 📦 packages (其他共享包)
+    └── 📝 shared-types           (跨应用共享的 TypeScript 类型)
+核心工作流程解析
+
+这套架构的核心是事件驱动的异步处理流程，这使得系统具有高可伸缩性和弹性。
+
+1. 创世流程 (Game Creation)
+
+[前端] 用户在界面上输入创世概念（如：“一个赛博朋克风格的侦探故事”），点击创建。
+
+[Nexus Engine] 接收到 HTTP 请求，通过 GamesService 将其包装成一个 GAME_CREATION_REQUESTED 事件。
+
+[RabbitMQ] EventBusService 将此事件发布到 creation_queue 消息队列中。
+
+[Creation Agent] 监听到 creation_queue 的新消息，开始处理。它调用 CreationService，结合 00_persona_and_framework.md 等 Prompt，通过 LangChain 与大语言模型交互，生成游戏名称、角色卡、世界设定等。
+
+[Prisma] Creation Agent 将生成的数据存入 PostgreSQL 数据库。
+
+[Nexus Engine] Creation Agent 处理完毕后，通过 HTTP 回调 nexus-engine 的 /gateway/send-to-user 接口。
+
+[WebSocket] UpdatesGateway 收到回调，将 creation_completed 事件和新游戏 ID 通过 WebSocket 推送给对应的用户。
+
+[前端] realtime.store.js 监听到事件，触发页面跳转到新创建的游戏界面。
+
+2. 玩家行动流程 (Player Action)
+
+[前端] 用户在游戏界面上提交一个行动（如：“我走进酒吧，寻找线人”）。
+
+[Nexus Engine] 接收到 /:id/actions 的 HTTP 请求，GamesService 获取当前游戏的状态快照，并发布一个 PLAYER_ACTION_SUBMITTED 事件。
+
+[RabbitMQ] EventBusService 将包含玩家行动和游戏状态快照的事件发布到 logic_queue 消息队列。
+
+[Logic Agent] 监听到消息，开始处理。LogicService 使用 01_logic_engine.md Prompt，让 AI 将自然语言的行动（“走进酒吧”）解析为结构化的状态变更指令（DirectiveSet），例如 { op: "update_character", payload: { location: "Bar" } }。
+
+[Prisma] RuleEngineService 执行这些指令，精确地更新数据库中的角色状态、世界状态等。
+
+[RabbitMQ] Logic Agent 处理完成后，发布 LOGIC_PROCESSING_COMPLETE 事件到 narrative_queue。
+
+[Narrative Agent] 监听到消息，开始处理。NarrativeService 获取更新后的游戏状态，并执行一个两步 AI 流程：
+
+合成 (Synthesize): 初步生成故事描述和新选项。
+
+审查 (Critic): 使用 03_critic_agent.md Prompt，让另一个 AI 角色对初稿进行批判性审查和优化，确保逻辑、文笔和趣味性。
+
+[Nexus Engine & WebSocket] Narrative Agent 得到最终的叙事文本和选项后，通过 HTTP 回调 nexus-engine 的网关接口，将 processing_completed 事件推送给前端。
+
+[前端] game.store.js 响应 WebSocket 事件，更新界面上的叙事日志和玩家可用选项。
+
+各组件深度分析
+
+Monorepo 管理 (PNPM + Turbo): 这种结构使得代码复用（尤其是在 libs/common 和 packages/shared-types）变得非常简单，同时 Turbo 提供了高效的构建和任务缓存，极大地提升了开发效率。
+
+容器化与服务编排 (Docker + Nexus):
+
+docker-compose.yml 定义了整个应用的拓扑结构，一键即可启动所有服务，包括数据库和消息队列，非常适合开发和中小型部署。
+
+Nexus 的引入是点睛之笔。通过 preheat-images.sh 脚本预热缓存，所有服务的 Dockerfile 都从 localhost:5000 拉取基础镜像。这使得后续的构建完全脱离了对外部网络的依赖，保证了 CI/CD 的速度和稳定性。
+
+后端核心 (nexus-engine):
+
+它是整个系统的“交通枢纽”，是唯一面向公网的后端服务。
+
+它负责认证、API 请求路由和实时消息推送，将复杂的业务逻辑解耦到了各个独立的智能体（Agent）中。
+
+AI 智能体 (Agents):
+
+这是系统的“大脑”。每个 Agent 都是一个独立的微服务，只负责一项高度专一的任务（创世、逻辑、叙事）。
+
+这种设计高度可扩展。未来可以轻易地加入新的 Agent（如：planner-agent 负责长期规划，social-agent 负责 NPC 社交模拟），只需让它们监听和发布新的事件即可。
+
+共享库 (@app/common):
+
+这是维持代码整洁和一致性的关键。数据库访问逻辑 (PrismaModule)、事件总线 (EventBusModule) 和 AI 的 Prompt 管理 (PromptManagerModule) 被统一封装，所有 Agent 都能复用。
+
+AI 的“源代码” (Prompts):
+
+将 Prompt 定义为独立的 .md 文件并由 PromptManagerModule 统一管理，是一个非常优秀的设计。这使得 Prompt 的迭代和优化可以独立于代码进行，非开发人员（如游戏策划）也可以方便地调整 AI 的行为。
+
+前端架构 (Vue + Pinia):
+
+Vue 3 + Pinia 是现代前端的主流选择，提供了优秀的开发体验和性能。
+
+auth.store、game.store、realtime.store 的职责划分清晰。特别是将 WebSocket 的连接/断开与用户登录/登出状态响应式地绑定在 main.js 中，确保了实时通信的健壮性。
+
+数据库 (schema.prisma):
+
+Prisma 提供了一流的类型安全开发体验。
+
+数据模型设计清晰，Game 与 Character, WorldBookEntry, Memory 等模型的关系明确。
+
+Memory 模型中的 embedding Unsupported("vector(1536)")? 字段暗示了未来可能会集成向量数据库功能，用于实现长期记忆和语义搜索，这是一个非常有远见的设计。
+
+总的来说，这是一个非常成熟和现代化的全栈应用架构，充分利用了微服务、事件驱动、容器化和 AI Prompt Engineering 的优势，展现了强大的工程能力和清晰的设计思路。

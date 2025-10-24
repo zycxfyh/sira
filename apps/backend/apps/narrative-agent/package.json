@@ -1,0 +1,9 @@
+{
+  "name": "narrative-agent",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {"build": "tsc -p tsconfig.app.json",
+    "dev": "nest start --watch"
+    
+  }
+}

@@ -1,0 +1,60 @@
+遵命。你的选择——“先修路，再造车”，即“基础设施优先”的路径，展现了极大的决心和对工程基础极端重要性的深刻理解。这是一个艰难但从长远看回报最高的决策。
+
+我们将构建一个坚不可摧的云原生平台，然后在这个平台上从容地构建我们的应用。这个过程将分为明确的阶段，每个阶段包含一系列可以被精确执行的原子任务。
+
+1. 核心结论
+
+我们将严格遵循“基础设施优先”的路线图，分四个阶段完成平台搭建。当前，我们应聚焦于第一阶段：建立本地统一开发与构建环境。这个阶段的目标是在你的笔记本上，利用Devbox, Earthly, 和 Skaffold，围绕Docker Compose打造一个高效、一致且自动化的开发工作流。这是后续所有云原生工作的基础。
+
+2. “基础设施优先”路线图：原子任务分解
+
+以下是将你的理想架构蓝图，按照“基础设施优先”路径分解成的、可一步步实操的原子任务表。
+
+Phase 1: 奠定本地开发与构建的绝对基础 (0-1个月)
+
+目标：在单机上根除环境不一致和构建效率低下的问题。
+
+任务ID	任务名称	核心目标与交付物	验收标准
+ENV.1	初始化Devbox环境	创建并配置devbox.json，声明所有核心CLI工具（nodejs, pnpm, go, earthly, skaffold, docker）的精确版本。	所有团队成员（你和我）运行devbox shell后，进入一个拥有版本完全一致的工具链的隔离环境。
+BUILD.1	编写根Earthfile	在项目根目录创建Earthfile。定义可共享的+deps（依赖安装）和+build（代码编译）目标。	在devbox shell中运行earthly +build能成功编译整个Monorepo，并充分利用缓存。
+BUILD.2	在Earthfile中定义各服务镜像目标	为每个服务（nexus-engine, agents, frontend）创建独立的镜像构建目标（如+nexus-engine-image），并让它们依赖+build目标。	运行earthly +nexus-engine-image能成功构建出该服务的、独立的、生产级的Docker镜像。
+BUILD.3	创建+all-images聚合目标	在Earthfile中创建一个+all-images目标，它依赖于所有服务的镜像构建目标。	运行earthly +all-images能够一键并行构建出项目的所有Docker镜像。
+DEV.1	配置Skaffold与Docker Compose集成	创建skaffold.yaml，将构建器（build）指向Earthly的相应目标，将部署器（deploy）指向docker-compose.yml。	在devbox shell中运行skaffold run能够成功构建并启动所有服务。
+DEV.2	实现Skaffold文件同步（Sync）	在skaffold.yaml中为所有服务配置sync规则，实现开发时代码的实时同步，触发NestJS和Vite的热重载。	运行skaffold dev，修改任一服务的源代码，变更能在数秒内反映到正在运行的容器中，无需重建镜像。
+CLEAN.1	清理遗留构建脚本	安全删除所有独立的Dockerfile、Dockerfile.base、Dockerfile.builder等，Earthfile成为唯一的构建真理源泉。	项目中不再存在任何Dockerfile，构建流程完全由Earthfile定义。
+Phase 2: 迁移至Kubernetes并实现GitOps (1-3个月)
+
+目标：将本地部署模式升级为云原生标准，并实现完全自动化的持续交付。
+
+任务ID	任务名称	核心目标与交付物	验收标准
+K8S.1	部署本地K8s集群 (k3d)	使用k3d（一个轻量级的k3s发行版）在Docker中快速创建本地Kubernetes集群。	kubectl get nodes能成功显示本地集群节点。
+K8S.2	为各服务编写Kubernetes清单	为nexus-engine, agents, frontend以及数据库等，创建Deployment, Service, ConfigMap, Secret等基础的Kubernetes YAML清单文件。	kubectl apply -f <dir>能将所有应用部署到本地k3s集群并成功运行。
+GITOPS.1	部署Argo CD	在本地k3s集群中安装Argo CD。	能够通过浏览器访问Argo CD的UI界面。
+GITOPS.2	创建Git配置仓库	创建一个新的、独立的Git仓库，用于存放所有服务的Kubernetes YAML清单。	Git仓库创建成功，并包含所有服务的YAML文件。
+GITOPS.3	配置Argo CD应用	在Argo CD中创建一个Application资源，令其监控Git配置仓库，并自动同步到本地k3s集群。	修改Git配置仓库中的一个YAML文件（如replicas: 2），Argo CD能自动在集群中扩容对应的服务。
+CI.1	改造CI流水线	更新GitHub Actions工作流。在代码推送后，CI运行earthly +all-images构建并推送镜像，然后自动更新Git配置仓库中对应镜像的tag。	一次代码git push最终能被Argo CD自动部署到集群中，实现端到端的GitOps流程。
+DEV.3	Skaffold迁移至kubectl	修改skaffold.yaml，将部署器从dockercompose切换为kubectl，指向本地k3s集群。	skaffold dev现在能将变更自动部署到本地的Kubernetes环境中。
+Phase 3: 引入服务网格与高级观测性 (3-6个月)
+
+目标：将网络和服务治理从应用中剥离，获得深度可观测性和安全性。
+
+任务ID	任务名称	核心目标与交付物	验收标准
+MESH.1	在k3s集群中安装Istio	部署Istio控制平面，并为目标命名空间开启Sidecar自动注入。	kubectl get pods -n istio-system显示Istio组件正常运行。重新部署应用后，kubectl get pods能看到每个Pod都有2/2个容器（应用容器+Istio代理）。
+MESH.2	配置Istio Ingress Gateway	创建Istio的Gateway和VirtualService资源，将外部流量通过Gateway路由到nexus-engine服务。	可以通过Gateway的IP地址和端口从外部访问前端和API。
+MESH.3	实施基础流量规则	为服务间调用配置简单的VirtualService和DestinationRule，实现基本的超时和重试策略。	在Istio的仪表盘（Kiali）中能看到服务间的流量拓扑图，并能验证重试策略生效。
+OBS.1	部署Kiali, Jaeger, Prometheus, Grafana	安装Istio提供的观测性套件。	能够访问Kiali（服务网格拓扑）、Jaeger（分布式追踪）、Grafana（性能指标）的UI。
+OBS.2	集成应用与OpenTelemetry	（这是P1任务的延续和深化）确保应用代码中的OpenTelemetry SDK配置为将追踪数据导出到Istio的追踪收集器（Jaeger）。	在Jaeger UI中，能看到由Istio Sidecar自动生成、并由应用代码增强（添加业务Span）的完整端到端调用链。
+Phase 4: AI与工作流专业化 (后续)
+
+目标：采用更专业的工具来管理和运行AI模型与复杂的分布式业务流程。
+
+任务ID	任务名称	核心目标与交付物	验收标准
+AI.1	BentoML化核心Agent	选择一个计算最密集的Agent（如narrative-agent），将其核心AI推理逻辑重构为BentoML服务。	创建一个Bento并能通过bentoml serve在本地运行，其API行为与原NestJS服务一致。
+AI.2	BentoML容器化与部署	使用bentoml containerize将Bento打包成Docker镜像，并编写对应的Kubernetes清单，通过Argo CD将其部署。	新的BentoML服务在集群中成功运行，并能处理来自其他服务的请求。
+WORKFLOW.1	部署Temporal	在Kubernetes集群中部署Temporal服务端（Server, Worker, Web UI）。	能够访问Temporal Web UI。
+WORKFLOW.2	重构核心业务为Temporal工作流	将createGame这个长流程从手写的编排器逻辑，重构为一个Temporal Workflow。NestJS服务将作为启动工作流的客户端和执行Activity的Worker。	通过Temporal UI能看到createGame工作流的完整执行历史、状态和重试记录。
+OPS.1	引入Langfuse/Dify	部署Langfuse，并让BentoML服务通过其SDK记录AI调用的详细信息。或评估使用Dify作为Prompt管理和实验平台。	在Langfuse UI中能看到AI调用的成本、延迟、Token数和Prompt/Response内容。
+
+这份任务表将我们的宏大蓝图转化为了一个切实可行的、分阶段的施工计划。每一步都是在前一步的基础上进行建设，逻辑清晰，目标明确。
+
+我们现在就从Phase 1的第一个任务ENV.1: 初始化Devbox环境开始。我将为你提供执行此任务所需的全部代码和指令。请确认。

@@ -1,0 +1,14 @@
+后端 (Backend)
+数据存储方案 (lowdb):
+这是目前最大的瓶颈。 lowdb 是一个基于JSON文件的数据库，非常适合原型开发或小型单用户工具。但它不支持并发写入，在高并发场景下可能会导致数据损坏或写入失败（竞态条件）。随着用户增多或功能变复杂（例如，多个玩家同时游戏），这将成为一个严重的问题。
+API设计 (/nexus-task):
+后端使用一个统一的 /nexus-task 端点来分发所有任务，这类似于一种RPC（远程过程调用）风格。虽然可行，但它不符合RESTful API的设计原则。这会使得API的可发现性变差，也难以使用标准的API工具（如Swagger/OpenAPI）进行文档生成和测试。
+安全性 (Security):
+目前的设计似乎是前端将包含API密钥的完整 profile 发送到后端，后端再用这个密钥去调用AI。这是一个严重的安全风险。AI的API密钥永远不应该离开服务器。客户端非常容易被逆向，导致密钥泄露。
+缺乏输入验证 (Lack of Input Validation):
+虽然 package.json 中引入了 zod，但在控制器代码中没有看到对来自前端的 payload 进行严格的验证。这可能导致恶意或格式错误的数据进入您的核心服务，引发错误或安全问题。
+前端 (Frontend)
+API请求耦合 (API Request Coupling):
+gameService.js 中 loadSaves 和 deleteSave 函数直接拼接URL并发起 fetch 请求。虽然 callNexus 进行了封装，但最好将所有与API的交互都统一到一个地方（例如，一个专门的 apiService.js），由它来处理 backendUrl 的获取、请求头的设置、统一的错误处理等。
+AI响应的健壮性 (Robustness of AI Response):
+代码中使用 JSON.parse 来处理AI返回的字符串。虽然有 try...catch，但如果AI返回了合法的JSON，但其结构与期望的不符（例如，缺少 newGameState 字段），程序可能会在后续操作中报错。

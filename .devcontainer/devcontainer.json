@@ -1,0 +1,29 @@
+{
+  "name": "Nexus Verse Dev Container",
+  // 外部 docker-compose 文件路径
+  "dockerComposeFile": [
+    "../docker-compose.yml"
+  ],
+  // 我们将“进入”这个服务进行开发
+  "service": "nexus-engine",
+  // VS Code 将挂载代码到这个目录
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  // Dev Container 特性
+  "features": {
+    // 允许在开发容器内部运行Docker命令
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  // VS Code 编辑器定制
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "prisma.prisma",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  // 容器创建后执行的命令
+  "postCreateCommand": "pnpm install"
+}

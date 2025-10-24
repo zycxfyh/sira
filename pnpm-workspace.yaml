@@ -1,0 +1,8 @@
+# 文件路径: pnpm-workspace.yaml
+# 职责: 声明Monorepo工作空间的成员范围
+
+packages:
+  # 包含所有在 'apps' 目录下的应用 (前端, 后端工作区)
+  - 'apps/*'
+  # 包含所有在 'packages' 目录下的共享库 (共享类型)
+  - 'packages/*'

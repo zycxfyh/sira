@@ -1,0 +1,131 @@
+# ==============================================================================
+# Architect's Insight Configuration (scraper_config.yaml)
+#
+# v2.0 - 为 Nexus Verse 项目量身定制的配置文件
+# 职责: 定义哪些文件是项目架构的核心，以及哪些应该被忽略。
+# ==============================================================================
+
+# ---
+# 1. 安全与性能设置
+# ---
+# 单个文件的最大大小（单位：KB）。超过此大小的文件将被跳过，以防止内存问题。
+max_file_size_kb: 2048 # 2MB
+
+# ---
+# 2. 输出顺序
+# ---
+# 定义最终快照文件中各个类别的排列顺序，确保可读性。
+category_order:
+  - "HIGH_LEVEL_DOCUMENTATION"
+  - "ORCHESTRATION_AND_DEPLOYMENT"
+  - "PROJECT_CONFIGURATION"
+  - "DATABASE_SCHEMA"
+  - "SHARED_LIBRARIES_AND_CORE_LOGIC"
+  - "BACKEND_GATEWAY_AND_SERVICES"
+  - "BACKEND_AI_AGENTS"
+  - "FRONTEND_APPLICATION_CORE"
+  - "AUTOMATION_AND_TOOLING"
+
+# ---
+# 3. 核心文件捕获规则
+# ---
+# 使用 glob 模式匹配文件路径。每个键是一个类别，值是该类别下的模式列表。
+core_file_patterns:
+  # 高层级架构定义与说明
+  HIGH_LEVEL_DOCUMENTATION:
+    - 'README.md'
+    - 'ARCHITECTURE.md'
+    - '框架.txt'
+    - '设想架构*.txt'
+
+  # CI/CD, 容器化与部署编排
+  ORCHESTRATION_AND_DEPLOYMENT:
+    - 'docker-compose.yml'
+    - 'Dockerfile'
+    - 'apps/**/Dockerfile'
+    - 'Earthfile'
+    - 'skaffold.yaml'
+    - '.github/workflows/*.yml'
+    - '.devcontainer/devcontainer.json'
+
+  # Monorepo 项目级配置
+  PROJECT_CONFIGURATION:
+    - 'package.json'
+    - 'pnpm-workspace.yaml'
+    - 'tsconfig.json'
+    - 'nest-cli.json'
+    - 'turbo.json'
+    - 'devbox.json'
+    - '.prettierrc'
+
+  # 数据库模型与数据定义
+  DATABASE_SCHEMA:
+    - 'apps/backend/prisma/schema.prisma'
+    - 'apps/backend/prisma/seed.ts'
+
+  # 后端共享库与核心业务逻辑
+  SHARED_LIBRARIES_AND_CORE_LOGIC:
+    - 'libs/common/src/index.ts'
+    - 'libs/common/src/**/*.module.ts'
+    - 'libs/common/src/**/*.service.ts'
+    - 'libs/common/src/pipes/**/*.pipe.ts'
+    - 'libs/common/src/dto/**/*.dto.ts'
+    - 'packages/shared-types/src/**/*.ts'
+
+  # 后端核心网关与通用服务 (Nexus Engine)
+  BACKEND_GATEWAY_AND_SERVICES:
+    - 'apps/backend/apps/nexus-engine/src/main.ts'
+    - 'apps/backend/apps/nexus-engine/src/app.module.ts'
+    - 'apps/backend/apps/nexus-engine/src/**/*.module.ts'
+    - 'apps/backend/apps/nexus-engine/src/**/*.controller.ts'
+    - 'apps/backend/apps/nexus-engine/src/**/*.service.ts'
+    - 'apps/backend/apps/nexus-engine/src/**/*.gateway.ts'
+
+  # 后端 AI 代理 (Agents)
+  BACKEND_AI_AGENTS:
+    - 'apps/backend/apps/*-agent/src/main.ts'
+    - 'apps/backend/apps/*-agent/src/*.module.ts'
+    - 'apps/backend/apps/*-agent/src/*.service.ts'
+    - 'apps/backend/apps/*-agent/src/**/*.handler.ts' # 如果有专门的事件处理器
+
+  # 前端应用核心
+  FRONTEND_APPLICATION_CORE:
+    - 'apps/frontend/index.html'
+    - 'apps/frontend/vite.config.js'
+    - 'apps/frontend/src/main.js'
+    - 'apps/frontend/src/App.vue'
+    - 'apps/frontend/src/router/index.js'
+    - 'apps/frontend/src/services/*.service.js'
+    - 'apps/frontend/src/stores/*.store.js'
+
+  # 自动化与开发者工具
+  AUTOMATION_AND_TOOLING:
+    - '*.sh'
+    - 'project_scraper.py'
+
+# ---
+# 4. 全局忽略规则
+# ---
+# 匹配到的任何文件或目录都将被彻底忽略，不会被扫描或遍历。
+# 使用 '**' 来确保递归匹配所有子目录。
+ignore_patterns:
+  - '**/node_modules/**'
+  - '**/.git/**'
+  - '**/dist/**'
+  - '**/build/**'
+  - '**/coverage/**'
+  - '**/.vscode/**'
+  - '**/.idea/**'
+  - '**/__pycache__/**'
+  - '**/.turbo/**'
+  - '**/playwright-report/**'
+  - '**/test-results/**'
+  - '**/nexus-data/**'
+  - '**/想法/**' # 明确忽略 "想法" 目录
+  - '**/.DS_Store'
+  - '**/.env'
+  - '**/*.lock'
+  - '**/*.log'
+  - '**/Thumbs.db'
+  - 'monorepo_snapshot*.txt' # 忽略脚本自身的输出文件
+  - 'project_snapshot*.txt'

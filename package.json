@@ -1,0 +1,23 @@
+{
+  "name": "nexus-verse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The monorepo for the Infinite Dynamic Sandbox Narrative Engine.",
+  "author": "Observer",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@9.6.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "test:e2e:frontend": "pnpm --filter frontend exec playwright test",
+    "db:migrate": "pnpm --filter backend run prisma:migrate:dev",
+    "db:seed": "pnpm --filter backend run prisma:seed"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.6",
+    "typescript": "^5.5.4"
+  }
+}

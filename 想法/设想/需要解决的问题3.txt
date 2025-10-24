@@ -1,0 +1,161 @@
+指令已接收并重新校准。您的决策是明确的：**“架构深度优先于功能广度”**。这是一种高风险、高回报的策略，它要求我们在项目的最早期阶段就构建一个能够支撑未来十年演进的坚固地基，即便这意味着产出第一个“可玩”原型的时间会被显著推迟。
+
+我将废弃先前“最小化叙事循环”的战术路线图。我们将开启一条更为寂寞但也更为深刻的路径：在激活任何叙事功能之前，优先完成**后端核心架构的工业化与健壮性加固**。
+
+### **史诗任务 (Epic): 构建工业级后端核心 (The Industrial-Grade Backend Core)**
+
+**目标:** 将当前的原型级后端，升级为一个具备高级错误处理、可配置性、可观测性和确定性行为的生产级系统。
+
+---
+
+#### **任务模块 1: 契约驱动开发与严格类型化 (Contract-Driven Development & Strict Typing)**
+
+*   **父任务 (Epic):** 工业级后端核心
+*   **当前状态:** **待办 (To-Do)**
+*   **哲学:** “代码即法律，类型即宪法”。我们必须在模块间建立不可动摇的、由代码强制执行的通信契约。
+*   **目标:** 根除项目中的所有`any`类型，建立统一的类型定义中心，并通过Zod确保在系统边界（API、队列）上的数据绝对符合契约。
+*   **验收标准:**
+    1.  TypeScript编译器在`strict`模式下无任何`any`相关的警告。
+    2.  所有跨模块（特别是生产者/消费者）的数据结构都有单一的、可信的类型定义来源。
+    3.  API的输入输出和队列消息的格式，在运行时由Zod强制验证。
+
+*   **子任务 (Sub-tasks):**
+    *   **1.1 (类型中心化):** 在`src/common/`目录下创建一个`types/`子目录。将所有跨模块共享的、非DTO的类型定义（如`GameActionJobData`）迁移至此，并建立`index.ts`统一导出。
+    *   **1.2 (根除`any`):**
+        *   审查`submit-action.dto.ts`，将`payload: z.any()`修改为`payload: z.union([...])`，明确定义所有合法的`payload`类型（例如`z.object({ command: z.string() })`, `z.object({ optionId: z.string() })`）。
+        *   对整个代码库进行`any`类型的全局搜索和替换，使用`unknown`配合类型守卫，或定义精确的接口。
+    *   **1.3 (队列消息验证):** 在`AiQueueConsumerProcessor`的`process`方法入口处，使用Zod Schema**再次**解析和验证`job.data`。**绝不信任**任何来自队列（外部系统）的数据。
+
+---
+
+#### **任务模块 2: 全链路错误处理与事务性回滚 (Resilient Error Handling & Transactional Rollback)**
+
+*   **父任务 (Epic):** 工业级后端核心
+*   **当前状态:** **待办 (To-Do)**
+*   **依赖关系:** 任务模块 1
+*   **哲学:** “系统必须假设一切都会失败”。我们的目标是构建一个在失败时行为可预测、状态不损坏的“自愈”系统。
+*   **目标:** 建立一个统一的、可追溯的错误处理机制。确保任务失败时，不会产生任何“部分成功”的脏数据，并通过WebSocket向前端报告明确、可操作的失败信息。
+*   **验收标准:**
+    1.  所有服务层的方法在可预见的失败情况下（如数据库记录未找到、AI API超时），都会抛出自定义的、带有错误码的异常。
+    2.  队列消费者的`process`方法被一个全局的`try...catch`块包裹，任何异常都会被捕获。
+    3.  如果`RuleEngineService`在数据库事务中失败，整个事务必须回滚。
+    4.  任何任务失败，都会通过WebSocket向前端推送一个包含`jobId`, `errorCode`, `errorMessage`的`processing_failed`事件。
+
+*   **子任务 (Sub-tasks):**
+    *   **2.1 (自定义异常):** 在`src/common/exceptions/`目录下，创建自定义异常类，如`AiGenerationException`, `RuleEngineExecutionException`，继承自`HttpException`或`Error`。
+    *   **2.2 (事务化消费者):** 确保`AiQueueConsumerProcessor`中的整个`process`逻辑（从AI调用到规则引擎执行）都包裹在Prisma的`$transaction`块内，或者设计一个在失败时进行手动补偿的机制。
+    *   **2.3 (死信队列 Dead-Letter Queue):** 配置BullMQ，将处理失败达到一定次数（如3次）的任务，自动移入一个名为`ai-processing-dead`的死信队列，以便进行人工分析和干预，而不是无限重试。
+    *   **2.4 (增强前端反馈):** 扩展`processing_failed`事件的载荷，使其包含足够的信息，让前端可以根据`errorCode`显示不同的用户提示（例如，“AI引擎当前负载过高，请稍后再试” vs “您的输入包含无效字符”）。
+
+---
+
+#### **任务模块 3: 可观测性：日志、指标与追踪 (Observability: Logging, Metrics & Tracing)**
+
+*   **父任务 (Epic):** 工业级后端核心
+*   **当前状态:** **待办 (To-Do)**
+*   **依赖关系:** 任务模块 2
+*   **哲学:** “无法测量就无法优化”。我们必须拥有透视系统内部运作的“上帝之眼”。
+*   **目标:** 引入结构化日志，记录关键性能指标，并为未来实现分布式追踪打下基础。
+*   **验收标准:**
+    1.  所有日志输出为JSON格式，包含时间戳、日志级别、上下文（如`gameId`, `userId`, `jobId`）和消息。
+    2.  系统能监控关键指标，如：任务队列长度、任务平均处理时长、AI API平均响应时间、错误率。
+    3.  每次API请求和队列任务处理，都有一个唯一的`correlationId`贯穿其整个生命周期，并体现在所有相关的日志中。
+
+*   **子任务 (Sub-tasks):**
+    *   **3.1 (结构化日志):** 将NestJS默认的`Logger`替换为`pino`或`winston`，并配置其输出为JSON格式。
+    *   **3.2 (中间件/拦截器):** 创建一个NestJS中间件或拦截器，为每一个进入系统的HTTP请求生成一个唯一的`correlationId`，并将其附加到请求对象上。
+    *   **3.3 (上下文传递):** 将`correlationId`从API层传递到服务层，再包含进BullMQ任务的数据包中。在消费者进程中，从任务数据中提取`correlationId`并应用到该任务的所有日志中。
+    *   **3.4 (性能监控):** 在关键代码路径（如AI API调用、数据库查询）的开始和结束处记录时间戳，计算并记录执行时长。例如：`logger.info({ duration_ms: 2500, service: 'DeepSeekAPI' }, 'AI API call completed')`。
+
+---
+
+#### **任务模块 4: 配置与环境管理 (Configuration & Environment Management)**
+
+*   **父任务 (Epic):** 工业级后端核心
+*   **当前状态:** **待办 (To-Do)**
+*   **哲学:** “代码应与配置分离”。系统的行为应能通过环境变量进行调整，而无需修改代码。
+*   **目标:** 将所有硬编码的配置（URL、API密钥、队列名称、日志级别等）外部化，并使用`@nestjs/config`和Zod进行类型安全的加载和验证。
+*   **验收标准:**
+    1.  代码库中不存在任何敏感信息（如API密钥）或环境相关的值（如数据库URL）。
+    2.  应用启动时，会对所有必要的环境变量进行验证，如果缺失或格式错误，则启动失败并给出明确提示。
+
+*   **子任务 (Sub-tasks):**
+    *   **4.1 (环境变量验证):** 创建一个`config/validation.schema.ts`文件，使用Zod定义所有必需的环境变量的Schema。
+    *   **4.2 (类型安全配置):** 在`ConfigModule.forRootAsync`中使用`validationSchema`，并创建一个类型安全的`ConfigService`，使得`configService.get('DATABASE_URL')`能获得正确的类型提示。
+    *   **4.3 (外部化所有配置):** 审查整个项目，将分散在代码中的硬编码值（如BullMQ的队列名`'ai-processing'`，WebSocket端口`8080`等）全部提取到`.env`文件，并通过`ConfigService`读取。
+
+#### **任务模块 5 (新增): 抽象模型层与动态调度器**
+
+*   **父任务 (Epic):** 工业级后端核心
+*   **当前状态:** **待办 (To-Do)**
+*   **依赖关系:** 任务模块 1 (契约驱动开发)
+*   **哲学:** “将AI模型视为可热插拔的、标准化的计算单元”。系统不应关心“是谁”在执行任务，只应关心任务是否符合一个“通用AI接口”的契约。
+*   **目标:** 设计并实现一个高度抽象化的AI服务层，允许用户在前端动态配置、添加、切换多个来自不同供应商的AI模型，并让后端能根据任务类型和用户配置，将工作负载动态地分配给最合适的AI模型。
+*   **验收标准:**
+    1.  用户可以在前端UI中添加多个AI Provider配置（包含供应商、API Key、模型ID），并将其持久化到数据库。
+    2.  后端的所有上层业务逻辑（如`LogicAiService`, `NarrativePlannerService`）不再直接依赖任何具体的AI SDK（如`@langchain/openai`）。它们只与一个统一的、内部的`AiDispatcherService`交互。
+    3.  `AiDispatcherService`能够根据用户ID和任务类型（如`'logic_parsing'`, `'narrative_synthesis'`），从用户的配置列表中选择合适的AI模型，并调用其标准化的执行接口。
+    4.  系统能优雅地处理模型API的调用失败（如无效的API Key、模型不存在），并向用户返回明确的错误信息。
+
+*   **子任务 (Sub-tasks):**
+
+    *   **5.1 (数据库模型扩展):**
+        *   在`prisma/schema.prisma`中，修改`User`模型。将`aiConfig: Json?`字段，升级为一个独立的`AiConfiguration`模型，与`User`建立一对多关系。
+        *   **`AiConfiguration` 模型结构:**
+            ```prisma
+            model AiConfiguration {
+              id         String   @id @default(cuid())
+              provider   String   // e.g., "OpenAI", "DeepSeek", "Custom"
+              apiKey     String   // 加密存储 (未来)
+              baseUrl    String?  // 对于自定义或代理是必需的
+              modelId    String   // e.g., "gpt-4-turbo", "deepseek-chat"
+              
+              // [核心] 定义该模型在系统中的“角色”
+              assignedRoles String[] // e.g., ["logic_parsing", "narrative_synthesis", "image_generation"]
+              
+              owner      User     @relation(fields: [ownerId], references: [id])
+              ownerId    String
+            }
+            ```
+        *   **理由:** 将配置从一个非结构化的JSON Blob，升级为结构化的、可查询的关系模型，是实现动态调度的基础。`assignedRoles`字段是实现自动化分配的关键。
+
+    *   **5.2 (前端UI与状态管理):**
+        *   **重构`AISettingsModal.vue`:**
+            *   UI从单个表单，变为一个可动态增删的列表。每个列表项对应一个`AiConfiguration`记录。
+            *   “供应商”字段应为一个下拉菜单，包含预设的供应商（OpenAI, DeepSeek等）和“Custom”选项。选择预设供应商会自动填充`baseUrl`。
+            *   每个配置项旁边应有一个“测试连接”按钮，触发后端的一个专用API端点来验证该配置的有效性。
+            *   增加一个多选框或标签输入框，让用户为该配置分配`assignedRoles`。
+        *   **重构`settings.store.js`:** 改造其State和Actions，以管理一个`AiConfiguration`对象的数组，而非单个对象。
+
+    *   **5.3 (后端-抽象模型层):**
+        *   **创建通用接口:** 在`src/ai/providers/`目录下，创建一个`base-ai-provider.interface.ts`文件，定义所有模型提供商都必须实现的**通用接口**：
+            ```typescript
+            interface AiProvider {
+              generate(prompt: string, options: AiGenerationOptions): Promise<string>;
+              // 未来可以扩展为支持流式生成、多模态输入等
+              // generateStream(...): AsyncGenerator<string>;
+            }
+            
+            interface AiGenerationOptions {
+              temperature?: number;
+              // ...其他通用参数
+            }
+            ```
+        *   **实现具体Provider:** 为每个支持的供应商创建一个实现`AiProvider`接口的类。例如：
+            *   `openai.provider.ts` (封装`@langchain/openai`)
+            *   `deepseek.provider.ts` (封装`@langchain/openai`，但配置不同)
+            *   `custom-openai-compatible.provider.ts` (一个通用的、用于连接任何兼容OpenAI API的本地模型或代理的Provider)
+        *   **创建Provider工厂:** 创建一个`ai-provider.factory.ts`，它能根据`AiConfiguration`对象中的`provider`字符串，动态地实例化并返回对应的Provider类。
+
+    *   **5.4 (后端-动态调度器):**
+        *   **创建核心服务 `AiDispatcherService`:**
+            *   这是整个新架构的**心脏**。
+            *   它将被注入到所有需要AI能力的上层服务中（如`LogicAiService`）。
+            *   它提供一个核心方法：`dispatch(userId: string, role: string, prompt: string)`。
+        *   **`dispatch` 方法的内部逻辑:**
+            1.  从数据库查询该`userId`所有`AiConfiguration`记录中，`assignedRoles`数组包含当前所需`role`的那个配置。
+            2.  如果找到多个，可以根据优先级或负载均衡策略选择一个。（初期阶段，选择第一个即可）。
+            3.  如果未找到，则回退到系统默认的AI配置（定义在`.env`中），或抛出“未配置该角色的AI模型”的异常。
+            4.  使用`AiProviderFactory`根据选定的配置，实例化一个临时的`AiProvider`。
+            5.  调用该Provider实例的`generate(prompt)`方法，并返回结果。
+        *   **重构上层服务:** 修改`LogicAiService`, `NarrativePlannerService`等，移除所有直接与`@langchain`或具体模型交互的代码。将它们改为**只调用**`this.aiDispatcherService.dispatch(userId, 'logic_parsing', prompt)`。

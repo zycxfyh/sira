@@ -1,0 +1,28 @@
+{
+  "packages": [
+    "nodejs@20",
+    "pnpm@9",
+    "go@latest",
+    "earthly@latest",
+    "skaffold@latest",
+    "docker"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo '✓ Devbox environment activated.'",
+      "echo '────────────────────────────────'",
+      "echo 'Project Root: $(pwd)'",
+      "echo 'Exporting BUILDKIT_HOST for Earthly on WSL...'",
+      "export BUILDKIT_HOST=docker-container://earthly-buildkitd",
+      "echo 'Available Tools:'",
+      "node --version",
+      "pnpm --version",
+      "earthly --version",
+      "skaffold version",
+      "docker --version",
+      "echo '────────────────────────────────'",
+      "echo 'Next steps: run `skaffold dev` to start the development environment.'"
+    ],
+    "scripts": {}
+  }
+}

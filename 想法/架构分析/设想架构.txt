@@ -1,0 +1,11 @@
+前端vue3+pinia+vite+vue router+Socker.IO-client+axios
+后端是nestjs+prisma+typeScript+zod+langchian，
+之后加上elixir+phoenix+OTP actors+phoenix channels +ecto
+事件流pabbitMQ/Redis PubSub/Phoenix PubSub
+数据库PostgreSQL+Ecto++Prisma+EventSourcing
+AI层   LangChain-->OpenAI...
+工作流Temporal/Zeebe
+容器和平台Docker/docker-compose-->Kubernetes
+安全TypeScript+Zod
+开发Monorepo CI/CD Dev Experience
+ 

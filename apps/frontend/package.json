@@ -1,0 +1,31 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+ "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --fix",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "@sentry/vue": "^10.21.0",
+    "axios": "^1.12.2",
+    "pinia": "^2.1.7",
+    "shared-types": "workspace:*",
+    "socket.io-client": "^4.7.5",
+    "vue": "^3.4.31",
+    "vue-router": "^4.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@vitejs/plugin-vue": "^5.1.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.4",
+    "vite": "^5.3.3"
+  }
+}
