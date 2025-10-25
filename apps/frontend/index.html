@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无限人生模拟器 V8.2 - 优化版</title>
+  </head>
+  <body>
+    <!-- 
+      [修改] 这里是我们的最终布局。
+      Vue 应用将被动态渲染到 #app div 中。
+      Toast 通知将永远存在于 #toast-container div 中，独立于 Vue 的生命周期之外。
+    -->
+
+    <!-- Vue 应用的挂载点 -->
+    <div id="app"></div>
+
+    <!-- Toast 通知的静态挂载点 -->
+    <div id="toast-container"></div>
+    
+    <!-- 引入主 JS 文件，启动 Vue 应用 -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

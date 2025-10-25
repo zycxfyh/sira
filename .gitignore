@@ -1,0 +1,27 @@
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Turbo
+.turbo/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+
+# Logs & Reports
+logs/
+*.log
+coverage/
+playwright-report/
+
+# Local Env
+.env
+.env.*
+!.env.example
+
+# Temporary
+temp/
+tmp/

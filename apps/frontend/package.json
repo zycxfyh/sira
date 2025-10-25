@@ -1,0 +1,26 @@
+{
+  "name": "@tuheg/frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "@sentry/vue": "^8.21.0",
+    "axios": "^1.7.2",
+    "pinia": "^2.1.7",
+    "socket.io-client": "^4.7.5",
+    "vue": "^3.4.31",
+    "vue-router": "^4.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "prettier": "^3.3.3",
+    "vite": "^5.3.4"
+  }
+}

@@ -1,0 +1,8 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# 在每次提交前，强制对所有暂存的文件进行格式化和 lint 检查
+# (注意: lint-staged 需要额外配置，我们先用一个简单的 lint 命令占位)
+echo "Running pre-commit hooks..."
+pnpm format
+pnpm lint

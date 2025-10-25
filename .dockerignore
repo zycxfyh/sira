@@ -1,0 +1,13 @@
+node_modules
+/dist
+/.git
+/.idea
+.vscode
+.env
+.env.local
+.dockerignore
+Dockerfile
+docker-compose.override.yml
+*.log
+.gitignore
+pnpm-store

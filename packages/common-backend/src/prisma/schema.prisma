@@ -1,0 +1,88 @@
+// 文件路径: packages/common-backend/src/prisma/schema.prisma
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  games     Game[]
+  aiConfigs AiConfiguration[]
+}
+
+model Game {
+  id        String   @id @default(cuid())
+  name      String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  character Character?
+  worldBook WorldBookEntry[]
+  memories  Memory[]
+}
+
+model Character {
+  id     String @id @default(cuid())
+  game   Game   @relation(fields: [gameId], references: [id])
+  gameId String @unique
+  name   String
+  hp     Int    @default(100)
+  maxHp  Int    @default(100)
+  mp     Int    @default(50)
+  maxMp  Int    @default(50)
+  status String @default("Normal")
+  card   Json   @default("{}")
+}
+
+model WorldBookEntry {
+  id      String @id @default(cuid())
+  game    Game   @relation(fields: [gameId], references: [id])
+  gameId  String
+  key     String
+  content Json
+}
+
+// [!] 核心改造：修改 AiConfiguration 模型并添加 Role 模型
+model AiConfiguration {
+  id        String   @id @default(cuid())
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  provider  String
+  apiKey    String
+  modelId   String
+  baseUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // [!] 桥梁的第一端：一个配置可以有多个角色
+  roles     Role[]
+}
+
+model Role {
+  id             String            @id @default(cuid())
+  name           String            @unique // e.g., "logic_parsing", "critic"
+  description    String?
+
+  // [!] 桥梁的第二端：一个角色可以被多个配置使用
+  configurations AiConfiguration[]
+}
+
+model Memory {
+  id        String    @id @default(cuid())
+  game      Game      @relation(fields: [gameId], references: [id])
+  gameId    String
+  content   String
+  embedding Unsupported("vector(1536)")?
+  createdAt DateTime  @default(now())
+}
