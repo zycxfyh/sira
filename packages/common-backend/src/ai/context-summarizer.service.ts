@@ -13,15 +13,15 @@
 // - 智能摘要保留关键信息（角色、事件、决策）
 // - 缓存摘要结果（避免重复 AI 调用）
 
-import { PromptTemplate } from "@langchain/core/prompts";
-import { Injectable, Logger } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
+import { PromptTemplate } from '@langchain/core/prompts';
+import { Injectable, Logger } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
 // [注意] MemoryHierarchyService 由调用方（如 NarrativeService）使用，不在这里导入
-import type { User } from "@prisma/client";
-import { z } from "zod";
-import { callAiWithGuard } from "./ai-guard";
-import type { DynamicAiSchedulerService } from "./dynamic-ai-scheduler.service";
-import type { VectorSearchService } from "./vector-search.service";
+import type { User } from '@prisma/client';
+import { z } from 'zod';
+import { callAiWithGuard } from './ai-guard';
+import type { DynamicAiSchedulerService } from './dynamic-ai-scheduler.service';
+import type { VectorSearchService } from './vector-search.service';
 
 /**
  * 对话条目接口
@@ -81,11 +81,8 @@ export interface SummarizationConfig {
 
 // 摘要 Schema
 const summarySchema = z.object({
-  summary: z.string().describe("对话的简洁摘要，保留关键信息和事件"),
-  keyPoints: z
-    .array(z.string())
-    .optional()
-    .describe("关键信息点列表（如角色、事件、决策等）"),
+  summary: z.string().describe('对话的简洁摘要，保留关键信息和事件'),
+  keyPoints: z.array(z.string()).optional().describe('关键信息点列表（如角色、事件、决策等）'),
 });
 
 @Injectable()
@@ -93,10 +90,7 @@ export class ContextSummarizerService {
   private readonly logger = new Logger(ContextSummarizerService.name);
 
   // 摘要缓存：key = 对话条目的哈希，value = 摘要结果和过期时间
-  private readonly summaryCache = new Map<
-    string,
-    { result: SummaryResult; expiry: number }
-  >();
+  private readonly summaryCache = new Map<string, { result: SummaryResult; expiry: number }>();
 
   private readonly config: SummarizationConfig;
 
@@ -110,18 +104,11 @@ export class ContextSummarizerService {
   ) {
     // 从环境变量读取配置，提供默认值
     this.config = {
-      recentEntriesCount:
-        this.configService.get<number>("CONTEXT_RECENT_ENTRIES_COUNT") || 10,
-      summaryCount:
-        this.configService.get<number>("CONTEXT_SUMMARY_COUNT") || 3,
-      entriesPerSummary:
-        this.configService.get<number>("CONTEXT_ENTRIES_PER_SUMMARY") || 20,
-      enableCache:
-        this.configService.get<boolean>("CONTEXT_SUMMARY_CACHE_ENABLED") ??
-        true,
-      cacheExpiryMs:
-        this.configService.get<number>("CONTEXT_SUMMARY_CACHE_EXPIRY_MS") ||
-        3600000, // 1小时
+      recentEntriesCount: this.configService.get<number>('CONTEXT_RECENT_ENTRIES_COUNT') || 10,
+      summaryCount: this.configService.get<number>('CONTEXT_SUMMARY_COUNT') || 3,
+      entriesPerSummary: this.configService.get<number>('CONTEXT_ENTRIES_PER_SUMMARY') || 20,
+      enableCache: this.configService.get<boolean>('CONTEXT_SUMMARY_CACHE_ENABLED') ?? true,
+      cacheExpiryMs: this.configService.get<number>('CONTEXT_SUMMARY_CACHE_EXPIRY_MS') || 3600000, // 1小时
     };
 
     this.logger.log(
@@ -149,7 +136,7 @@ export class ContextSummarizerService {
     if (
       gameId &&
       currentContext &&
-      this.configService.get<boolean>("VECTOR_SEARCH_ENABLED", true)
+      this.configService.get<boolean>('VECTOR_SEARCH_ENABLED', true)
     ) {
       try {
         const searchResults = await this.vectorSearch.searchSimilarMemories(
@@ -175,9 +162,7 @@ export class ContextSummarizerService {
 
     if (entries.length <= this.config.recentEntriesCount) {
       // 如果条目数不超过保留数，直接返回全部
-      this.logger.debug(
-        `Context is short (${entries.length} entries), no compression needed`,
-      );
+      this.logger.debug(`Context is short (${entries.length} entries), no compression needed`);
       // [注意] formatCompressedContext 需要 CompressedContext，但这里需要返回字符串
       // 为了兼容性，我们保持返回类型不变，但实际使用时需要通过 formatCompressedContext 格式化
       return {
@@ -188,10 +173,7 @@ export class ContextSummarizerService {
 
     // 分离最近条目和历史条目
     const recentEntries = entries.slice(-this.config.recentEntriesCount);
-    const historicalEntries = entries.slice(
-      0,
-      entries.length - this.config.recentEntriesCount,
-    );
+    const historicalEntries = entries.slice(0, entries.length - this.config.recentEntriesCount);
 
     this.logger.debug(
       `Compressing context: ${entries.length} total entries, ` +
@@ -200,15 +182,10 @@ export class ContextSummarizerService {
 
     // 对历史条目进行分块并生成摘要
     const summaries: SummaryResult[] = [];
-    const chunks = this.chunkEntries(
-      historicalEntries,
-      this.config.entriesPerSummary,
-    );
+    const chunks = this.chunkEntries(historicalEntries, this.config.entriesPerSummary);
 
     // 并行生成摘要（但限制并发数以避免过载）
-    const summaryPromises = chunks.map((chunk) =>
-      this.generateSummary(chunk, user),
-    );
+    const summaryPromises = chunks.map((chunk) => this.generateSummary(chunk, user));
     const chunkSummaries = await Promise.all(summaryPromises);
 
     // 只保留最近的 N 个摘要
@@ -216,9 +193,7 @@ export class ContextSummarizerService {
 
     this.logger.log(
       `Context compressed: ${recentEntries.length} recent entries + ${summaries.length} summaries` +
-        (retrievedMemories.length > 0
-          ? ` + ${retrievedMemories.length} retrieved memories`
-          : ""),
+        (retrievedMemories.length > 0 ? ` + ${retrievedMemories.length} retrieved memories` : ''),
     );
 
     return {
@@ -230,10 +205,7 @@ export class ContextSummarizerService {
   /**
    * 将条目分块
    */
-  private chunkEntries(
-    entries: ConversationEntry[],
-    chunkSize: number,
-  ): ConversationEntry[][] {
+  private chunkEntries(entries: ConversationEntry[], chunkSize: number): ConversationEntry[][] {
     const chunks: ConversationEntry[][] = [];
     for (let i = 0; i < entries.length; i += chunkSize) {
       chunks.push(entries.slice(i, i + chunkSize));
@@ -248,10 +220,7 @@ export class ContextSummarizerService {
    * @param user - 用户信息
    * @returns 摘要结果
    */
-  async generateSummary(
-    entries: ConversationEntry[],
-    user: User,
-  ): Promise<SummaryResult> {
+  async generateSummary(entries: ConversationEntry[], user: User): Promise<SummaryResult> {
     // 检查缓存
     if (this.config.enableCache) {
       const cacheKey = this.generateCacheKey(entries);
@@ -265,13 +234,11 @@ export class ContextSummarizerService {
     // 生成摘要
     this.logger.debug(`Generating summary for ${entries.length} entries`);
 
-    const conversationText = entries
-      .map((entry) => `[${entry.role}]: ${entry.content}`)
-      .join("\n");
+    const conversationText = entries.map((entry) => `[${entry.role}]: ${entry.content}`).join('\n');
 
     const provider = await this.scheduler.getProviderForRole(
       user,
-      "narrative_synthesis", // 使用叙事 AI 生成摘要，保持风格一致
+      'narrative_synthesis', // 使用叙事 AI 生成摘要，保持风格一致
     );
 
     const prompt = new PromptTemplate({
@@ -287,16 +254,12 @@ export class ContextSummarizerService {
 - 摘要长度应该约为原对话的 10-20%
 
 请生成摘要和关键信息点。`,
-      inputVariables: ["conversation"],
+      inputVariables: ['conversation'],
     });
 
     const chain = prompt.pipe(provider.model);
 
-    const result = await callAiWithGuard(
-      chain,
-      { conversation: conversationText },
-      summarySchema,
-    );
+    const result = await callAiWithGuard(chain, { conversation: conversationText }, summarySchema);
 
     const summaryResult: SummaryResult = {
       summary: result.summary,
@@ -322,9 +285,9 @@ export class ContextSummarizerService {
    * 生成缓存键（基于条目内容的简单哈希）
    */
   private generateCacheKey(entries: ConversationEntry[]): string {
-    const content = entries.map((e) => `${e.role}:${e.content}`).join("|");
+    const content = entries.map((e) => `${e.role}:${e.content}`).join('|');
     // 简单的哈希（生产环境可使用更强大的哈希算法）
-    return Buffer.from(content).toString("base64").slice(0, 64);
+    return Buffer.from(content).toString('base64').slice(0, 64);
   }
 
   /**
@@ -334,46 +297,43 @@ export class ContextSummarizerService {
    * @param retrievedMemories - [新增] 通过向量检索到的相关记忆
    * @returns 格式化的上下文字符串
    */
-  formatCompressedContext(
-    compressed: CompressedContext,
-    retrievedMemories?: string[],
-  ): string {
+  formatCompressedContext(compressed: CompressedContext, retrievedMemories?: string[]): string {
     const parts: string[] = [];
 
     // [新增] 添加通过向量检索到的相关记忆
     if (retrievedMemories && retrievedMemories.length > 0) {
-      parts.push("## 相关历史记忆（语义检索）");
+      parts.push('## 相关历史记忆（语义检索）');
       retrievedMemories.forEach((memory, index) => {
         parts.push(`${index + 1}. ${memory}`);
       });
-      parts.push("\n---\n");
+      parts.push('\n---\n');
     }
 
     // 添加历史摘要
     if (compressed.summaries.length > 0) {
-      parts.push("## 历史对话摘要");
+      parts.push('## 历史对话摘要');
       compressed.summaries.forEach((summary, index) => {
         parts.push(`\n### 摘要 ${index + 1} (${summary.entryCount} 条对话)`);
         parts.push(summary.summary);
         if (summary.keyPoints && summary.keyPoints.length > 0) {
-          parts.push("\n关键信息:");
+          parts.push('\n关键信息:');
           for (const point of summary.keyPoints) {
             parts.push(`- ${point}`);
           }
         }
       });
-      parts.push("\n---\n");
+      parts.push('\n---\n');
     }
 
     // 添加最近完整对话
     if (compressed.recentEntries.length > 0) {
-      parts.push("## 最近完整对话");
+      parts.push('## 最近完整对话');
       compressed.recentEntries.forEach((entry) => {
         parts.push(`[${entry.role}]: ${entry.content}`);
       });
     }
 
-    return parts.join("\n");
+    return parts.join('\n');
   }
 
   /**
@@ -386,12 +346,7 @@ export class ContextSummarizerService {
     gameId?: string,
     currentContext?: string,
   ): Promise<string> {
-    const compressed = await this.compressContext(
-      entries,
-      user,
-      gameId,
-      currentContext,
-    );
+    const compressed = await this.compressContext(entries, user, gameId, currentContext);
 
     // 重新获取检索到的记忆（从 compressContext 的内部逻辑中提取）
     // 注意：由于 compressContext 返回的是 CompressedContext，我们需要重新检索
@@ -399,7 +354,7 @@ export class ContextSummarizerService {
     if (
       gameId &&
       currentContext &&
-      this.configService.get<boolean>("VECTOR_SEARCH_ENABLED", true)
+      this.configService.get<boolean>('VECTOR_SEARCH_ENABLED', true)
     ) {
       try {
         const searchResults = await this.vectorSearch.searchSimilarMemories(

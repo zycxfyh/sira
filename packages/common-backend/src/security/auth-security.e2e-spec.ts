@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  INestApplication,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import request from 'supertest';
 import { HealthModule } from '../health/health.module';
@@ -46,16 +51,11 @@ describe('Authentication Security Tests (e2e)', () => {
 
   describe('JWT Token Security', () => {
     it('should reject requests without Authorization header', () => {
-      return request(app.getHttpServer())
-        .get('/health')
-        .expect(401);
+      return request(app.getHttpServer()).get('/health').expect(401);
     });
 
     it('should reject empty Authorization header', () => {
-      return request(app.getHttpServer())
-        .get('/health')
-        .set('Authorization', '')
-        .expect(401);
+      return request(app.getHttpServer()).get('/health').set('Authorization', '').expect(401);
     });
 
     it('should reject malformed Authorization header', () => {
@@ -80,7 +80,8 @@ describe('Authentication Security Tests (e2e)', () => {
     });
 
     it('should reject JWT with invalid signature', () => {
-      const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+      const fakeToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
       return request(app.getHttpServer())
         .get('/health')
         .set('Authorization', `Bearer ${fakeToken}`)
@@ -89,7 +90,8 @@ describe('Authentication Security Tests (e2e)', () => {
 
     it('should reject expired JWT token', () => {
       // Create an expired token (issued in 2020)
-      const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTc3ODYzOTAyMn0.3XmR8qYKQ9m2KXJ6zYQ8VzJ8mKzYQ8VzJ8mKzYQ8VzJ';
+      const expiredToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTc3ODYzOTAyMn0.3XmR8qYKQ9m2KXJ6zYQ8VzJ8mKzYQ8VzJ8mKzYQ8VzJ';
       return request(app.getHttpServer())
         .get('/health')
         .set('Authorization', `Bearer ${expiredToken}`)
@@ -98,7 +100,8 @@ describe('Authentication Security Tests (e2e)', () => {
 
     it('should reject JWT with future iat (issued at)', () => {
       // Token with future iat (year 3000)
-      const futureToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjozMjUwMzY3OTAyMn0.3XmR8qYKQ9m2KXJ6zYQ8VzJ8mKzYQ8VzJ8mKzYQ8VzJ';
+      const futureToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjozMjUwMzY3OTAyMn0.3XmR8qYKQ9m2KXJ6zYQ8VzJ8mKzYQ8VzJ8mKzYQ8VzJ';
       return request(app.getHttpServer())
         .get('/health')
         .set('Authorization', `Bearer ${futureToken}`)
@@ -122,15 +125,15 @@ describe('Authentication Security Tests (e2e)', () => {
     });
 
     it('should handle concurrent authentication attempts gracefully', async () => {
-      const promises = Array(10).fill(null).map(() =>
-        request(app.getHttpServer())
-          .get('/health')
-          .set('Authorization', 'Bearer invalid')
-      );
+      const promises = Array(10)
+        .fill(null)
+        .map(() =>
+          request(app.getHttpServer()).get('/health').set('Authorization', 'Bearer invalid'),
+        );
 
       const results = await Promise.allSettled(promises);
 
-      results.forEach(result => {
+      results.forEach((result) => {
         if (result.status === 'fulfilled') {
           expect(result.value.status).toBe(401);
         }
@@ -166,18 +169,10 @@ describe('Authentication Security Tests (e2e)', () => {
 
   describe('Authorization Header Injection', () => {
     it('should handle case variations in Authorization header', () => {
-      const caseVariations = [
-        'authorization',
-        'AUTHORIZATION',
-        'Authorization',
-        'AuThOrIzAtIoN'
-      ];
+      const caseVariations = ['authorization', 'AUTHORIZATION', 'Authorization', 'AuThOrIzAtIoN'];
 
-      const promises = caseVariations.map(headerName =>
-        request(app.getHttpServer())
-          .get('/health')
-          .set(headerName, 'Bearer invalid')
-          .expect(401)
+      const promises = caseVariations.map((headerName) =>
+        request(app.getHttpServer()).get('/health').set(headerName, 'Bearer invalid').expect(401),
       );
 
       return Promise.all(promises);
@@ -202,29 +197,18 @@ describe('Authentication Security Tests (e2e)', () => {
         'Bearer ' + 'a'.repeat(64), // All same character
       ];
 
-      const promises = weakTokens.map(token =>
-        request(app.getHttpServer())
-          .get('/health')
-          .set('Authorization', token)
-          .expect(401)
+      const promises = weakTokens.map((token) =>
+        request(app.getHttpServer()).get('/health').set('Authorization', token).expect(401),
       );
 
       return Promise.all(promises);
     });
 
     it('should handle tokens with common patterns', () => {
-      const patternTokens = [
-        'Bearer abc123',
-        'Bearer 123abc',
-        'Bearer qwerty',
-        'Bearer admin123',
-      ];
+      const patternTokens = ['Bearer abc123', 'Bearer 123abc', 'Bearer qwerty', 'Bearer admin123'];
 
-      const promises = patternTokens.map(token =>
-        request(app.getHttpServer())
-          .get('/health')
-          .set('Authorization', token)
-          .expect(401)
+      const promises = patternTokens.map((token) =>
+        request(app.getHttpServer()).get('/health').set('Authorization', token).expect(401),
       );
 
       return Promise.all(promises);
@@ -249,19 +233,19 @@ describe('Authentication Security Tests (e2e)', () => {
 
   describe('Rate Limiting Bypass Attempts', () => {
     it('should handle rapid token validation requests', async () => {
-      const promises = Array(50).fill(null).map(() =>
-        request(app.getHttpServer())
-          .get('/health')
-          .set('Authorization', 'Bearer invalid')
-      );
+      const promises = Array(50)
+        .fill(null)
+        .map(() =>
+          request(app.getHttpServer()).get('/health').set('Authorization', 'Bearer invalid'),
+        );
 
       const results = await Promise.allSettled(promises);
 
       // Should handle the load without crashing
       expect(results.length).toBe(50);
 
-      const fulfilled = results.filter(r => r.status === 'fulfilled');
-      const rejected = results.filter(r => r.status === 'rejected');
+      const fulfilled = results.filter((r) => r.status === 'fulfilled');
+      const rejected = results.filter((r) => r.status === 'rejected');
 
       // At least some should succeed (not crash the server)
       expect(fulfilled.length + rejected.length).toBe(50);

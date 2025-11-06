@@ -1,12 +1,9 @@
 // 文件路径: apps/logic-agent/src/logic.service.integration.spec.ts (真正完整版)
 
-import {
-  BadRequestException,
-  InternalServerErrorException,
-} from "@nestjs/common";
-import { Test, type TestingModule } from "@nestjs/testing";
-import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import type { User } from "@prisma/client";
+import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
+import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import type { User } from '@prisma/client';
 import {
   AiGenerationException,
   callAiWithGuard,
@@ -17,9 +14,9 @@ import {
   type PromptInjectionCheckResult,
   PromptInjectionGuard,
   PromptManagerService,
-} from "@tuheg/common-backend";
-import { type MockProxy, mock } from "jest-mock-extended";
-import { LogicService } from "./logic.service";
+} from '@tuheg/common-backend';
+import { type MockProxy, mock } from 'jest-mock-extended';
+import { LogicService } from './logic.service';
 
 // 测试子类，用于访问protected方法
 class TestLogicService extends LogicService {
@@ -29,12 +26,12 @@ class TestLogicService extends LogicService {
 }
 
 // 模拟 @tuheg/common-backend, 只替换 callAiWithGuard
-jest.mock("@tuheg/common-backend", () => ({
-  ...jest.requireActual("@tuheg/common-backend"), // 保留所有真实导出
+jest.mock('@tuheg/common-backend', () => ({
+  ...jest.requireActual('@tuheg/common-backend'), // 保留所有真实导出
   callAiWithGuard: jest.fn(), // 将 callAiWithGuard 替换为一个 Jest 模拟函数
 }));
 
-describe("LogicService (Integration)", () => {
+describe('LogicService (Integration)', () => {
   let service: TestLogicService;
   let schedulerMock: MockProxy<DynamicAiSchedulerService>;
   let promptManagerMock: MockProxy<PromptManagerService>;
@@ -47,30 +44,30 @@ describe("LogicService (Integration)", () => {
   const MOCK_CHAT_MODEL = {} as unknown as BaseChatModel;
   // [核心修复] 为模拟数据补上 correlationId 字段
   const MOCK_JOB_DATA: GameActionJobData = {
-    gameId: "game-123",
-    userId: "user-abc",
-    playerAction: { type: "command", payload: "Attack the goblin" },
+    gameId: 'game-123',
+    userId: 'user-abc',
+    playerAction: { type: 'command', payload: 'Attack the goblin' },
     gameStateSnapshot: {
-      id: "game-123",
-      name: "Mock Game",
-      ownerId: "user-abc",
+      id: 'game-123',
+      name: 'Mock Game',
+      ownerId: 'user-abc',
       createdAt: new Date(),
       updatedAt: new Date(),
       character: null,
       worldBook: [],
     },
-    correlationId: "test-correlation-id-integration-456", // <-- 加上这一行
+    correlationId: 'test-correlation-id-integration-456', // <-- 加上这一行
   };
 
   const MOCK_DIRECTIVES: DirectiveSet = [
-    { op: "update_character", targetId: "player", payload: {} },
+    { op: 'update_character', targetId: 'player', payload: {} },
   ];
 
   const SAFE_GUARD_RESULT: PromptInjectionCheckResult = {
     allowed: true,
     score: 0.1,
     threshold: 0.75,
-    reason: "passed",
+    reason: 'passed',
   };
 
   beforeEach(async () => {
@@ -116,21 +113,21 @@ describe("LogicService (Integration)", () => {
     jest.clearAllMocks();
   });
 
-  it("should be defined", () => {
+  it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  describe("Happy Path: Successful Directive Generation", () => {
+  describe('Happy Path: Successful Directive Generation', () => {
     beforeEach(() => {
       // 预设所有模拟依赖的行为
       schedulerMock.getProviderForRole.mockResolvedValue({
         model: MOCK_CHAT_MODEL,
       });
-      promptManagerMock.getPrompt.mockReturnValue("This is a system prompt.");
+      promptManagerMock.getPrompt.mockReturnValue('This is a system prompt.');
       mockedCallAiWithGuard.mockResolvedValue(MOCK_DIRECTIVES);
     });
 
-    it("should call dependencies with correct parameters and return directives", async () => {
+    it('should call dependencies with correct parameters and return directives', async () => {
       // 调用被测试的方法
       const mockUser = { id: MOCK_JOB_DATA.userId } as any;
       const result = await service.testGenerateDirectives(MOCK_JOB_DATA, mockUser);
@@ -142,44 +139,38 @@ describe("LogicService (Integration)", () => {
           userId: MOCK_JOB_DATA.userId,
           gameId: MOCK_JOB_DATA.gameId,
           correlationId: MOCK_JOB_DATA.correlationId,
-          source: "logic-agent:playerAction",
+          source: 'logic-agent:playerAction',
         },
       );
       expect(schedulerMock.getProviderForRole).toHaveBeenCalledTimes(1);
       expect(schedulerMock.getProviderForRole).toHaveBeenCalledWith(
         { id: MOCK_JOB_DATA.userId } as User,
-        "logic_parsing",
+        'logic_parsing',
       );
 
       expect(promptManagerMock.getPrompt).toHaveBeenCalledTimes(1);
-      expect(promptManagerMock.getPrompt).toHaveBeenCalledWith(
-        "01_logic_engine.md",
-      );
+      expect(promptManagerMock.getPrompt).toHaveBeenCalledWith('01_logic_engine.md');
 
       expect(mockedCallAiWithGuard).toHaveBeenCalledTimes(1);
 
       const aiGuardArgs = mockedCallAiWithGuard.mock.calls[0];
       const params = aiGuardArgs[1];
-      expect(params.system_prompt).toBe("This is a system prompt.");
-      expect(params.game_state).toBe(
-        JSON.stringify(MOCK_JOB_DATA.gameStateSnapshot),
-      );
-      expect(params.player_action).toBe(
-        JSON.stringify(MOCK_JOB_DATA.playerAction),
-      );
+      expect(params.system_prompt).toBe('This is a system prompt.');
+      expect(params.game_state).toBe(JSON.stringify(MOCK_JOB_DATA.gameStateSnapshot));
+      expect(params.player_action).toBe(JSON.stringify(MOCK_JOB_DATA.playerAction));
 
       expect(result).toEqual(MOCK_DIRECTIVES);
     });
   });
 
-  describe("Error Handling: AI Guard Failure", () => {
-    it("should throw an InternalServerErrorException when callAiWithGuard fails", async () => {
-      const aiError = new AiGenerationException("AI failed validation", {});
+  describe('Error Handling: AI Guard Failure', () => {
+    it('should throw an InternalServerErrorException when callAiWithGuard fails', async () => {
+      const aiError = new AiGenerationException('AI failed validation', {});
 
       schedulerMock.getProviderForRole.mockResolvedValue({
         model: MOCK_CHAT_MODEL,
       });
-      promptManagerMock.getPrompt.mockReturnValue("prompt");
+      promptManagerMock.getPrompt.mockReturnValue('prompt');
       mockedCallAiWithGuard.mockRejectedValue(aiError);
 
       const mockUser = { id: MOCK_JOB_DATA.userId } as any;
@@ -188,12 +179,12 @@ describe("LogicService (Integration)", () => {
       );
     });
 
-    it("should throw BadRequestException when prompt injection guard blocks input", async () => {
+    it('should throw BadRequestException when prompt injection guard blocks input', async () => {
       promptInjectionGuardMock.checkInput.mockResolvedValueOnce({
         allowed: false,
         score: 0.99,
         threshold: 0.75,
-        reason: "threshold-exceeded",
+        reason: 'threshold-exceeded',
       });
 
       const mockUser = { id: MOCK_JOB_DATA.userId } as any;

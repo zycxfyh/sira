@@ -4,20 +4,18 @@ import { Injectable, Logger, BadRequestException, NotFoundException } from '@nes
 import { PrismaService } from '@tuheg/common-backend'; // 你提供的共享 PrismaService
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom, firstValueFrom } from 'rxjs';
-import {
-  CreateAiSettingsDto,
-} from './dto/create-ai-settings.dto';
-import {
-  UpdateAiSettingsDto,
-  TestAiConnectionDto,
-} from './dto/update-ai-settings.dto';
+import { CreateAiSettingsDto } from './dto/create-ai-settings.dto';
+import { UpdateAiSettingsDto, TestAiConnectionDto } from './dto/update-ai-settings.dto';
 import { createAiSettingsSchema } from './dto/create-ai-settings.dto';
 
 @Injectable()
 export class SettingsService {
   private readonly logger = new Logger(SettingsService.name);
 
-  constructor(private readonly prisma: PrismaService, private readonly httpService: HttpService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly httpService: HttpService,
+  ) {}
 
   // Helper: ensure role records exist and return their objects (id + name)
   private async ensureRoles(roleNames: string[]) {
@@ -25,9 +23,7 @@ export class SettingsService {
 
     const normalized = Array.from(
       new Set(
-        roleNames
-          .map((r) => (typeof r === 'string' ? r.trim() : ''))
-          .filter((r) => r.length > 0),
+        roleNames.map((r) => (typeof r === 'string' ? r.trim() : '')).filter((r) => r.length > 0),
       ),
     );
 
@@ -63,7 +59,8 @@ export class SettingsService {
         apiKey: dto.apiKey,
         modelId: dto.modelId,
         baseUrl: dto.baseUrl ?? null,
-        roles: roleRecords.length > 0 ? { connect: roleRecords.map((r) => ({ id: r.id })) } : undefined,
+        roles:
+          roleRecords.length > 0 ? { connect: roleRecords.map((r) => ({ id: r.id })) } : undefined,
       },
       include: {
         roles: true,
@@ -75,7 +72,11 @@ export class SettingsService {
   }
 
   // Update AI configuration (only owner can update)
-  public async updateAiSetting(userId: string, configId: string, payload: Partial<UpdateAiSettingsDto>) {
+  public async updateAiSetting(
+    userId: string,
+    configId: string,
+    payload: Partial<UpdateAiSettingsDto>,
+  ) {
     // Check existence and ownership
     const existing = await this.prisma.aiConfiguration.findUnique({
       where: { id: configId },
@@ -206,10 +207,16 @@ export class SettingsService {
         const resp = await lastValueFrom(resp$);
         // Try a few heuristics
         if (Array.isArray(resp.data?.models)) {
-          return { models: resp.data.models.map((m: any) => (typeof m === 'string' ? m : m.id)).filter(Boolean) };
+          return {
+            models: resp.data.models
+              .map((m: any) => (typeof m === 'string' ? m : m.id))
+              .filter(Boolean),
+          };
         }
         if (Array.isArray(resp.data)) {
-          return { models: resp.data.map((m: any) => (typeof m === 'string' ? m : m.id)).filter(Boolean) };
+          return {
+            models: resp.data.map((m: any) => (typeof m === 'string' ? m : m.id)).filter(Boolean),
+          };
         }
         // fallback: return keys if object with keys looks like model map
         if (resp.data && typeof resp.data === 'object') {

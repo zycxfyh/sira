@@ -33,7 +33,7 @@
 
         <!-- 提交按钮 -->
         <button type="submit" class="button primary" :disabled="isLoading">
-          {{ isLoading ? '处理中...' : (isLoginMode ? '登录' : '注册') }}
+          {{ isLoading ? '处理中...' : isLoginMode ? '登录' : '注册' }}
         </button>
       </form>
 
@@ -84,7 +84,7 @@ async function handleSubmit() {
   } catch (err) {
     // 捕获AuthStore或API服务抛出的错误
     // 确保 err 是一个对象并且有 message 属性
-    error.value = (err && err.message) ? err.message : '发生未知错误';
+    error.value = err && err.message ? err.message : '发生未知错误';
   } finally {
     isLoading.value = false;
   }

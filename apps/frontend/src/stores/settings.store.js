@@ -10,12 +10,7 @@ import { useToast } from '@/composables/useToast';
 import { useUIStore } from './ui.store';
 
 // 同步到后端的所有可能角色（前端视图使用）
-export const ALL_AI_ROLES = [
-  'logic_parsing',
-  'narrative_synthesis',
-  'planner',
-  'critic',
-];
+export const ALL_AI_ROLES = ['logic_parsing', 'narrative_synthesis', 'planner', 'critic'];
 
 export const useSettingsStore = defineStore('settings', () => {
   const { show: showToast } = useToast();
@@ -38,7 +33,9 @@ export const useSettingsStore = defineStore('settings', () => {
     // Normalize roles to string[]
     if (Array.isArray(c.roles)) {
       // roles might be array of strings or array of objects
-      c.roles = c.roles.map((r) => (typeof r === 'string' ? r : r.name || r.id || '')).filter(Boolean);
+      c.roles = c.roles
+        .map((r) => (typeof r === 'string' ? r : r.name || r.id || ''))
+        .filter(Boolean);
     } else if (typeof c.assignedRoles === 'string') {
       c.roles = c.assignedRoles
         .split(',')
@@ -49,10 +46,12 @@ export const useSettingsStore = defineStore('settings', () => {
     }
 
     // Keep legacy CSV for UI components that still expect it
-    c.assignedRoles = (c.roles && c.roles.length > 0) ? c.roles.join(',') : '';
+    c.assignedRoles = c.roles && c.roles.length > 0 ? c.roles.join(',') : '';
 
     // Mark new configs (client-side only)
-    if (c.isNew === undefined) c.isNew = false;
+    if (c.isNew === undefined) {
+      c.isNew = false;
+    }
 
     return c;
   }
@@ -64,7 +63,10 @@ export const useSettingsStore = defineStore('settings', () => {
     if (Array.isArray(form.roles)) {
       roles = form.roles;
     } else if (typeof form.assignedRoles === 'string') {
-      roles = form.assignedRoles.split(',').map((s) => s.trim()).filter(Boolean);
+      roles = form.assignedRoles
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
     return {
       provider: form.provider ?? '',
@@ -80,8 +82,12 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const globalAiConfig = computed(() => {
     const list = aiConfigurations.value || [];
-    if (list.length === 0) return null;
-    if (list.length === 1) return list[0];
+    if (list.length === 0) {
+      return null;
+    }
+    if (list.length === 1) {
+      return list[0];
+    }
 
     // prefer config that contains all roles
     const full = list.find((c) => Array.isArray(c.roles) && c.roles.length === ALL_AI_ROLES.length);
@@ -145,7 +151,10 @@ export const useSettingsStore = defineStore('settings', () => {
       await fetchAiConfigurations();
     } catch (error) {
       console.error('[SettingsStore] createAiConfiguration error:', error);
-      showToast(`创建失败: ${error?.details ? JSON.stringify(error.details) : error.message}`, 'error');
+      showToast(
+        `创建失败: ${error?.details ? JSON.stringify(error.details) : error.message}`,
+        'error',
+      );
       throw error;
     } finally {
       isLoading.value = false;
@@ -161,7 +170,10 @@ export const useSettingsStore = defineStore('settings', () => {
       await fetchAiConfigurations();
     } catch (error) {
       console.error('[SettingsStore] updateAiConfiguration error:', error);
-      showToast(`更新失败: ${error?.details ? JSON.stringify(error.details) : error.message}`, 'error');
+      showToast(
+        `更新失败: ${error?.details ? JSON.stringify(error.details) : error.message}`,
+        'error',
+      );
       throw error;
     } finally {
       isLoading.value = false;

@@ -1,11 +1,6 @@
 // 文件路径: apps/backend/apps/nexus-engine/src/sentry.interceptor.ts (已修复)
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import * as Sentry from '@sentry/node';
 import { Scope } from '@sentry/node'; // <-- [核心修正] 从 @sentry/node 导入 Scope 类型

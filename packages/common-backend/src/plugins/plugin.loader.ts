@@ -2,9 +2,9 @@
 // 灵感来源: VS Code Extension Loader
 // 核心理念: 动态加载插件，支持按需激活
 
-import { Injectable, Logger } from "@nestjs/common";
-import type { PluginFactory, PluginManifest } from "./plugin.types";
-import { PluginRegistry } from "./plugin.registry";
+import { Injectable, Logger } from '@nestjs/common';
+import type { PluginFactory, PluginManifest } from './plugin.types';
+import { PluginRegistry } from './plugin.registry';
 
 /**
  * @class PluginLoader
@@ -22,10 +22,7 @@ export class PluginLoader {
    * @param manifest - 插件清单
    * @param factory - 插件工厂函数
    */
-  public async loadFromManifest(
-    manifest: PluginManifest,
-    factory: PluginFactory,
-  ): Promise<void> {
+  public async loadFromManifest(manifest: PluginManifest, factory: PluginFactory): Promise<void> {
     try {
       this.logger.debug(`Loading plugin "${manifest.id}" from manifest...`);
 
@@ -46,13 +43,13 @@ export class PluginLoader {
 
       // 检查是否需要立即激活
       const activationEvents = manifest.activationEvents ?? [];
-      if (activationEvents.includes("*") || activationEvents.length === 0) {
+      if (activationEvents.includes('*') || activationEvents.length === 0) {
         // 立即激活
         await this.registry.activatePlugin(manifest.id);
       } else {
         // 延迟激活（等待激活事件）
         this.logger.debug(
-          `Plugin "${manifest.id}" will be activated on events: ${activationEvents.join(", ")}`,
+          `Plugin "${manifest.id}" will be activated on events: ${activationEvents.join(', ')}`,
         );
       }
     } catch (error) {
@@ -109,4 +106,3 @@ export class PluginLoader {
     await this.registry.unregister(pluginId);
   }
 }
-

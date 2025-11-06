@@ -17,19 +17,16 @@ async function bootstrap() {
 
   // [Sentry] 使用 try...catch 块包裹整个应用创建和监听过程
   try {
-    const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-      NarrativeAgentModule,
-      {
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://localhost:5672'], // [注意] 为简化，此处硬编码。可像其他agent一样从ConfigService获取
-          queue: 'narrative_queue',
-          queueOptions: {
-            durable: false,
-          },
+    const app = await NestFactory.createMicroservice<MicroserviceOptions>(NarrativeAgentModule, {
+      transport: Transport.RMQ,
+      options: {
+        urls: ['amqp://localhost:5672'], // [注意] 为简化，此处硬编码。可像其他agent一样从ConfigService获取
+        queue: 'narrative_queue',
+        queueOptions: {
+          durable: false,
         },
       },
-    );
+    });
     await app.listen();
     console.log('🚀 Narrative Agent is listening for tasks...');
   } catch (err) {

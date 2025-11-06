@@ -4,9 +4,11 @@
     <div class="modal">
       <div class="modal-header">
         <h2>织世者控制台</h2>
-        <p style="color: #aaa; margin: 0.5rem 0 0 0; font-style: italic;">在这里，你将行使导演的最终剪辑权。</p>
+        <p style="color: #aaa; margin: 0.5rem 0 0 0; font-style: italic">
+          在这里，你将行使导演的最终剪辑权。
+        </p>
       </div>
-      
+
       <div class="modal-content" v-if="editableCharacter">
         <div class="form-grid">
           <label for="weaver-hp">生命值 (HP)</label>
@@ -17,7 +19,7 @@
 
           <label for="weaver-mp">精神力 (MP)</label>
           <input id="weaver-mp" type="number" v-model.number="editableCharacter.mp" />
-          
+
           <label for="weaver-maxMp">最大精神力</label>
           <input id="weaver-maxMp" type="number" v-model.number="editableCharacter.maxMp" />
 
@@ -56,7 +58,7 @@ onMounted(() => {
 
 function handleSaveChanges() {
   if (!editableCharacter.value || !gameStore.currentGame?.id) return;
-  
+
   const originalCharacter = gameStore.currentGame.character;
   const changes = {};
   for (const key in editableCharacter.value) {

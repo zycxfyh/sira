@@ -1,10 +1,6 @@
 // 文件路径: apps/nexus-engine/src/games/games.service.ts
 
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Game, Character, WorldBookEntry } from '@prisma/client';
 
 // [核心修正] 从 @tuheg/common-backend 导入所有需要的共享模块
@@ -37,8 +33,7 @@ export class GamesService {
 
     // 立即向前端返回一个“任务已受理”的响应
     return {
-      message:
-        'Game creation request has been accepted and is being processed.',
+      message: 'Game creation request has been accepted and is being processed.',
     };
   }
 
@@ -46,11 +41,7 @@ export class GamesService {
    * @method submitAction
    * @description 接收玩家行动，并将其作为事件发布到宇宙广播
    */
-  public async submitAction(
-    userId: string,
-    gameId: string,
-    dto: SubmitActionDto,
-  ): Promise<void> {
+  public async submitAction(userId: string, gameId: string, dto: SubmitActionDto): Promise<void> {
     const gameWithIncludes = await this.prisma.game.findUnique({
       where: { id: gameId },
       include: { character: true, worldBook: true },
@@ -60,9 +51,7 @@ export class GamesService {
       throw new NotFoundException(`Game with ID "${gameId}" not found.`);
     }
     if (gameWithIncludes.ownerId !== userId) {
-      throw new ForbiddenException(
-        "You don't have permission to access this game.",
-      );
+      throw new ForbiddenException("You don't have permission to access this game.");
     }
 
     this.eventBus.publish('PLAYER_ACTION_SUBMITTED', {
@@ -84,9 +73,7 @@ export class GamesService {
       include: { character: true, worldBook: true },
     });
     if (!game) {
-      throw new NotFoundException(
-        `Game with ID "${gameId}" not found or you don't have access.`,
-      );
+      throw new NotFoundException(`Game with ID "${gameId}" not found or you don't have access.`);
     }
     return game;
   }
@@ -101,10 +88,7 @@ export class GamesService {
     });
   }
 
-  public async delete(
-    userId: string,
-    gameId: string,
-  ): Promise<{ message: string }> {
+  public async delete(userId: string, gameId: string): Promise<{ message: string }> {
     const result = await this.prisma.game.deleteMany({
       where: { id: gameId, ownerId: userId },
     });

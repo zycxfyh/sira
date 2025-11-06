@@ -3,7 +3,7 @@
 // 核心理念: 类型共享包的入口文件
 
 // API 类型
-export * from "./api/types";
+export * from './api/types';
 
 // 游戏相关类型（示例）
 export interface Game {
@@ -32,4 +32,3 @@ export interface AiConfiguration {
   modelId: string;
   baseUrl?: string;
 }
-

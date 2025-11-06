@@ -6,7 +6,7 @@ import { NarrativeService } from './narrative.service';
 interface LogicCompletePayload {
   gameId: string;
   userId: string;
-  playerAction: any; 
+  playerAction: any;
 }
 
 @Controller()
@@ -15,13 +15,10 @@ export class NarrativeAgentController {
 
   // [核心] 监听由 logic-agent 发出的“逻辑已完成”信号
   @MessagePattern('LOGIC_PROCESSING_COMPLETE')
-  async handleLogicComplete(
-    @Payload() data: LogicCompletePayload,
-    @Ctx() context: RmqContext,
-  ) {
+  async handleLogicComplete(@Payload() data: LogicCompletePayload, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
-    
+
     try {
       // [核心] 将任务交给“大脑”（NarrativeService）处理
       await this.narrativeService.processNarrative(data);

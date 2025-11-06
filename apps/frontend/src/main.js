@@ -4,7 +4,7 @@ import './assets/main.css';
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import * as Sentry from "@sentry/vue";
+import * as Sentry from '@sentry/vue';
 
 import App from './App.vue';
 import router from './router';
@@ -16,7 +16,7 @@ const app = createApp(App);
 
 Sentry.init({
   app,
-  dsn: "https://32649f48cc92311f48b725cd96c3dbe3@o4510229377384448.ingest.us.sentry.io/4510229411790848",
+  dsn: 'https://32649f48cc92311f48b725cd96c3dbe3@o4510229377384448.ingest.us.sentry.io/4510229411790848',
   integrations: [
     Sentry.browserTracingIntegration({ router }),
     Sentry.replayIntegration({
@@ -24,9 +24,9 @@ Sentry.init({
       blockAllMedia: true,
     }),
   ],
-  tracesSampleRate: 1.0, 
-  replaysSessionSampleRate: 0.1, 
-  replaysOnErrorSampleRate: 1.0, 
+  tracesSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
   environment: import.meta.env.MODE,
 });
 

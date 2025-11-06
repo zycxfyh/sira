@@ -1,15 +1,15 @@
 // 文件路径: packages/common-backend/src/observability/performance-monitor.service.ts
 // 职责: 性能监控服务，实现SLA指标收集和告警
 
-import { Injectable, Logger } from "@nestjs/common";
-import { Cron, CronExpression } from "@nestjs/schedule";
-import * as os from "os";
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import * as os from 'os';
 import {
   PERFORMANCE_CONFIG,
   getSLATarget,
   isPerformanceHealthy,
   type ServiceSLAs,
-} from "../config/performance-config";
+} from '../config/performance-config';
 
 /**
  * @interface PerformanceMetrics
@@ -65,7 +65,7 @@ export class PerformanceMonitorService {
   private responseTimes: number[] = [];
 
   constructor() {
-    this.logger.log("PerformanceMonitorService initialized with SLA targets");
+    this.logger.log('PerformanceMonitorService initialized with SLA targets');
   }
 
   /**
@@ -100,7 +100,7 @@ export class PerformanceMonitorService {
       const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
       this.metrics.splice(
         0,
-        this.metrics.findIndex(m => m.timestamp < oneDayAgo),
+        this.metrics.findIndex((m) => m.timestamp < oneDayAgo),
       );
 
       // 检查SLA合规性
@@ -108,7 +108,7 @@ export class PerformanceMonitorService {
 
       this.logger.debug(`Performance metrics collected: ${JSON.stringify(metrics)}`);
     } catch (error) {
-      this.logger.error("Failed to collect performance metrics:", error);
+      this.logger.error('Failed to collect performance metrics:', error);
     }
   }
 
@@ -121,7 +121,11 @@ export class PerformanceMonitorService {
     const sla = getSLATarget(metrics.service);
 
     // 检查响应时间
-    const rtHealth = isPerformanceHealthy(metrics.service, 'responseTime', metrics.responseTime.p95);
+    const rtHealth = isPerformanceHealthy(
+      metrics.service,
+      'responseTime',
+      metrics.responseTime.p95,
+    );
     if (!rtHealth.healthy) {
       await this.createAlert({
         service: metrics.service,
@@ -173,7 +177,9 @@ export class PerformanceMonitorService {
     }
 
     // 发送告警通知 (这里可以集成邮件、Slack等)
-    this.logger.warn(`🚨 Performance Alert: ${alert.service} ${alert.metric} ${alert.level} - ${alert.currentValue} > ${alert.threshold}`);
+    this.logger.warn(
+      `🚨 Performance Alert: ${alert.service} ${alert.metric} ${alert.level} - ${alert.currentValue} > ${alert.threshold}`,
+    );
 
     // TODO: 集成Sentry或其他告警系统
   }
@@ -194,8 +200,8 @@ export class PerformanceMonitorService {
     const errorRate = this.requestCount > 0 ? (this.errorCount / this.requestCount) * 100 : 0;
 
     // 系统指标
-    const cpuUsage = os.loadavg()[0] / os.cpus().length * 100;
-    const memoryUsage = (os.totalmem() - os.freemem()) / os.totalmem() * 100;
+    const cpuUsage = (os.loadavg()[0] / os.cpus().length) * 100;
+    const memoryUsage = ((os.totalmem() - os.freemem()) / os.totalmem()) * 100;
 
     // 模拟活跃连接数 (生产环境需要从WebSocket网关获取)
     const activeConnections = 0; // TODO: 集成WebSocket连接计数
@@ -239,7 +245,7 @@ export class PerformanceMonitorService {
    */
   getMetrics(hours: number = 1): PerformanceMetrics[] {
     const cutoff = Date.now() - hours * 60 * 60 * 1000;
-    return this.metrics.filter(m => m.timestamp >= cutoff);
+    return this.metrics.filter((m) => m.timestamp >= cutoff);
   }
 
   /**
@@ -248,23 +254,26 @@ export class PerformanceMonitorService {
    */
   getAlerts(hours: number = 24): AlertCondition[] {
     const cutoff = Date.now() - hours * 60 * 60 * 1000;
-    return this.alerts.filter(a => a.timestamp >= cutoff);
+    return this.alerts.filter((a) => a.timestamp >= cutoff);
   }
 
   /**
    * @method getSLASummary
    * @description 获取SLA摘要
    */
-  getSLASummary(): Record<keyof ServiceSLAs, {
-    target: any;
-    current: any;
-    status: 'healthy' | 'warning' | 'critical' | 'emergency';
-  }> {
+  getSLASummary(): Record<
+    keyof ServiceSLAs,
+    {
+      target: any;
+      current: any;
+      status: 'healthy' | 'warning' | 'critical' | 'emergency';
+    }
+  > {
     const summary = {} as any;
     const services = Object.keys(PERFORMANCE_CONFIG.slas) as (keyof ServiceSLAs)[];
 
     for (const service of services) {
-      const recentMetrics = this.getMetrics(1).filter(m => m.service === service);
+      const recentMetrics = this.getMetrics(1).filter((m) => m.service === service);
       const latest = recentMetrics[recentMetrics.length - 1];
 
       if (latest) {

@@ -38,7 +38,7 @@ export class PromptInjectionGuard {
    */
   async checkInput(
     input: string,
-    context?: { userId?: string; correlationId?: string }
+    context?: { userId?: string; correlationId?: string },
   ): Promise<PromptInjectionCheckResult> {
     // 简单的实现 - 在实际项目中应该使用更复杂的检测逻辑
     const suspiciousPatterns = [
@@ -48,20 +48,17 @@ export class PromptInjectionGuard {
       /bypass.*restrictions/i,
     ];
 
-    const score = suspiciousPatterns.some(pattern => pattern.test(input)) ? 0.9 : 0.1;
+    const score = suspiciousPatterns.some((pattern) => pattern.test(input)) ? 0.9 : 0.1;
 
     if (score >= this.threshold) {
-      throw new PromptInjectionDetectedException(
-        'Potential prompt injection detected',
-        {
-          score,
-          threshold: this.threshold,
-          preview: input.substring(0, 100),
-          context: context?.correlationId,
-          correlationId: context?.correlationId,
-          userId: context?.userId,
-        }
-      );
+      throw new PromptInjectionDetectedException('Potential prompt injection detected', {
+        score,
+        threshold: this.threshold,
+        preview: input.substring(0, 100),
+        context: context?.correlationId,
+        correlationId: context?.correlationId,
+        userId: context?.userId,
+      });
     }
 
     return {
@@ -82,21 +79,18 @@ export class PromptInjectionGuard {
    */
   async ensureSafeOrThrow(
     input: string,
-    context?: { userId?: string; correlationId?: string }
+    context?: { userId?: string; correlationId?: string },
   ): Promise<void> {
     const result = await this.checkInput(input, context);
     if (!result.allowed) {
-      throw new PromptInjectionDetectedException(
-        'Input failed security check',
-        {
-          score: result.score,
-          threshold: result.threshold,
-          preview: result.details?.preview,
-          context: context?.correlationId,
-          correlationId: context?.correlationId,
-          userId: context?.userId,
-        }
-      );
+      throw new PromptInjectionDetectedException('Input failed security check', {
+        score: result.score,
+        threshold: result.threshold,
+        preview: result.details?.preview,
+        context: context?.correlationId,
+        correlationId: context?.correlationId,
+        userId: context?.userId,
+      });
     }
   }
 }
@@ -131,17 +125,11 @@ export async function callAiWithGuard<T extends z.ZodType>(
         return parseResult.data;
       } else {
         lastError = parseResult.error;
-        console.warn(
-          `[AI Guard] Attempt ${attempt + 1} failed validation:`,
-          lastError,
-        );
+        console.warn(`[AI Guard] Attempt ${attempt + 1} failed validation:`, lastError);
       }
     } catch (error) {
       lastError = error;
-      console.error(
-        `[AI Guard] Attempt ${attempt + 1} failed with invocation error:`,
-        error,
-      );
+      console.error(`[AI Guard] Attempt ${attempt + 1} failed with invocation error:`, error);
     }
   }
 

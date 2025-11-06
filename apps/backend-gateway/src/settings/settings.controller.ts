@@ -22,10 +22,7 @@ import { SettingsService } from './settings.service';
 import { ZodValidationPipe } from '@tuheg/common-backend';
 
 // 导入DTO类型和Zod schema
-import {
-  CreateAiSettingsDto,
-  createAiSettingsSchema,
-} from './dto/create-ai-settings.dto';
+import { CreateAiSettingsDto, createAiSettingsSchema } from './dto/create-ai-settings.dto';
 import {
   UpdateAiSettingsDto,
   updateAiSettingsSchema,
@@ -48,9 +45,7 @@ export class SettingsController {
   }
 
   @Get()
-  public async getAllAiSettings(
-    @Req() req: Request,
-  ): Promise<AiConfiguration[]> {
+  public async getAllAiSettings(@Req() req: Request): Promise<AiConfiguration[]> {
     const user = req.user as User;
     return this.settingsService.getAllAiSettingsForUser(user.id);
   }

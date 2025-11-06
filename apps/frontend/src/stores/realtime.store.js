@@ -76,7 +76,9 @@ export const useRealtimeStore = defineStore('realtime', () => {
 
   // Backoff reconnect: exponential with jitter, capped
   function scheduleReconnectWithBackoff() {
-    if (_reconnectTimer) return; // already scheduled
+    if (_reconnectTimer) {
+      return;
+    } // already scheduled
     _reconnectAttempts += 1;
     const maxAttempts = 8;
     if (_reconnectAttempts > maxAttempts) {
@@ -103,7 +105,9 @@ export const useRealtimeStore = defineStore('realtime', () => {
 
   // Bind event handlers idempotently
   function bindHandlers() {
-    if (_isBound) return;
+    if (_isBound) {
+      return;
+    }
     if (!realtimeService) {
       console.warn('[Realtime] realtimeService not available');
       return;
@@ -125,7 +129,9 @@ export const useRealtimeStore = defineStore('realtime', () => {
 
   // Unbind handlers
   function unbindHandlers() {
-    if (!_isBound || !realtimeService) return;
+    if (!_isBound || !realtimeService) {
+      return;
+    }
     try {
       realtimeService.off('connect', handlers.onConnect);
       realtimeService.off('disconnect', handlers.onDisconnect);

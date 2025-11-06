@@ -5,8 +5,8 @@ module.exports = {
   testEnvironment: 'node',
   rootDir: 'src',
   testMatch: [
-    '**/*.spec.ts',    // 单元测试
-    '**/*.e2e-spec.ts' // 集成测试
+    '**/*.spec.ts', // 单元测试
+    '**/*.e2e-spec.ts', // 集成测试
   ],
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
   moduleNameMapper: {
@@ -18,7 +18,7 @@ module.exports = {
     '!**/*.spec.ts',
     '!**/*.e2e-spec.ts',
     '!**/node_modules/**',
-    '!**/dist/**'
+    '!**/dist/**',
   ],
   coverageDirectory: '../coverage',
   coverageReporters: ['text', 'lcov', 'html'],
@@ -33,7 +33,7 @@ module.exports = {
       rootDir: 'src',
       testMatch: ['<rootDir>/**/*.spec.ts'],
       testPathIgnorePatterns: ['\\.e2e-spec\\.ts$'],
-      setupFilesAfterEnv: [path.join(__dirname, 'test', 'setup.ts')]
+      setupFilesAfterEnv: [path.join(__dirname, 'test', 'setup.ts')],
     },
     {
       displayName: 'integration',
@@ -42,8 +42,7 @@ module.exports = {
       rootDir: 'src',
       testMatch: ['<rootDir>/**/*.e2e-spec.ts'],
       testPathIgnorePatterns: ['\\.spec\\.ts$'],
-      setupFilesAfterEnv: [path.join(__dirname, 'test', 'integration-setup.ts')]
-    }
-  ]
+      setupFilesAfterEnv: [path.join(__dirname, 'test', 'integration-setup.ts')],
+    },
+  ],
 };
-

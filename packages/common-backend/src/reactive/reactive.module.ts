@@ -2,8 +2,8 @@
 // 灵感来源: RxJS (https://github.com/ReactiveX/rxjs)
 // 核心理念: 模块化导出，方便使用
 
-import { Module } from "@nestjs/common";
-import { EventStream } from "./event-stream";
+import { Module } from '@nestjs/common';
+import { EventStream } from './event-stream';
 
 /**
  * @module ReactiveModule
@@ -15,4 +15,3 @@ import { EventStream } from "./event-stream";
   exports: [EventStream],
 })
 export class ReactiveModule {}
-

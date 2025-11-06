@@ -1,8 +1,6 @@
 <!-- 文件路径: src/components/common/ProcessingOverlay.vue (已修复) -->
 <template>
-  <div v-if="uiStore.isProcessing" id="processing-overlay" style="display: flex;">
-    处理中...
-  </div>
+  <div v-if="uiStore.isProcessing" id="processing-overlay" style="display: flex">处理中...</div>
 </template>
 
 <script setup>

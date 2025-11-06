@@ -13,14 +13,12 @@ import { Logger } from '@nestjs/common';
   namespace: 'updates',
   cors: { origin: '*' },
 })
-export class UpdatesGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class UpdatesGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
   private readonly logger = new Logger(UpdatesGateway.name);
-  
+
   // [!] 核心改造：不再需要 userSocketMap
   // private readonly userSocketMap = new Map<string, string>();
 

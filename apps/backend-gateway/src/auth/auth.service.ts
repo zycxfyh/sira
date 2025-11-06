@@ -1,10 +1,6 @@
 // 文件路径: apps/nexus-engine/src/auth/auth.service.ts
 
-import {
-  Injectable,
-  ConflictException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
@@ -23,9 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  public async register(
-    registerDto: RegisterDto,
-  ): Promise<Omit<User, 'password'>> {
+  public async register(registerDto: RegisterDto): Promise<Omit<User, 'password'>> {
     const { email, password } = registerDto;
 
     const existingUser = await this.prisma.user.findUnique({
@@ -49,23 +43,18 @@ export class AuthService {
     return result;
   }
 
-   public async validateUser(
-        email: string,
-        pass: string,
-      ): Promise<Omit<User, 'password'> | null> {
-        const user = await this.prisma.user.findUnique({ where: { email } });
+  public async validateUser(email: string, pass: string): Promise<Omit<User, 'password'> | null> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
 
-        // [还原] 使用 bcrypt.compare
-        if (user && (await bcrypt.compare(pass, user.password))) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { password: _, ...result } = user;
-          return result;
-        }
-        return null;
-      }
-  public async login(
-    loginDto: LoginDto,
-  ): Promise<{ access_token: string }> {
+    // [还原] 使用 bcrypt.compare
+    if (user && (await bcrypt.compare(pass, user.password))) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _, ...result } = user;
+      return result;
+    }
+    return null;
+  }
+  public async login(loginDto: LoginDto): Promise<{ access_token: string }> {
     const user = await this.validateUser(loginDto.email, loginDto.password);
 
     if (!user) {

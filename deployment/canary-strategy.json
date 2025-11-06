@@ -155,10 +155,7 @@
     },
     "email": {
       "smtp_server": "${SMTP_SERVER}",
-      "recipients": [
-        "devops@tuheg.com",
-        "tech-lead@tuheg.com"
-      ]
+      "recipients": ["devops@tuheg.com", "tech-lead@tuheg.com"]
     }
   },
 

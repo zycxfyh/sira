@@ -18,14 +18,9 @@ export class RuleEngineService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  public async execute(
-    gameId: string,
-    directives: DirectiveSet,
-  ): Promise<void> {
+  public async execute(gameId: string, directives: DirectiveSet): Promise<void> {
     if (!directives || directives.length === 0) {
-      this.logger.warn(
-        `RuleEngine executed with an empty directive set for game ${gameId}.`,
-      );
+      this.logger.warn(`RuleEngine executed with an empty directive set for game ${gameId}.`);
       return;
     }
 
@@ -40,13 +35,15 @@ export class RuleEngineService {
         }
       });
 
-      this.logger.log(
-        `Successfully executed ${directives.length} directives for game ${gameId}.`,
+      this.logger.log(`Successfully executed ${directives.length} directives for game ${gameId}.`);
+    } catch (error: unknown) {
+      // <-- [核心修正] 明确 error 类型为 unknown
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      this.logger.error(
+        `Transaction failed during rule execution for game ${gameId}`,
+        error instanceof Error ? error.stack : error,
       );
-    } catch (error: unknown) { // <-- [核心修正] 明确 error 类型为 unknown
-        const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
-        this.logger.error(`Transaction failed during rule execution for game ${gameId}`, error instanceof Error ? error.stack : error);
-        throw new InternalServerErrorException(`Rule engine transaction failed: ${errorMessage}`);
+      throw new InternalServerErrorException(`Rule engine transaction failed: ${errorMessage}`);
     }
   }
 
@@ -68,10 +65,7 @@ export class RuleEngineService {
       updates.mp = this.applyNumericOperation(character.mp, payload.mp);
     }
     if (payload.status) {
-      updates.status = this.applyStringOperation(
-        character.status,
-        payload.status,
-      );
+      updates.status = this.applyStringOperation(character.status, payload.status);
     }
 
     if (Object.keys(updates).length > 0) {
@@ -79,10 +73,7 @@ export class RuleEngineService {
     }
   }
 
-  private applyNumericOperation(
-    currentValue: number,
-    op: NumericOperation,
-  ): number {
+  private applyNumericOperation(currentValue: number, op: NumericOperation): number {
     switch (op.op) {
       case 'set':
         return op.value;
@@ -93,10 +84,7 @@ export class RuleEngineService {
     }
   }
 
-  private applyStringOperation(
-    currentValue: string,
-    op: StringOperation,
-  ): string {
+  private applyStringOperation(currentValue: string, op: StringOperation): string {
     switch (op.op) {
       case 'set':
         return op.value;

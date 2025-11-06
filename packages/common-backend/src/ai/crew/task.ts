@@ -2,9 +2,9 @@
 // 灵感来源: CrewAI (https://github.com/joaomdmoura/crewAI)
 // 核心理念: 任务定义，描述需要完成的工作和预期输出
 
-import { Injectable, Logger } from "@nestjs/common";
-import type { TaskConfig, TaskContext, TaskResult } from "./task.types";
-import type { Agent } from "./agent";
+import { Injectable, Logger } from '@nestjs/common';
+import type { TaskConfig, TaskContext, TaskResult } from './task.types';
+import type { Agent } from './agent';
 
 /**
  * @class Task
@@ -59,10 +59,7 @@ export class Task {
    * @param context - 任务上下文
    * @returns 任务执行结果
    */
-  public async execute(
-    agent: Agent,
-    context: TaskContext,
-  ): Promise<TaskResult> {
+  public async execute(agent: Agent, context: TaskContext): Promise<TaskResult> {
     const startTime = Date.now();
 
     try {
@@ -85,7 +82,7 @@ export class Task {
         const result = await Promise.race([executionPromise, timeoutPromise]);
 
         if (!result.success) {
-          throw new Error(result.error ?? "Task execution failed");
+          throw new Error(result.error ?? 'Task execution failed');
         }
 
         const executionTime = Date.now() - startTime;
@@ -111,7 +108,7 @@ export class Task {
       });
 
       if (!result.success) {
-        throw new Error(result.error ?? "Task execution failed");
+        throw new Error(result.error ?? 'Task execution failed');
       }
 
       const executionTime = Date.now() - startTime;
@@ -157,4 +154,3 @@ export class Task {
     return dependencies.every((dep) => completedTasks.has(dep));
   }
 }
-

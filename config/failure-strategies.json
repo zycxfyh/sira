@@ -127,9 +127,7 @@
       "unit_tests": ["local_validation"],
       "integration_tests": ["unit_tests", "static_checks"]
     },
-    "parallel_groups": [
-      ["static_checks", "unit_tests"]
-    ]
+    "parallel_groups": [["static_checks", "unit_tests"]]
   },
   "notification_templates": {
     "stage_failure": {
@@ -150,11 +148,7 @@
   "emergency_procedures": {
     "critical_failure": {
       "description": "关键阶段失败时的应急处理流程",
-      "immediate_actions": [
-        "通知所有开发团队成员",
-        "暂停所有部署到生产环境",
-        "启动问题诊断流程"
-      ],
+      "immediate_actions": ["通知所有开发团队成员", "暂停所有部署到生产环境", "启动问题诊断流程"],
       "rollback_strategy": "auto_rollback_to_last_stable",
       "communication_plan": {
         "internal": "立即在Slack #devops频道通知",
@@ -164,11 +158,7 @@
     },
     "timeout_handling": {
       "description": "测试阶段超时的处理策略",
-      "actions": [
-        "强制终止当前阶段",
-        "记录超时原因",
-        "根据阶段重要性决定是否继续"
-      ],
+      "actions": ["强制终止当前阶段", "记录超时原因", "根据阶段重要性决定是否继续"],
       "timeout_thresholds": {
         "dependencies": 300,
         "local_validation": 600,

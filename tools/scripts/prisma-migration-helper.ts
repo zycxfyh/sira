@@ -2,9 +2,9 @@
 // 灵感来源: Prisma (https://github.com/prisma/prisma)
 // 核心理念: 增强的迁移工具，提供类型检查和验证
 
-import { execSync } from "child_process";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { execSync } from 'child_process';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
 /**
  * @interface MigrationOptions
@@ -29,7 +29,7 @@ interface MigrationOptions {
 export class PrismaMigrationHelper {
   private readonly prismaSchemaPath: string;
 
-  constructor(prismaSchemaPath = "packages/common-backend/prisma/schema.prisma") {
+  constructor(prismaSchemaPath = 'packages/common-backend/prisma/schema.prisma') {
     this.prismaSchemaPath = prismaSchemaPath;
   }
 
@@ -54,8 +54,8 @@ export class PrismaMigrationHelper {
         : `npx prisma migrate dev --name ${name}`;
 
       execSync(command, {
-        stdio: "inherit",
-        cwd: join(process.cwd(), "packages/common-backend"),
+        stdio: 'inherit',
+        cwd: join(process.cwd(), 'packages/common-backend'),
       });
 
       console.log(`✅ Migration created: ${name}`);
@@ -76,17 +76,17 @@ export class PrismaMigrationHelper {
    * @description 应用迁移
    */
   public applyMigration(): void {
-    console.log("🔄 Applying migrations...");
+    console.log('🔄 Applying migrations...');
 
     try {
-      execSync("npx prisma migrate deploy", {
-        stdio: "inherit",
-        cwd: join(process.cwd(), "packages/common-backend"),
+      execSync('npx prisma migrate deploy', {
+        stdio: 'inherit',
+        cwd: join(process.cwd(), 'packages/common-backend'),
       });
 
-      console.log("✅ Migrations applied successfully");
+      console.log('✅ Migrations applied successfully');
     } catch (error) {
-      console.error("❌ Failed to apply migrations");
+      console.error('❌ Failed to apply migrations');
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
@@ -97,23 +97,23 @@ export class PrismaMigrationHelper {
    * @description 验证类型同步
    */
   public validateTypes(): void {
-    console.log("🔍 Validating TypeScript types...");
+    console.log('🔍 Validating TypeScript types...');
 
     try {
       // 生成 Prisma Client
-      execSync("npx prisma generate", {
-        stdio: "inherit",
-        cwd: join(process.cwd(), "packages/common-backend"),
+      execSync('npx prisma generate', {
+        stdio: 'inherit',
+        cwd: join(process.cwd(), 'packages/common-backend'),
       });
 
       // 检查 TypeScript 编译
-      execSync("pnpm run typecheck", {
-        stdio: "inherit",
+      execSync('pnpm run typecheck', {
+        stdio: 'inherit',
       });
 
-      console.log("✅ Type validation passed");
+      console.log('✅ Type validation passed');
     } catch (error) {
-      console.error("❌ Type validation failed");
+      console.error('❌ Type validation failed');
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
@@ -124,17 +124,17 @@ export class PrismaMigrationHelper {
    * @description 重置数据库（开发环境）
    */
   public resetDatabase(): void {
-    console.log("⚠️  Resetting database...");
+    console.log('⚠️  Resetting database...');
 
     try {
-      execSync("npx prisma migrate reset --force", {
-        stdio: "inherit",
-        cwd: join(process.cwd(), "packages/common-backend"),
+      execSync('npx prisma migrate reset --force', {
+        stdio: 'inherit',
+        cwd: join(process.cwd(), 'packages/common-backend'),
       });
 
-      console.log("✅ Database reset successfully");
+      console.log('✅ Database reset successfully');
     } catch (error) {
-      console.error("❌ Failed to reset database");
+      console.error('❌ Failed to reset database');
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
@@ -145,17 +145,17 @@ export class PrismaMigrationHelper {
    * @description 格式化 Schema 文件
    */
   public formatSchema(): void {
-    console.log("📝 Formatting Prisma schema...");
+    console.log('📝 Formatting Prisma schema...');
 
     try {
-      execSync("npx prisma format", {
-        stdio: "inherit",
-        cwd: join(process.cwd(), "packages/common-backend"),
+      execSync('npx prisma format', {
+        stdio: 'inherit',
+        cwd: join(process.cwd(), 'packages/common-backend'),
       });
 
-      console.log("✅ Schema formatted successfully");
+      console.log('✅ Schema formatted successfully');
     } catch (error) {
-      console.error("❌ Failed to format schema");
+      console.error('❌ Failed to format schema');
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
@@ -169,27 +169,27 @@ if (require.main === module) {
   const helper = new PrismaMigrationHelper();
 
   switch (command) {
-    case "create":
+    case 'create':
       helper.createMigration({
-        name: args[1] || "migration",
-        createOnly: args.includes("--create-only"),
-        validateTypes: args.includes("--validate"),
+        name: args[1] || 'migration',
+        createOnly: args.includes('--create-only'),
+        validateTypes: args.includes('--validate'),
       });
       break;
 
-    case "apply":
+    case 'apply':
       helper.applyMigration();
       break;
 
-    case "validate":
+    case 'validate':
       helper.validateTypes();
       break;
 
-    case "reset":
+    case 'reset':
       helper.resetDatabase();
       break;
 
-    case "format":
+    case 'format':
       helper.formatSchema();
       break;
 
@@ -214,4 +214,3 @@ Options:
       process.exit(1);
   }
 }
-

@@ -54,9 +54,11 @@ describe('PrismaService (e2e)', () => {
       return;
     }
     // 测试并发连接
-    const promises = Array(5).fill(null).map(async () => {
-      return prisma.$queryRaw`SELECT NOW() as time`;
-    });
+    const promises = Array(5)
+      .fill(null)
+      .map(async () => {
+        return prisma.$queryRaw`SELECT NOW() as time`;
+      });
 
     const results = await Promise.all(promises);
     expect(results).toHaveLength(5);
@@ -85,8 +87,6 @@ describe('PrismaService (e2e)', () => {
       return;
     }
     // 测试错误处理
-    await expect(
-      prisma.$queryRaw`SELECT * FROM non_existent_table`
-    ).rejects.toThrow();
+    await expect(prisma.$queryRaw`SELECT * FROM non_existent_table`).rejects.toThrow();
   });
 });

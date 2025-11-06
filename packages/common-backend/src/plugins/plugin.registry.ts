@@ -2,11 +2,8 @@
 // 灵感来源: VS Code Extension Registry
 // 核心理念: 插件注册表，管理所有已安装和激活的插件
 
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
-import type {
-  Plugin,
-  PluginContext,
-} from "./plugin.types";
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import type { Plugin, PluginContext } from './plugin.types';
 
 /**
  * @class PluginRegistry
@@ -19,7 +16,7 @@ export class PluginRegistry implements OnModuleInit {
   private readonly contexts = new Map<string, PluginContext>();
 
   async onModuleInit() {
-    this.logger.log("Plugin registry initialized");
+    this.logger.log('Plugin registry initialized');
   }
 
   /**
@@ -168,7 +165,7 @@ export class PluginRegistry implements OnModuleInit {
    * @description 获取所有 AI Provider 贡献
    */
   public getAiProviderContributions() {
-    return this.getPluginsByContribution("aiProviders");
+    return this.getPluginsByContribution('aiProviders');
   }
 
   /**
@@ -176,7 +173,6 @@ export class PluginRegistry implements OnModuleInit {
    * @description 获取所有 AI 工具贡献
    */
   public getAiToolContributions() {
-    return this.getPluginsByContribution("aiTools");
+    return this.getPluginsByContribution('aiTools');
   }
 }
-

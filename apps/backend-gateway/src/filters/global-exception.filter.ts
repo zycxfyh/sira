@@ -5,8 +5,8 @@ import {
   HttpException,
   HttpStatus,
   Logger,
-} from "@nestjs/common";
-import type { Response } from "express";
+} from '@nestjs/common';
+import type { Response } from 'express';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -17,19 +17,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = "Internal server error";
+    let message = 'Internal server error';
     let details: Record<string, unknown> | string | null = null;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
 
-      if (typeof exceptionResponse === "string") {
+      if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
-      } else if (
-        typeof exceptionResponse === "object" &&
-        exceptionResponse !== null
-      ) {
+      } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         // [核心修复] 使用类型守卫代替 any
         const responseObj = exceptionResponse as {
           message?: string;
@@ -38,8 +35,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message = responseObj.message || message;
         details =
           responseObj.error !== undefined
-            ? typeof responseObj.error === "object" &&
-              responseObj.error !== null
+            ? typeof responseObj.error === 'object' && responseObj.error !== null
               ? (responseObj.error as Record<string, unknown>)
               : String(responseObj.error)
             : null;

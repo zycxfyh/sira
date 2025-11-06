@@ -2,10 +2,10 @@
 // 灵感来源: NestJS Cache Manager (https://github.com/nestjs/cache-manager)
 // 核心理念: 多级缓存策略，支持内存和 Redis
 
-import { Injectable, Logger } from "@nestjs/common";
-import { Cache } from "cache-manager";
-import { Inject } from "@nestjs/common";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Injectable, Logger } from '@nestjs/common';
+import { Cache } from 'cache-manager';
+import { Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 /**
  * @interface CacheOptions
@@ -27,14 +27,12 @@ export interface CacheOptions {
 export class CacheService {
   private readonly logger = new Logger(CacheService.name);
 
-  constructor(
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-  ) {}
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
 
   /**
    * @method get
    * @description 获取缓存值
-   * 
+   *
    * @example
    * ```typescript
    * const value = await cacheService.get<string>('user:123');
@@ -54,17 +52,13 @@ export class CacheService {
   /**
    * @method set
    * @description 设置缓存值
-   * 
+   *
    * @example
    * ```typescript
    * await cacheService.set('user:123', userData, { ttl: 3600 });
    * ```
    */
-  async set<T>(
-    key: string,
-    value: T,
-    options?: CacheOptions,
-  ): Promise<void> {
+  async set<T>(key: string, value: T, options?: CacheOptions): Promise<void> {
     const fullKey = this.buildKey(key, options?.prefix);
     const ttl = options?.ttl ? options.ttl * 1000 : undefined; // 转换为毫秒
 
@@ -100,17 +94,17 @@ export class CacheService {
         await store.reset();
       } else {
         // 如果没有reset方法，记录警告但不抛出错误
-        this.logger.warn("Cache store does not support reset operation");
+        this.logger.warn('Cache store does not support reset operation');
       }
     } catch (error) {
-      this.logger.error("Failed to clear cache:", error);
+      this.logger.error('Failed to clear cache:', error);
     }
   }
 
   /**
    * @method getOrSet
    * @description 获取缓存，如果不存在则设置
-   * 
+   *
    * @example
    * ```typescript
    * const user = await cacheService.getOrSet(
@@ -120,11 +114,7 @@ export class CacheService {
    * );
    * ```
    */
-  async getOrSet<T>(
-    key: string,
-    factory: () => Promise<T>,
-    options?: CacheOptions,
-  ): Promise<T> {
+  async getOrSet<T>(key: string, factory: () => Promise<T>, options?: CacheOptions): Promise<T> {
     const cached = await this.get<T>(key, options);
     if (cached !== undefined) {
       return cached;
@@ -143,4 +133,3 @@ export class CacheService {
     return prefix ? `${prefix}:${key}` : key;
   }
 }
-

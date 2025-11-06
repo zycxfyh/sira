@@ -2,8 +2,8 @@
 // 灵感来源: Sentry (https://github.com/getsentry/sentry-javascript)
 // 核心理念: 增强的错误追踪和性能监控配置
 
-import * as Sentry from "@sentry/node";
-import type { NodeOptions } from "@sentry/node";
+import * as Sentry from '@sentry/node';
+import type { NodeOptions } from '@sentry/node';
 
 /**
  * @interface SentryConfigOptions
@@ -31,7 +31,7 @@ export interface SentryConfigOptions {
 /**
  * @function configureSentry
  * @description 配置 Sentry，增强错误追踪和性能监控
- * 
+ *
  * @example
  * ```typescript
  * configureSentry({
@@ -46,24 +46,24 @@ export interface SentryConfigOptions {
  */
 export function configureSentry(options: SentryConfigOptions = {}): void {
   const {
-    environment = process.env.NODE_ENV || "development",
-    release = process.env.APP_VERSION || "1.0.0",
+    environment = process.env.NODE_ENV || 'development',
+    release = process.env.APP_VERSION || '1.0.0',
     dsn = process.env.SENTRY_DSN,
-    tracesSampleRate = environment === "production" ? 0.1 : 1.0,
-    profilesSampleRate = environment === "production" ? 0.1 : 1.0,
+    tracesSampleRate = environment === 'production' ? 0.1 : 1.0,
+    profilesSampleRate = environment === 'production' ? 0.1 : 1.0,
     enablePerformanceMonitoring = true,
     tags = {},
     ignoreErrors = [
       // 忽略常见的网络错误
-      "NetworkError",
-      "Network request failed",
+      'NetworkError',
+      'Network request failed',
       // 忽略已知的第三方库错误
-      "ResizeObserver loop limit exceeded",
+      'ResizeObserver loop limit exceeded',
     ],
   } = options;
 
   if (!dsn) {
-    console.warn("Sentry DSN not configured, skipping Sentry initialization");
+    console.warn('Sentry DSN not configured, skipping Sentry initialization');
     return;
   }
 
@@ -91,7 +91,7 @@ export function configureSentry(options: SentryConfigOptions = {}): void {
       Sentry.expressIntegration(),
     ],
     // 在开发环境中启用调试
-    debug: environment === "development",
+    debug: environment === 'development',
     // 自动会话追踪
     autoSessionTracking: true,
     // 发送默认 PII（个人可识别信息）
@@ -107,11 +107,7 @@ export function configureSentry(options: SentryConfigOptions = {}): void {
  * @function setSentryUser
  * @description 设置 Sentry 用户上下文
  */
-export function setSentryUser(user: {
-  id: string;
-  email?: string;
-  username?: string;
-}): void {
+export function setSentryUser(user: { id: string; email?: string; username?: string }): void {
   Sentry.setUser({
     id: user.id,
     email: user.email,
@@ -123,10 +119,7 @@ export function setSentryUser(user: {
  * @function setSentryContext
  * @description 设置 Sentry 上下文
  */
-export function setSentryContext(
-  key: string,
-  context: Record<string, unknown>,
-): void {
+export function setSentryContext(key: string, context: Record<string, unknown>): void {
   Sentry.setContext(key, context);
 }
 
@@ -157,7 +150,7 @@ export function captureException(
   }
 
   if (context?.extra) {
-    Sentry.setExtra("context", context.extra);
+    Sentry.setExtra('context', context.extra);
   }
 
   if (context?.user) {
@@ -173,7 +166,7 @@ export function captureException(
  */
 export function captureMessage(
   message: string,
-  level: Sentry.SeverityLevel = "info",
+  level: Sentry.SeverityLevel = 'info',
   context?: {
     tags?: Record<string, string>;
     extra?: Record<string, unknown>;
@@ -186,9 +179,8 @@ export function captureMessage(
   }
 
   if (context?.extra) {
-    Sentry.setExtra("context", context.extra);
+    Sentry.setExtra('context', context.extra);
   }
 
   Sentry.captureMessage(message, level);
 }
-

@@ -1,103 +1,99 @@
-import { z } from "zod";
-import { formatZodError, formatZodErrorAsJson } from "./schema-error-formatter";
+import { z } from 'zod';
+import { formatZodError, formatZodErrorAsJson } from './schema-error-formatter';
 
-describe("formatZodError", () => {
-  it("should format missing field error", () => {
+describe('formatZodError', () => {
+  it('should format missing field error', () => {
     const schema = z.object({
       name: z.string(),
       age: z.number(),
     });
 
-    const result = schema.safeParse({ name: "John" });
+    const result = schema.safeParse({ name: 'John' });
     expect(result.success).toBe(false);
 
     if (!result.success) {
       const formatted = formatZodError(result.error);
-      expect(formatted.summary).toContain("Validation failed");
+      expect(formatted.summary).toContain('Validation failed');
       expect(formatted.fieldErrors.length).toBeGreaterThan(0);
-      expect(formatted.fieldErrors.some((e) => e.path.includes("age"))).toBe(
-        true,
-      );
-      expect(formatted.aiFeedback).toContain("age");
+      expect(formatted.fieldErrors.some((e) => e.path.includes('age'))).toBe(true);
+      expect(formatted.aiFeedback).toContain('age');
     }
   });
 
-  it("should format type mismatch error", () => {
+  it('should format type mismatch error', () => {
     const schema = z.object({
       count: z.number(),
     });
 
-    const result = schema.safeParse({ count: "not-a-number" });
+    const result = schema.safeParse({ count: 'not-a-number' });
     expect(result.success).toBe(false);
 
     if (!result.success) {
       const formatted = formatZodError(result.error);
       expect(formatted.fieldErrors.length).toBeGreaterThan(0);
-      const countError = formatted.fieldErrors.find((e) => e.path === "count");
+      const countError = formatted.fieldErrors.find((e) => e.path === 'count');
       expect(countError).toBeDefined();
-      expect(countError?.expected).toBe("number");
+      expect(countError?.expected).toBe('number');
       // received 可能为 undefined（如果无法从错误中提取）
       // 只要错误消息正确就足够了
     }
   });
 
-  it("should format enum error", () => {
+  it('should format enum error', () => {
     const schema = z.object({
-      status: z.enum(["active", "inactive", "pending"]),
+      status: z.enum(['active', 'inactive', 'pending']),
     });
 
-    const result = schema.safeParse({ status: "invalid" });
+    const result = schema.safeParse({ status: 'invalid' });
     expect(result.success).toBe(false);
 
     if (!result.success) {
       const formatted = formatZodError(result.error);
-      const statusError = formatted.fieldErrors.find(
-        (e) => e.path === "status",
-      );
+      const statusError = formatted.fieldErrors.find((e) => e.path === 'status');
       expect(statusError).toBeDefined();
-      expect(statusError?.expected).toContain("active");
-      expect(statusError?.expected).toContain("inactive");
+      expect(statusError?.expected).toContain('active');
+      expect(statusError?.expected).toContain('inactive');
     }
   });
 
-  it("should format array length error", () => {
+  it('should format array length error', () => {
     const schema = z.object({
       items: z.array(z.string()).min(2),
     });
 
-    const result = schema.safeParse({ items: ["one"] });
+    const result = schema.safeParse({ items: ['one'] });
     expect(result.success).toBe(false);
 
     if (!result.success) {
       const formatted = formatZodError(result.error);
-      const itemsError = formatted.fieldErrors.find((e) => e.path === "items");
+      const itemsError = formatted.fieldErrors.find((e) => e.path === 'items');
       expect(itemsError).toBeDefined();
-      expect(itemsError?.expected).toContain("at least");
+      expect(itemsError?.expected).toContain('at least');
     }
   });
 
-  it("should generate AI-friendly feedback", () => {
+  it('should generate AI-friendly feedback', () => {
     const schema = z.object({
       name: z.string().min(1),
       email: z.string().email(),
     });
 
     const result = schema.safeParse({
-      name: "",
-      email: "invalid-email",
+      name: '',
+      email: 'invalid-email',
     });
     expect(result.success).toBe(false);
 
     if (!result.success) {
       const formatted = formatZodError(result.error);
-      expect(formatted.aiFeedback).toContain("Validation Errors Detected");
-      expect(formatted.aiFeedback).toContain("Action Required");
-      expect(formatted.aiFeedback).toContain("name");
-      expect(formatted.aiFeedback).toContain("email");
+      expect(formatted.aiFeedback).toContain('Validation Errors Detected');
+      expect(formatted.aiFeedback).toContain('Action Required');
+      expect(formatted.aiFeedback).toContain('name');
+      expect(formatted.aiFeedback).toContain('email');
     }
   });
 
-  it("should handle nested object errors", () => {
+  it('should handle nested object errors', () => {
     const schema = z.object({
       user: z.object({
         name: z.string(),
@@ -106,21 +102,19 @@ describe("formatZodError", () => {
     });
 
     const result = schema.safeParse({
-      user: { name: "John" },
+      user: { name: 'John' },
     });
     expect(result.success).toBe(false);
 
     if (!result.success) {
       const formatted = formatZodError(result.error);
-      const userAgeError = formatted.fieldErrors.find((e) =>
-        e.path.includes("age"),
-      );
+      const userAgeError = formatted.fieldErrors.find((e) => e.path.includes('age'));
       expect(userAgeError).toBeDefined();
-      expect(formatted.aiFeedback).toContain("user");
+      expect(formatted.aiFeedback).toContain('user');
     }
   });
 
-  it("should format as JSON correctly", () => {
+  it('should format as JSON correctly', () => {
     const schema = z.object({
       name: z.string(),
     });
@@ -133,9 +127,9 @@ describe("formatZodError", () => {
       const json = formatZodErrorAsJson(formatted);
       expect(() => JSON.parse(json)).not.toThrow();
       const parsed = JSON.parse(json);
-      expect(parsed).toHaveProperty("summary");
-      expect(parsed).toHaveProperty("fieldErrors");
-      expect(parsed).toHaveProperty("errorCount");
+      expect(parsed).toHaveProperty('summary');
+      expect(parsed).toHaveProperty('fieldErrors');
+      expect(parsed).toHaveProperty('errorCount');
     }
   });
 });

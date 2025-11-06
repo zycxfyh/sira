@@ -30,4 +30,3 @@ console.log('');
 console.log('💡 Recommendation:');
 console.log('   - Use ENCRYPTION_USE_SALT=true for better security');
 console.log('   - Consider using a key management service (AWS KMS, HashiCorp Vault)');
-

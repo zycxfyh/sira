@@ -2,9 +2,9 @@
 // 灵感来源: express-rate-limit (https://github.com/express-rate-limit/express-rate-limit)
 // 核心理念: 滑动窗口限流算法，支持内存和 Redis 存储
 
-import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 // import type { RedisClientType } from "redis"; // 暂时不需要
-import { Redis } from "ioredis";
+import { Redis } from 'ioredis';
 
 /**
  * @interface RateLimitOptions
@@ -40,20 +40,20 @@ export interface RateLimitResult {
 @Injectable()
 export class RateLimitService implements OnModuleDestroy {
   private readonly logger = new Logger(RateLimitService.name);
-  
+
   // 内存存储（用于开发环境或单实例部署）
   private readonly memoryStore = new Map<string, { count: number; resetTime: number }>();
-  
+
   // Redis 客户端（可选，用于分布式部署）
   private redisClient?: Redis;
-  
+
   // 清理定时器
   private cleanupInterval?: NodeJS.Timeout;
 
   constructor() {
     // 尝试连接 Redis（如果配置了）
     this.initRedis();
-    
+
     // 启动内存存储清理定时器
     this.startCleanup();
   }
@@ -74,40 +74,37 @@ export class RateLimitService implements OnModuleDestroy {
           },
         });
 
-        this.redisClient.on("error", (error) => {
-          this.logger.warn("Redis connection error, falling back to memory store:", error);
+        this.redisClient.on('error', (error) => {
+          this.logger.warn('Redis connection error, falling back to memory store:', error);
           this.redisClient = undefined;
         });
 
-        this.logger.log("Rate limiting using Redis storage");
+        this.logger.log('Rate limiting using Redis storage');
       } catch (error) {
-        this.logger.warn("Failed to initialize Redis, using memory store:", error);
+        this.logger.warn('Failed to initialize Redis, using memory store:', error);
       }
     } else {
-      this.logger.log("Rate limiting using memory store (REDIS_URL not configured)");
+      this.logger.log('Rate limiting using memory store (REDIS_URL not configured)');
     }
   }
 
   /**
    * @method checkLimit
    * @description 检查限流
-   * 
+   *
    * @example
    * ```typescript
    * const result = await rateLimitService.checkLimit('user:123', {
    *   windowMs: 60000,
    *   max: 100,
    * });
-   * 
+   *
    * if (!result.allowed) {
    *   throw new Error(`Rate limit exceeded. Retry after ${result.retryAfter}ms`);
    * }
    * ```
    */
-  async checkLimit(
-    key: string,
-    options: RateLimitOptions,
-  ): Promise<RateLimitResult> {
+  async checkLimit(key: string, options: RateLimitOptions): Promise<RateLimitResult> {
     if (this.redisClient) {
       return this.checkLimitRedis(key, options);
     }
@@ -118,10 +115,7 @@ export class RateLimitService implements OnModuleDestroy {
    * @method checkLimitRedis
    * @description 使用 Redis 检查限流（滑动窗口）
    */
-  private async checkLimitRedis(
-    key: string,
-    options: RateLimitOptions,
-  ): Promise<RateLimitResult> {
+  private async checkLimitRedis(key: string, options: RateLimitOptions): Promise<RateLimitResult> {
     const { windowMs, max } = options;
     const now = Date.now();
     const windowStart = now - windowMs;
@@ -130,22 +124,22 @@ export class RateLimitService implements OnModuleDestroy {
     try {
       // 使用 Redis 的 Sorted Set 实现滑动窗口
       const pipeline = this.redisClient!.pipeline();
-      
+
       // 移除过期的时间戳
-      pipeline.zremrangebyscore(redisKey, "-inf", String(windowStart));
-      
+      pipeline.zremrangebyscore(redisKey, '-inf', String(windowStart));
+
       // 添加当前时间戳
       pipeline.zadd(redisKey, now, String(now));
-      
+
       // 获取当前窗口内的请求数
       pipeline.zcard(redisKey);
-      
+
       // 设置过期时间
       pipeline.expire(redisKey, Math.ceil(windowMs / 1000));
-      
+
       const results = await pipeline.exec();
-      const count = results?.[2]?.[1] as number || 0;
-      
+      const count = (results?.[2]?.[1] as number) || 0;
+
       const allowed = count < max;
       const remaining = Math.max(0, max - count);
       const resetTime = now + windowMs;
@@ -167,10 +161,7 @@ export class RateLimitService implements OnModuleDestroy {
    * @method checkLimitMemory
    * @description 使用内存检查限流（固定窗口）
    */
-  private checkLimitMemory(
-    key: string,
-    options: RateLimitOptions,
-  ): RateLimitResult {
+  private checkLimitMemory(key: string, options: RateLimitOptions): RateLimitResult {
     const { windowMs, max } = options;
     const now = Date.now();
     const record = this.memoryStore.get(key);
@@ -230,4 +221,3 @@ export class RateLimitService implements OnModuleDestroy {
     }
   }
 }
-

@@ -48,7 +48,7 @@ const error = ref(null);
 onMounted(async () => {
   error.value = null;
   isLoading.value = true;
-  
+
   try {
     // [注释] loadGame 现在只获取HTTP数据。WebSocket连接已由 authStore 状态自动管理。
     await gameStore.loadGame(props.id);
@@ -56,7 +56,7 @@ onMounted(async () => {
     error.value = err.message;
     showToast(`加载世界失败: ${err.message}`, 'error');
     // [注释] 可以在加载失败后，自动导航回主菜单
-    // router.push('/nexus'); 
+    // router.push('/nexus');
   } finally {
     isLoading.value = false;
   }

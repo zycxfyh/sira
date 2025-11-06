@@ -18,10 +18,7 @@ async function bootstrap() {
   const app = await NestFactory.create(LogicAgentModule);
 
   const configService = app.get(ConfigService);
-  const rmqUrl = configService.get<string>(
-    'RABBITMQ_URL',
-    'amqp://localhost:5672',
-  );
+  const rmqUrl = configService.get<string>('RABBITMQ_URL', 'amqp://localhost:5672');
 
   const DEAD_LETTER_EXCHANGE = 'dlx';
   const DEAD_LETTER_QUEUE = 'logic_queue_dead';

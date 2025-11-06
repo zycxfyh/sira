@@ -21,10 +21,7 @@ import { PrismaModule } from '@tuheg/common-backend';
         secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
           // [注释] 从环境变量读取JWT过期时间
-          expiresIn: parseInt(
-            configService.get<string>('JWT_EXPIRATION_SECONDS', '3600'),
-            10,
-          ),
+          expiresIn: parseInt(configService.get<string>('JWT_EXPIRATION_SECONDS', '3600'), 10),
         },
       }),
       inject: [ConfigService],

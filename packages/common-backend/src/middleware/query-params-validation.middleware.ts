@@ -31,7 +31,7 @@ export class QueryParamsValidationMiddleware implements NestMiddleware {
 
       // 检查参数值
       if (Array.isArray(value)) {
-        value.forEach(v => this.validateParamValue(key, v));
+        value.forEach((v) => this.validateParamValue(key, v));
       } else {
         this.validateParamValue(key, value);
       }
@@ -64,12 +64,27 @@ export class QueryParamsValidationMiddleware implements NestMiddleware {
 
     // 检查是否是危险的关键字
     const dangerousKeywords = [
-      'union', 'select', 'insert', 'update', 'delete', 'drop', 'create',
-      'alter', 'exec', 'execute', 'script', 'javascript', 'vbscript',
-      'onload', 'onerror', 'eval', 'function', 'constructor'
+      'union',
+      'select',
+      'insert',
+      'update',
+      'delete',
+      'drop',
+      'create',
+      'alter',
+      'exec',
+      'execute',
+      'script',
+      'javascript',
+      'vbscript',
+      'onload',
+      'onerror',
+      'eval',
+      'function',
+      'constructor',
     ];
 
-    if (dangerousKeywords.some(keyword => name.toLowerCase().includes(keyword))) {
+    if (dangerousKeywords.some((keyword) => name.toLowerCase().includes(keyword))) {
       throw new BadRequestException(`Dangerous parameter name detected: ${name}`);
     }
   }
@@ -114,7 +129,17 @@ export class QueryParamsValidationMiddleware implements NestMiddleware {
    * 检查SQL注入
    */
   private checkSqlInjection(key: string, value: string): void {
-    const sqlKeywords = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP', 'CREATE', 'ALTER', 'EXEC', 'UNION'];
+    const sqlKeywords = [
+      'SELECT',
+      'INSERT',
+      'UPDATE',
+      'DELETE',
+      'DROP',
+      'CREATE',
+      'ALTER',
+      'EXEC',
+      'UNION',
+    ];
     const sqlPatterns = [
       new RegExp(`\\b(${sqlKeywords.join('|')})\\b`, 'i'),
       /['"]/,
@@ -122,7 +147,7 @@ export class QueryParamsValidationMiddleware implements NestMiddleware {
       /\b(OR|AND)\b.*[=<>]/i,
     ];
 
-    if (sqlPatterns.some(pattern => pattern.test(value))) {
+    if (sqlPatterns.some((pattern) => pattern.test(value))) {
       throw new BadRequestException(`Potential SQL injection detected in parameter ${key}`);
     }
   }
@@ -142,7 +167,7 @@ export class QueryParamsValidationMiddleware implements NestMiddleware {
       /<embed[^>]*>/gi,
     ];
 
-    if (xssPatterns.some(pattern => pattern.test(value))) {
+    if (xssPatterns.some((pattern) => pattern.test(value))) {
       throw new BadRequestException(`Potential XSS attack detected in parameter ${key}`);
     }
   }
@@ -151,15 +176,9 @@ export class QueryParamsValidationMiddleware implements NestMiddleware {
    * 检查路径遍历
    */
   private checkPathTraversal(key: string, value: string): void {
-    const traversalPatterns = [
-      /\.\./,
-      /\.\//,
-      /\.\\/,
-      /\/etc\/passwd/i,
-      /\/windows\/system32/i,
-    ];
+    const traversalPatterns = [/\.\./, /\.\//, /\.\\/, /\/etc\/passwd/i, /\/windows\/system32/i];
 
-    if (traversalPatterns.some(pattern => pattern.test(value))) {
+    if (traversalPatterns.some((pattern) => pattern.test(value))) {
       throw new BadRequestException(`Path traversal detected in parameter ${key}`);
     }
   }

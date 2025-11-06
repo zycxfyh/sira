@@ -5,17 +5,19 @@
       <div class="modal-header">
         <h2>AI 指挥中心</h2>
         <p class="subtitle">管理驱动您所有叙事宇宙的AI核心。</p>
-        
+
         <!-- 视图模式切换器 -->
         <div class="mode-switcher">
-          <button 
+          <button
             :class="{ active: settingsStore.configViewMode === 'simple' }"
-            @click="settingsStore.setConfigViewMode('simple')">
+            @click="settingsStore.setConfigViewMode('simple')"
+          >
             简易模式
           </button>
-          <button 
+          <button
             :class="{ active: settingsStore.configViewMode === 'expert' }"
-            @click="settingsStore.setConfigViewMode('expert')">
+            @click="settingsStore.setConfigViewMode('expert')"
+          >
             专家模式
           </button>
         </div>
@@ -29,9 +31,7 @@
 
         <!-- 简易模式视图 -->
         <div v-else-if="settingsStore.configViewMode === 'simple'" class="simple-mode-view">
-          <p class="mode-description">
-            您只需配置一个全能AI。系统将智能地用它完成所有任务。
-          </p>
+          <p class="mode-description">您只需配置一个全能AI。系统将智能地用它完成所有任务。</p>
           <AiConfigCard
             v-if="settingsStore.globalAiConfig"
             :key="settingsStore.globalAiConfig.id"
@@ -46,7 +46,7 @@
 
         <!-- 专家模式视图 -->
         <div v-else-if="settingsStore.configViewMode === 'expert'" class="expert-mode-view">
-           <p class="mode-description">
+          <p class="mode-description">
             您可以为系统的不同能力（如逻辑、叙事）分别指派不同的AI模型。
           </p>
           <div v-if="settingsStore.aiConfigurations.length > 0" class="config-list">

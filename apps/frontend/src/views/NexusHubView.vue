@@ -7,7 +7,7 @@
       </span>
     </div>
 
-    <div class="center-content" style="justify-content: flex-start; padding-top: 2rem;">
+    <div class="center-content" style="justify-content: flex-start; padding-top: 2rem">
       <h2>观测者中枢</h2>
       <p>这里是您在每次旅程之间的永恒基地与强化中心。</p>
       <div class="nexus-main-layout">
@@ -19,18 +19,17 @@
         <div class="nexus-panel">
           <h3>读取化身档案</h3>
           <p>从之前的决策点继续您的旅程。</p>
-          
+
           <SaveList
             :is-loading="isLoading"
             :game-list="gameList"
             @load-game="loadGame"
             @delete-game="deleteGame"
           />
-
         </div>
       </div>
-      <div class="button-group" style="justify-content: center;">
-         <button @click="authStore.logout()" class="button">断开连接</button>
+      <div class="button-group" style="justify-content: center">
+        <button @click="authStore.logout()" class="button">断开连接</button>
       </div>
     </div>
   </div>
@@ -97,7 +96,9 @@ onMounted(fetchGames);
   cursor: pointer;
   padding: 8px;
   border-radius: 50%;
-  transition: background-color 0.3s, transform 0.3s;
+  transition:
+    background-color 0.3s,
+    transform 0.3s;
   display: inline-block;
 }
 

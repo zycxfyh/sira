@@ -19,21 +19,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '@prisma/client';
 
 // [核心修正] 从 @tuheg/common-backend 导入所有共享的 DTO 和管道
-import {
-  ZodValidationPipe,
-  SubmitActionDto,
-  submitActionSchema,
-} from '@tuheg/common-backend';
+import { ZodValidationPipe, SubmitActionDto, submitActionSchema } from '@tuheg/common-backend';
 
 // [注释] 本地 DTO 导入保持不变
-import {
-  CreateNarrativeGameDto,
-  createNarrativeGameSchema,
-} from './dto/create-game.dto';
-import {
-  UpdateCharacterDto,
-  updateCharacterSchema,
-} from './dto/update-character.dto';
+import { CreateNarrativeGameDto, createNarrativeGameSchema } from './dto/create-game.dto';
+import { UpdateCharacterDto, updateCharacterSchema } from './dto/update-character.dto';
 
 @Controller('games')
 @UseGuards(JwtAuthGuard)

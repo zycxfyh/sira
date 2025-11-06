@@ -99,21 +99,15 @@ describe('LogicService', () => {
 
       // 验证 RuleEngineService 的 execute 方法是否被调用，并且传入了正确的 gameId 和 AI 生成的指令
       expect(ruleEngineService.execute).toHaveBeenCalledTimes(1);
-      expect(ruleEngineService.execute).toHaveBeenCalledWith(
-        mockJobData.gameId,
-        mockDirectives,
-      );
+      expect(ruleEngineService.execute).toHaveBeenCalledWith(mockJobData.gameId, mockDirectives);
 
       // 验证 EventBusService 的 publish 方法是否被调用，以通知下一个微服务
       expect(eventBusService.publish).toHaveBeenCalledTimes(1);
-      expect(eventBusService.publish).toHaveBeenCalledWith(
-        'LOGIC_PROCESSING_COMPLETE',
-        {
-          gameId: mockJobData.gameId,
-          userId: mockJobData.userId,
-          playerAction: mockJobData.playerAction,
-        },
-      );
+      expect(eventBusService.publish).toHaveBeenCalledWith('LOGIC_PROCESSING_COMPLETE', {
+        gameId: mockJobData.gameId,
+        userId: mockJobData.userId,
+        playerAction: mockJobData.playerAction,
+      });
     });
 
     it('should throw an error if AI guard fails', async () => {
@@ -122,7 +116,7 @@ describe('LogicService', () => {
       const errorMessage = 'AI failed to generate valid data';
       // 设置 callAiWithGuard 的模拟行为：当它被调用时，抛出一个错误
       mockedCallAiWithGuard.mockRejectedValue(new Error(errorMessage));
-      
+
       // 2. & 3. 行动与断言 (Act & Assert)
       // 验证当 generateDirectives 失败时，processLogic 会向上抛出异常
       await expect(logicService.processLogic(mockJobData)).rejects.toThrow(

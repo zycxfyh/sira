@@ -21,9 +21,7 @@ export const useJobsStore = defineStore('jobs', () => {
   /**
    * 计算属性，返回所有仍在进行中的任务
    */
-  const pendingJobs = computed(() =>
-    jobs.value.filter((job) => job.status === 'pending'),
-  );
+  const pendingJobs = computed(() => jobs.value.filter((job) => job.status === 'pending'));
 
   /**
    * 添加一个新任务到列表中

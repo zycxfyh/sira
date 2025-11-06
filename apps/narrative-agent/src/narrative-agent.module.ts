@@ -22,10 +22,6 @@ import { HttpModule } from '@nestjs/axios'; // [核心] 导入HttpModule用于�
     HttpModule, // [核心] 添加HttpModule
   ],
   controllers: [NarrativeAgentController],
-  providers: [
-    NarrativeService,
-    DynamicAiSchedulerService,
-    AiProviderFactory,
-  ],
+  providers: [NarrativeService, DynamicAiSchedulerService, AiProviderFactory],
 })
 export class NarrativeAgentModule {}

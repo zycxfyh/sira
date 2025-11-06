@@ -2,10 +2,10 @@
 // 灵感来源: Testing Library (https://github.com/testing-library/vue-testing-library)
 // 核心理念: 用户中心的测试，优先使用可访问的查询方式
 
-import { render, type RenderOptions } from "@vue/test-utils";
-import { createPinia, setActivePinia } from "pinia";
-import { createRouter, createWebHistory, type Router } from "vue-router";
-import type { Component } from "vue";
+import { render, type RenderOptions } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import { createRouter, createWebHistory, type Router } from 'vue-router';
+import type { Component } from 'vue';
 
 /**
  * @interface TestUtilsOptions
@@ -24,27 +24,19 @@ export interface TestUtilsOptions extends RenderOptions {
  * @function renderWithProviders
  * @description 使用 Testing Library 理念渲染组件
  * 提供路由、状态管理等完整上下文
- * 
+ *
  * @example
  * ```typescript
  * const { getByRole, getByText } = renderWithProviders(MyComponent, {
  *   props: { title: 'Test' },
  *   routes: [{ path: '/', component: MyComponent }],
  * });
- * 
+ *
  * expect(getByRole('heading')).toHaveTextContent('Test');
  * ```
  */
-export function renderWithProviders(
-  component: Component,
-  options: TestUtilsOptions = {},
-) {
-  const {
-    routes = [],
-    initialRoute = "/",
-    createStore = true,
-    ...renderOptions
-  } = options;
+export function renderWithProviders(component: Component, options: TestUtilsOptions = {}) {
+  const { routes = [], initialRoute = '/', createStore = true, ...renderOptions } = options;
 
   // 创建 Pinia store（如果需要）
   if (createStore) {
@@ -106,19 +98,13 @@ export async function waitFor(
  * @function findByRole
  * @description 通过角色查找元素（可访问性优先）
  */
-export function findByRole(
-  container: HTMLElement,
-  role: string,
-  options?: { name?: string },
-) {
+export function findByRole(container: HTMLElement, role: string, options?: { name?: string }) {
   const elements = container.querySelectorAll(`[role="${role}"]`);
-  
+
   if (options?.name) {
-    return Array.from(elements).find(
-      (el) => el.textContent?.includes(options.name ?? ""),
-    );
+    return Array.from(elements).find((el) => el.textContent?.includes(options.name ?? ''));
   }
-  
+
   return elements[0] ?? null;
 }
 
@@ -126,17 +112,14 @@ export function findByRole(
  * @function findByLabelText
  * @description 通过标签文本查找元素
  */
-export function findByLabelText(
-  container: HTMLElement,
-  text: string,
-): HTMLElement | null {
-  const labels = Array.from(container.querySelectorAll("label"));
+export function findByLabelText(container: HTMLElement, text: string): HTMLElement | null {
+  const labels = Array.from(container.querySelectorAll('label'));
   const label = labels.find((l) => l.textContent?.includes(text));
-  
+
   if (label && label.htmlFor) {
     return container.querySelector(`#${label.htmlFor}`);
   }
-  
+
   return label ?? null;
 }
 
@@ -144,13 +127,7 @@ export function findByLabelText(
  * @function findByPlaceholderText
  * @description 通过占位符文本查找元素
  */
-export function findByPlaceholderText(
-  container: HTMLElement,
-  text: string,
-): HTMLElement | null {
-  const inputs = Array.from(
-    container.querySelectorAll<HTMLInputElement>("input, textarea"),
-  );
+export function findByPlaceholderText(container: HTMLElement, text: string): HTMLElement | null {
+  const inputs = Array.from(container.querySelectorAll<HTMLInputElement>('input, textarea'));
   return inputs.find((input) => input.placeholder?.includes(text)) ?? null;
 }
-

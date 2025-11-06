@@ -11,8 +11,8 @@ module.exports = [
       '**/*.min.js',
       '**/*.config.js',
       'coverage/',
-      '.vite/'
-    ]
+      '.vite/',
+    ],
   },
   {
     files: ['src/**/*.{js,ts}'],
@@ -47,15 +47,18 @@ module.exports = [
         require: 'readonly',
         module: 'readonly',
         exports: 'readonly',
-        global: 'readonly'
-      }
+        global: 'readonly',
+      },
     },
     rules: {
       // Basic code quality rules
-      'no-unused-vars': ['warn', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }],
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
       'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
       'no-empty': ['warn', { allowEmptyCatch: true }],
@@ -63,13 +66,13 @@ module.exports = [
       // Code style rules (warning level)
       'prefer-const': 'warn',
       'no-var': 'warn',
-      'eqeqeq': ['warn', 'always'],
-      'curly': ['warn', 'all'],
+      eqeqeq: ['warn', 'always'],
+      curly: ['warn', 'all'],
 
       // Potential error rules
       'no-unreachable': 'error',
-      'valid-typeof': 'error'
-    }
+      'valid-typeof': 'error',
+    },
   },
   {
     files: ['src/**/*.vue'],
@@ -80,7 +83,7 @@ module.exports = [
       parserOptions: {
         parser: tseslint.parser,
         sourceType: 'module',
-        ecmaVersion: 'latest'
+        ecmaVersion: 'latest',
       },
       globals: {
         // Browser environment globals
@@ -114,15 +117,18 @@ module.exports = [
         require: 'readonly',
         module: 'readonly',
         exports: 'readonly',
-        global: 'readonly'
-      }
+        global: 'readonly',
+      },
     },
     rules: {
       // Basic code quality rules
-      'no-unused-vars': ['warn', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }],
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
       'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
       'no-empty': ['warn', { allowEmptyCatch: true }],
@@ -130,11 +136,11 @@ module.exports = [
       // Code style rules (warning level)
       'prefer-const': 'warn',
       'no-var': 'warn',
-      'eqeqeq': ['warn', 'always'],
+      eqeqeq: ['warn', 'always'],
 
       // Potential error rules
       'no-unreachable': 'error',
-      'valid-typeof': 'error'
-    }
-  }
+      'valid-typeof': 'error',
+    },
+  },
 ];

@@ -2,7 +2,7 @@
 // 灵感来源: Sentry (https://github.com/getsentry/sentry-javascript)
 // 核心理念: 模块化导出，方便使用
 
-import { Module } from "@nestjs/common";
+import { Module } from '@nestjs/common';
 
 /**
  * @module SentryModule
@@ -14,4 +14,3 @@ import { Module } from "@nestjs/common";
   exports: [],
 })
 export class SentryModule {}
-

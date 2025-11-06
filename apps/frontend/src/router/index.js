@@ -13,8 +13,19 @@ const routes = [
   { path: '/', name: 'Welcome', component: WelcomeView },
   { path: '/login', name: 'Login', component: LoginView },
   { path: '/nexus', name: 'NexusHub', component: NexusHubView, meta: { requiresAuth: true } },
-  { path: '/creation', name: 'CreationHub', component: CreationHubView, meta: { requiresAuth: true } },
-  { path: '/game/:id', name: 'Game', component: GameView, props: true, meta: { requiresAuth: true } },
+  {
+    path: '/creation',
+    name: 'CreationHub',
+    component: CreationHubView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/game/:id',
+    name: 'Game',
+    component: GameView,
+    props: true,
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({
@@ -25,7 +36,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // Pinia store必须在导航守卫函数内部获取，以确保Pinia已初始化
   const authStore = useAuthStore();
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
   if (requiresAuth && !authStore.isLoggedIn) {
     next({ name: 'Login' });

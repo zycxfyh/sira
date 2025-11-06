@@ -40,14 +40,14 @@ describe('AuthService', () => {
           create: jest.fn().mockResolvedValue({ id: '1', email: 'test@example.com' }),
         },
       } as any;
-      
+
       (service as any).prisma = prismaMock;
 
       await service.register(registerDto);
 
       // [核心修正] 断言 bcryptjs.hash 被调用
       expect(bcryptjs.hash).toHaveBeenCalledWith('plainPassword', 10);
-      
+
       expect(prismaMock.user.create).toHaveBeenCalledWith({
         data: {
           email: 'test@example.com',

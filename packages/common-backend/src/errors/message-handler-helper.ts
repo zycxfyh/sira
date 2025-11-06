@@ -7,16 +7,16 @@
 // 3. 返回正确的 ack/nack/requeue 响应
 // 4. 集成 Sentry 错误上报
 
-import type { Logger } from "@nestjs/common";
-import * as Sentry from "@sentry/node";
-import type { Channel, Message } from "amqplib";
-import { classifyProcessingError } from "./error-classification";
-import { formatErrorForWebSocket } from "./websocket-error-helper";
+import type { Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/node';
+import type { Channel, Message } from 'amqplib';
+import { classifyProcessingError } from './error-classification';
+import { formatErrorForWebSocket } from './websocket-error-helper';
 
 /**
  * 消息处理结果
  */
-export type MessageHandlerResult = "ack" | "nack" | "requeue";
+export type MessageHandlerResult = 'ack' | 'nack' | 'requeue';
 
 /**
  * 消息处理上下文
@@ -85,11 +85,7 @@ export function withErrorHandling<
   logger: Logger,
   context?: MessageHandlerContext,
   options: MessageHandlerOptions = {},
-): (
-  data: T,
-  channel: Channel,
-  message: Message,
-) => Promise<MessageHandlerResult> {
+): (data: T, channel: Channel, message: Message) => Promise<MessageHandlerResult> {
   const {
     maxRetries = 2,
     logDetails = true,
@@ -97,29 +93,23 @@ export function withErrorHandling<
     publishErrorEvent = false,
     errorEventPublisher,
     userId,
-    errorEventName = "processing_failed",
+    errorEventName = 'processing_failed',
   } = options;
 
-  return async (
-    data: T,
-    _channel: Channel,
-    message: Message,
-  ): Promise<MessageHandlerResult> => {
-    const correlationId =
-      context?.correlationId || data.correlationId || "unknown";
-    const gameId = context?.gameId || data.gameId || "unknown";
-    const operation = context?.operation || "process_message";
+  return async (data: T, _channel: Channel, message: Message): Promise<MessageHandlerResult> => {
+    const correlationId = context?.correlationId || data.correlationId || 'unknown';
+    const gameId = context?.gameId || data.gameId || 'unknown';
+    const operation = context?.operation || 'process_message';
     const startTime = Date.now();
 
     try {
       await handler(data);
       const duration = Date.now() - startTime;
 
-
       logger.log(
         `[${correlationId}] ${operation} completed successfully for game: ${gameId} (${duration}ms)`,
       );
-      return "ack";
+      return 'ack';
     } catch (error) {
       const errorResponse = classifyProcessingError(error, {
         operation,
@@ -152,9 +142,7 @@ export function withErrorHandling<
           errorResponse.details,
         );
       } else {
-        logger.error(
-          `[${correlationId}] ${operation} failed: ${errorResponse.errorCode}`,
-        );
+        logger.error(`[${correlationId}] ${operation} failed: ${errorResponse.errorCode}`);
       }
 
       // [核心新增] 发布增强的错误事件到 WebSocket（如果启用）
@@ -165,16 +153,14 @@ export function withErrorHandling<
             const errorPayload = formatErrorForWebSocket(
               errorResponse,
               correlationId,
-              error instanceof Error ? error.message : "Unknown error",
+              error instanceof Error ? error.message : 'Unknown error',
             );
             errorEventPublisher({
               userId: effectiveUserId,
               event: errorEventName,
               data: errorPayload,
             });
-            logger.debug(
-              `[${correlationId}] Published enhanced error event: ${errorEventName}`,
-            );
+            logger.debug(`[${correlationId}] Published enhanced error event: ${errorEventName}`);
           } catch (eventError) {
             // 错误事件发布失败不应影响主要错误处理流程
             logger.warn(
@@ -189,23 +175,23 @@ export function withErrorHandling<
         logger.warn(
           `[${correlationId}] Error is not retryable (${errorResponse.errorType}). Discarding message.`,
         );
-        return "nack";
+        return 'nack';
       }
 
       // 检查重试次数
-      const retryCount = (message.properties.headers?.["x-death"] || []).length;
+      const retryCount = (message.properties.headers?.['x-death'] || []).length;
 
       if (retryCount < maxRetries) {
         logger.warn(
           `[${correlationId}] ${operation} failed. Will retry (${retryCount + 1}/${maxRetries + 1}). Error: ${errorResponse.errorCode}`,
         );
-        return "requeue";
+        return 'requeue';
       } else {
         logger.error(
           `[${correlationId}] ${operation} failed after ${maxRetries + 1} attempts. Sending to DLQ. Error: ${errorResponse.errorCode}`,
         );
         // 超过最大重试次数，发送到死信队列
-        return "nack";
+        return 'nack';
       }
     }
   };
@@ -233,16 +219,12 @@ export async function handleRabbitMQMessage<
   options: MessageHandlerOptions = {},
 ): Promise<void> {
   const wrappedHandler = withErrorHandling(handler, logger, context, options);
-  const result = await wrappedHandler(
-    message.content as unknown as T,
-    channel,
-    message,
-  );
+  const result = await wrappedHandler(message.content as unknown as T, channel, message);
 
   // 根据结果执行相应的 RabbitMQ 操作
-  if (result === "ack") {
+  if (result === 'ack') {
     channel.ack(message);
-  } else if (result === "requeue") {
+  } else if (result === 'requeue') {
     channel.nack(message, false, true); // requeue
   } else {
     channel.nack(message, false, false); // 发送到 DLQ
@@ -290,25 +272,23 @@ export function withRMQErrorHandling<
     publishErrorEvent = false,
     errorEventPublisher,
     userId,
-    errorEventName = "processing_failed",
+    errorEventName = 'processing_failed',
   } = options;
 
   return async (data: T): Promise<MessageHandlerResult> => {
-    const correlationId =
-      context?.correlationId || data.correlationId || "unknown";
-    const gameId = context?.gameId || data.gameId || "unknown";
-    const operation = context?.operation || "process_message";
+    const correlationId = context?.correlationId || data.correlationId || 'unknown';
+    const gameId = context?.gameId || data.gameId || 'unknown';
+    const operation = context?.operation || 'process_message';
     const startTime = Date.now();
 
     try {
       await handler(data);
       const duration = Date.now() - startTime;
 
-
       logger.log(
         `[${correlationId}] ${operation} completed successfully for game: ${gameId} (${duration}ms)`,
       );
-      return "ack";
+      return 'ack';
     } catch (error) {
       const errorResponse = classifyProcessingError(error, {
         operation,
@@ -341,11 +321,8 @@ export function withRMQErrorHandling<
           errorResponse.details,
         );
       } else {
-        logger.error(
-          `[${correlationId}] ${operation} failed: ${errorResponse.errorCode}`,
-        );
+        logger.error(`[${correlationId}] ${operation} failed: ${errorResponse.errorCode}`);
       }
-
 
       // [核心新增] 发布增强的错误事件到 WebSocket（如果启用）
       if (publishErrorEvent && errorEventPublisher) {
@@ -355,16 +332,14 @@ export function withRMQErrorHandling<
             const errorPayload = formatErrorForWebSocket(
               errorResponse,
               correlationId,
-              error instanceof Error ? error.message : "Unknown error",
+              error instanceof Error ? error.message : 'Unknown error',
             );
             errorEventPublisher({
               userId: effectiveUserId,
               event: errorEventName,
               data: errorPayload,
             });
-            logger.debug(
-              `[${correlationId}] Published enhanced error event: ${errorEventName}`,
-            );
+            logger.debug(`[${correlationId}] Published enhanced error event: ${errorEventName}`);
           } catch (eventError) {
             // 错误事件发布失败不应影响主要错误处理流程
             logger.warn(
@@ -379,7 +354,7 @@ export function withRMQErrorHandling<
         logger.warn(
           `[${correlationId}] Error is not retryable (${errorResponse.errorType}). Discarding message.`,
         );
-        return "nack";
+        return 'nack';
       }
 
       // 注意：在 nestjs-rmq 中，重试次数由 RabbitMQ 配置管理
@@ -388,7 +363,7 @@ export function withRMQErrorHandling<
       logger.warn(
         `[${correlationId}] ${operation} failed. Will be requeued by RabbitMQ. Error: ${errorResponse.errorCode}`,
       );
-      return "requeue";
+      return 'requeue';
     }
   };
 }

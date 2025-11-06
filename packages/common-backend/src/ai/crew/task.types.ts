@@ -56,4 +56,3 @@ export interface TaskContext {
   /** 全局上下文数据 */
   globalContext?: Record<string, unknown>;
 }
-

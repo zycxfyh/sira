@@ -34,7 +34,7 @@ export class JsonSanitizationError extends Error {
     public readonly context?: { raw: string; lastError?: unknown },
   ) {
     super(message);
-    this.name = "JsonSanitizationError";
+    this.name = 'JsonSanitizationError';
   }
 }
 
@@ -48,9 +48,7 @@ export class JsonSanitizationError extends Error {
  * 我们只接受对象和数组，不接受原始值（null, string, number, boolean）
  * 这是因为 AI 输出通常是结构化的数据，而不是单个值
  */
-function isAcceptableJsonValue(
-  value: unknown,
-): value is Record<string, unknown> | unknown[] {
+function isAcceptableJsonValue(value: unknown): value is Record<string, unknown> | unknown[] {
   // null 的类型是 'object'，需要显式排除
   if (value === null) {
     return false;
@@ -60,7 +58,7 @@ function isAcceptableJsonValue(
     return true;
   }
   // 对象（但不是 null）是可接受的
-  return typeof value === "object";
+  return typeof value === 'object';
 }
 
 /**
@@ -69,12 +67,12 @@ function isAcceptableJsonValue(
 function stripCodeFences(raw: string): string {
   let result = raw.trim();
 
-  if (result.startsWith("```")) {
+  if (result.startsWith('```')) {
     // 移除开头的 ``` 或 ```json
-    result = result.replace(/^```[a-zA-Z]*\s*/i, "");
+    result = result.replace(/^```[a-zA-Z]*\s*/i, '');
   }
-  if (result.endsWith("```")) {
-    result = result.replace(/```$/i, "");
+  if (result.endsWith('```')) {
+    result = result.replace(/```$/i, '');
   }
 
   return result.trim();
@@ -84,8 +82,8 @@ function stripCodeFences(raw: string): string {
  * 尝试提取字符串中的 JSON 主体（去掉说明文字、前后缀）。
  */
 function extractJsonCore(raw: string): string {
-  const firstBrace = raw.indexOf("{");
-  const firstBracket = raw.indexOf("[");
+  const firstBrace = raw.indexOf('{');
+  const firstBracket = raw.indexOf('[');
 
   let start = -1;
   if (firstBrace !== -1 && firstBracket !== -1) {
@@ -98,13 +96,10 @@ function extractJsonCore(raw: string): string {
     return raw;
   }
 
-  const lastBrace = raw.lastIndexOf("}");
-  const lastBracket = raw.lastIndexOf("]");
-  const endCandidates = [lastBrace, lastBracket].filter(
-    (index) => index !== -1,
-  );
-  const end =
-    endCandidates.length > 0 ? Math.max(...endCandidates) : raw.length - 1;
+  const lastBrace = raw.lastIndexOf('}');
+  const lastBracket = raw.lastIndexOf(']');
+  const endCandidates = [lastBrace, lastBracket].filter((index) => index !== -1);
+  const end = endCandidates.length > 0 ? Math.max(...endCandidates) : raw.length - 1;
 
   if (end <= start) {
     return raw.slice(start);
@@ -164,7 +159,7 @@ function normalizeQuotes(raw: string): string {
  */
 export function cleanAndParseJson(raw: unknown): unknown {
   // 如果已经是对象或数组，直接返回（避免不必要的处理）
-  if (typeof raw !== "string") {
+  if (typeof raw !== 'string') {
     return raw;
   }
 
@@ -215,7 +210,7 @@ export function cleanAndParseJson(raw: unknown): unknown {
         return parsed;
       }
       // 如果解析成功但不是对象/数组，记录错误但继续尝试其他策略
-      lastError = new Error("Sanitized output was not a JSON object or array.");
+      lastError = new Error('Sanitized output was not a JSON object or array.');
     } catch (error) {
       // 解析失败，记录错误并尝试下一个策略
       lastError = error;
@@ -223,11 +218,8 @@ export function cleanAndParseJson(raw: unknown): unknown {
   }
 
   // 所有策略都失败，抛出详细的错误信息
-  throw new JsonSanitizationError(
-    "Failed to sanitize AI output into valid JSON.",
-    {
-      raw,
-      lastError,
-    },
-  );
+  throw new JsonSanitizationError('Failed to sanitize AI output into valid JSON.', {
+    raw,
+    lastError,
+  });
 }

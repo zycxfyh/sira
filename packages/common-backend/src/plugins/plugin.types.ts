@@ -120,4 +120,3 @@ export interface Plugin {
  * @description 插件工厂函数
  */
 export type PluginFactory = (context: PluginContext) => Plugin;
-

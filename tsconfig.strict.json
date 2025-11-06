@@ -15,7 +15,7 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    
+
     // 额外严格检查
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -24,13 +24,13 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
-    
+
     // 模块解析
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": false,
     "resolvePackageJsonExports": true,
     "resolvePackageJsonImports": true,
-    
+
     // 类型检查
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
@@ -38,4 +38,3 @@
   "include": [],
   "exclude": ["node_modules", "dist", ".turbo"]
 }
-

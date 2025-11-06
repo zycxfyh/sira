@@ -10,7 +10,7 @@
 // 2. 记录详细的验证失败日志
 // 3. 生成用户友好的错误消息
 
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * 格式化后的验证错误结构
@@ -60,31 +60,31 @@ export function formatZodError(error: z.ZodError): FormattedValidationError {
   // 获取原始输入数据（ZodError 的 _def 属性可能包含原始数据）
   // 注意: 这是 Zod 内部 API，可能在未来版本中变化
   const inputData = (error as unknown as { data?: unknown }).data;
-  const fieldErrors: FormattedValidationError["fieldErrors"] = [];
+  const fieldErrors: FormattedValidationError['fieldErrors'] = [];
 
   for (const issue of error.issues) {
-    const path = issue.path.length > 0 ? issue.path.join(".") : "root";
+    const path = issue.path.length > 0 ? issue.path.join('.') : 'root';
 
     // 确定期望的类型
-    let expected = "unknown";
+    let expected = 'unknown';
     if (issue.code === z.ZodIssueCode.invalid_type) {
       expected = issue.expected;
     } else if (issue.code === z.ZodIssueCode.invalid_enum_value) {
-      expected = `one of: ${issue.options.join(", ")}`;
+      expected = `one of: ${issue.options.join(', ')}`;
     } else if (issue.code === z.ZodIssueCode.too_small) {
-      if (issue.type === "array") {
+      if (issue.type === 'array') {
         expected = `array with at least ${issue.minimum} items`;
-      } else if (issue.type === "string") {
+      } else if (issue.type === 'string') {
         expected = `string with at least ${issue.minimum} characters`;
-      } else if (issue.type === "number") {
+      } else if (issue.type === 'number') {
         expected = `number >= ${issue.minimum}`;
       }
     } else if (issue.code === z.ZodIssueCode.too_big) {
-      if (issue.type === "array") {
+      if (issue.type === 'array') {
         expected = `array with at most ${issue.maximum} items`;
-      } else if (issue.type === "string") {
+      } else if (issue.type === 'string') {
         expected = `string with at most ${issue.maximum} characters`;
-      } else if (issue.type === "number") {
+      } else if (issue.type === 'number') {
         expected = `number <= ${issue.maximum}`;
       }
     } else if (issue.code === z.ZodIssueCode.invalid_string) {
@@ -97,7 +97,7 @@ export function formatZodError(error: z.ZodError): FormattedValidationError {
       try {
         // 从原始数据中提取对应字段的值
         const receivedValue = issue.path.reduce((obj: unknown, key) => {
-          if (typeof obj === "object" && obj !== null && key in obj) {
+          if (typeof obj === 'object' && obj !== null && key in obj) {
             return (obj as Record<string, unknown>)[key];
           }
           return undefined;
@@ -106,10 +106,7 @@ export function formatZodError(error: z.ZodError): FormattedValidationError {
         if (receivedValue !== undefined) {
           const receivedStr = JSON.stringify(receivedValue);
           // 如果值太长，截断并添加省略号
-          received =
-            receivedStr.length > 100
-              ? `${receivedStr.slice(0, 100)}...`
-              : receivedStr;
+          received = receivedStr.length > 100 ? `${receivedStr.slice(0, 100)}...` : receivedStr;
         }
       } catch {
         // 如果无法访问值，忽略（保持 received 为 undefined）
@@ -129,7 +126,7 @@ export function formatZodError(error: z.ZodError): FormattedValidationError {
   const uniquePaths = Array.from(new Set(fieldErrors.map((e) => e.path)));
   const summary =
     `Validation failed: ${error.issues.length} error(s) found. ` +
-    `Fields with errors: ${uniquePaths.join(", ")}`;
+    `Fields with errors: ${uniquePaths.join(', ')}`;
 
   // 生成 AI 友好的反馈信息
   const aiFeedback = generateAiFeedback(fieldErrors);
@@ -153,22 +150,17 @@ export function formatZodError(error: z.ZodError): FormattedValidationError {
  * - 说明期望的类型或格式
  * - 提供具体的修复建议
  */
-function generateAiFeedback(
-  fieldErrors: FormattedValidationError["fieldErrors"],
-): string {
+function generateAiFeedback(fieldErrors: FormattedValidationError['fieldErrors']): string {
   if (fieldErrors.length === 0) {
-    return "No validation errors found.";
+    return 'No validation errors found.';
   }
 
   const sections: string[] = [];
-  sections.push("**Validation Errors Detected:**");
-  sections.push("");
+  sections.push('**Validation Errors Detected:**');
+  sections.push('');
 
   // 按字段分组错误
-  const errorsByField = new Map<
-    string,
-    FormattedValidationError["fieldErrors"]
-  >();
+  const errorsByField = new Map<string, FormattedValidationError['fieldErrors']>();
   for (const error of fieldErrors) {
     const existing = errorsByField.get(error.path) || [];
     existing.push(error);
@@ -186,16 +178,16 @@ function generateAiFeedback(
       }
       sections.push(`- Issue: ${error.message}`);
     }
-    sections.push("");
+    sections.push('');
   }
 
-  sections.push("**Action Required:**");
+  sections.push('**Action Required:**');
   sections.push(
-    "Please fix the above errors and regenerate the JSON output. " +
-      "Ensure all required fields are present, types are correct, and values meet the constraints.",
+    'Please fix the above errors and regenerate the JSON output. ' +
+      'Ensure all required fields are present, types are correct, and values meet the constraints.',
   );
 
-  return sections.join("\n");
+  return sections.join('\n');
 }
 
 /**
@@ -204,9 +196,7 @@ function generateAiFeedback(
  * @param formattedError - 格式化后的错误信息
  * @returns JSON 字符串
  */
-export function formatZodErrorAsJson(
-  formattedError: FormattedValidationError,
-): string {
+export function formatZodErrorAsJson(formattedError: FormattedValidationError): string {
   return JSON.stringify(
     {
       summary: formattedError.summary,

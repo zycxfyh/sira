@@ -17,12 +17,7 @@ export const NEXUS_EVENT_BUS = 'NEXUS_EVENT_BUS';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [
-              configService.get<string>(
-                'RABBITMQ_URL',
-                'amqp://localhost:5672',
-              ),
-            ],
+            urls: [configService.get<string>('RABBITMQ_URL', 'amqp://localhost:5672')],
             queue: 'nexus_gateway_queue',
           },
         }),

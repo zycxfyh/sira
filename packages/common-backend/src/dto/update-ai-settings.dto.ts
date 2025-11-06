@@ -1,12 +1,12 @@
 // apps/backend/apps/nexus-engine/src/settings/dto/update-ai-settings.dto.ts
-import { z } from "zod";
+import { z } from 'zod';
 import {
   apiKeySchema,
   baseUrlSchema,
   modelIdSchema,
   providerSchema,
   roleNameSchema,
-} from "./create-ai-settings.dto";
+} from './create-ai-settings.dto';
 
 export const updateAiSettingsSchema = z.object({
   provider: providerSchema.optional(),
@@ -16,7 +16,7 @@ export const updateAiSettingsSchema = z.object({
   roles: z
     .array(roleNameSchema)
     .max(20, {
-      message: "No more than 20 roles can be assigned to a configuration.",
+      message: 'No more than 20 roles can be assigned to a configuration.',
     })
     .optional(),
 });

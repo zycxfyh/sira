@@ -1,5 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, HttpStatus, ExceptionFilter, Catch, ArgumentsHost } from '@nestjs/common';
+import {
+  INestApplication,
+  HttpStatus,
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+} from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { APP_FILTER } from '@nestjs/core';
 import request from 'supertest';
@@ -54,7 +60,9 @@ describe('API Security Tests (e2e)', () => {
       try {
         QueryParamsValidationMiddleware.prototype.use.call(
           new QueryParamsValidationMiddleware(),
-          req, res, next
+          req,
+          res,
+          next,
         );
       } catch (error: unknown) {
         const err = error as any;
@@ -87,44 +95,32 @@ describe('API Security Tests (e2e)', () => {
 
   describe('HTTP Method Security', () => {
     it('should reject unsupported HTTP methods', () => {
-      return request(app.getHttpServer())
-        .put('/health')
-        .expect(404); // Method Not Allowed
+      return request(app.getHttpServer()).put('/health').expect(404); // Method Not Allowed
     });
 
     it('should reject TRACE method', () => {
-      return request(app.getHttpServer())
-        .trace('/health')
-        .expect(404);
+      return request(app.getHttpServer()).trace('/health').expect(404);
     });
 
     it('should reject OPTIONS method for non-CORS requests', () => {
-      return request(app.getHttpServer())
-        .options('/health')
-        .expect(404);
+      return request(app.getHttpServer()).options('/health').expect(404);
     });
   });
 
   describe('Input Validation Security', () => {
     it('should reject extremely large payloads', () => {
       const largePayload = 'x'.repeat(1000000); // 1MB payload
-      return request(app.getHttpServer())
-        .post('/health')
-        .send({ data: largePayload })
-        .expect(413); // Payload Too Large
+      return request(app.getHttpServer()).post('/health').send({ data: largePayload }).expect(413); // Payload Too Large
     });
 
     it('should reject nested object attacks', () => {
       const nestedAttack = {
         __proto__: { isAdmin: true },
         constructor: { prototype: { isAdmin: true } },
-        prototype: { isAdmin: true }
+        prototype: { isAdmin: true },
       };
 
-      return request(app.getHttpServer())
-        .post('/health')
-        .send(nestedAttack)
-        .expect(400); // Bad Request - prototype pollution detected
+      return request(app.getHttpServer()).post('/health').send(nestedAttack).expect(400); // Bad Request - prototype pollution detected
     });
 
     it('should reject prototype pollution attempts', () => {
@@ -144,27 +140,19 @@ describe('API Security Tests (e2e)', () => {
 
   describe('Parameter Tampering', () => {
     it('should reject negative IDs', () => {
-      return request(app.getHttpServer())
-        .get('/health?id=-1')
-        .expect(200); // Health endpoint now accepts and validates query params
+      return request(app.getHttpServer()).get('/health?id=-1').expect(200); // Health endpoint now accepts and validates query params
     });
 
     it('should reject extremely large numbers', () => {
-      return request(app.getHttpServer())
-        .get('/health?id=999999999999999999999')
-        .expect(200); // Query param validation allows large strings
+      return request(app.getHttpServer()).get('/health?id=999999999999999999999').expect(200); // Query param validation allows large strings
     });
 
     it('should reject SQL-like injection in query params', () => {
-      return request(app.getHttpServer())
-        .get('/health?id=1%27%20OR%20%271%27%3D%271')
-        .expect(400); // SQL injection detected
+      return request(app.getHttpServer()).get('/health?id=1%27%20OR%20%271%27%3D%271').expect(400); // SQL injection detected
     });
 
     it('should reject path traversal attempts', () => {
-      return request(app.getHttpServer())
-        .get('/health/../../../etc/passwd')
-        .expect(400); // Path traversal detected
+      return request(app.getHttpServer()).get('/health/../../../etc/passwd').expect(400); // Path traversal detected
     });
   });
 
@@ -194,15 +182,15 @@ describe('API Security Tests (e2e)', () => {
 
   describe('Rate Limiting Bypass Attempts', () => {
     it('should handle rapid consecutive requests', async () => {
-      const promises = Array(100).fill(null).map(() =>
-        request(app.getHttpServer()).get('/health')
-      );
+      const promises = Array(100)
+        .fill(null)
+        .map(() => request(app.getHttpServer()).get('/health'));
 
       const results = await Promise.allSettled(promises);
 
       // Some requests should succeed, but rate limiting should be enforced
-      const successful = results.filter(r => r.status === 'fulfilled').length;
-      const failed = results.filter(r => r.status === 'rejected').length;
+      const successful = results.filter((r) => r.status === 'fulfilled').length;
+      const failed = results.filter((r) => r.status === 'rejected').length;
 
       expect(successful + failed).toBe(100);
       // At least some requests should succeed (health endpoint is not rate limited)

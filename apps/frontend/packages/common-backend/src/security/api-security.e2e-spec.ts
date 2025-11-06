@@ -25,25 +25,18 @@ describe('API Security Tests (e2e)', () => {
 
   describe('HTTP Method Security', () => {
     it('should reject unsupported HTTP methods', () => {
-      return request(app.getHttpServer())
-        .put('/health')
-        .expect(404); // Method Not Allowed
+      return request(app.getHttpServer()).put('/health').expect(404); // Method Not Allowed
     });
 
     it('should reject TRACE method', () => {
-      return request(app.getHttpServer())
-        .trace('/health')
-        .expect(404);
+      return request(app.getHttpServer()).trace('/health').expect(404);
     });
   });
 
   describe('Input Validation Security', () => {
     it('should reject extremely large payloads', () => {
       const largePayload = 'x'.repeat(1000000); // 1MB payload
-      return request(app.getHttpServer())
-        .post('/health')
-        .send({ data: largePayload })
-        .expect(400); // Bad Request
+      return request(app.getHttpServer()).post('/health').send({ data: largePayload }).expect(400); // Bad Request
     });
 
     it('should reject prototype pollution attempts', () => {
@@ -63,15 +56,11 @@ describe('API Security Tests (e2e)', () => {
 
   describe('Parameter Tampering', () => {
     it('should reject SQL-like injection in query params', () => {
-      return request(app.getHttpServer())
-        .get('/health?id=1%27%20OR%20%271%27%3D%271')
-        .expect(400);
+      return request(app.getHttpServer()).get('/health?id=1%27%20OR%20%271%27%3D%271').expect(400);
     });
 
     it('should reject path traversal attempts', () => {
-      return request(app.getHttpServer())
-        .get('/health/../../../etc/passwd')
-        .expect(404);
+      return request(app.getHttpServer()).get('/health/../../../etc/passwd').expect(404);
     });
   });
 
@@ -97,7 +86,7 @@ describe('API Security Tests (e2e)', () => {
       return request(app.getHttpServer())
         .get('/health?error=test')
         .expect(200)
-        .then(res => {
+        .then((res) => {
           // Response should not contain stack traces or internal paths
           expect(res.text).not.toContain('Error:');
           expect(res.text).not.toContain('at ');

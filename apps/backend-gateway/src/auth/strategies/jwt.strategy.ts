@@ -23,10 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   // [注释] validate 方法负责在JWT验证通过后，从数据库中取出完整的用户信息
-  public async validate(payload: {
-    sub: string;
-    email: string;
-  }): Promise<Omit<User, 'password'>> {
+  public async validate(payload: { sub: string; email: string }): Promise<Omit<User, 'password'>> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
     });

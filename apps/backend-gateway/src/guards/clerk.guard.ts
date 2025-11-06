@@ -1,14 +1,14 @@
 // 文件路径: apps/backend-gateway/src/auth/guards/clerk.guard.ts
 
-import { createClerkClient } from "@clerk/backend"; // [核心修复] 使用 createClerkClient 代替 clerkClient
+import { createClerkClient } from '@clerk/backend'; // [核心修复] 使用 createClerkClient 代替 clerkClient
 import {
   type CanActivate,
   type ExecutionContext,
   Injectable,
   Logger,
   UnauthorizedException,
-} from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
+} from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
 
 // [核心修复] 定义 ClerkJWT 类型（兼容 @clerk/backend）
 type ClerkJWT = {
@@ -23,14 +23,10 @@ export class ClerkAuthGuard implements CanActivate {
 
   constructor(private readonly configService: ConfigService) {
     // [核心修复] 使用 createClerkClient 创建客户端实例
-    const secretKey = this.configService.get<string>("CLERK_SECRET_KEY");
+    const secretKey = this.configService.get<string>('CLERK_SECRET_KEY');
     if (!secretKey) {
-      this.logger.error(
-        "CLERK_SECRET_KEY is not configured in environment variables.",
-      );
-      throw new Error(
-        "Server configuration error: Clerk secret key is missing.",
-      );
+      this.logger.error('CLERK_SECRET_KEY is not configured in environment variables.');
+      throw new Error('Server configuration error: Clerk secret key is missing.');
     }
     this.clerkClient = createClerkClient({ secretKey });
   }
@@ -40,7 +36,7 @@ export class ClerkAuthGuard implements CanActivate {
     const authorizationHeader = request.headers.authorization;
 
     if (!authorizationHeader) {
-      throw new UnauthorizedException("Authorization header is missing.");
+      throw new UnauthorizedException('Authorization header is missing.');
     }
 
     // [核心修复] 提取 token（虽然当前使用 authenticateRequest，但保留以备后用）
@@ -74,9 +70,7 @@ export class ClerkAuthGuard implements CanActivate {
       // 注意：这需要在实际运行时验证 Clerk API 的正确用法
       if (!userId) {
         // 假设 token 格式正确，直接解析（实际生产环境需要正确验证）
-        throw new UnauthorizedException(
-          "Unable to verify token with current Clerk API setup.",
-        );
+        throw new UnauthorizedException('Unable to verify token with current Clerk API setup.');
       }
 
       const jwt: ClerkJWT = {
@@ -91,10 +85,9 @@ export class ClerkAuthGuard implements CanActivate {
       return true;
     } catch (error) {
       // [核心修复] 使用类型守卫处理错误
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.warn(`Clerk JWT verification failed: ${errorMessage}`);
-      throw new UnauthorizedException("Invalid or expired token.");
+      throw new UnauthorizedException('Invalid or expired token.');
     }
   }
 }

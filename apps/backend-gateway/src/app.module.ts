@@ -23,6 +23,6 @@ import { AppService } from './app.service';
     GatewayModule,
   ],
   controllers: [AppController], // 确保 AppController 还在
-  providers: [AppService],     // 确保 AppService 还在
+  providers: [AppService], // 确保 AppService 还在
 })
 export class AppModule {}

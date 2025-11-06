@@ -2,10 +2,10 @@
 // 灵感来源: Zod Config + dotenv-expand
 // 核心理念: 类型安全的环境配置模块
 
-import { Module, OnModuleInit } from "@nestjs/common";
-import { ConfigModule as NestConfigModule } from "@nestjs/config";
-import { validateEnv } from "./env.schema";
-import { EnvLoader } from "./env-loader";
+import { Module, OnModuleInit } from '@nestjs/common';
+import { ConfigModule as NestConfigModule } from '@nestjs/config';
+import { validateEnv } from './env.schema';
+import { EnvLoader } from './env-loader';
 
 /**
  * @module ConfigModule
@@ -29,8 +29,7 @@ export class ConfigModule implements OnModuleInit {
   onModuleInit() {
     // 加载环境变量（支持扩展）
     EnvLoader.load({
-      env: process.env.NODE_ENV || "development",
+      env: process.env.NODE_ENV || 'development',
     });
   }
 }
-

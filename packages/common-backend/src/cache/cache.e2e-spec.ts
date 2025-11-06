@@ -24,7 +24,7 @@ describe('CacheService (e2e)', () => {
       }).compile();
 
       cacheService = module.get<CacheService>(CacheService);
-      
+
       // 测试缓存是否可用
       await cacheService.set('test-connection', 'ok', { ttl: 1 });
       const testValue = await cacheService.get<string>('test-connection');
@@ -91,7 +91,7 @@ describe('CacheService (e2e)', () => {
       return;
     }
     await cacheService.set('test-key', 'to-delete');
-    
+
     const before = await cacheService.get<string>('test-key');
     expect(before).toBe('to-delete');
 
@@ -123,12 +123,14 @@ describe('CacheService (e2e)', () => {
       console.log('Skipping: Cache not available');
       return;
     }
-    const promises = Array(10).fill(null).map(async (_, index) => {
-      const key = `concurrent-key-${index}`;
-      const value = `value-${index}`;
-      await cacheService.set(key, value);
-      return cacheService.get<string>(key);
-    });
+    const promises = Array(10)
+      .fill(null)
+      .map(async (_, index) => {
+        const key = `concurrent-key-${index}`;
+        const value = `value-${index}`;
+        await cacheService.set(key, value);
+        return cacheService.get<string>(key);
+      });
 
     const results = await Promise.all(promises);
     expect(results).toHaveLength(10);

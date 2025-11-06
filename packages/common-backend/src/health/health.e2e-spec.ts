@@ -40,11 +40,9 @@ describe('Health (e2e)', () => {
 
   it('/health (GET) - should handle multiple requests', async () => {
     // 发送多个并发请求
-    const promises = Array(5).fill(null).map(() =>
-      request(app.getHttpServer())
-        .get('/health')
-        .expect(200)
-    );
+    const promises = Array(5)
+      .fill(null)
+      .map(() => request(app.getHttpServer()).get('/health').expect(200));
 
     const responses = await Promise.all(promises);
 
@@ -56,9 +54,6 @@ describe('Health (e2e)', () => {
   });
 
   it('/health (GET) - should return proper content type', () => {
-    return request(app.getHttpServer())
-      .get('/health')
-      .expect('Content-Type', /json/)
-      .expect(200);
+    return request(app.getHttpServer()).get('/health').expect('Content-Type', /json/).expect(200);
   });
 });

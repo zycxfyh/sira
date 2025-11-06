@@ -19,12 +19,17 @@
       <div>
         <label>模型ID (Model ID)</label>
         <select v-model="editableConfig.modelId" :disabled="isLoading">
-          <option v-if="!fetchedModels.length" disabled value="">{{ modelSelectPlaceholder }}</option>
+          <option v-if="!fetchedModels.length" disabled value="">
+            {{ modelSelectPlaceholder }}
+          </option>
           <option v-for="modelId in fetchedModels" :key="modelId" :value="modelId">
             {{ modelId }}
           </option>
           <!-- Allow showing saved value even if not in fetched list -->
-          <option v-if="editableConfig.modelId && !fetchedModels.includes(editableConfig.modelId)" :value="editableConfig.modelId">
+          <option
+            v-if="editableConfig.modelId && !fetchedModels.includes(editableConfig.modelId)"
+            :value="editableConfig.modelId"
+          >
             {{ editableConfig.modelId }} (自定义)
           </option>
         </select>
@@ -34,7 +39,12 @@
       <div class="full-width">
         <label>API 基础地址 (Base URL)</label>
         <div class="input-with-button">
-          <input type="text" v-model.trim="editableConfig.baseUrl" placeholder="选择供应商后将自动填充" :disabled="isLoading">
+          <input
+            type="text"
+            v-model.trim="editableConfig.baseUrl"
+            placeholder="选择供应商后将自动填充"
+            :disabled="isLoading"
+          />
           <button class="button small" @click="handleTestConnection" :disabled="isLoading">
             {{ testButtonText }}
           </button>
@@ -44,29 +54,45 @@
       <!-- API Key Input -->
       <div class="full-width">
         <label>API 密钥 (API Key)</label>
-        <input type="password" v-model.trim="editableConfig.apiKey" placeholder="在此输入您的API密钥" :disabled="isLoading">
+        <input
+          type="password"
+          v-model.trim="editableConfig.apiKey"
+          placeholder="在此输入您的API密钥"
+          :disabled="isLoading"
+        />
       </div>
-      
+
       <!-- Role Assignment -->
       <div class="full-width">
         <label>能力分配 (此AI核心负责的任务)</label>
         <div class="roles-group">
           <label v-for="role in availableRoles" :key="role.id">
-            <input type="checkbox" :value="role.id" v-model="selectedRoles" :disabled="isLoading || props.isGlobal">
+            <input
+              type="checkbox"
+              :value="role.id"
+              v-model="selectedRoles"
+              :disabled="isLoading || props.isGlobal"
+            />
             {{ role.name }}
             <span class="tooltip">{{ role.description }}</span>
           </label>
         </div>
-         <p v-if="props.isGlobal" class="global-mode-text">简易模式下，此AI将负责所有任务。</p>
+        <p v-if="props.isGlobal" class="global-mode-text">简易模式下，此AI将负责所有任务。</p>
       </div>
     </div>
-    
+
     <!-- Action Buttons -->
     <div class="button-group">
-      <button v-if="!isNew" class="button danger" @click="handleDelete" :disabled="isLoading">删除</button>
-      <button v-else class="button danger" @click="handleCancelNew" :disabled="isLoading">取消</button>
+      <button v-if="!isNew" class="button danger" @click="handleDelete" :disabled="isLoading">
+        删除
+      </button>
+      <button v-else class="button danger" @click="handleCancelNew" :disabled="isLoading">
+        取消
+      </button>
       <div>
-        <button v-if="!isNew" class="button" @click="resetChanges" :disabled="isLoading">重置</button>
+        <button v-if="!isNew" class="button" @click="resetChanges" :disabled="isLoading">
+          重置
+        </button>
         <button class="button primary" @click="handleSave" :disabled="isLoading">
           {{ isNew ? '创建' : '保存' }}
         </button>
@@ -120,15 +146,34 @@ const providerGroups = ref([
 
 // --- Data for Role Assignment ---
 const availableRoles = ref([
-  { id: 'logic_parsing', name: '逻辑解析', description: '将玩家的自然语言输入翻译成确定的游戏世界规则变更。' },
-  { id: 'narrative_synthesis', name: '叙事合成', description: '将游戏世界状态的变化渲染成生动的故事文本和玩家选项。' },
-  { id: 'planner', name: '任务规划', description: '(高级) 负责将复杂任务分解为多个子任务，进行AI协作。' },
-  { id: 'critic', name: '输出审查', description: '(高级) 负责审查其他AI的输出质量，并提出修改意见。' },
+  {
+    id: 'logic_parsing',
+    name: '逻辑解析',
+    description: '将玩家的自然语言输入翻译成确定的游戏世界规则变更。',
+  },
+  {
+    id: 'narrative_synthesis',
+    name: '叙事合成',
+    description: '将游戏世界状态的变化渲染成生动的故事文本和玩家选项。',
+  },
+  {
+    id: 'planner',
+    name: '任务规划',
+    description: '(高级) 负责将复杂任务分解为多个子任务，进行AI协作。',
+  },
+  {
+    id: 'critic',
+    name: '输出审查',
+    description: '(高级) 负责审查其他AI的输出质量，并提出修改意见。',
+  },
 ]);
 
 const selectedRoles = computed({
-  get: () => editableConfig.value.assignedRoles ? editableConfig.value.assignedRoles.split(',') : [],
-  set: (newValue) => { editableConfig.value.assignedRoles = newValue.join(','); },
+  get: () =>
+    editableConfig.value.assignedRoles ? editableConfig.value.assignedRoles.split(',') : [],
+  set: (newValue) => {
+    editableConfig.value.assignedRoles = newValue.join(',');
+  },
 });
 
 // --- Computed Properties for UI ---
@@ -139,15 +184,15 @@ const modelSelectPlaceholder = computed(() => {
 });
 
 const testButtonText = computed(() => {
-  if(isTesting.value) return '测试中...';
-  if(fetchedModels.value.length > 0) return '重新获取';
+  if (isTesting.value) return '测试中...';
+  if (fetchedModels.value.length > 0) return '重新获取';
   return '测试 & 获取模型';
 });
 
 // --- Methods ---
 function onProviderChange() {
   const allProviders = [...providers.china, ...providers.international, ...providers.local];
-  const selectedProvider = allProviders.find(p => p.id === editableConfig.value.provider);
+  const selectedProvider = allProviders.find((p) => p.id === editableConfig.value.provider);
   if (selectedProvider) {
     editableConfig.value.baseUrl = selectedProvider.baseUrl;
   }
@@ -159,10 +204,10 @@ async function handleTestConnection() {
   if (!editableConfig.value.apiKey) {
     return showToast('请输入API Key后再测试连接。', 'error');
   }
-  
+
   isTesting.value = true;
   fetchedModels.value = [];
-  
+
   try {
     const payload = {
       provider: editableConfig.value.provider,
@@ -171,10 +216,13 @@ async function handleTestConnection() {
     };
     const response = await apiService.settings.testConnection(payload);
     fetchedModels.value = response.models;
-    
+
     if (response.models.length > 0) {
-      if (!editableConfig.value.modelId || !response.models.includes(editableConfig.value.modelId)) {
-         editableConfig.value.modelId = response.models[0];
+      if (
+        !editableConfig.value.modelId ||
+        !response.models.includes(editableConfig.value.modelId)
+      ) {
+        editableConfig.value.modelId = response.models[0];
       }
       showToast(`成功获取 ${response.models.length} 个模型！`, 'success');
     } else {
@@ -189,12 +237,17 @@ async function handleTestConnection() {
 
 function handleSave() {
   const dataToSave = { ...editableConfig.value };
-  
+
   if (props.isGlobal) {
     dataToSave.assignedRoles = ALL_AI_ROLES.join(',');
   }
-  
-  if (!dataToSave.provider || !dataToSave.apiKey || !dataToSave.modelId || !dataToSave.assignedRoles) {
+
+  if (
+    !dataToSave.provider ||
+    !dataToSave.apiKey ||
+    !dataToSave.modelId ||
+    !dataToSave.assignedRoles
+  ) {
     return showToast('供应商、API Key、模型ID和能力分配均为必填项。', 'error');
   }
 
@@ -224,9 +277,13 @@ function handleCancelNew() {
   settingsStore.removeNewConfigCard(props.config.id);
 }
 
-watch(() => props.config, (newVal) => {
-  editableConfig.value = JSON.parse(JSON.stringify(newVal));
-}, { deep: true, immediate: true });
+watch(
+  () => props.config,
+  (newVal) => {
+    editableConfig.value = JSON.parse(JSON.stringify(newVal));
+  },
+  { deep: true, immediate: true },
+);
 </script>
 
 <style scoped>
@@ -292,26 +349,26 @@ label {
   position: relative;
 }
 .tooltip {
-    visibility: hidden;
-    width: 220px;
-    background-color: #555;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 10px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -110px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 0.8rem;
-    pointer-events: none;
+  visibility: hidden;
+  width: 220px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -110px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 0.8rem;
+  pointer-events: none;
 }
 .roles-group label:hover .tooltip {
-    visibility: visible;
-    opacity: 1;
+  visibility: visible;
+  opacity: 1;
 }
 .global-mode-text {
   font-size: 0.9rem;

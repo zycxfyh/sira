@@ -7,11 +7,14 @@
       <router-link to="/login" class="button primary">连接至中枢系统</router-link>
 
       <!-- ===== 这是我们新增的“红色按钮” ===== -->
-      <button @click="triggerFrontendError" class="button" style="margin-top: 20px; border-color: red; color: red;">
+      <button
+        @click="triggerFrontendError"
+        class="button"
+        style="margin-top: 20px; border-color: red; color: red"
+      >
         触发前端Sentry测试
       </button>
       <!-- =================================== -->
-
     </div>
   </div>
 </template>

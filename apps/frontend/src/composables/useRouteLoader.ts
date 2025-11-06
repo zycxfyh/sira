@@ -2,19 +2,19 @@
 // 灵感来源: Remix (https://github.com/remix-run/remix)
 // 核心理念: 在 Vue Router 中使用 Loader 模式加载数据
 
-import { ref, type Ref } from "vue";
-import { useRoute } from "vue-router";
+import { ref, type Ref } from 'vue';
+import { useRoute } from 'vue-router';
 import type {
   LoaderContext,
   LoaderFunction,
   LoaderResult,
   RouteLoaderConfig,
-} from "../router/loader.types";
+} from '../router/loader.types';
 
 /**
  * @function useRouteLoader
  * @description Remix 风格的 Vue Router 数据加载器
- * 
+ *
  * @example
  * ```typescript
  * const { data, loading, error } = useRouteLoader(
@@ -107,7 +107,7 @@ export function useRouteLoader<T = unknown>(
       }
 
       // 所有重试都失败
-      throw lastError ?? new Error("Loader execution failed");
+      throw lastError ?? new Error('Loader execution failed');
     } catch (err) {
       const loaderError = err instanceof Error ? err : new Error(String(err));
       error.value = loaderError;
@@ -139,4 +139,3 @@ export function useRouteLoader<T = unknown>(
     reload: executeLoader,
   };
 }
-

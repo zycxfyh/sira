@@ -2,9 +2,9 @@
 // 灵感来源: express-rate-limit
 // 核心理念: 模块化导出限流功能
 
-import { Module } from "@nestjs/common";
-import { RateLimitGuard } from "./rate-limit.guard";
-import { RateLimitService } from "./rate-limit.service";
+import { Module } from '@nestjs/common';
+import { RateLimitGuard } from './rate-limit.guard';
+import { RateLimitService } from './rate-limit.service';
 
 /**
  * @module RateLimitModule
@@ -16,4 +16,3 @@ import { RateLimitService } from "./rate-limit.service";
   exports: [RateLimitService, RateLimitGuard],
 })
 export class RateLimitModule {}
-

@@ -55,14 +55,9 @@ export class PromptManagerService implements OnModuleInit {
         this.logger.log(`  [+] Loaded prompt: ${file}`);
       }
 
-      this.logger.log(
-        `Successfully loaded ${this.promptCache.size} prompt(s).`,
-      );
+      this.logger.log(`Successfully loaded ${this.promptCache.size} prompt(s).`);
     } catch (error) {
-      this.logger.error(
-        `Failed to load prompts from filesystem at ${this.promptsDir}.`,
-        error,
-      );
+      this.logger.error(`Failed to load prompts from filesystem at ${this.promptsDir}.`, error);
       // 這是一個致命的啟動錯誤，我們應該拋出它來停止應用
       throw new Error('Could not initialize prompts. Halting application.');
     }

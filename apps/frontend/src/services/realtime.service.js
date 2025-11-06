@@ -102,7 +102,9 @@ class RealtimeService {
    */
   on(eventName, callback) {
     if (!this.socket) {
-      console.error(`[RealtimeService] Cannot listen to event '${eventName}'. Socket is not connected.`);
+      console.error(
+        `[RealtimeService] Cannot listen to event '${eventName}'. Socket is not connected.`,
+      );
       return;
     }
     this.socket.on(eventName, callback);

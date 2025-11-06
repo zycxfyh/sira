@@ -103,29 +103,29 @@ export const PERFORMANCE_CONFIG = {
   // 性能阈值
   thresholds: {
     responseTime: {
-      warning: 1000,    // 1秒
-      critical: 3000,   // 3秒
+      warning: 1000, // 1秒
+      critical: 3000, // 3秒
       emergency: 10000, // 10秒
     },
     errorRate: {
-      warning: 1.0,     // 1%
-      critical: 5.0,    // 5%
-      emergency: 10.0,  // 10%
+      warning: 1.0, // 1%
+      critical: 5.0, // 5%
+      emergency: 10.0, // 10%
     },
     cpuUsage: {
-      warning: 70,      // 70%
-      critical: 85,     // 85%
-      emergency: 95,    // 95%
+      warning: 70, // 70%
+      critical: 85, // 85%
+      emergency: 95, // 95%
     },
     memoryUsage: {
-      warning: 80,      // 80%
-      critical: 90,     // 90%
-      emergency: 95,    // 95%
+      warning: 80, // 80%
+      critical: 90, // 90%
+      emergency: 95, // 95%
     },
     connectionCount: {
-      warning: 1000,    // 1000连接
-      critical: 2000,   // 2000连接
-      emergency: 5000,  // 5000连接
+      warning: 1000, // 1000连接
+      critical: 2000, // 2000连接
+      emergency: 5000, // 5000连接
     },
   } as Record<string, PerformanceThresholds>,
 
@@ -199,14 +199,18 @@ export function isPerformanceHealthy(
   switch (metric) {
     case 'responseTime':
       if (value <= sla.responseTime.p95) return { healthy: true, level: 'healthy' };
-      if (value <= getPerformanceThreshold('responseTime', 'warning')) return { healthy: false, level: 'warning' };
-      if (value <= getPerformanceThreshold('responseTime', 'critical')) return { healthy: false, level: 'critical' };
+      if (value <= getPerformanceThreshold('responseTime', 'warning'))
+        return { healthy: false, level: 'warning' };
+      if (value <= getPerformanceThreshold('responseTime', 'critical'))
+        return { healthy: false, level: 'critical' };
       return { healthy: false, level: 'emergency' };
 
     case 'errorRate':
       if (value <= sla.errorRate) return { healthy: true, level: 'healthy' };
-      if (value <= getPerformanceThreshold('errorRate', 'warning')) return { healthy: false, level: 'warning' };
-      if (value <= getPerformanceThreshold('errorRate', 'critical')) return { healthy: false, level: 'critical' };
+      if (value <= getPerformanceThreshold('errorRate', 'warning'))
+        return { healthy: false, level: 'warning' };
+      if (value <= getPerformanceThreshold('errorRate', 'critical'))
+        return { healthy: false, level: 'critical' };
       return { healthy: false, level: 'emergency' };
 
     case 'availability':

@@ -2,9 +2,9 @@
 // 灵感来源: VS Code Extension System
 // 核心理念: 模块化导出，方便其他模块使用
 
-import { Module } from "@nestjs/common";
-import { PluginLoader } from "./plugin.loader";
-import { PluginRegistry } from "./plugin.registry";
+import { Module } from '@nestjs/common';
+import { PluginLoader } from './plugin.loader';
+import { PluginRegistry } from './plugin.registry';
 
 /**
  * @module PluginModule
@@ -16,4 +16,3 @@ import { PluginRegistry } from "./plugin.registry";
   exports: [PluginRegistry, PluginLoader],
 })
 export class PluginModule {}
-

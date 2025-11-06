@@ -6,26 +6,26 @@
 // 2. 生成统一的错误响应格式
 // 3. 提供错误码和建议操作
 
-import { ZodError } from "zod";
-import { AiGenerationException } from "../exceptions/ai-exception";
-import { PromptInjectionDetectedException } from "./prompt-injection-detected.exception";
+import { ZodError } from 'zod';
+import { AiGenerationException } from '../exceptions/ai-exception';
+import { PromptInjectionDetectedException } from './prompt-injection-detected.exception';
 
 /**
  * 错误类型枚举
  */
 export enum ProcessingErrorType {
   /** 验证错误 - 不可重试（消息格式错误） */
-  VALIDATION_ERROR = "VALIDATION_ERROR",
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
   /** AI 生成错误 - 可重试（AI 可能临时故障） */
-  AI_GENERATION_ERROR = "AI_GENERATION_ERROR",
+  AI_GENERATION_ERROR = 'AI_GENERATION_ERROR',
   /** 业务逻辑错误 - 不可重试（数据冲突等） */
-  BUSINESS_LOGIC_ERROR = "BUSINESS_LOGIC_ERROR",
+  BUSINESS_LOGIC_ERROR = 'BUSINESS_LOGIC_ERROR',
   /** 网络错误 - 可重试（临时网络问题） */
-  NETWORK_ERROR = "NETWORK_ERROR",
+  NETWORK_ERROR = 'NETWORK_ERROR',
   /** 数据库错误 - 可重试（连接问题等） */
-  DATABASE_ERROR = "DATABASE_ERROR",
+  DATABASE_ERROR = 'DATABASE_ERROR',
   /** 未知错误 - 默认可重试（保守策略） */
-  UNKNOWN_ERROR = "UNKNOWN_ERROR",
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
 /**
@@ -72,11 +72,10 @@ export function classifyProcessingError(
     return {
       errorType: ProcessingErrorType.VALIDATION_ERROR,
       retryable: false,
-      errorCode: "INVALID_MESSAGE_FORMAT",
-      message: "Message validation failed. The message format is incorrect.",
+      errorCode: 'INVALID_MESSAGE_FORMAT',
+      message: 'Message validation failed. The message format is incorrect.',
       details: error.issues,
-      suggestedAction:
-        "Check the message format and resend with correct structure.",
+      suggestedAction: 'Check the message format and resend with correct structure.',
     };
   }
 
@@ -84,12 +83,11 @@ export function classifyProcessingError(
     return {
       errorType: ProcessingErrorType.VALIDATION_ERROR,
       retryable: false,
-      errorCode: "PROMPT_INJECTION_DETECTED",
-      message:
-        "Potential prompt injection detected. The input has been rejected.",
+      errorCode: 'PROMPT_INJECTION_DETECTED',
+      message: 'Potential prompt injection detected. The input has been rejected.',
       details: error.details,
       suggestedAction:
-        "Revise the input to remove system override or malicious patterns before retrying.",
+        'Revise the input to remove system override or malicious patterns before retrying.',
     };
   }
 
@@ -98,12 +96,11 @@ export function classifyProcessingError(
     return {
       errorType: ProcessingErrorType.AI_GENERATION_ERROR,
       retryable: true,
-      errorCode: "AI_GENERATION_FAILED",
-      message:
-        "AI failed to generate valid output. The operation can be retried.",
+      errorCode: 'AI_GENERATION_FAILED',
+      message: 'AI failed to generate valid output. The operation can be retried.',
       details: error.details,
       suggestedAction:
-        "Retry the operation. If the issue persists, check AI provider configuration.",
+        'Retry the operation. If the issue persists, check AI provider configuration.',
     };
   }
 
@@ -113,60 +110,56 @@ export function classifyProcessingError(
     const errorName = error.name.toLowerCase();
 
     if (
-      errorName.includes("network") ||
-      errorMessage.includes("econnrefused") ||
-      errorMessage.includes("etimedout") ||
-      errorMessage.includes("enotfound") ||
-      errorMessage.includes("socket") ||
-      errorMessage.includes("timeout") ||
-      errorMessage.includes("connection")
+      errorName.includes('network') ||
+      errorMessage.includes('econnrefused') ||
+      errorMessage.includes('etimedout') ||
+      errorMessage.includes('enotfound') ||
+      errorMessage.includes('socket') ||
+      errorMessage.includes('timeout') ||
+      errorMessage.includes('connection')
     ) {
       return {
         errorType: ProcessingErrorType.NETWORK_ERROR,
         retryable: true,
-        errorCode: "NETWORK_CONNECTION_FAILED",
-        message: "Network connection failed. The operation can be retried.",
+        errorCode: 'NETWORK_CONNECTION_FAILED',
+        message: 'Network connection failed. The operation can be retried.',
         details: error.message,
-        suggestedAction:
-          "Retry the operation. Check network connectivity if the issue persists.",
+        suggestedAction: 'Retry the operation. Check network connectivity if the issue persists.',
       };
     }
 
     // 数据库错误 - 可重试
     if (
-      errorName.includes("prisma") ||
-      errorMessage.includes("database") ||
-      errorMessage.includes("connection") ||
-      errorMessage.includes("query")
+      errorName.includes('prisma') ||
+      errorMessage.includes('database') ||
+      errorMessage.includes('connection') ||
+      errorMessage.includes('query')
     ) {
       return {
         errorType: ProcessingErrorType.DATABASE_ERROR,
         retryable: true,
-        errorCode: "DATABASE_OPERATION_FAILED",
-        message: "Database operation failed. The operation can be retried.",
+        errorCode: 'DATABASE_OPERATION_FAILED',
+        message: 'Database operation failed. The operation can be retried.',
         details: error.message,
-        suggestedAction:
-          "Retry the operation. Check database connection if the issue persists.",
+        suggestedAction: 'Retry the operation. Check database connection if the issue persists.',
       };
     }
 
     // 业务逻辑错误（特定错误名称）
     if (
-      errorName.includes("business") ||
-      errorName.includes("logic") ||
-      errorMessage.includes("business logic") ||
-      errorMessage.includes("conflict") ||
-      errorMessage.includes("duplicate")
+      errorName.includes('business') ||
+      errorName.includes('logic') ||
+      errorMessage.includes('business logic') ||
+      errorMessage.includes('conflict') ||
+      errorMessage.includes('duplicate')
     ) {
       return {
         errorType: ProcessingErrorType.BUSINESS_LOGIC_ERROR,
         retryable: false,
-        errorCode: "BUSINESS_RULE_VIOLATION",
-        message:
-          "Business logic validation failed. The operation cannot be retried.",
+        errorCode: 'BUSINESS_RULE_VIOLATION',
+        message: 'Business logic validation failed. The operation cannot be retried.',
         details: error.message,
-        suggestedAction:
-          "Review the request data and ensure it complies with business rules.",
+        suggestedAction: 'Review the request data and ensure it complies with business rules.',
       };
     }
   }
@@ -175,11 +168,10 @@ export function classifyProcessingError(
   return {
     errorType: ProcessingErrorType.UNKNOWN_ERROR,
     retryable: true,
-    errorCode: "UNKNOWN_ERROR",
-    message: "An unexpected error occurred. The operation can be retried.",
+    errorCode: 'UNKNOWN_ERROR',
+    message: 'An unexpected error occurred. The operation can be retried.',
     details: error instanceof Error ? error.message : String(error),
-    suggestedAction:
-      "Retry the operation. Contact support if the issue persists.",
+    suggestedAction: 'Retry the operation. Contact support if the issue persists.',
   };
 }
 

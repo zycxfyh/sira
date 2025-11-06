@@ -1,11 +1,7 @@
 // 文件路径: apps/backend/apps/creation-agent/src/creation.service.ts (已修复 unknown 类型)
 
 import { Prisma } from '@prisma/client';
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { PromptTemplate } from '@langchain/core/prompts';
@@ -66,42 +62,36 @@ export class CreationService {
 
     try {
       const initialWorld = await this.generateInitialWorld(concept, pseudoUser);
-      this.logger.log(
-        `AI has generated initial world: "${initialWorld.gameName}"`,
-      );
+      this.logger.log(`AI has generated initial world: "${initialWorld.gameName}"`);
 
-      const newGame = await this.prisma.$transaction(
-        async (tx: Prisma.TransactionClient) => {
-          const game = await tx.game.create({
-            data: {
-              name: initialWorld.gameName,
-              ownerId: userId,
-            },
-          });
+      const newGame = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        const game = await tx.game.create({
+          data: {
+            name: initialWorld.gameName,
+            ownerId: userId,
+          },
+        });
 
-          await tx.character.create({
-            data: {
+        await tx.character.create({
+          data: {
+            gameId: game.id,
+            name: initialWorld.character.name,
+            card: initialWorld.character.card as any,
+          },
+        });
+
+        if (initialWorld.worldBook?.length > 0) {
+          await tx.worldBookEntry.createMany({
+            data: initialWorld.worldBook.map((entry) => ({
               gameId: game.id,
-              name: initialWorld.character.name,
-              card: initialWorld.character.card as any,
-            },
+              key: entry.key,
+              content: entry.content as any,
+            })),
           });
-
-          if (initialWorld.worldBook?.length > 0) {
-            await tx.worldBookEntry.createMany({
-              data: initialWorld.worldBook.map((entry) => ({
-                gameId: game.id,
-                key: entry.key,
-                content: entry.content as any,
-              })),
-            });
-          }
-          return game;
-        },
-      );
-      this.logger.log(
-        `New game with ID ${newGame.id} successfully saved to database.`,
-      );
+        }
+        return game;
+      });
+      this.logger.log(`New game with ID ${newGame.id} successfully saved to database.`);
 
       await firstValueFrom(
         this.httpService.post(this.GATEWAY_URL, {
@@ -113,7 +103,8 @@ export class CreationService {
           },
         }),
       );
-    } catch (error: unknown) { // <-- [核心修正] 明确 error 类型为 unknown
+    } catch (error: unknown) {
+      // <-- [核心修正] 明确 error 类型为 unknown
       let errorMessage = 'An unknown error occurred during world creation';
       // [核心修正] 类型检查
       if (error instanceof Error) {
@@ -145,20 +136,10 @@ export class CreationService {
     }
   }
 
-  private async generateInitialWorld(
-    concept: string,
-    user: User,
-  ): Promise<ArchitectResponse> {
-    const provider = await this.scheduler.getProviderForRole(
-      user,
-      'narrative_synthesis',
-    );
-    const parser = StructuredOutputParser.fromZodSchema(
-      architectResponseSchema,
-    );
-    const systemPrompt = this.promptManager.getPrompt(
-      '00_persona_and_framework.md',
-    );
+  private async generateInitialWorld(concept: string, user: User): Promise<ArchitectResponse> {
+    const provider = await this.scheduler.getProviderForRole(user, 'narrative_synthesis');
+    const parser = StructuredOutputParser.fromZodSchema(architectResponseSchema);
+    const systemPrompt = this.promptManager.getPrompt('00_persona_and_framework.md');
 
     const prompt = new PromptTemplate({
       template: `{system_prompt}\n# 创世任务指令\n根据以下用户概念，为一次新的游戏人生生成初始设定。\n{format_instructions}\n---\n用户概念: "{concept}"`,
@@ -178,7 +159,8 @@ export class CreationService {
         architectResponseSchema as any,
       );
       return response;
-    } catch (error: unknown) { // <-- [核心修正] 明确 error 类型为 unknown
+    } catch (error: unknown) {
+      // <-- [核心修正] 明确 error 类型为 unknown
       const errorMessage = error instanceof Error ? error.message : 'Unknown AI error';
       this.logger.error(
         `AI generation failed inside generateInitialWorld: ${errorMessage}`,

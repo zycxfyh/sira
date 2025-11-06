@@ -44,7 +44,7 @@ export class QdrantService implements OnModuleInit {
 
       this.client = new QdrantClient({
         url: qdrantUrl,
-        ...(qdrantApiKey && { apiKey: qdrantApiKey })
+        ...(qdrantApiKey && { apiKey: qdrantApiKey }),
       });
 
       await this.ensureCollection();
@@ -95,7 +95,11 @@ export class QdrantService implements OnModuleInit {
       score_threshold: scoreThreshold,
       with_payload: true,
     });
-    return searchResult.map((r: any) => ({ id: r.id as string, score: r.score, payload: r.payload || {} }));
+    return searchResult.map((r: any) => ({
+      id: r.id as string,
+      score: r.score,
+      payload: r.payload || {},
+    }));
   }
 
   async healthCheck(): Promise<boolean> {

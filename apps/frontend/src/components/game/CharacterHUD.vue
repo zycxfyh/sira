@@ -2,44 +2,42 @@
 <template>
   <div id="character-hud" class="game-panel">
     <h3>角色状态</h3>
-    
+
     <template v-if="gameStore.currentGame && gameStore.currentGame.character">
-      <div 
-        class="button" 
-        @click="uiStore.showCharacterSheetModal" 
-        style="width: 100%; box-sizing: border-box; margin: 10px 0;"
+      <div
+        class="button"
+        @click="uiStore.showCharacterSheetModal"
+        style="width: 100%; box-sizing: border-box; margin: 10px 0"
       >
         查看化身档案
       </div>
-      
+
       <div class="panel-content">
         <div class="stat-bar">
           <label>
-            生命值 (HP): {{ gameStore.currentGame.character.hp }} / {{ gameStore.currentGame.character.maxHp }}
+            生命值 (HP): {{ gameStore.currentGame.character.hp }} /
+            {{ gameStore.currentGame.character.maxHp }}
           </label>
           <div class="bar-container">
-            <div 
-              class="bar-fill health" 
-              :style="{ width: hpPercentage }"
-            ></div>
+            <div class="bar-fill health" :style="{ width: hpPercentage }"></div>
           </div>
         </div>
-        
+
         <div class="stat-bar">
           <label>
-            精神力 (MP): {{ gameStore.currentGame.character.mp }} / {{ gameStore.currentGame.character.maxMp }}
+            精神力 (MP): {{ gameStore.currentGame.character.mp }} /
+            {{ gameStore.currentGame.character.maxMp }}
           </label>
           <div class="bar-container">
-            <div 
-              class="bar-fill mana" 
-              :style="{ width: mpPercentage }"
-            ></div>
+            <div class="bar-fill mana" :style="{ width: mpPercentage }"></div>
           </div>
         </div>
-        
+
         <div id="status-effects">
           <h4>当前状态</h4>
-          <p><span>{{ gameStore.currentGame.character.status || '未知' }}</span></p>
+          <p>
+            <span>{{ gameStore.currentGame.character.status || '未知' }}</span>
+          </p>
         </div>
       </div>
     </template>

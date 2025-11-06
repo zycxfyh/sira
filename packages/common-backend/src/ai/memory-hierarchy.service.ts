@@ -111,7 +111,7 @@ export class MemoryHierarchyService {
     // 批量删除
     const result = await this.prisma.memory.deleteMany({
       where: {
-        id: { in: memoriesToDelete.map(m => m.id) },
+        id: { in: memoriesToDelete.map((m) => m.id) },
       },
     });
 

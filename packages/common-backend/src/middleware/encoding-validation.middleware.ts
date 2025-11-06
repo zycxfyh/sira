@@ -57,7 +57,7 @@ export class EncodingValidationMiddleware implements NestMiddleware {
       if (typeof value === 'string') {
         this.validateUtf8String(key, value);
       } else if (Array.isArray(value)) {
-        value.forEach(v => {
+        value.forEach((v) => {
           if (typeof v === 'string') {
             this.validateUtf8String(key, v);
           }
@@ -77,7 +77,7 @@ export class EncodingValidationMiddleware implements NestMiddleware {
       if (typeof value === 'string') {
         this.validateUtf8String(`header-${key}`, value);
       } else if (Array.isArray(value)) {
-        value.forEach(v => {
+        value.forEach((v) => {
           if (typeof v === 'string') {
             this.validateUtf8String(`header-${key}`, v);
           }
@@ -102,7 +102,6 @@ export class EncodingValidationMiddleware implements NestMiddleware {
 
       // 检查不规范的UTF-8序列
       this.checkInvalidUtf8Sequences(source, decoded);
-
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown encoding error';
       throw new BadRequestException(`Invalid encoding in ${source}: ${message}`);
@@ -120,7 +119,7 @@ export class EncodingValidationMiddleware implements NestMiddleware {
 
       if (codePoint !== undefined) {
         // 检查是否是ASCII字符但使用了多字节编码
-        if (codePoint <= 0x7F && value.length > 1) {
+        if (codePoint <= 0x7f && value.length > 1) {
           const utf8Bytes = this.getUtf8ByteLength(char);
           if (utf8Bytes > 1) {
             throw new BadRequestException(`Overlong UTF-8 encoding detected in ${source}`);
@@ -128,7 +127,7 @@ export class EncodingValidationMiddleware implements NestMiddleware {
         }
 
         // 跳过代理对
-        if (codePoint > 0xFFFF) {
+        if (codePoint > 0xffff) {
           i++; // 代理对占用两个字符位置
         }
       }
@@ -184,9 +183,9 @@ export class EncodingValidationMiddleware implements NestMiddleware {
     const codePoint = char.codePointAt(0);
     if (codePoint === undefined) return 0;
 
-    if (codePoint <= 0x7F) return 1;
-    if (codePoint <= 0x7FF) return 2;
-    if (codePoint <= 0xFFFF) return 3;
+    if (codePoint <= 0x7f) return 1;
+    if (codePoint <= 0x7ff) return 2;
+    if (codePoint <= 0xffff) return 3;
     return 4;
   }
 

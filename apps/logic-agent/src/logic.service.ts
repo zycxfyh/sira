@@ -1,10 +1,6 @@
 // 文件路径: apps/backend/apps/logic-agent/src/logic.service.ts (已重构)
 
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { User } from '@prisma/client';
@@ -36,9 +32,7 @@ export class LogicService {
     this.logger.log(`Processing logic for game ${jobData.gameId}`);
     const pseudoUser = { id: jobData.userId } as User;
     const directives = await this.generateDirectives(jobData, pseudoUser);
-    this.logger.log(
-      `Generated ${directives.length} directives for game ${jobData.gameId}.`,
-    );
+    this.logger.log(`Generated ${directives.length} directives for game ${jobData.gameId}.`);
     await this.ruleEngine.execute(jobData.gameId, directives);
     this.logger.log(`Directives executed for game ${jobData.gameId}.`);
     this.eventBus.publish('LOGIC_PROCESSING_COMPLETE', {
@@ -46,9 +40,7 @@ export class LogicService {
       userId: jobData.userId,
       playerAction: jobData.playerAction,
     });
-    this.logger.log(
-      `Published LOGIC_PROCESSING_COMPLETE for game ${jobData.gameId}.`,
-    );
+    this.logger.log(`Published LOGIC_PROCESSING_COMPLETE for game ${jobData.gameId}.`);
   }
 
   protected async generateDirectives(
@@ -56,10 +48,7 @@ export class LogicService {
     user: User,
   ): Promise<DirectiveSet> {
     try {
-      const provider = await this.scheduler.getProviderForRole(
-        user,
-        'logic_parsing',
-      );
+      const provider = await this.scheduler.getProviderForRole(user, 'logic_parsing');
       const parser = StructuredOutputParser.fromZodSchema(directiveSetSchema as any);
       const systemPrompt = this.promptManager.getPrompt('01_logic_engine.md');
 
@@ -72,7 +61,7 @@ export class LogicService {
       });
 
       const chain = prompt.pipe(provider.model).pipe(parser);
-      
+
       // [核心改造] 使用护栏函数替换直接调用
       const response = await callAiWithGuard(
         chain,
@@ -85,7 +74,6 @@ export class LogicService {
       );
 
       return response;
-
     } catch (error: unknown) {
       const errorMessage =
         error instanceof AiGenerationException

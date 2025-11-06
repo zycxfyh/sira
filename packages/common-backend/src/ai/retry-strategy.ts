@@ -17,21 +17,21 @@
  */
 export enum ErrorCategory {
   /** 网络错误（连接失败、超时等）- 可重试 */
-  NETWORK = "network",
+  NETWORK = 'network',
   /** 临时性 API 错误（429 限流、503 服务不可用等）- 可重试 */
-  TEMPORARY_API_ERROR = "temporary_api_error",
+  TEMPORARY_API_ERROR = 'temporary_api_error',
   /** JSON 格式错误 - 可重试（自动修复） */
-  JSON_PARSE_ERROR = "json_parse_error",
+  JSON_PARSE_ERROR = 'json_parse_error',
   /** Schema 验证错误 - 可重试（带错误反馈） */
-  VALIDATION_ERROR = "validation_error",
+  VALIDATION_ERROR = 'validation_error',
   /** 认证错误（401, 403）- 不可重试 */
-  AUTHENTICATION_ERROR = "authentication_error",
+  AUTHENTICATION_ERROR = 'authentication_error',
   /** 参数错误（400）- 不可重试 */
-  INVALID_REQUEST = "invalid_request",
+  INVALID_REQUEST = 'invalid_request',
   /** 业务逻辑错误 - 不可重试 */
-  BUSINESS_LOGIC_ERROR = "business_logic_error",
+  BUSINESS_LOGIC_ERROR = 'business_logic_error',
   /** 未知错误 - 默认可重试 */
-  UNKNOWN = "unknown",
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -96,16 +96,13 @@ export const DEFAULT_RETRY_CONFIG: RetryConfig = {
  * - Zod 验证错误 → 可重试（带反馈）
  * - 其他错误 → 默认可重试（保守策略）
  */
-export function classifyError(
-  error: unknown,
-  validationFeedback?: string,
-): ErrorClassification {
+export function classifyError(error: unknown, validationFeedback?: string): ErrorClassification {
   // Zod 验证错误
-  if (error && typeof error === "object" && "issues" in error) {
+  if (error && typeof error === 'object' && 'issues' in error) {
     return {
       category: ErrorCategory.VALIDATION_ERROR,
       shouldRetry: true,
-      message: "Schema validation failed",
+      message: 'Schema validation failed',
       hasFeedback: true,
       feedback: validationFeedback,
     };
@@ -118,13 +115,13 @@ export function classifyError(
 
     // 网络错误
     if (
-      errorName.includes("network") ||
-      errorMessage.includes("econnrefused") ||
-      errorMessage.includes("etimedout") ||
-      errorMessage.includes("enotfound") ||
-      errorMessage.includes("socket") ||
-      errorMessage.includes("timeout") ||
-      errorMessage.includes("connection")
+      errorName.includes('network') ||
+      errorMessage.includes('econnrefused') ||
+      errorMessage.includes('etimedout') ||
+      errorMessage.includes('enotfound') ||
+      errorMessage.includes('socket') ||
+      errorMessage.includes('timeout') ||
+      errorMessage.includes('connection')
     ) {
       return {
         category: ErrorCategory.NETWORK,
@@ -144,7 +141,7 @@ export function classifyError(
         return {
           category: ErrorCategory.TEMPORARY_API_ERROR,
           shouldRetry: true,
-          message: "Rate limit exceeded (429)",
+          message: 'Rate limit exceeded (429)',
           hasFeedback: false,
         };
       }
@@ -176,10 +173,10 @@ export function classifyError(
 
     // JSON 解析错误
     if (
-      errorName.includes("json") ||
-      errorName.includes("syntax") ||
-      errorMessage.includes("json") ||
-      errorMessage.includes("parse")
+      errorName.includes('json') ||
+      errorName.includes('syntax') ||
+      errorMessage.includes('json') ||
+      errorMessage.includes('parse')
     ) {
       return {
         category: ErrorCategory.JSON_PARSE_ERROR,
@@ -191,9 +188,9 @@ export function classifyError(
 
     // 业务逻辑错误（特定错误名称）
     if (
-      errorName.includes("business") ||
-      errorName.includes("logic") ||
-      errorMessage.includes("business logic")
+      errorName.includes('business') ||
+      errorName.includes('logic') ||
+      errorMessage.includes('business logic')
     ) {
       return {
         category: ErrorCategory.BUSINESS_LOGIC_ERROR,
@@ -205,9 +202,9 @@ export function classifyError(
   }
 
   // 字符串错误
-  if (typeof error === "string") {
+  if (typeof error === 'string') {
     const lowerError = error.toLowerCase();
-    if (lowerError.includes("timeout") || lowerError.includes("network")) {
+    if (lowerError.includes('timeout') || lowerError.includes('network')) {
       return {
         category: ErrorCategory.NETWORK,
         shouldRetry: true,

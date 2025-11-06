@@ -78,9 +78,11 @@ const gamesService = {
 const settingsService = {
   getAllAiConfigurations: () => apiClient.get('/settings/ai-configurations'),
   createAiConfiguration: (configData) => apiClient.post('/settings/ai-configurations', configData),
-  updateAiConfiguration: (id, updateData) => apiClient.patch(`/settings/ai-configurations/${id}`, updateData),
+  updateAiConfiguration: (id, updateData) =>
+    apiClient.patch(`/settings/ai-configurations/${id}`, updateData),
   deleteAiConfiguration: (id) => apiClient.delete(`/settings/ai-configurations/${id}`),
-  testConnection: (payload) => apiClient.post('/settings/ai-configurations/test-connection', payload),
+  testConnection: (payload) =>
+    apiClient.post('/settings/ai-configurations/test-connection', payload),
 };
 
 export const apiService = {

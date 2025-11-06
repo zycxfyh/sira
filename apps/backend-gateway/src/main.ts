@@ -12,13 +12,16 @@ import { createClient } from 'redis'; // [!] 核心改造：导入 Redis 客户�
 export class RedisIoAdapter extends IoAdapter {
   private adapterConstructor!: ReturnType<typeof createAdapter>;
 
-  constructor(app: any, private readonly configService: ConfigService) {
+  constructor(
+    app: any,
+    private readonly configService: ConfigService,
+  ) {
     super(app);
   }
 
   async connectToRedis(): Promise<void> {
     const redisUrl = this.configService.get<string>('REDIS_URL', 'redis://localhost:6379');
-    
+
     // 根据官方建议，为 pub/sub 创建两个独立的 Redis 连接
     const pubClient = createClient({ url: redisUrl });
     const subClient = pubClient.duplicate();
@@ -35,11 +38,10 @@ export class RedisIoAdapter extends IoAdapter {
   }
 }
 
-
 async function bootstrap() {
   Sentry.init({
     dsn: 'https://2818c3b945a33a13749b3ce539fdb388@o4510229377384448.ingest.us.sentry.io/4510229419851776',
-    tracesSampleRate: 1.0, 
+    tracesSampleRate: 1.0,
     profilesSampleRate: 1.0,
     environment: process.env.NODE_ENV || 'development',
   });
@@ -51,13 +53,12 @@ async function bootstrap() {
   await redisIoAdapter.connectToRedis();
   app.useWebSocketAdapter(redisIoAdapter);
 
-
   app.enableCors({
     origin: 'http://localhost:5173',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  
+
   await app.listen(3000);
 }
 

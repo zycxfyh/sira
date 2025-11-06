@@ -57,7 +57,7 @@ export class ContentTypeValidationMiddleware implements NestMiddleware {
       const [mimeType, parameters] = contentType.split(';');
 
       // 检查是否为允许的MIME类型
-      if (!this.allowedContentTypes.some(allowed => mimeType.toLowerCase().includes(allowed))) {
+      if (!this.allowedContentTypes.some((allowed) => mimeType.toLowerCase().includes(allowed))) {
         throw new BadRequestException(`Unsupported content type: ${mimeType}`);
       }
 
@@ -85,7 +85,9 @@ export class ContentTypeValidationMiddleware implements NestMiddleware {
       const charset = charsetMatch[1].toLowerCase();
       // 只允许UTF-8编码
       if (!['utf-8', 'utf8'].includes(charset)) {
-        throw new BadRequestException(`Unsupported charset '${charset}' for JSON content. Only UTF-8 is allowed.`);
+        throw new BadRequestException(
+          `Unsupported charset '${charset}' for JSON content. Only UTF-8 is allowed.`,
+        );
       }
     }
   }

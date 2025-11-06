@@ -81,13 +81,15 @@ export const useGameStore = defineStore('game', () => {
   function handleProcessingCompleted(data) {
     console.log('[GameStore] AI processing completed:', data);
     const { progression } = data;
-    if (!progression) return;
+    if (!progression) {
+      return;
+    }
 
     // 从叙事日志中移除最后一条“正在思考”的消息
     if (narrativeLog.value.length > 0 && narrativeLog.value.at(-1).isMeta) {
       narrativeLog.value.pop();
     }
-    
+
     if (progression.narrative) {
       narrativeLog.value.push({ text: progression.narrative, isMeta: false });
     }
@@ -95,7 +97,7 @@ export const useGameStore = defineStore('game', () => {
     // 叙事AI不再返回 characterUpdate。我们需要在接收到事件后，
     // 主动重新获取最新的角色状态。
     // (这是一个高级优化，暂时我们可以先依赖前端的乐观更新)
-    
+
     if (progression.options && currentGame.value) {
       currentGame.value.options = progression.options;
     }

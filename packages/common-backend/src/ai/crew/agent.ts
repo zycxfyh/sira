@@ -2,14 +2,9 @@
 // 灵感来源: CrewAI (https://github.com/joaomdmoura/crewAI)
 // 核心理念: 角色驱动的智能体，具备明确的角色、目标和工具
 
-import { Injectable, Logger } from "@nestjs/common";
-import type { AiProvider } from "../../types/ai-providers.types";
-import type {
-  AgentConfig,
-  AgentExecutionResult,
-  AgentRole,
-  AgentTool,
-} from "./agent.types";
+import { Injectable, Logger } from '@nestjs/common';
+import type { AiProvider } from '../../types/ai-providers.types';
+import type { AgentConfig, AgentExecutionResult, AgentRole, AgentTool } from './agent.types';
 
 /**
  * @class Agent
@@ -80,9 +75,7 @@ export class Agent {
     const toolsUsed: string[] = [];
 
     try {
-      this.logger.debug(
-        `Agent "${this.name}" executing task: ${taskDescription}`,
-      );
+      this.logger.debug(`Agent "${this.name}" executing task: ${taskDescription}`);
 
       // 如果没有 Provider，只能使用工具
       if (!this.config.provider) {
@@ -97,9 +90,9 @@ export class Agent {
 
       // 提取响应内容
       const output =
-        typeof response === "string"
+        typeof response === 'string'
           ? response
-          : response.content?.toString() ?? JSON.stringify(response);
+          : (response.content?.toString() ?? JSON.stringify(response));
 
       // 检查是否需要使用工具
       const toolCalls = this.extractToolCalls(output);
@@ -125,8 +118,7 @@ export class Agent {
       };
     } catch (error) {
       const executionTime = Date.now() - startTime;
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
 
       this.logger.error(
         `Agent "${this.name}" execution failed: ${errorMessage}`,
@@ -151,10 +143,7 @@ export class Agent {
    * @method buildSystemPrompt
    * @description 构建系统提示词
    */
-  private buildSystemPrompt(
-    taskDescription: string,
-    context: Record<string, unknown>,
-  ): string {
+  private buildSystemPrompt(taskDescription: string, context: Record<string, unknown>): string {
     const role = this.config.role;
     const tools = this.getTools();
 
@@ -230,4 +219,3 @@ export class Agent {
     }
   }
 }
-

@@ -15,7 +15,7 @@ export const useUIStore = defineStore('ui', () => {
   const isJournalModalVisible = ref(false);
   const isWeaverConsoleVisible = ref(false);
   // [注释] AI设置模态框的状态现在也由UI Store统一管理
-  const isAiSettingsModalVisible = ref(false); 
+  const isAiSettingsModalVisible = ref(false);
 
   // --- [新增] 实时连接状态 ---
   const connectionStatus = ref('disconnected'); // 'connected', 'disconnected', 'reconnecting'
@@ -25,7 +25,7 @@ export const useUIStore = defineStore('ui', () => {
   function setRouter(routerInstance) {
     router.value = routerInstance;
   }
-  
+
   function setConnectionStatus(status) {
     connectionStatus.value = status;
   }
@@ -50,12 +50,12 @@ export const useUIStore = defineStore('ui', () => {
   function hideWeaverConsole() {
     isWeaverConsoleVisible.value = false;
   }
-  
+
   function showAiSettingsModal() {
-      isAiSettingsModalVisible.value = true;
+    isAiSettingsModalVisible.value = true;
   }
   function hideAiSettingsModal() {
-      isAiSettingsModalVisible.value = false;
+    isAiSettingsModalVisible.value = false;
   }
 
   return {

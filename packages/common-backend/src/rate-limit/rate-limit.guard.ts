@@ -9,16 +9,16 @@ import {
   HttpStatus,
   Injectable,
   Logger,
-} from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import type { Request, Response } from "express";
-import { RateLimitService } from "./rate-limit.service";
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import type { Request, Response } from 'express';
+import { RateLimitService } from './rate-limit.service';
 
 /**
  * @constant RATE_LIMIT_KEY
  * @description 元数据键，用于存储限流配置
  */
-export const RATE_LIMIT_KEY = "rate_limit";
+export const RATE_LIMIT_KEY = 'rate_limit';
 
 /**
  * @interface RateLimitOptions
@@ -42,7 +42,7 @@ export interface RateLimitGuardOptions {
 /**
  * @decorator RateLimit
  * @description 限流装饰器
- * 
+ *
  * @example
  * ```typescript
  * @RateLimit({ windowMs: 60, max: 100 })
@@ -95,18 +95,16 @@ export class RateLimitGuard implements CanActivate {
     });
 
     // 设置限流响应头
-    response.setHeader("X-RateLimit-Limit", options.max!);
-    response.setHeader("X-RateLimit-Remaining", result.remaining);
-    response.setHeader("X-RateLimit-Reset", result.resetTime);
+    response.setHeader('X-RateLimit-Limit', options.max!);
+    response.setHeader('X-RateLimit-Remaining', result.remaining);
+    response.setHeader('X-RateLimit-Reset', result.resetTime);
 
     if (!result.allowed) {
       const message =
         options.message ||
         `Rate limit exceeded. Try again in ${Math.ceil(result.retryAfter / 1000)} seconds.`;
-      
-      this.logger.warn(
-        `Rate limit exceeded for key: ${key}, remaining: ${result.remaining}`,
-      );
+
+      this.logger.warn(`Rate limit exceeded for key: ${key}, remaining: ${result.remaining}`);
 
       throw new HttpException(
         {
@@ -126,10 +124,9 @@ export class RateLimitGuard implements CanActivate {
    * @description 默认限流键生成器（基于 IP 和用户 ID）
    */
   private defaultKeyGenerator(request: Request): string {
-    const ip = request.ip || request.socket.remoteAddress || "unknown";
-    const userId = (request as { user?: { id?: string } }).user?.id || "anonymous";
+    const ip = request.ip || request.socket.remoteAddress || 'unknown';
+    const userId = (request as { user?: { id?: string } }).user?.id || 'anonymous';
     const path = request.path;
     return `rate_limit:${ip}:${userId}:${path}`;
   }
 }
-

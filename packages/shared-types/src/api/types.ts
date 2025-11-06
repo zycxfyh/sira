@@ -63,6 +63,5 @@ export interface PaginationParams {
   /** 排序字段 */
   sortBy?: string;
   /** 排序方向 */
-  sortOrder?: "asc" | "desc";
+  sortOrder?: 'asc' | 'desc';
 }
-

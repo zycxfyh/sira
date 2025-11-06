@@ -2,9 +2,9 @@
 // 灵感来源: NestJS Schedule
 // 核心理念: 定期清理过期数据
 
-import { Injectable, Logger } from "@nestjs/common";
-import { Cron, CronExpression } from "@nestjs/schedule";
-import { PrismaService } from "../../prisma/prisma.service";
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { PrismaService } from '../../prisma/prisma.service';
 
 /**
  * @service CleanupTask
@@ -23,7 +23,7 @@ export class CleanupTask {
    */
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async cleanupExpiredSessions(): Promise<void> {
-    this.logger.log("Starting cleanup of expired sessions...");
+    this.logger.log('Starting cleanup of expired sessions...');
 
     try {
       // TODO: 实现会话清理逻辑
@@ -33,9 +33,9 @@ export class CleanupTask {
       //   },
       // });
 
-      this.logger.log("Cleanup of expired sessions completed");
+      this.logger.log('Cleanup of expired sessions completed');
     } catch (error) {
-      this.logger.error("Failed to cleanup expired sessions:", error);
+      this.logger.error('Failed to cleanup expired sessions:', error);
     }
   }
 
@@ -45,7 +45,7 @@ export class CleanupTask {
    */
   @Cron(CronExpression.EVERY_WEEK)
   async cleanupOldLogs(): Promise<void> {
-    this.logger.log("Starting cleanup of old logs...");
+    this.logger.log('Starting cleanup of old logs...');
 
     try {
       // TODO: 实现日志清理逻辑
@@ -58,9 +58,9 @@ export class CleanupTask {
       //   },
       // });
 
-      this.logger.log("Cleanup of old logs completed");
+      this.logger.log('Cleanup of old logs completed');
     } catch (error) {
-      this.logger.error("Failed to cleanup old logs:", error);
+      this.logger.error('Failed to cleanup old logs:', error);
     }
   }
 
@@ -70,15 +70,15 @@ export class CleanupTask {
    */
   @Cron(CronExpression.EVERY_HOUR)
   async cleanupTempFiles(): Promise<void> {
-    this.logger.log("Starting cleanup of temporary files...");
+    this.logger.log('Starting cleanup of temporary files...');
 
     try {
       // TODO: 实现临时文件清理逻辑
       // 删除超过 24 小时的临时文件
 
-      this.logger.log("Cleanup of temporary files completed");
+      this.logger.log('Cleanup of temporary files completed');
     } catch (error) {
-      this.logger.error("Failed to cleanup temporary files:", error);
+      this.logger.error('Failed to cleanup temporary files:', error);
     }
   }
 
@@ -86,15 +86,14 @@ export class CleanupTask {
    * @method healthCheck
    * @description 健康检查任务（每 5 分钟执行）
    */
-  @Cron("*/5 * * * *")
+  @Cron('*/5 * * * *')
   async healthCheck(): Promise<void> {
     try {
       // 简单的数据库连接检查
       await this.prisma.$queryRaw`SELECT 1`;
-      this.logger.debug("Health check passed");
+      this.logger.debug('Health check passed');
     } catch (error) {
-      this.logger.error("Health check failed:", error);
+      this.logger.error('Health check failed:', error);
     }
   }
 }
-

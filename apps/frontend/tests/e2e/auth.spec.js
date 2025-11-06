@@ -3,7 +3,6 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Authentication Flow', () => {
-
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => window.localStorage.clear());

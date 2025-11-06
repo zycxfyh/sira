@@ -1,4 +1,4 @@
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException } from '@nestjs/common';
 
 export interface PromptInjectionDetails {
   score: number;
@@ -15,6 +15,6 @@ export class PromptInjectionDetectedException extends BadRequestException {
     public readonly details: PromptInjectionDetails,
   ) {
     super(message);
-    this.name = "PromptInjectionDetectedException";
+    this.name = 'PromptInjectionDetectedException';
   }
 }

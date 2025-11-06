@@ -11,8 +11,8 @@ module.exports = [
       '**/*.min.js',
       '**/*.config.js',
       'coverage/',
-      '.vite/'
-    ]
+      '.vite/',
+    ],
   },
   {
     files: ['src/**/*.{js,ts}'],
@@ -52,15 +52,18 @@ module.exports = [
         require: 'readonly',
         module: 'readonly',
         exports: 'readonly',
-        global: 'readonly'
-      }
+        global: 'readonly',
+      },
     },
     rules: {
       // 基础代码质量规则
-      'no-unused-vars': ['warn', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }],
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
       'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
       'no-empty': ['warn', { allowEmptyCatch: true }],
@@ -68,14 +71,14 @@ module.exports = [
       // 代码风格规则 (警告级别)
       'prefer-const': 'warn',
       'no-var': 'warn',
-      'eqeqeq': ['warn', 'always'],
-      'curly': ['warn', 'all'],
+      eqeqeq: ['warn', 'always'],
+      curly: ['warn', 'all'],
 
       // 潜在错误规则
       'no-unreachable': 'error',
       'no-duplicate-imports': 'warn',
-      'valid-typeof': 'error'
-    }
+      'valid-typeof': 'error',
+    },
   },
   {
     files: ['src/**/*.vue'],
@@ -86,7 +89,7 @@ module.exports = [
       parserOptions: {
         parser: tseslint.parser,
         sourceType: 'module',
-        ecmaVersion: 'latest'
+        ecmaVersion: 'latest',
       },
       globals: {
         // 浏览器环境全局变量
@@ -120,15 +123,18 @@ module.exports = [
         require: 'readonly',
         module: 'readonly',
         exports: 'readonly',
-        global: 'readonly'
-      }
+        global: 'readonly',
+      },
     },
     rules: {
       // 基础代码质量规则
-      'no-unused-vars': ['warn', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }],
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
       'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
       'no-empty': ['warn', { allowEmptyCatch: true }],
@@ -136,11 +142,11 @@ module.exports = [
       // 代码风格规则 (警告级别)
       'prefer-const': 'warn',
       'no-var': 'warn',
-      'eqeqeq': ['warn', 'always'],
+      eqeqeq: ['warn', 'always'],
 
       // 潜在错误规则
       'no-unreachable': 'error',
-      'valid-typeof': 'error'
-    }
-  }
+      'valid-typeof': 'error',
+    },
+  },
 ];

@@ -22,6 +22,7 @@
 ## 🎯 事件分级标准
 
 ### P0 - 紧急 (Critical)
+
 **响应时间**: < 15分钟
 **影响范围**: 大面积用户受到影响
 
@@ -32,6 +33,7 @@
 - 核心业务流程中断
 
 ### P1 - 重要 (Major)
+
 **响应时间**: < 1小时
 **影响范围**: 部分用户或功能受到影响
 
@@ -42,6 +44,7 @@
 - 关键依赖服务故障
 
 ### P2 - 一般 (Minor)
+
 **响应时间**: < 4小时
 **影响范围**: 有限用户或轻微功能影响
 
@@ -88,6 +91,7 @@ graph TD
 ## 🚨 P0 紧急事件处理
 
 ### 检测阶段 (< 5分钟)
+
 1. **监控告警触发**
    - 检查告警详情和影响范围
    - 确认事件级别 (P0)
@@ -98,7 +102,9 @@ graph TD
    - 电话通知关键人员
 
 ### 响应阶段 (< 15分钟)
+
 1. **启动应急响应小组**
+
    ```
    指挥官: 技术总监
    技术负责人: 架构师
@@ -119,7 +125,9 @@ graph TD
    - 确定数据恢复点目标 (RPO)
 
 ### 诊断阶段 (< 30分钟)
+
 1. **收集信息**
+
    ```bash
    # 检查系统状态
    kubectl get pods -n tuheg-production
@@ -140,7 +148,9 @@ graph TD
    - 代码缺陷
 
 ### 修复阶段 (< 60分钟)
+
 1. **执行修复措施**
+
    ```bash
    # 选项1: 快速重启
    kubectl rollout restart deployment/backend-gateway -n tuheg-production
@@ -158,6 +168,7 @@ graph TD
    - 确认用户可以正常使用
 
 ### 恢复阶段 (< 30分钟)
+
 1. **逐步恢复流量**
    - 1% 流量验证
    - 10% 流量验证
@@ -174,6 +185,7 @@ graph TD
 ## ⚠️ P1 重要事件处理
 
 ### 响应流程
+
 1. **事件确认 (< 30分钟)**
    - 技术负责人响应
    - 评估影响范围
@@ -199,6 +211,7 @@ graph TD
 ## ℹ️ P2 一般事件处理
 
 ### 响应流程
+
 1. **事件记录**
    - 值班工程师响应
    - 评估影响程度
@@ -219,6 +232,7 @@ graph TD
 ## 🔧 常见故障处理
 
 ### 数据库连接故障
+
 ```bash
 # 1. 检查数据库状态
 kubectl get pods -l app=postgres -n tuheg-production
@@ -234,6 +248,7 @@ kubectl scale deployment postgres --replicas=2
 ```
 
 ### 服务响应超时
+
 ```bash
 # 1. 检查服务资源使用
 kubectl top pods -n tuheg-production
@@ -249,6 +264,7 @@ kubectl rollout restart deployment/backend-gateway
 ```
 
 ### 高错误率
+
 ```bash
 # 1. 检查错误模式
 curl http://prometheus/api/v1/query?query=rate(http_requests_total{status=~\"5..\"}[5m])
@@ -264,6 +280,7 @@ kubectl get pods -l app=redis -n tuheg-production
 ```
 
 ### 内存泄露
+
 ```bash
 # 1. 监控内存使用趋势
 kubectl exec monitoring-pod -- promql "increase(process_resident_memory_bytes[1h])"
@@ -280,6 +297,7 @@ kubectl rollout restart deployment/backend-gateway
 ## 📢 通信模板
 
 ### 内部状态更新模板
+
 ```
 🚨 生产环境事件状态更新
 
@@ -299,6 +317,7 @@ kubectl rollout restart deployment/backend-gateway
 ```
 
 ### 用户通知模板
+
 ```
 🔧 系统维护通知
 
@@ -318,6 +337,7 @@ kubectl rollout restart deployment/backend-gateway
 ```
 
 ### 事后总结模板
+
 ```
 📊 生产事件总结
 
@@ -347,6 +367,7 @@ kubectl rollout restart deployment/backend-gateway
 ## 🔍 事后回顾
 
 ### 回顾会议流程
+
 1. **时间安排**: 事件解决后24小时内
 2. **参会人员**:
    - 事件响应者
@@ -361,6 +382,7 @@ kubectl rollout restart deployment/backend-gateway
    - 改进措施制定
 
 ### 回顾问题清单
+
 - 事件是如何被检测到的？
 - 响应时间是否符合SLA？
 - 通信是否及时有效？
@@ -369,7 +391,9 @@ kubectl rollout restart deployment/backend-gateway
 - 需要改进哪些流程？
 
 ### 改进措施跟踪
+
 创建改进任务并分配负责人：
+
 - 短期改进 (1-2周)
 - 中期改进 (1-3个月)
 - 长期改进 (3-6个月)
@@ -379,23 +403,26 @@ kubectl rollout restart deployment/backend-gateway
 ## 📞 联系方式
 
 ### 应急响应小组
+
 - **技术总监**: +86 138-0000-0000
 - **架构师**: +86 138-0000-0001
 - **DBA**: +86 138-0000-0002
 - **运维负责人**: +86 138-0000-0003
 
 ### 备用联系方式
+
 - **应急电话**: 400-888-8888
 - **邮箱**: emergency@tuheg.com
 - **Slack**: #emergency-channel
 - **PagerDuty**: 集成告警系统
 
 ### 外部支持
+
 - **云服务商**: AWS/Azure 技术支持
 - **数据库厂商**: PostgreSQL 官方支持
 - **监控厂商**: Prometheus/Alertmanager 支持
 
 ---
 
-*此手册为应急响应提供指导，实际操作中可根据具体情况调整。*
-*最后更新: 2025年11月5日*
+_此手册为应急响应提供指导，实际操作中可根据具体情况调整。_
+_最后更新: 2025年11月5日_

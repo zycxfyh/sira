@@ -1,10 +1,6 @@
 // 文件路径: packages/common-backend/src/ai/dynamic-ai-scheduler.service.ts
 
-import {
-  Injectable,
-  Logger,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User, AiConfiguration } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -21,13 +17,8 @@ export class DynamicAiSchedulerService {
     private readonly configService: ConfigService,
   ) {}
 
-  public async getProviderForRole(
-    user: User,
-    role: AiRole,
-  ): Promise<AiProvider> {
-    this.logger.debug(
-      `[Scheduler] New request for role: "${role}" from user ${user.id}`,
-    );
+  public async getProviderForRole(user: User, role: AiRole): Promise<AiProvider> {
+    this.logger.debug(`[Scheduler] New request for role: "${role}" from user ${user.id}`);
 
     // [!] 核心改造 1: 查询逻辑翻译
     // 我们不再查询一个字符串数组，而是查询一个关系。
@@ -90,17 +81,13 @@ export class DynamicAiSchedulerService {
   private createFallbackProvider(): AiProvider {
     try {
       const apiKey = this.configService.getOrThrow<string>('FALLBACK_API_KEY');
-      const modelId = this.configService.get<string>(
-        'FALLBACK_MODEL_ID',
-        'deepseek-chat',
-      );
-      const baseUrlFromEnv =
-        this.configService.get<string>('FALLBACK_BASE_URL');
-      
+      const modelId = this.configService.get<string>('FALLBACK_MODEL_ID', 'deepseek-chat');
+      const baseUrlFromEnv = this.configService.get<string>('FALLBACK_BASE_URL');
+
       // [!] 核心改造 2: 模拟对象结构翻译
       // 新的 AiConfiguration 类型没有 `assignedRoles` 字段。
       // 我们创建一个不包含任何角色信息的、纯粹的配置对象。
-      // 注意：这个模拟对象缺少 'roles' 属性，所以我们需要告诉 TypeScript 
+      // 注意：这个模拟对象缺少 'roles' 属性，所以我们需要告诉 TypeScript
       // 它符合 AiConfiguration 的形状（通过类型断言 as AiConfiguration）。
       const fallbackConfig = {
         id: 'system-fallback',

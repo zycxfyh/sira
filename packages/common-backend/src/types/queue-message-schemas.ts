@@ -6,20 +6,20 @@
 // 2. 确保消息格式在运行时被验证
 // 3. 无效消息被立即丢弃，避免下游错误
 
-import { z } from "zod";
-import { submitActionSchema } from "../dto/submit-action.dto";
-import { directiveSetSchema } from "./state-change-directive.dto";
+import { z } from 'zod';
+import { submitActionSchema } from '../dto/submit-action.dto';
+import { directiveSetSchema } from './state-change-directive.dto';
 
 /**
  * GameCreationPayload Schema
  * 用于验证从 backend-gateway 发往 creation-agent 的创世消息
  */
 export const gameCreationPayloadSchema = z.object({
-  userId: z.string().min(1, "UserId must not be empty"),
+  userId: z.string().min(1, 'UserId must not be empty'),
   concept: z
     .string()
-    .min(10, "Concept must be at least 10 characters long")
-    .max(500, "Concept must be 500 characters or less"),
+    .min(10, 'Concept must be at least 10 characters long')
+    .max(500, 'Concept must be 500 characters or less'),
 });
 
 export type GameCreationPayload = z.infer<typeof gameCreationPayloadSchema>;
@@ -32,8 +32,8 @@ export type GameCreationPayload = z.infer<typeof gameCreationPayloadSchema>;
  * 详细的结构验证在业务逻辑层进行
  */
 export const gameActionJobDataSchema = z.object({
-  gameId: z.string().uuid("GameId must be a valid UUID"),
-  userId: z.string().min(1, "UserId must not be empty"),
+  gameId: z.string().uuid('GameId must be a valid UUID'),
+  userId: z.string().min(1, 'UserId must not be empty'),
   playerAction: submitActionSchema,
   gameStateSnapshot: z.object({
     id: z.string(),
@@ -73,11 +73,11 @@ export const gameActionJobDataSchema = z.object({
  * 用于验证从 logic-agent 发往 narrative-agent 的叙事渲染消息
  */
 export const narrativeRenderingPayloadSchema = z.object({
-  gameId: z.string().uuid("GameId must be a valid UUID"),
-  userId: z.string().min(1, "UserId must not be empty"),
+  gameId: z.string().uuid('GameId must be a valid UUID'),
+  userId: z.string().min(1, 'UserId must not be empty'),
   playerAction: submitActionSchema,
   executedDirectives: directiveSetSchema,
-  correlationId: z.string().min(1, "CorrelationId must not be empty"),
+  correlationId: z.string().min(1, 'CorrelationId must not be empty'),
 });
 
 export type NarrativeRenderingPayload = z.infer<typeof narrativeRenderingPayloadSchema>;

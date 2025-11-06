@@ -2,7 +2,7 @@
 // 灵感来源: Remix (https://github.com/remix-run/remix)
 // 核心理念: 类型安全的路由数据加载器
 
-import type { RouteLocationNormalized } from "vue-router";
+import type { RouteLocationNormalized } from 'vue-router';
 
 /**
  * @interface LoaderContext
@@ -24,9 +24,7 @@ export interface LoaderContext {
  * @description Loader 函数类型
  * @template T - 返回的数据类型
  */
-export type LoaderFunction<T = unknown> = (
-  context: LoaderContext,
-) => Promise<T> | T;
+export type LoaderFunction<T = unknown> = (context: LoaderContext) => Promise<T> | T;
 
 /**
  * @interface LoaderResult
@@ -62,4 +60,3 @@ export interface RouteLoaderConfig<T = unknown> {
     delay: number;
   };
 }
-

@@ -9,7 +9,7 @@ import { PrismaModule, EventBusModule } from '@tuheg/common-backend';
 
 @Module({
   imports: [
-    PrismaModule,   // 依赖共享的数据库模块
+    PrismaModule, // 依赖共享的数据库模块
     EventBusModule, // [核心修正] 依赖共享的事件总线模块，用于发布任务
   ],
   controllers: [GamesController],

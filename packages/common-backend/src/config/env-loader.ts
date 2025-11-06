@@ -2,10 +2,10 @@
 // 灵感来源: dotenv-expand (https://github.com/motdotla/dotenv-expand)
 // 核心理念: 支持环境变量扩展和多环境配置
 
-import { config } from "dotenv";
-import { expand } from "dotenv-expand";
-import { existsSync } from "fs";
-import { resolve } from "path";
+import { config } from 'dotenv';
+import { expand } from 'dotenv-expand';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 
 /**
  * @interface EnvLoaderOptions
@@ -31,19 +31,19 @@ export class EnvLoader {
   /**
    * @method load
    * @description 加载环境变量
-   * 
+   *
    * @example
    * ```typescript
    * // 加载 .env 文件
    * EnvLoader.load();
-   * 
+   *
    * // 加载特定环境的配置
    * EnvLoader.load({ env: 'production' });
    * ```
    */
   public static load(options: EnvLoaderOptions = {}): void {
     const {
-      env = process.env.NODE_ENV || "development",
+      env = process.env.NODE_ENV || 'development',
       configDir = process.cwd(),
       override = false,
       silent = false,
@@ -55,12 +55,7 @@ export class EnvLoader {
     // 3. .env.{env} (环境特定配置，如 .env.production)
     // 4. .env.{env}.local (环境特定的本地覆盖)
 
-    const envFiles = [
-      ".env",
-      ".env.local",
-      `.env.${env}`,
-      `.env.${env}.local`,
-    ];
+    const envFiles = ['.env', '.env.local', `.env.${env}`, `.env.${env}.local`];
 
     for (const envFile of envFiles) {
       const envPath = resolve(configDir, envFile);
@@ -91,7 +86,7 @@ export class EnvLoader {
   /**
    * @method loadForApp
    * @description 为特定应用加载环境变量
-   * 
+   *
    * @example
    * ```typescript
    * // 为 backend-gateway 加载配置
@@ -99,10 +94,7 @@ export class EnvLoader {
    * ```
    */
   public static loadForApp(appName: string, options: EnvLoaderOptions = {}): void {
-    const {
-      env = process.env.NODE_ENV || "development",
-      configDir = process.cwd(),
-    } = options;
+    const { env = process.env.NODE_ENV || 'development', configDir = process.cwd() } = options;
 
     // 应用特定的环境文件
     const appEnvFiles = [
@@ -133,4 +125,3 @@ export class EnvLoader {
     }
   }
 }
-

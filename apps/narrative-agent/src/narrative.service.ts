@@ -1,10 +1,6 @@
 // 文件路径: apps/narrative-agent/src/narrative.service.ts (已优化 AI 调用链)
 
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { PromptTemplate } from '@langchain/core/prompts';
@@ -39,7 +35,6 @@ const progressionResponseSchema = z.object({
 });
 type ProgressionResponse = z.infer<typeof progressionResponseSchema>;
 
-
 @Injectable()
 export class NarrativeService {
   private readonly logger = new Logger(NarrativeService.name);
@@ -71,7 +66,7 @@ export class NarrativeService {
         pseudoUser,
       );
       this.logger.log(`[Synthesizer] Generated final progression for game ${payload.gameId}.`);
-      
+
       // [!] 核心改造：注释掉并保留审查家（Critic）的调用逻辑，以备将来使用。
       // 未来的优化可以在这里加入一个判断逻辑，例如：
       // if (this.needsCriticReview(finalProgression, gameState)) {
@@ -104,12 +99,12 @@ export class NarrativeService {
           },
         }),
       );
-      this.logger.log(
-        `Successfully sent final narrative to user ${payload.userId} via gateway.`,
-      );
+      this.logger.log(`Successfully sent final narrative to user ${payload.userId} via gateway.`);
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred in narrative processing';
-      if (error instanceof Error) { errorMessage = error.message; }
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       this.logger.error(
         `Failed to process narrative for game ${payload.gameId}: ${errorMessage}`,
         error instanceof Error ? error.stack : undefined,
@@ -120,11 +115,17 @@ export class NarrativeService {
           this.httpService.post(this.GATEWAY_URL, {
             userId: payload.userId,
             event: 'processing_failed',
-            data: { message: 'An error occurred during narrative generation.', error: errorMessage },
+            data: {
+              message: 'An error occurred during narrative generation.',
+              error: errorMessage,
+            },
           }),
         );
       } catch (gatewayError) {
-        this.logger.error('CRITICAL: Failed to even send the error message via gateway.', gatewayError);
+        this.logger.error(
+          'CRITICAL: Failed to even send the error message via gateway.',
+          gatewayError,
+        );
       }
     }
   }
@@ -144,7 +145,7 @@ export class NarrativeService {
     const parser = StructuredOutputParser.fromZodSchema(progressionResponseSchema);
     // [!] 核心改造：我们现在使用一个更全面的 Prompt，期望它能一步到位产出高质量内容。
     // 在旧代码中，这里使用的是 '00_persona_and_framework.md'，现在改为 '02_narrative_engine.md'
-    const systemPrompt = this.promptManager.getPrompt('02_narrative_engine.md'); 
+    const systemPrompt = this.promptManager.getPrompt('02_narrative_engine.md');
 
     const prompt = new PromptTemplate({
       template: `{system_prompt}\n# 渲染任务\n你的任务是根据世界状态和玩家行动，生成一段叙事和后续选项。\n{format_instructions}\n---\n当前世界状态:\n\`\`\`json\n{currentState}\n\`\`\`\n---\n玩家行动:\n\`\`\`json\n{playerAction}\n\`\`\``,
@@ -154,11 +155,15 @@ export class NarrativeService {
 
     const chain = prompt.pipe(provider.model).pipe(parser);
 
-    return callAiWithGuard(chain, {
-      currentState: JSON.stringify(currentState),
-      playerAction: JSON.stringify(playerAction),
-      system_prompt: systemPrompt,
-    }, progressionResponseSchema as any);
+    return callAiWithGuard(
+      chain,
+      {
+        currentState: JSON.stringify(currentState),
+        playerAction: JSON.stringify(playerAction),
+        system_prompt: systemPrompt,
+      },
+      progressionResponseSchema as any,
+    );
   }
 
   /**
@@ -173,7 +178,7 @@ export class NarrativeService {
   ): Promise<ProgressionResponse> {
     const provider = await this.scheduler.getProviderForRole(user, 'critic');
     const parser = StructuredOutputParser.fromZodSchema(progressionResponseSchema);
-    const systemPrompt = this.promptManager.getPrompt('03_critic_agent.md'); 
+    const systemPrompt = this.promptManager.getPrompt('03_critic_agent.md');
 
     const prompt = new PromptTemplate({
       template: `{system_prompt}\n# 审查任务\n{format_instructions}\n---\n世界状态:\n\`\`\`json\n{world_state}\n\`\`\`\n---\n玩家行动:\n\`\`\`json\n{player_action}\n\`\`\`\n---\n待审查的初稿:\n\`\`\`json\n{draft}\n\`\`\``,
@@ -183,11 +188,15 @@ export class NarrativeService {
 
     const chain = prompt.pipe(provider.model).pipe(parser);
 
-    return callAiWithGuard(chain, {
-      world_state: JSON.stringify(worldState),
-      player_action: JSON.stringify(playerAction),
-      draft: JSON.stringify(draft),
-      system_prompt: systemPrompt,
-    }, progressionResponseSchema as any);
+    return callAiWithGuard(
+      chain,
+      {
+        world_state: JSON.stringify(worldState),
+        player_action: JSON.stringify(playerAction),
+        draft: JSON.stringify(draft),
+        system_prompt: systemPrompt,
+      },
+      progressionResponseSchema as any,
+    );
   }
 }

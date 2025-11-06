@@ -48,7 +48,7 @@ export class LangfuseService {
   async createSpan(
     name: string,
     traceId: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<LangfuseSpan> {
     const span: LangfuseSpan = {
       id: `span_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -72,11 +72,7 @@ export class LangfuseService {
   /**
    * 记录事件
    */
-  async recordEvent(
-    name: string,
-    traceId: string,
-    metadata?: Record<string, any>
-  ): Promise<void> {
+  async recordEvent(name: string, traceId: string, metadata?: Record<string, any>): Promise<void> {
     this.logger.debug(`Recorded event: ${name} in trace ${traceId}`, metadata);
   }
 
@@ -88,12 +84,13 @@ export class LangfuseService {
     modelName: string,
     input: any,
     output: any,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<void> {
-    this.logger.debug(
-      `Recorded model call: ${modelName} in trace ${traceId}`,
-      { input, output, metadata }
-    );
+    this.logger.debug(`Recorded model call: ${modelName} in trace ${traceId}`, {
+      input,
+      output,
+      metadata,
+    });
   }
 
   /**

@@ -1,17 +1,15 @@
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { fileURLToPath, URL } from 'node:url';
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
 
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
-  plugins: [
-    vue(),
-  ],
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      'shared-types': fileURLToPath(new URL('../../packages/shared-types/src', import.meta.url))
-    }
+      'shared-types': fileURLToPath(new URL('../../packages/shared-types/src', import.meta.url)),
+    },
   },
   server: {
     port: 5173,
@@ -21,6 +19,6 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
-    }
-  }
-})
+    },
+  },
+});

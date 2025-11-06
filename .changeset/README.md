@@ -11,6 +11,7 @@ pnpm changeset
 ```
 
 这将引导您：
+
 1. 选择受影响的包
 2. 选择变更类型（major, minor, patch）
 3. 描述变更内容
@@ -31,9 +32,8 @@ pnpm changeset
 
 ```markdown
 ---
-"@tuheg/common-backend": patch
+'@tuheg/common-backend': patch
 ---
 
 修复 AI Provider 工厂的类型错误
 ```
-

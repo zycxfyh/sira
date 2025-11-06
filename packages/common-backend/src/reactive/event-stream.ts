@@ -2,8 +2,8 @@
 // 灵感来源: RxJS (https://github.com/ReactiveX/rxjs)
 // 核心理念: 响应式数据流，使用 Observable 处理异步事件
 
-import { Injectable, Logger } from "@nestjs/common";
-import { Subject, Observable, mergeMap, catchError } from "rxjs";
+import { Injectable, Logger } from '@nestjs/common';
+import { Subject, Observable, mergeMap, catchError } from 'rxjs';
 
 /**
  * @interface EventStreamConfig
@@ -34,9 +34,7 @@ export class EventStream {
    * @method createStream
    * @description 创建事件流
    */
-  public createStream<T = unknown>(
-    eventName: string,
-  ): Observable<T> {
+  public createStream<T = unknown>(eventName: string): Observable<T> {
     if (!this.streams.has(eventName)) {
       this.streams.set(eventName, new Subject<any>());
     }
@@ -99,10 +97,7 @@ export class EventStream {
    * @method pipe
    * @description 管道操作符（简化版）
    */
-  public pipe<T, R>(
-    eventName: string,
-    transform: (data: T) => R | Promise<R>,
-  ): Observable<R> {
+  public pipe<T, R>(eventName: string, transform: (data: T) => R | Promise<R>): Observable<R> {
     const stream = this.createStream<T>(eventName);
 
     return stream.pipe(
@@ -145,9 +140,7 @@ export class EventStream {
 
       try {
         await handler(data);
-        this.logger.log(
-          `Successfully retried event "${eventName}" after ${attempt} attempts`,
-        );
+        this.logger.log(`Successfully retried event "${eventName}" after ${attempt} attempts`);
         return;
       } catch (error) {
         if (attempt === maxRetries) {
@@ -186,4 +179,3 @@ export class EventStream {
     this.streams.clear();
   }
 }
-

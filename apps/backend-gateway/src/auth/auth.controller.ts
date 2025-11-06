@@ -1,15 +1,6 @@
 // 文件路径: apps/nexus-engine/src/auth/auth.controller.ts
 
-import {
-  Controller,
-  Post,
-  Body,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-  Get,
-  Req,
-} from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -28,17 +19,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  public async register(
-    @Body(new ZodValidationPipe(registerSchema)) registerDto: RegisterDto,
-  ) {
+  public async register(@Body(new ZodValidationPipe(registerSchema)) registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  public async login(
-    @Body(new ZodValidationPipe(loginSchema)) loginDto: LoginDto,
-  ) {
+  public async login(@Body(new ZodValidationPipe(loginSchema)) loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 

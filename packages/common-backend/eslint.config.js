@@ -14,5 +14,5 @@ module.exports = tseslint.config(
   },
   {
     ignores: ['dist/', 'node_modules/', '*.d.ts', 'eslint.config.js', 'jest.config.js'],
-  }
+  },
 );

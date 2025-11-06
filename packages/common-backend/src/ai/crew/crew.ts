@@ -2,10 +2,10 @@
 // 灵感来源: CrewAI (https://github.com/joaomdmoura/crewAI)
 // 核心理念: 工作流编排，组织智能体和任务，实现复杂的协作流程
 
-import { Injectable, Logger } from "@nestjs/common";
-import type { Agent } from "./agent";
-import type { Task } from "./task";
-import type { TaskResult } from "./task.types";
+import { Injectable, Logger } from '@nestjs/common';
+import type { Agent } from './agent';
+import type { Task } from './task';
+import type { TaskResult } from './task.types';
 
 /**
  * @interface CrewConfig
@@ -15,7 +15,7 @@ export interface CrewConfig {
   /** Crew 描述 */
   description?: string;
   /** 执行模式：sequential（顺序）或 parallel（并行） */
-  executionMode?: "sequential" | "parallel";
+  executionMode?: 'sequential' | 'parallel';
   /** 是否在任务失败时继续执行 */
   continueOnError?: boolean;
   /** 最大并发数（并行模式） */
@@ -97,19 +97,17 @@ export class Crew {
    * @param context - 全局上下文
    * @returns 执行结果
    */
-  public async execute(
-    context: Record<string, unknown> = {},
-  ): Promise<CrewExecutionResult> {
+  public async execute(context: Record<string, unknown> = {}): Promise<CrewExecutionResult> {
     const startTime = Date.now();
     const results: TaskResult[] = [];
     const completedTasks = new Set<string>();
-    const executionMode = this.config.executionMode ?? "sequential";
+    const executionMode = this.config.executionMode ?? 'sequential';
     const continueOnError = this.config.continueOnError ?? false;
 
     this.logger.log(`Starting crew "${this.name}" execution (mode: ${executionMode})`);
 
     try {
-      if (executionMode === "sequential") {
+      if (executionMode === 'sequential') {
         // 顺序执行
         const sortedTasks = this.sortTasksByDependencies();
         for (const task of sortedTasks) {
@@ -142,7 +140,7 @@ export class Crew {
           completedTasks.add(task.getName());
 
           if (!result.success && !continueOnError) {
-            throw new Error(result.error ?? "Task execution failed");
+            throw new Error(result.error ?? 'Task execution failed');
           }
         }
       } else {
@@ -154,10 +152,7 @@ export class Crew {
 
         while (taskQueue.length > 0 || executingTasks.size > 0) {
           // 启动新任务
-          while (
-            taskQueue.length > 0 &&
-            executingTasks.size < maxConcurrency
-          ) {
+          while (taskQueue.length > 0 && executingTasks.size < maxConcurrency) {
             const task = taskQueue[0];
             if (!task.canExecute(completedTasks)) {
               taskQueue.shift();
@@ -187,7 +182,7 @@ export class Crew {
                 executingTasks.delete(taskName);
 
                 if (!result.success && !continueOnError) {
-                  throw new Error(result.error ?? "Task execution failed");
+                  throw new Error(result.error ?? 'Task execution failed');
                 }
               })
               .catch((error) => {
@@ -328,4 +323,3 @@ export class Crew {
     return dependencyResults;
   }
 }
-
