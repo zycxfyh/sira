@@ -51,7 +51,7 @@ export class LogicService {
     );
   }
 
-  private async generateDirectives(
+  protected async generateDirectives(
     jobData: GameActionJobData,
     user: User,
   ): Promise<DirectiveSet> {
@@ -60,7 +60,7 @@ export class LogicService {
         user,
         'logic_parsing',
       );
-      const parser = StructuredOutputParser.fromZodSchema(directiveSetSchema);
+      const parser = StructuredOutputParser.fromZodSchema(directiveSetSchema as any);
       const systemPrompt = this.promptManager.getPrompt('01_logic_engine.md');
 
       const prompt = new PromptTemplate({

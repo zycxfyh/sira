@@ -1,0 +1,40 @@
+// 文件路径: {{location}}/{{name}}-agent/src/{{name}}-agent.controller.ts
+// 自动生成 - 请根据实际需求修改
+
+import { Controller } from "@nestjs/common";
+import type { RMQRoute } from "nestjs-rmq";
+import { RMQValidate } from "nestjs-rmq";
+import {
+  withRMQErrorHandling,
+  type GameActionJobData,
+} from "@tuheg/common-backend";
+import { {{pascalCase name}}Service } from "./{{name}}.service";
+
+@Controller()
+export class {{pascalCase name}}AgentController {
+  constructor(
+    private readonly {{name}}Service: {{pascalCase name}}Service,
+  ) {}
+
+  @RMQValidate()
+  @RMQRoute("{{name}}.process")
+  public async handle{{pascalCase name}}(
+    data: GameActionJobData,
+  ): Promise<"ack" | "nack" | "requeue"> {
+    const handler = withRMQErrorHandling(
+      async (jobData: GameActionJobData) => {
+        await this.{{name}}Service.process(jobData);
+      },
+      this.logger,
+      {
+        operation: "{{name}}_processing",
+        correlationId: data.correlationId,
+        gameId: data.gameId,
+        userId: data.userId,
+      },
+    );
+
+    return handler(data);
+  }
+}
+

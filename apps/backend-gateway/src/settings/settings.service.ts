@@ -6,9 +6,11 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom, firstValueFrom } from 'rxjs';
 import {
   CreateAiSettingsDto,
+} from './dto/create-ai-settings.dto';
+import {
   UpdateAiSettingsDto,
   TestAiConnectionDto,
-} from './dto/update-ai-settings.dto'; // types are exported from update dto file (or create dto)
+} from './dto/update-ai-settings.dto';
 import { createAiSettingsSchema } from './dto/create-ai-settings.dto';
 
 @Injectable()
@@ -139,13 +141,14 @@ export class SettingsService {
   private normalizeAiConfiguration(record: any) {
     const roles =
       Array.isArray(record.roles) && record.roles.length > 0
-        ? record.roles.map((r) => (r.name ? r.name : r.id))
+        ? record.roles.map((r: any) => (r.name ? r.name : r.id))
         : [];
 
     return {
       id: record.id,
+      ownerId: record.ownerId,
       provider: record.provider,
-      apiKey: record.apiKey ? '***REDACTED***' : null, // don't leak key in API responses (optional)
+      apiKey: record.apiKey ? '***REDACTED***' : '', // don't leak key in API responses (return empty string instead of null)
       modelId: record.modelId,
       baseUrl: record.baseUrl ?? null,
       createdAt: record.createdAt,
@@ -183,7 +186,7 @@ export class SettingsService {
 
         const resp = await lastValueFrom(resp$);
         const models = Array.isArray(resp.data?.data)
-          ? resp.data.data.map((m) => m.id).filter(Boolean)
+          ? resp.data.data.map((m: any) => m.id).filter(Boolean)
           : [];
 
         return { models };
@@ -203,10 +206,10 @@ export class SettingsService {
         const resp = await lastValueFrom(resp$);
         // Try a few heuristics
         if (Array.isArray(resp.data?.models)) {
-          return { models: resp.data.models.map((m) => (typeof m === 'string' ? m : m.id)).filter(Boolean) };
+          return { models: resp.data.models.map((m: any) => (typeof m === 'string' ? m : m.id)).filter(Boolean) };
         }
         if (Array.isArray(resp.data)) {
-          return { models: resp.data.map((m) => (typeof m === 'string' ? m : m.id)).filter(Boolean) };
+          return { models: resp.data.map((m: any) => (typeof m === 'string' ? m : m.id)).filter(Boolean) };
         }
         // fallback: return keys if object with keys looks like model map
         if (resp.data && typeof resp.data === 'object') {
@@ -216,9 +219,10 @@ export class SettingsService {
         return { models: [] };
       }
     } catch (err) {
-      this.logger.warn('testAndFetchModels failed', err?.message ?? err);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      this.logger.warn('testAndFetchModels failed', errorMessage);
       // Bubble up user-friendly error
-      throw new BadRequestException(`Failed to connect to provider: ${err?.message ?? 'unknown error'}`);
+      throw new BadRequestException(`Failed to connect to provider: ${errorMessage}`);
     }
   }
 }

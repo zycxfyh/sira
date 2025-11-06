@@ -1,9 +1,105 @@
-// 文件路径: apps/backend/libs/common/src/ai/ai-guard.ts (已修复导入)
+// 文件路径: packages/common-backend/src/ai/ai-guard.ts
 
+import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 import { AiGenerationException } from '../exceptions/ai-exception';
+import { PromptInjectionDetectedException } from '../errors/prompt-injection-detected.exception';
 // [核心修正] 从 runnables 导入通用的 Runnable 类型
 import type { Runnable } from '@langchain/core/runnables';
+
+/**
+ * 提示注入检查结果类型
+ */
+export type PromptInjectionCheckResult = {
+  allowed: boolean;
+  score: number;
+  threshold: number;
+  reason: string;
+  inputPreview?: string;
+  details?: {
+    preview?: string;
+    context?: string;
+  };
+};
+
+/**
+ * 提示注入防护服务
+ * 提供AI输入的安全检查功能
+ */
+@Injectable()
+export class PromptInjectionGuard {
+  private readonly threshold = 0.7;
+
+  /**
+   * 检查输入是否包含提示注入攻击
+   * @param input 用户输入
+   * @param context 上下文信息
+   * @returns 检查结果
+   */
+  async checkInput(
+    input: string,
+    context?: { userId?: string; correlationId?: string }
+  ): Promise<PromptInjectionCheckResult> {
+    // 简单的实现 - 在实际项目中应该使用更复杂的检测逻辑
+    const suspiciousPatterns = [
+      /ignore.*previous.*instructions/i,
+      /system.*prompt/i,
+      /override.*settings/i,
+      /bypass.*restrictions/i,
+    ];
+
+    const score = suspiciousPatterns.some(pattern => pattern.test(input)) ? 0.9 : 0.1;
+
+    if (score >= this.threshold) {
+      throw new PromptInjectionDetectedException(
+        'Potential prompt injection detected',
+        {
+          score,
+          threshold: this.threshold,
+          preview: input.substring(0, 100),
+          context: context?.correlationId,
+          correlationId: context?.correlationId,
+          userId: context?.userId,
+        }
+      );
+    }
+
+    return {
+      allowed: true,
+      score,
+      threshold: this.threshold,
+      reason: score < this.threshold ? 'passed' : 'failed',
+      details: {
+        preview: input.substring(0, 100),
+      },
+    };
+  }
+
+  /**
+   * 检查输入并在不安全时抛出异常
+   * @param input 用户输入
+   * @param context 上下文信息
+   */
+  async ensureSafeOrThrow(
+    input: string,
+    context?: { userId?: string; correlationId?: string }
+  ): Promise<void> {
+    const result = await this.checkInput(input, context);
+    if (!result.allowed) {
+      throw new PromptInjectionDetectedException(
+        'Input failed security check',
+        {
+          score: result.score,
+          threshold: result.threshold,
+          preview: result.details?.preview,
+          context: context?.correlationId,
+          correlationId: context?.correlationId,
+          userId: context?.userId,
+        }
+      );
+    }
+  }
+}
 
 const MAX_RETRIES = 2;
 

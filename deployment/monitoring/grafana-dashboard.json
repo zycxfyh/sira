@@ -1,0 +1,300 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Tuheg Production Monitoring Dashboard",
+    "tags": ["tuheg", "production", "monitoring"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "System Overview",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=~\"backend-gateway|creation-agent|logic-agent|narrative-agent\"}",
+            "legendFormat": "{{job}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "text": "DOWN",
+                    "color": "red"
+                  },
+                  "1": {
+                    "text": "UP",
+                    "color": "green"
+                  }
+                },
+                "type": "value"
+              }
+            ]
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "(sum(rate(http_requests_total{status=~\"5..\", job=~\"backend-gateway|creation-agent|logic-agent|narrative-agent\"}[5m])) by (job) / sum(rate(http_requests_total{job=~\"backend-gateway|creation-agent|logic-agent|narrative-agent\"}[5m])) by (job)) * 100",
+            "legendFormat": "{{job}} 5xx rate",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Response Time (P95)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~\"backend-gateway|creation-agent|logic-agent|narrative-agent\"}[5m])) by (job, le))",
+            "legendFormat": "{{job}} P95",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "seconds",
+            "min": 0
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "id": 4,
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{job=~\"backend-gateway|creation-agent|logic-agent|narrative-agent\"}[5m])) by (job)",
+            "legendFormat": "{{job}} requests/sec",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "reqps",
+            "min": 0
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        }
+      },
+      {
+        "id": 5,
+        "title": "Database Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(postgres_queries_duration_seconds_sum[5m]) / rate(postgres_queries_duration_seconds_count[5m])",
+            "legendFormat": "Avg query time",
+            "refId": "A"
+          },
+          {
+            "expr": "postgres_connections_active",
+            "legendFormat": "Active connections",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "seconds",
+            "min": 0
+          },
+          {
+            "unit": "connections",
+            "min": 0
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 16
+        }
+      },
+      {
+        "id": 6,
+        "title": "Resource Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_cpu_usage_seconds_total{pod=~\"tuheg-.*\", container!=\"\"} / 1000",
+            "legendFormat": "{{pod}} CPU",
+            "refId": "A"
+          },
+          {
+            "expr": "container_memory_usage_bytes{pod=~\"tuheg-.*\", container!=\"\"} / 1024 / 1024",
+            "legendFormat": "{{pod}} Memory (MB)",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "cores",
+            "min": 0
+          },
+          {
+            "unit": "MB",
+            "min": 0
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 16
+        }
+      },
+      {
+        "id": 7,
+        "title": "SLO Status",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "(1 - (sum(rate(http_requests_total{status=~\"5..\", job=~\"backend-gateway|creation-agent|logic-agent|narrative-agent\"}[30d])) by (job) / sum(rate(http_requests_total{job=~\"backend-gateway|creation-agent|logic-agent|narrative-agent\"}[30d])) by (job))) * 100",
+            "legendFormat": "{{job}} Availability",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~\"backend-gateway|creation-agent|logic-agent|narrative-agent\"}[7d])) by (job, le)) * 1000",
+            "legendFormat": "{{job}} P95 (ms)",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 99.9
+                }
+              ]
+            }
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 24
+        }
+      },
+      {
+        "id": 8,
+        "title": "Alert Status",
+        "type": "alertlist",
+        "alertListOptions": {
+          "showOptions": {
+            "maxItems": 10,
+            "sortOrder": 1
+          },
+          "alertName": "",
+          "dashboardAlerts": false,
+          "tags": ["tuheg", "production"]
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 32
+        }
+      },
+      {
+        "id": 9,
+        "title": "Deployment Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "kube_deployment_status_replicas_available{deployment=\"tuheg-backend-gateway\"}",
+            "legendFormat": "Available Replicas",
+            "refId": "A"
+          },
+          {
+            "expr": "kube_deployment_status_replicas_unavailable{deployment=\"tuheg-backend-gateway\"}",
+            "legendFormat": "Unavailable Replicas",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 1
+                },
+                {
+                  "color": "green",
+                  "value": 3
+                }
+              ]
+            }
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 32
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 0,
+    "links": []
+  }
+}

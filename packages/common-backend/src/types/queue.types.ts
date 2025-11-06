@@ -17,6 +17,7 @@ export interface GameActionJobData {
     character: Character | null;
     worldBook: WorldBookEntry[];
   };
+  correlationId?: string;
 }
 
 /**

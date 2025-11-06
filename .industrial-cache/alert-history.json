@@ -1,0 +1,9 @@
+{
+  "alerts": [],
+  "escalation_levels": {
+    "low": {"threshold": 3, "notify_channels": ["log"]},
+    "medium": {"threshold": 5, "notify_channels": ["log", "slack"]},
+    "high": {"threshold": 10, "notify_channels": ["log", "slack", "email"]},
+    "critical": {"threshold": 15, "notify_channels": ["log", "slack", "email", "sms"]}
+  }
+}

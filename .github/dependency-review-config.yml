@@ -1,0 +1,79 @@
+# 文件路径: .github/dependency-review-config.yml
+# 职责: 配置依赖审查规则，防止引入不安全的依赖
+
+fail_on_severity: moderate
+allow_licenses:
+  - MIT
+  - ISC
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - Apache-2.0
+  - CC0-1.0
+  - Unlicense
+  - CC-BY-3.0
+  - CC-BY-4.0
+
+deny_licenses:
+  - MS-PL
+  - GPL-2.0
+  - GPL-3.0
+  - AGPL-3.0
+  - LGPL-2.1
+  - LGPL-3.0
+
+vulnerability_check: true
+license_check: true
+dependency_check: true
+
+# 允许的依赖包列表（白名单）
+allow_dependencies:
+  - "@nestjs/*"
+  - "@prisma/*"
+  - "@sentry/*"
+  - "@langchain/*"
+  - "zod"
+  - "redis"
+  - "axios"
+  - "bcryptjs"
+  - "jsonwebtoken"
+  - "passport"
+  - "passport-jwt"
+  - "rxjs"
+  - "socket.io*"
+  - "vue"
+  - "vue-router"
+  - "pinia"
+  - "vite"
+  - "typescript"
+  - "eslint*"
+  - "prettier"
+  - "jest*"
+  - "supertest"
+
+# 拒绝的依赖包列表（黑名单）
+deny_dependencies:
+  - "left-pad"  # 著名的恶意包示例
+  - "event-stream"  # 另一个恶意包示例
+
+# 版本限制
+version_restrictions:
+  - package: "zod"
+    min_version: "3.25.0"
+  - package: "@nestjs/*"
+    min_version: "10.0.0"
+
+# 安全策略
+security_advisories:
+  fail_on_critical: true
+  fail_on_high: true
+  fail_on_moderate: true
+  fail_on_low: false
+
+# 弃用包检查
+deprecated_packages:
+  fail_on_deprecated: true
+
+# 包大小限制（MB）
+size_limits:
+  max_bundle_size: 50
+  max_individual_package: 10

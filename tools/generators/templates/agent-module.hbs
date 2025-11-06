@@ -1,0 +1,29 @@
+// 文件路径: {{location}}/{{name}}-agent/src/{{name}}-agent.module.ts
+// 自动生成 - 请根据实际需求修改
+
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import {
+  DynamicAiSchedulerService,
+  AiProviderFactory,
+  PrismaModule,
+  EventBusModule,
+} from "@tuheg/common-backend";
+import { {{pascalCase name}}Service } from "./{{name}}.service";
+import { {{pascalCase name}}AgentController } from "./{{name}}-agent.controller";
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    EventBusModule,
+  ],
+  controllers: [{{pascalCase name}}AgentController],
+  providers: [
+    {{pascalCase name}}Service,
+    DynamicAiSchedulerService,
+    AiProviderFactory,
+  ],
+})
+export class {{pascalCase name}}AgentModule {}
+

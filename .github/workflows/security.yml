@@ -1,0 +1,90 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # 每周日凌晨2点运行安全扫描
+    - cron: '0 2 * * 0'
+
+jobs:
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run npm audit
+        run: |
+          echo "🔍 Running npm audit..."
+          pnpm audit --audit-level moderate || true
+
+      - name: Check for high/critical vulnerabilities
+        run: |
+          echo "🚨 Checking for high/critical vulnerabilities..."
+          if pnpm audit --audit-level high --json > audit-results.json 2>&1; then
+            echo "✅ No high/critical vulnerabilities found"
+          else
+            echo "🔴 High/critical vulnerabilities detected!"
+            cat audit-results.json
+            exit 1
+          fi
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      - name: Check TypeScript strict mode
+        run: |
+          echo "🔧 Checking TypeScript strict mode..."
+          # 检查是否有任何应用未启用严格模式
+          if find apps packages -name "tsconfig.json" -exec grep -L '"strict": true' {} \;; then
+            echo "⚠️  Some TypeScript configs may not have strict mode enabled"
+          else
+            echo "✅ TypeScript strict mode checks passed"
+          fi
+
+      - name: Security Headers Check
+        run: |
+          echo "🛡️  Checking for security headers in main application..."
+          # 检查是否有安全相关的中间件或配置
+          if grep -r "helmet\|security\|cors" apps/ packages/; then
+            echo "✅ Security middleware found"
+          else
+            echo "⚠️  No security middleware detected"
+          fi

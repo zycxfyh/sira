@@ -10,9 +10,9 @@ import { createClient } from 'redis'; // [!] 核心改造：导入 Redis 客户�
 
 // [!] 核心改造：创建一个自定义的 Socket.IO 适配器类
 export class RedisIoAdapter extends IoAdapter {
-  private adapterConstructor: ReturnType<typeof createAdapter>;
+  private adapterConstructor!: ReturnType<typeof createAdapter>;
 
-  constructor(app, private readonly configService: ConfigService) {
+  constructor(app: any, private readonly configService: ConfigService) {
     super(app);
   }
 

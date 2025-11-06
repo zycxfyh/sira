@@ -1,0 +1,149 @@
+# 蓝绿部署配置
+# 支持零停机部署和快速回滚
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deployment-config
+  namespace: production
+data:
+  ACTIVE_COLOR: "blue"  # 当前活跃环境: blue 或 green
+  BLUE_VERSION: "v1.0.0"
+  GREEN_VERSION: "v1.1.0"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tuheg-backend-blue
+  namespace: production
+  labels:
+    app: backend-gateway
+    color: blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend-gateway
+      color: blue
+  template:
+    metadata:
+      labels:
+        app: backend-gateway
+        color: blue
+    spec:
+      containers:
+      - name: backend-gateway
+        image: tuheg/backend-gateway:v1.0.0
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tuheg-backend-green
+  namespace: production
+  labels:
+    app: backend-gateway
+    color: green
+spec:
+  replicas: 0  # 初始为0，准备新版本
+  selector:
+    matchLabels:
+      app: backend-gateway
+      color: green
+  template:
+    metadata:
+      labels:
+        app: backend-gateway
+        color: green
+    spec:
+      containers:
+      - name: backend-gateway
+        image: tuheg/backend-gateway:v1.1.0
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tuheg-backend-gateway
+  namespace: production
+spec:
+  type: ClusterIP
+  selector:
+    app: backend-gateway
+    color: blue  # 指向当前活跃环境
+  ports:
+  - port: 80
+    targetPort: 3000
+
+---
+# 金丝雀部署配置
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tuheg-canary-ingress
+  namespace: production
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "10"  # 10%流量到新版本
+spec:
+  rules:
+  - host: api.tuheg.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tuheg-backend-green  # 金丝雀服务
+            port:
+              number: 80

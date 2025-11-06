@@ -158,7 +158,7 @@ export class NarrativeService {
       currentState: JSON.stringify(currentState),
       playerAction: JSON.stringify(playerAction),
       system_prompt: systemPrompt,
-    }, progressionResponseSchema);
+    }, progressionResponseSchema as any);
   }
 
   /**
@@ -188,6 +188,6 @@ export class NarrativeService {
       player_action: JSON.stringify(playerAction),
       draft: JSON.stringify(draft),
       system_prompt: systemPrompt,
-    }, progressionResponseSchema);
+    }, progressionResponseSchema as any);
   }
 }

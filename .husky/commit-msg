@@ -1,0 +1,9 @@
+#!/bin/sh
+# 文件路径: .husky/commit-msg
+# 灵感来源: Commitlint (https://github.com/conventional-changelog/commitlint)
+# 核心理念: 在提交前验证提交信息格式
+
+. "$(dirname "$0")/_/husky.sh"
+
+npx --no -- commitlint --edit ${1}
+

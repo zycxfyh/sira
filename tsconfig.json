@@ -1,12 +1,9 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "Node16",
     "moduleResolution": "Node16",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
       "@tuheg/common-backend": ["packages/common-backend/src"],
@@ -14,5 +11,8 @@
       "@/*": ["apps/frontend/src/*"]
     }
   },
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "packages/common-backend/src/**/*",
+    "packages/common-backend/src/types/**/*"
+  ]
 }

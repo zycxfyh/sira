@@ -1,0 +1,78 @@
+# 文件路径: .github/dependabot.yml
+# 灵感来源: GitHub Dependabot (https://github.com/dependabot)
+# 核心理念: 自动化依赖更新和安全修复
+
+version: 2
+
+updates:
+  # 根目录依赖
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "team-maintainers"
+    labels:
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    versioning-strategy: increase
+
+  # 前端依赖
+  - package-ecosystem: "npm"
+    directory: "/apps/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "automated"
+
+  # 后端网关依赖
+  - package-ecosystem: "npm"
+    directory: "/apps/backend-gateway"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "backend"
+      - "automated"
+
+  # 通用后端包依赖
+  - package-ecosystem: "npm"
+    directory: "/packages/common-backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "backend"
+      - "automated"
+
+  # Docker 依赖
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "automated"
+
+  # GitHub Actions 依赖
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"
+

@@ -1,0 +1,29 @@
+// 文件路径: {{location}}/{{name}}-agent/src/{{name}}.service.ts
+// 自动生成 - 请根据实际需求修改
+
+import { Injectable, Logger } from "@nestjs/common";
+import {
+  DynamicAiSchedulerService,
+  type GameActionJobData,
+} from "@tuheg/common-backend";
+
+@Injectable()
+export class {{pascalCase name}}Service {
+  private readonly logger = new Logger({{pascalCase name}}Service.name);
+
+  constructor(
+    private readonly scheduler: DynamicAiSchedulerService,
+  ) {}
+
+  /**
+   * @method process
+   * @description {{description}}
+   */
+  public async process(jobData: GameActionJobData): Promise<void> {
+    this.logger.log(`Processing {{name}} for game: ${jobData.gameId}`);
+    
+    // TODO: 实现处理逻辑
+    throw new Error("Not implemented");
+  }
+}
+

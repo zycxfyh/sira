@@ -10,6 +10,7 @@
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "lint": {
+      "dependsOn": ["^lint"],
       "outputs": []
     },
     "dev": {
@@ -19,6 +20,11 @@
     "test": {
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"]
+    },
+    "industrial-test": {
+      "dependsOn": ["^build", "^lint", "^test"],
+      "outputs": ["industrial-test-results/**", "logs/**"],
+      "cache": false
     }
   }
 }

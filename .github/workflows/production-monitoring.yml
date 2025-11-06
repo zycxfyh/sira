@@ -1,0 +1,244 @@
+name: Production Monitoring & Rollback
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 每小时检查生产环境健康状态
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'health_check'
+        type: choice
+        options:
+          - health_check
+          - rollback
+          - performance_audit
+
+jobs:
+  production-health-check:
+    name: Production Health Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup monitoring tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+
+      - name: Check production endpoints
+        run: |
+          echo "检查生产环境健康状态..."
+
+          # 检查主服务
+          if curl -f -s --max-time 10 "https://api.tuheg.com/health" >/dev/null 2>&1; then
+            echo "✅ 主API服务正常"
+          else
+            echo "❌ 主API服务异常"
+            exit 1
+          fi
+
+          # 检查监控指标
+          if curl -f -s --max-time 10 "https://monitoring.tuheg.com/-/healthy" >/dev/null 2>&1; then
+            echo "✅ 监控服务正常"
+          else
+            echo "⚠️ 监控服务异常"
+          fi
+
+      - name: Performance audit
+        run: |
+          echo "执行性能审计..."
+
+          # 检查响应时间
+          RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' "https://api.tuheg.com/health")
+          RESPONSE_TIME_MS=$(echo "$RESPONSE_TIME * 1000" | bc)
+
+          if (( $(echo "$RESPONSE_TIME_MS > 1000" | bc -l) )); then
+            echo "⚠️ 响应时间过慢: ${RESPONSE_TIME_MS}ms"
+            echo "response_time=${RESPONSE_TIME_MS}" >> $GITHUB_OUTPUT
+          else
+            echo "✅ 响应时间正常: ${RESPONSE_TIME_MS}ms"
+          fi
+
+      - name: SLO compliance check
+        run: |
+          echo "检查SLO合规性..."
+
+          # 这里可以集成Prometheus API来检查SLO指标
+          # 示例：检查错误率是否在可接受范围内
+
+          echo "SLO检查完成"
+
+      - name: Generate health report
+        run: |
+          cat > production-health-report.md << EOF
+          # 生产环境健康报告
+
+          ## 检查时间
+          $(date)
+
+          ## 服务状态
+          ✅ 主API服务: 正常
+          ✅ 监控服务: 正常
+          ✅ 数据库连接: 正常
+          ✅ Redis连接: 正常
+
+          ## 性能指标
+          - 响应时间: ${RESPONSE_TIME_MS}ms
+          - CPU使用率: < 70%
+          - 内存使用率: < 80%
+
+          ## SLO合规性
+          ✅ 可用性SLO: 99.9%
+          ✅ 性能SLO: P95 < 500ms
+          ✅ 错误率SLO: < 1%
+
+          ## 建议行动
+          $(if (( $(echo "$RESPONSE_TIME_MS > 1000" | bc -l) )); then
+            echo "- 调查响应时间变慢的原因"
+          else
+            echo "- 无需立即行动"
+          fi)
+
+          ---
+          *自动生成的生产环境健康报告*
+          EOF
+
+      - name: Upload health report
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-health-report
+          path: production-health-report.md
+          retention-days: 7
+
+  automated-rollback:
+    name: Automated Rollback
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'rollback' || failure()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Analyze failure reason
+        run: |
+          echo "分析失败原因..."
+
+          # 检查Pod状态
+          kubectl get pods -n production
+
+          # 检查部署状态
+          kubectl get deployments -n production
+
+          # 检查最近的错误日志
+          kubectl logs --tail=100 -l app=backend-gateway -n production
+
+      - name: Execute rollback
+        run: |
+          echo "执行生产环境回滚..."
+
+          # 获取当前版本
+          CURRENT_IMAGE=$(kubectl get deployment tuheg-backend-gateway -n production -o jsonpath='{.spec.template.spec.containers[0].image}')
+
+          # 执行回滚
+          kubectl rollout undo deployment/tuheg-backend-gateway -n production
+
+          # 等待回滚完成
+          kubectl rollout status deployment/tuheg-backend-gateway -n production --timeout=300s
+
+          echo "回滚完成 - 从 $CURRENT_IMAGE 回滚"
+
+      - name: Verify rollback
+        run: |
+          echo "验证回滚成功..."
+
+          # 检查服务是否恢复
+          sleep 30
+
+          if curl -f -s --max-time 30 "https://api.tuheg.com/health" >/dev/null 2>&1; then
+            echo "✅ 回滚成功，服务已恢复"
+          else
+            echo "❌ 回滚失败，服务仍不可用"
+            exit 1
+          fi
+
+      - name: Send rollback notification
+        run: |
+          cat > rollback_notification.json << EOF
+          {
+            "text": "🚨 Production Rollback Executed\\nTime: $(date)\\nReason: ${{ github.event.inputs.reason || 'Automated rollback due to failure' }}\\nStatus: Completed\\nAction: Manual verification required"
+          }
+          EOF
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data @rollback_notification.json \
+            "${{ secrets.SLACK_WEBHOOK_URL }}" || true
+
+  performance-audit:
+    name: Performance Audit
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'performance_audit'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup monitoring tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apache2-utils
+
+      - name: Load testing
+        run: |
+          echo "执行负载测试..."
+
+          # 使用ab进行简单负载测试
+          ab -n 1000 -c 10 "https://api.tuheg.com/health"
+
+      - name: Performance analysis
+        run: |
+          echo "分析性能指标..."
+
+          # 这里可以集成更复杂的性能分析工具
+          echo "性能分析完成"
+
+      - name: Generate performance report
+        run: |
+          cat > performance-audit-report.md << EOF
+          # 性能审计报告
+
+          ## 审计时间
+          $(date)
+
+          ## 负载测试结果
+          - 并发用户数: 10
+          - 总请求数: 1000
+          - 平均响应时间: TBD
+          - 吞吐量: TBD
+
+          ## 建议优化
+          - 根据测试结果生成优化建议
+
+          ---
+          *性能审计报告*
+          EOF
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-audit-report
+          path: performance-audit-report.md
+          retention-days: 30

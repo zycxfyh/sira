@@ -1,0 +1,182 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'docker-compose.test.yml'
+      - 'scripts/run-integration-tests.sh'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'docker-compose.test.yml'
+      - 'scripts/run-integration-tests.sh'
+
+jobs:
+  integration-test:
+    name: Integration Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build test images
+        run: |
+          echo "Building test Docker images..."
+          docker-compose -f docker-compose.test.yml build --parallel
+
+      - name: Run integration tests
+        run: |
+          echo "Running integration test suite..."
+          ./scripts/run-integration-tests.sh
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: test-results/
+          retention-days: 30
+
+      - name: Upload coverage reports
+        if: always()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov-integration.info
+          flags: integration
+          name: integration-coverage
+          fail_ci_if_error: false
+
+  service-communication-test:
+    name: Service Communication Test
+    runs-on: ubuntu-latest
+    needs: integration-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test service communication
+        run: |
+          echo "Testing inter-service communication..."
+          # 启动最小化测试环境
+          docker-compose -f docker-compose.test.yml up -d postgres-test redis-test backend-gateway-test
+
+          # 等待服务启动
+          timeout 300 bash -c 'until curl -f http://localhost:3002/health; do sleep 5; done'
+
+          # 运行通信测试
+          pnpm run test:integration:communication
+
+      - name: Test message queues
+        run: |
+          echo "Testing message queue communication..."
+          # 测试RabbitMQ/Redis消息队列
+          docker-compose -f docker-compose.test.yml up -d creation-agent-test
+
+          # 等待代理启动
+          sleep 10
+
+          # 发送测试消息并验证处理
+          pnpm run test:message-queue
+
+  database-integration-test:
+    name: Database Integration Test
+    runs-on: ubuntu-latest
+    needs: integration-test
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run database migrations
+        run: |
+          echo "Running database migrations..."
+          npx prisma migrate deploy
+          npx prisma db seed
+
+      - name: Run database integration tests
+        run: |
+          echo "Running database integration tests..."
+          pnpm run test:db:integration
+        env:
+          DATABASE_URL: postgresql://postgres:test_password@localhost:5432/test_db
+
+      - name: Test database performance
+        run: |
+          echo "Testing database performance..."
+          pnpm run test:db:performance

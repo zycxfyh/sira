@@ -175,7 +175,7 @@ export class CreationService {
           concept,
           system_prompt: systemPrompt,
         },
-        architectResponseSchema,
+        architectResponseSchema as any,
       );
       return response;
     } catch (error: unknown) { // <-- [核心修正] 明确 error 类型为 unknown
