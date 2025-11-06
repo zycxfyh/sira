@@ -19,7 +19,6 @@ class MockAuthGuard implements CanActivate {
       throw new UnauthorizedException('No valid authorization token provided');
     }
 
-    const token = authHeader.substring(7);
     // Mock token validation - reject any token for testing purposes
     throw new UnauthorizedException('Invalid authentication token');
   }

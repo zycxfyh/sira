@@ -17,7 +17,7 @@ export class ContentTypeValidationMiddleware implements NestMiddleware {
     'text/plain',
   ];
 
-  use(req: Request, res: Response, next: NextFunction): void {
+  use(req: Request, _res: Response, next: NextFunction): void {
     try {
       // 1. 验证Content-Type头
       this.validateContentType(req);

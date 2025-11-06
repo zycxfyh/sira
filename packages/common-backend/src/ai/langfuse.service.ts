@@ -109,7 +109,7 @@ export class LangfuseService {
   /**
    * 记录生成事件
    */
-  async logGeneration(traceId: string, modelName: string, input: any, output: any): Promise<void> {
+  async logGeneration(traceId: string, modelName: string, _input: any, _output: any): Promise<void> {
     this.logger.debug(`Logged generation for model ${modelName} in trace ${traceId}`);
   }
 

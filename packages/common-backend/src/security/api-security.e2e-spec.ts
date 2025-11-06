@@ -64,6 +64,7 @@ describe('API Security Tests (e2e)', () => {
           res,
           next,
         );
+        return next();
       } catch (error: unknown) {
         const err = error as any;
         if (err.status && typeof err.status === 'number') {

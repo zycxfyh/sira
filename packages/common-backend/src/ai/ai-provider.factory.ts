@@ -1,6 +1,5 @@
 // 文件路径: libs/common/src/ai/ai-provider.factory.ts
 
-import { Injectable } from '@nestjs/common';
 import { AiConfiguration } from '@prisma/client';
 
 // [核心修正] 放弃所有相对路径，统一使用 @tuheg/common-backend 绝对路径别名
