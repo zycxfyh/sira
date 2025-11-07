@@ -13,6 +13,7 @@
 
 const { EventEmitter } = require('events');
 const crypto = require('crypto');
+const { WebhookManager } = require('./webhook-manager');
 
 // 图像生成配置
 const IMAGE_CONFIG = {
@@ -290,6 +291,10 @@ class ImageGeneratorManager extends EventEmitter {
     this.providers = new Map(Object.entries(IMAGE_PROVIDERS));
     this.config = { ...IMAGE_CONFIG, ...options };
 
+    // 初始化Webhook管理器
+    this.webhookManager = null;
+    this.initializeWebhookManager();
+
     // 启动队列处理器
     this.startQueueProcessor();
 
@@ -556,12 +561,56 @@ class ImageGeneratorManager extends EventEmitter {
 
       this.emit('jobCompleted', job);
 
+      // 触发webhook事件
+      this.triggerWebhookEvent('image.completed', {
+        jobId: job.id,
+        userId: job.userId,
+        provider: job.provider,
+        model: job.model,
+        prompt: job.prompt,
+        result: job.result,
+        metadata: job.metadata,
+        completedAt: job.completedAt
+      });
+
       log_info(`图像生成任务完成: ${job.id}`);
 
     } catch (error) {
       log_error(`图像生成任务失败: ${job.id} - ${error.message}`);
       this.queue.fail(job.id, error);
       this.emit('jobFailed', job);
+    }
+  }
+
+  // 初始化Webhook管理器
+  async initializeWebhookManager() {
+    try {
+      if (!global.webhookManager) {
+        const { WebhookManager } = require('./webhook-manager');
+        global.webhookManager = new WebhookManager();
+        await global.webhookManager.initialize();
+      }
+      this.webhookManager = global.webhookManager;
+      log_info('Webhook管理器集成成功');
+    } catch (error) {
+      log_error(`Webhook管理器初始化失败: ${error.message}`);
+      // 不影响主要功能
+    }
+  }
+
+  // 触发Webhook事件
+  async triggerWebhookEvent(eventType, eventData) {
+    if (!this.webhookManager) {
+      return;
+    }
+
+    try {
+      await this.webhookManager.triggerEvent(eventType, eventData, {
+        source: 'image-generator',
+        userId: eventData.userId
+      });
+    } catch (error) {
+      log_error(`触发Webhook事件失败: ${error.message}`);
     }
   }
 

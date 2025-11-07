@@ -63,6 +63,7 @@
 | 📊 **价格监控系统** | 实时价格追踪、成本预测、智能路由优化 | 💰 自动化成本控制 |
 | 💬 **对话历史管理** | Redis式存储、上下文连续、记忆网络 | 🧠 智能对话体验 |
 | 📊 **A/B测试框架** | 多变量测试、流量分配、实时分析和自动化优化 | ⚡ 科学优化AI体验 |
+ 📡 **Webhook通知系统** | 异步事件通知、可靠投递、重试机制和安全验证 | 🔄 实时异步通信 |
 
 ---
 
@@ -1121,6 +1122,100 @@ curl -X POST http://localhost:9876/ab-tests/batch/start \
   -d '{
     "testIds": ["ab_test_123", "ab_test_456"]
   }'
+```
+
+### 📡 Webhook通知系统 API使用示例
+
+```bash
+# 获取所有webhooks
+curl http://localhost:9876/webhooks
+
+# 注册新webhook
+curl -X POST http://localhost:9876/webhooks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/webhook",
+    "events": ["image.completed", "voice.stt.completed"],
+    "description": "图像和语音处理完成通知",
+    "userId": "user123"
+  }'
+
+# 获取webhook详情
+curl http://localhost:9876/webhooks/wh_1234567890
+
+# 更新webhook配置
+curl -X PUT http://localhost:9876/webhooks/wh_1234567890 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "paused",
+    "events": ["image.completed"]
+  }'
+
+# 测试webhook连接
+curl -X POST http://localhost:9876/webhooks/wh_1234567890/test
+
+# 重试失败的投递
+curl -X POST http://localhost:9876/webhooks/wh_1234567890/retry
+
+# 查看webhook统计
+curl http://localhost:9876/webhooks/stats/wh_1234567890
+
+# 手动触发事件
+curl -X POST http://localhost:9876/webhooks/trigger \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventType": "image.completed",
+    "eventData": {
+      "jobId": "job_123",
+      "userId": "user123",
+      "result": ["https://example.com/image1.jpg"]
+    }
+  }'
+
+# 删除webhook
+curl -X DELETE http://localhost:9876/webhooks/wh_1234567890
+
+# 批量测试webhooks
+curl -X POST http://localhost:9876/webhooks/batch/test \
+  -H "Content-Type: application/json" \
+  -d '{
+    "webhookIds": ["wh_123", "wh_456"]
+  }'
+```
+
+#### Webhook事件类型
+
+- `image.completed` - 图像生成任务完成
+- `voice.stt.completed` - 语音转文字任务完成
+- `voice.tts.completed` - 文字转语音任务完成
+- `webhook.test` - 测试事件
+
+#### Webhook签名验证
+
+每个webhook请求都包含以下安全头：
+
+```
+X-Sira-Webhook-ID: wh_1234567890
+X-Sira-Event-Type: image.completed
+X-Sira-Signature: sha256=abc123...
+```
+
+验证签名的示例代码：
+
+```javascript
+const crypto = require('crypto');
+
+function verifySignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload, 'utf8')
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(`sha256=${expectedSignature}`)
+  );
+}
 ```
 
 ## 🧪 测试验证

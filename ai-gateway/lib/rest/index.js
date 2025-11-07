@@ -52,6 +52,7 @@ module.exports = function ({ plugins, config } = {}) {
   app.use('/', require('./routes/price-monitor')())
   app.use('/', require('./routes/conversation-manager')())
   app.use('/ab-tests', require('./routes/ab-tests')())
+  app.use('/webhooks', require('./routes/webhooks')())
 
   app.use((err, req, res, next) => {
     logger.debug(err.stack)
