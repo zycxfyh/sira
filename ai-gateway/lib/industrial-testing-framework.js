@@ -450,7 +450,7 @@ class IndustrialTestingFramework extends EventEmitter {
       // 执行测试
       const testResult = await Promise.race([
         test.execute(),
-        new Promise((_, reject) =>
+        new Promise((resolve, reject) =>
           setTimeout(() => reject(new Error('测试超时')), test.timeout)
         )
       ])

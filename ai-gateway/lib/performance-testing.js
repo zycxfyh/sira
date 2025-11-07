@@ -485,7 +485,7 @@ class PerformanceTestingTool extends EventEmitter {
    * 创建负载测试工作线程
    */
   createLoadWorker (scenario, interval, endTime, results) {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       const scenarioConfig = this.testScenarios.get(scenario)
       const clientIndex = Math.floor(Math.random() * this.httpClients.length)
 
@@ -514,7 +514,7 @@ class PerformanceTestingTool extends EventEmitter {
    * 创建压力测试工作线程
    */
   createStressWorker (scenarioConfig, interval, endTime, results, workerId) {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       const clientIndex = workerId % this.httpClients.length
 
       while (Date.now() < endTime) {
@@ -540,7 +540,7 @@ class PerformanceTestingTool extends EventEmitter {
    * 创建峰值测试工作线程
    */
   createSpikeWorker (scenarioConfig, interval, endTime, results, targetRPS) {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       const clientIndex = Math.floor(Math.random() * this.httpClients.length)
 
       while (Date.now() < endTime) {

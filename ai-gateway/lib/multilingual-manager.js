@@ -532,12 +532,10 @@ class MultilingualManager extends EventEmitter {
     // 如果是用户偏好，置信度较高
     else if (context.userId) {
       confidence = 0.9
-    }
-    // 如果是从Accept-Language解析的，置信度中等
+    } // 如果是从Accept-Language解析的，置信度中等
     else if (request.headers['accept-language']) {
       confidence = 0.7
-    }
-    // 如果是默认值，置信度最低
+    } // 如果是默认值，置信度最低
     else {
       confidence = 0.3
     }

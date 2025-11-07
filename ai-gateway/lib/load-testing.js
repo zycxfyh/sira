@@ -348,7 +348,7 @@ class LoadTestingTool extends EventEmitter {
    * 创建工作线程
    */
   createWorker (scenario, interval, endTime) {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       const timer = setInterval(async () => {
         if (Date.now() >= endTime) {
           clearInterval(timer)
