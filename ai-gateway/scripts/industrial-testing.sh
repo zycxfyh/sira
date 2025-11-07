@@ -27,6 +27,8 @@ TEST_TIMEOUT="${TEST_TIMEOUT:-1800000}" # 30分钟
 ENABLE_COVERAGE="${ENABLE_COVERAGE:-true}"
 ENABLE_PERFORMANCE="${ENABLE_PERFORMANCE:-true}"
 GENERATE_REPORTS="${GENERATE_REPORTS:-true}"
+FAIL_FAST="${FAIL_FAST:-true}"
+FAIL_FAST_THRESHOLD="${FAIL_FAST_THRESHOLD:-3}"
 
 # 全局变量
 TEST_RESULTS=()
@@ -626,6 +628,9 @@ OPTIONS:
     --no-coverage               禁用覆盖率测试
     --no-performance            禁用性能测试
     --no-reports                不生成报告
+    --fail-fast                 启用快速失败模式
+    --no-fail-fast              禁用快速失败模式
+    --fail-fast-threshold NUM   快速失败阈值 (默认: 3)
 
 TEST_TYPES:
     unit                        单元测试
@@ -644,6 +649,8 @@ ENVIRONMENT VARIABLES:
     ENABLE_COVERAGE             是否启用覆盖率
     ENABLE_PERFORMANCE          是否启用性能测试
     GENERATE_REPORTS            是否生成报告
+    FAIL_FAST                   是否启用快速失败模式
+    FAIL_FAST_THRESHOLD         快速失败阈值
 
 EXAMPLES:
     $0                          运行所有测试
@@ -671,6 +678,9 @@ main() {
             --no-coverage) ENABLE_COVERAGE=false; shift ;;
             --no-performance) ENABLE_PERFORMANCE=false; shift ;;
             --no-reports) GENERATE_REPORTS=false; shift ;;
+            --fail-fast) FAIL_FAST=true; shift ;;
+            --no-fail-fast) FAIL_FAST=false; shift ;;
+            --fail-fast-threshold) FAIL_FAST_THRESHOLD="$2"; shift 2 ;;
             unit|integration|e2e|performance|reliability|security|quality)
                 test_types+=("$1")
                 shift
@@ -701,6 +711,7 @@ main() {
     log_info "覆盖率测试: $ENABLE_COVERAGE"
     log_info "性能测试: $ENABLE_PERFORMANCE"
     log_info "生成报告: $GENERATE_REPORTS"
+    log_info "快速失败: $FAIL_FAST (阈值: $FAIL_FAST_THRESHOLD)"
 
     # 执行测试流程
     check_dependencies

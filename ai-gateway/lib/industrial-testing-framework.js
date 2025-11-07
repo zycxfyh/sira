@@ -27,6 +27,9 @@ class IndustrialTestingFramework extends EventEmitter {
       configDir: options.configDir || path.join(__dirname, '../config'),
       enableChaos: options.enableChaos !== false,
       enableLoadBalancing: options.enableLoadBalancing !== false,
+      failFast: options.failFast !== false, // 快速失败模式
+      failFastThreshold: options.failFastThreshold || 1, // 失败阈值
+      continueOnError: options.continueOnError || false, // 是否在错误时继续
       ...options
     }
 
@@ -246,15 +249,45 @@ class IndustrialTestingFramework extends EventEmitter {
       types = Object.keys(this.environments),
       tags = [],
       parallel = true,
-      maxConcurrency = this.options.maxConcurrency
+      maxConcurrency = this.options.maxConcurrency,
+      failFast = this.options.failFast,
+      failFastThreshold = this.options.failFastThreshold
     } = options
 
     this.testMetrics.startTime = Date.now()
     this.emit('testingStart', { suites, types, tags })
 
     const results = []
+    let consecutiveFailures = 0
+    let shouldStop = false
+
+    // 快速失败检查函数
+    const checkFailFast = (result) => {
+      if (!failFast) return false
+
+      if (!result.success && !result.passed) {
+        consecutiveFailures++
+        if (consecutiveFailures >= failFastThreshold) {
+          console.log(`\n🚫 快速失败: 已连续失败 ${consecutiveFailures} 次测试，达到阈值 ${failFastThreshold}`)
+          this.emit('failFastTriggered', {
+            consecutiveFailures,
+            threshold: failFastThreshold,
+            lastFailedTest: result.name
+          })
+          return true
+        }
+      } else {
+        consecutiveFailures = 0 // 重置连续失败计数
+      }
+      return false
+    }
 
     for (const suiteName of suites) {
+      if (shouldStop) {
+        console.log(`\n⚠️ 跳过测试套件: ${suiteName} (由于快速失败)`)
+        continue
+      }
+
       const suite = this.testSuites.get(suiteName)
       if (!suite) continue
 
@@ -272,12 +305,30 @@ class IndustrialTestingFramework extends EventEmitter {
 
       // 运行测试用例
       if (parallel && filteredTests.length > 1) {
-        const parallelResults = await this.runTestsParallel(filteredTests, maxConcurrency)
+        const parallelResults = await this.runTestsParallel(filteredTests, maxConcurrency, checkFailFast)
         results.push(...parallelResults)
+
+        // 检查并行结果中的失败
+        for (const result of parallelResults) {
+          if (checkFailFast(result)) {
+            shouldStop = true
+            break
+          }
+        }
       } else {
         for (const test of filteredTests) {
+          if (shouldStop) {
+            console.log(`⚠️ 跳过测试: ${test.name} (由于快速失败)`)
+            continue
+          }
+
           const result = await this.runTest(test)
           results.push(result)
+
+          if (checkFailFast(result)) {
+            shouldStop = true
+            break
+          }
         }
       }
 
@@ -286,7 +337,14 @@ class IndustrialTestingFramework extends EventEmitter {
     }
 
     this.testMetrics.endTime = Date.now()
-    this.testMetrics.duration = this.testMetrics.endTime - this.testMetrics.startTime
+    this.testMetrics.duration = this.testMetrics.endTime - this.startTime
+
+    // 如果启用了快速失败，记录停止原因
+    if (shouldStop) {
+      this.testMetrics.stopReason = 'fail_fast'
+      this.testMetrics.consecutiveFailures = consecutiveFailures
+      console.log(`\n🛑 测试执行因快速失败而提前终止`)
+    }
 
     this.emit('testingComplete', results)
 
@@ -296,13 +354,14 @@ class IndustrialTestingFramework extends EventEmitter {
   /**
    * 并行运行测试
    */
-  async runTestsParallel(tests, maxConcurrency) {
+  async runTestsParallel(tests, maxConcurrency, checkFailFast = null) {
     const results = []
     const running = new Set()
     const queue = [...tests]
+    let shouldStopParallel = false
 
     const runNext = async () => {
-      if (queue.length === 0) return
+      if (queue.length === 0 || shouldStopParallel) return
 
       const test = queue.shift()
       running.add(test.id)
@@ -310,9 +369,17 @@ class IndustrialTestingFramework extends EventEmitter {
       try {
         const result = await this.runTest(test)
         results.push(result)
+
+        // 检查快速失败条件
+        if (checkFailFast && checkFailFast(result)) {
+          shouldStopParallel = true
+          console.log(`🛑 并行测试因快速失败而停止`)
+        }
       } finally {
         running.delete(test.id)
-        await runNext()
+        if (!shouldStopParallel) {
+          await runNext()
+        }
       }
     }
 

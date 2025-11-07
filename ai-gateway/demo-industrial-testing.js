@@ -34,7 +34,7 @@ class IndustrialTestingDemo {
       console.log('6. 自定义测试场景')
       console.log('')
 
-      // 1. 快速测试演示
+      // 1. 快速测试演示 (启用快速失败)
       await this.demoQuickTest()
 
       // 2. 性能基准测试演示
@@ -69,7 +69,9 @@ class IndustrialTestingDemo {
 
     try {
       const result = await this.runner.runQuickTest({
-        format: 'json'
+        format: 'json',
+        failFast: true,
+        failFastThreshold: 1
       })
 
       const duration = Date.now() - startTime

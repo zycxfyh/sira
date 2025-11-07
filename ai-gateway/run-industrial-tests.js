@@ -67,7 +67,9 @@ class IndustrialTestRunner {
       includeE2E = true,
       includeSecurity = true,
       parallel = false,
-      reportFormat = 'html'
+      reportFormat = 'html',
+      failFast = true, // 默认启用快速失败
+      failFastThreshold = 3 // 连续失败3次后停止
     } = options
 
     const testSuites = []
@@ -288,7 +290,9 @@ class IndustrialTestRunner {
       const results = await this.framework.runTests({
         suites: testSuites.map(s => s.name),
         parallel,
-        types: ['unit', 'integration', 'e2e', 'performance', 'load', 'stress', 'reliability', 'security']
+        types: ['unit', 'integration', 'e2e', 'performance', 'load', 'stress', 'reliability', 'security'],
+        failFast,
+        failFastThreshold
       })
 
       // 生成综合报告
@@ -330,6 +334,11 @@ class IndustrialTestRunner {
 
   async runQuickTest(options = {}) {
     console.log('⚡ 运行快速测试套件...')
+
+    const {
+      failFast = true, // 快速测试默认启用快速失败
+      failFastThreshold = 1 // 快速测试失败1次就停止
+    } = options
 
     const startTime = Date.now()
 
@@ -374,7 +383,9 @@ class IndustrialTestRunner {
 
     const results = await this.framework.runTests({
       suites: quickSuites.map(s => s.name),
-      parallel: true
+      parallel: true,
+      failFast,
+      failFastThreshold
     })
 
     const report = await this.reporter.generateReport(results, {
