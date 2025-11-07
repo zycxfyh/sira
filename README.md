@@ -66,6 +66,7 @@
  📡 **Webhook通知系统** | 异步事件通知、可靠投递、重试机制和安全验证 | 🔄 实时异步通信 |
  🎛️ **自定义规则引擎** | 灵活条件匹配、规则优先级、上下文感知的智能路由 | 🎯 自定义业务逻辑 |
  📊 **入口统计和报告** | 详细的API统计、错误分析、性能报告和业务洞察 | 📈 数据驱动洞察 |
+ 🧠 **模型训练接口** | 支持用户自定义数据集进行模型微调，完整的训练生命周期管理 | 🎯 AI模型定制 |
 
 ---
 
@@ -1485,6 +1486,115 @@ curl -X POST http://localhost:9876/reports/batch/generate \
 - `90d` - 最近90天
 - `1w` - 最近1周
 - `1m` - 最近1月
+
+### 🧠 模型训练接口 API使用示例
+
+```bash
+# 上传训练数据集
+curl -X POST http://localhost:9876/model-training/datasets \
+  -F "file=@training_data.jsonl" \
+  -F "name=我的训练数据集" \
+  -F "description=用于客服对话的训练数据" \
+  -F "format=jsonl" \
+  -H "x-user-id: user123"
+
+# 获取数据集列表
+curl http://localhost:9876/model-training/datasets?userId=user123
+
+# 创建训练作业
+curl -X POST http://localhost:9876/model-training/jobs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "客服机器人微调",
+    "description": "基于GPT-3.5的客服对话微调",
+    "datasetId": "ds_1234567890",
+    "baseModel": "gpt-3.5-turbo",
+    "provider": "openai",
+    "config": {
+        "epochs": 3,
+        "batchSize": 16,
+        "learningRate": 0.0001
+    },
+    "resources": {
+        "gpuType": "auto",
+        "maxHours": 24
+    }
+  }'
+
+# 获取训练作业列表
+curl http://localhost:9876/model-training/jobs?userId=user123
+
+# 启动训练作业
+curl -X POST http://localhost:9876/model-training/jobs/job_1234567890/start
+
+# 查看训练状态
+curl http://localhost:9876/model-training/jobs/job_1234567890/status
+
+# 获取训练日志
+curl http://localhost:9876/model-training/jobs/job_1234567890/logs?limit=20
+
+# 停止训练作业
+curl -X POST http://localhost:9876/model-training/jobs/job_1234567890/stop
+
+# 部署训练完成的模型
+curl -X POST http://localhost:9876/model-training/jobs/job_1234567890/deploy \
+  -H "Content-Type: application/json" \
+  -d '{
+    "endpoint": "https://api.sira.ai/models/custom-model-1",
+    "scaling": "auto",
+    "region": "auto"
+  }'
+
+# 获取用户模型列表
+curl http://localhost:9876/model-training/models
+
+# 获取支持的训练提供商
+curl http://localhost:9876/model-training/providers
+
+# 查看训练系统统计
+curl http://localhost:9876/model-training/stats
+
+# 删除训练作业
+curl -X DELETE http://localhost:9876/model-training/jobs/job_1234567890
+
+# 删除数据集
+curl -X DELETE http://localhost:9876/model-training/datasets/ds_1234567890
+
+# 删除部署的模型
+curl -X DELETE http://localhost:9876/model-training/models/model_1234567890
+```
+
+#### 数据集格式要求
+
+**JSONL格式** (推荐):
+```jsonl
+{"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Hello!"}, {"role": "assistant", "content": "Hi there!"}]}
+{"messages": [{"role": "user", "content": "How are you?"}, {"role": "assistant", "content": "I'm doing well, thank you!"}]}
+```
+
+**JSON格式**:
+```json
+[
+  {
+    "input": "Hello, how can I help you?",
+    "output": "I'm here to assist you with any questions you have."
+  }
+]
+```
+
+#### 支持的训练提供商
+
+- **OpenAI**: GPT-3.5-turbo, GPT-4
+- **Anthropic**: Claude-2
+- **Hugging Face**: BERT, GPT-2, T5等开源模型
+
+#### 训练配置参数
+
+- `epochs`: 训练轮数 (1-100)
+- `batchSize`: 批次大小 (1-256)
+- `learningRate`: 学习率 (0.00001-0.01)
+- `maxTokens`: 最大token数 (1-4096)
+- `validationSplit`: 验证集比例 (0.1-0.5)
 
 ## 🧪 测试验证
 
