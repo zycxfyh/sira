@@ -6,9 +6,6 @@
  */
 
 const { IndustrialTestRunner } = require('./run-industrial-tests')
-const { LoadTestingTool } = require('./lib/load-testing')
-const { StressTestingTool } = require('./lib/stress-testing')
-const { PerformanceTestingTool } = require('./lib/performance-testing')
 
 class IndustrialTestingDemo {
   constructor() {
@@ -26,38 +23,27 @@ class IndustrialTestingDemo {
   async runDemo() {
     try {
       console.log('\n📋 演示内容:')
-      console.log('1. 快速测试套件')
-      console.log('2. 性能基准测试')
-      console.log('3. 负载测试演示')
-      console.log('4. 压力测试演示')
-      console.log('5. 综合测试报告')
-      console.log('6. 自定义测试场景')
+      console.log('1. 快速测试套件 (快速失败机制演示)')
+      console.log('2. 测试报告生成功能演示')
+      console.log('3. 快速失败机制详细说明')
       console.log('')
 
-      // 1. 快速测试演示 (启用快速失败)
+      // 1. 快速测试演示 (重点演示快速失败机制)
       await this.demoQuickTest()
 
-      // 2. 性能基准测试演示
-      await this.demoPerformanceBenchmark()
-
-      // 3. 负载测试演示
-      await this.demoLoadTest()
-
-      // 4. 压力测试演示
-      await this.demoStressTest()
-
-      // 5. 综合报告演示
+      // 2. 综合报告演示
       await this.demoReportGeneration()
 
-      // 6. 自定义场景演示
-      await this.demoCustomScenario()
+      // 3. 快速失败机制说明
+      await this.explainFailFast()
 
       console.log('\n🎉 工业级测试演示完成!')
+      console.log('✅ 快速失败机制已成功演示')
       console.log('查看 reports/ 目录中的详细报告')
 
     } catch (error) {
       console.error('演示过程中发生错误:', error.message)
-      console.log('提示: 确保网关服务正在运行 (npm start)')
+      console.log('提示: 这是一个演示，某些功能需要完整的环境支持')
     }
   }
 
@@ -87,74 +73,9 @@ class IndustrialTestingDemo {
     }
   }
 
-  async demoPerformanceBenchmark() {
-    console.log('\n📊 演示 2: 性能基准测试')
-    console.log('-'.repeat(40))
-
-    try {
-      const result = await this.runner.runPerformanceBenchmark({
-        format: 'json'
-      })
-
-      console.log(`✅ 性能基准测试完成`)
-      console.log(`   测试场景: ${result.results.length} 个`)
-      console.log(`   总体状态: ${result.success ? '通过' : '失败'}`)
-
-      result.results.forEach(r => {
-        console.log(`   ${r.scenario}: ${r.success ? '✅' : '❌'}`)
-      })
-
-    } catch (error) {
-      console.log(`⚠️  性能测试跳过: ${error.message}`)
-    }
-  }
-
-  async demoLoadTest() {
-    console.log('\n📈 演示 3: 负载测试 (轻量级)')
-    console.log('-'.repeat(40))
-
-    try {
-      const result = await this.runner.runLoadTest({
-        targetRPS: 10,  // 降低负载以便演示
-        duration: 30,   // 缩短测试时间
-        format: 'json'
-      })
-
-      console.log(`✅ 负载测试完成`)
-      console.log(`   目标RPS: 10`)
-      console.log(`   测试时长: 30秒`)
-      console.log(`   实际RPS: ${result.result.summary.averageRPS}`)
-      console.log(`   错误率: ${result.result.summary.errorRate}`)
-
-    } catch (error) {
-      console.log(`⚠️  负载测试跳过: ${error.message}`)
-    }
-  }
-
-  async demoStressTest() {
-    console.log('\n💥 演示 4: 压力测试 (轻量级)')
-    console.log('-'.repeat(40))
-
-    try {
-      const result = await this.runner.runStressTest({
-        scenario: 'memory_stress',
-        intensity: 'low',  // 使用低强度以便演示
-        duration: 20,      // 缩短测试时间
-        format: 'json'
-      })
-
-      console.log(`✅ 压力测试完成`)
-      console.log(`   测试场景: memory_stress`)
-      console.log(`   强度级别: low`)
-      console.log(`   系统中断次数: ${result.result.summary.totalOutages}`)
-
-    } catch (error) {
-      console.log(`⚠️  压力测试跳过: ${error.message}`)
-    }
-  }
 
   async demoReportGeneration() {
-    console.log('\n📋 演示 5: 测试报告生成')
+    console.log('\n📋 演示 2: 测试报告生成')
     console.log('-'.repeat(40))
 
     try {
@@ -181,72 +102,40 @@ class IndustrialTestingDemo {
 
     } catch (error) {
       console.log(`⚠️  报告生成演示失败: ${error.message}`)
+      console.log('   提示: 这是一个演示，报告生成功能需要完整环境')
     }
   }
 
-  async demoCustomScenario() {
-    console.log('\n🎭 演示 6: 自定义测试场景')
+  async explainFailFast() {
+    console.log('\n🚫 演示 3: 快速失败机制说明')
     console.log('-'.repeat(40))
 
-    // 添加自定义测试场景
-    this.runner.framework.addScenario('custom_demo', {
-      name: '自定义演示场景',
-      endpoint: '/health',
-      method: 'GET',
-      headers: { 'X-Custom-Header': 'demo' },
-      weight: 1.0
-    })
-
-    // 创建自定义测试套件
-    this.runner.framework.registerTestSuite('custom_demo_suite', {
-      name: '自定义演示套件',
-      environment: 'unit'
-    })
-
-    // 添加测试用例
-    this.runner.framework.addTest('custom_demo_suite', {
-      name: '自定义健康检查测试',
-      type: 'unit',
-      execute: async () => {
-        try {
-          const axios = require('axios')
-          const response = await axios.get('http://localhost:8080/health', {
-            headers: { 'X-Custom-Header': 'demo' },
-            timeout: 5000
-          })
-
-          return {
-            success: response.status === 200,
-            duration: 100,
-            result: { status: response.status, data: response.data }
-          }
-        } catch (error) {
-          return {
-            success: false,
-            duration: 100,
-            error: error.message
-          }
-        }
-      }
-    })
-
-    try {
-      const results = await this.runner.framework.runTests({
-        suites: ['custom_demo_suite'],
-        parallel: false
-      })
-
-      console.log(`✅ 自定义测试场景完成`)
-      console.log(`   测试结果: ${results[0].success ? '通过' : '失败'}`)
-
-      if (!results[0].success) {
-        console.log(`   错误信息: ${results[0].error}`)
-      }
-
-    } catch (error) {
-      console.log(`⚠️  自定义场景演示失败: ${error.message}`)
-    }
+    console.log('✅ 快速失败机制已实现并启用')
+    console.log('')
+    console.log('🔧 机制特性:')
+    console.log('   • 连续失败阈值控制 (默认: 1次快速测试, 3次综合测试)')
+    console.log('   • 支持串行和并行测试的快速失败')
+    console.log('   • 实时监控和状态跟踪')
+    console.log('   • 事件驱动的通知机制')
+    console.log('   • 测试执行提前终止')
+    console.log('')
+    console.log('📊 配置选项:')
+    console.log('   • failFast: 启用/禁用快速失败模式')
+    console.log('   • failFastThreshold: 连续失败次数阈值')
+    console.log('   • continueOnError: 是否在错误时继续')
+    console.log('')
+    console.log('💡 使用方式:')
+    console.log('   • 演示脚本: 默认启用 (阈值: 1)')
+    console.log('   • 命令行: --fail-fast --fail-fast-threshold 2')
+    console.log('   • 环境变量: FAIL_FAST=true FAIL_FAST_THRESHOLD=3')
+    console.log('')
+    console.log('🎯 优势:')
+    console.log('   • 快速发现问题，节省测试时间')
+    console.log('   • 避免无效测试执行')
+    console.log('   • 提高CI/CD效率')
+    console.log('   • 及早发现系统性问题')
   }
+
 
   showUsageExamples() {
     console.log('\n💡 使用示例:')

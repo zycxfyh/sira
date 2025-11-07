@@ -485,13 +485,13 @@ class LoadTestingTool extends EventEmitter {
         successRate: `${successRate}%`,
         averageRPS: avgRPS.toFixed(2),
         averageResponseTime: `${avgResponseTime.toFixed(2)}ms`,
-        minResponseTime: `${this.stats.minResponseTime.toFixed(2)}ms`,
-        maxResponseTime: `${this.stats.maxResponseTime.toFixed(2)}ms`
+        minResponseTime: this.stats.totalRequests > 0 ? `${this.stats.minResponseTime.toFixed(2)}ms` : 'N/A',
+        maxResponseTime: this.stats.totalRequests > 0 ? `${this.stats.maxResponseTime.toFixed(2)}ms` : 'N/A'
       },
       responseTimeDistribution: {
-        p50: `${responseTimePercentiles[50].toFixed(2)}ms`,
-        p95: `${responseTimePercentiles[95].toFixed(2)}ms`,
-        p99: `${responseTimePercentiles[99].toFixed(2)}ms`
+        p50: responseTimePercentiles[50] !== undefined ? `${responseTimePercentiles[50].toFixed(2)}ms` : 'N/A',
+        p95: responseTimePercentiles[95] !== undefined ? `${responseTimePercentiles[95].toFixed(2)}ms` : 'N/A',
+        p99: responseTimePercentiles[99] !== undefined ? `${responseTimePercentiles[99].toFixed(2)}ms` : 'N/A'
       },
       errors: Object.fromEntries(this.stats.errors),
       throughput: throughputTrend,

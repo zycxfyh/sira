@@ -88,7 +88,6 @@ class E2ETestingTool extends EventEmitter {
         '--disable-accelerated-2d-canvas',
         '--no-first-run',
         '--no-zygote',
-        '--single-process',
         '--disable-gpu'
       ]
     })
