@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  api-gateway-v2:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/api-gateway-dev
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # Load environment variables from .env file
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+      - redis
+    command: npm run dev
+    networks:
+      - api-gateway-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  mongodb:
+    image: mongo:7-jammy
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=dev
+      - MONGO_INITDB_ROOT_PASSWORD=devpassword
+      - MONGO_INITDB_DATABASE=api-gateway-dev
+    volumes:
+      - mongodb_dev_data:/data/db
+      - ./scripts/init-dev-db.js:/docker-entrypoint-initdb.d/init-dev-db.js:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - api-gateway-dev
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass "devpassword"
+    volumes:
+      - redis_dev_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - api-gateway-dev
+
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:devpassword
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - api-gateway-dev
+    profiles:
+      - tools
+
+  # Mongo Express for MongoDB management
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8082:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=dev
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=devpassword
+      - ME_CONFIG_MONGODB_URL=mongodb://dev:devpassword@mongodb:27017/
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    depends_on:
+      - mongodb
+    networks:
+      - api-gateway-dev
+    profiles:
+      - tools
+
+volumes:
+  mongodb_dev_data:
+  redis_dev_data:
+
+networks:
+  api-gateway-dev:
+    driver: bridge
