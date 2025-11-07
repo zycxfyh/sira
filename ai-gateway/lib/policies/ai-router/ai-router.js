@@ -4,6 +4,7 @@ const { parameterManager } = require('../../parameter-manager')
 const { promptTemplateManager } = require('../../prompt-template-manager')
 const { apiKeyManager } = require('../../api-key-manager')
 const { ABTestManager } = require('../../ab-test-manager')
+const { RulesEngine } = require('../../rules-engine')
 
 // AI Router Policy
 // Routes AI requests to appropriate providers based on cost, performance, and availability
@@ -88,6 +89,18 @@ module.exports = function (params, config) {
     // Extract user ID from headers or generate one
     const userId = req.headers['x-user-id'] || req.headers['user-id'] || req.ip || 'anonymous'
     const requestId = req.headers['x-request-id'] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+    // Initialize rules engine for custom routing rules
+    let rulesEngine = null
+    try {
+      if (!global.rulesEngine) {
+        global.rulesEngine = new RulesEngine()
+        await global.rulesEngine.initialize()
+      }
+      rulesEngine = global.rulesEngine
+    } catch (error) {
+      logger.warn('Rules engine initialization failed, continuing without custom rules:', error.message)
+    }
 
     // Extract AI model from request body
     let model, parameters, taskType, parameterPreset, promptTemplate, templateVariables
@@ -233,6 +246,81 @@ module.exports = function (params, config) {
         error: 'Invalid request body',
         code: 'INVALID_REQUEST'
       })
+    }
+
+    // 自定义规则引擎：应用用户定义的路由规则
+    let routingContext = {
+      user: {
+        id: userId,
+        tier: req.headers['x-user-tier'] || 'free',
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      },
+      request: {
+        id: requestId,
+        method: req.method,
+        url: req.url,
+        headers: req.headers,
+        model: model,
+        parameters: parameters,
+        taskType: taskType,
+        parameterPreset: parameterPreset,
+        promptTemplate: promptTemplate,
+        estimatedCost: calculateEstimatedCost(model, parameters),
+        timestamp: new Date().toISOString()
+      },
+      system: {
+        timestamp: new Date().toISOString(),
+        loadAverage: process.loadavg ? process.loadavg()[0] : 0,
+        memoryUsage: process.memoryUsage(),
+        uptime: process.uptime()
+      },
+      routing: {
+        provider: null,
+        model: model,
+        parameters: parameters,
+        cost: null,
+        performance: null
+      }
+    }
+
+    // 执行自定义路由规则
+    if (rulesEngine) {
+      try {
+        const ruleResult = await rulesEngine.executeRules(routingContext, {
+          ruleSetId: params.routingRuleSetId || 'routing-rules',
+          maxResults: 5,
+          dryRun: false
+        })
+
+        if (ruleResult.matched && ruleResult.results.length > 0) {
+          logger.info(`Applied ${ruleResult.results.length} custom routing rules`, {
+            userId,
+            requestId,
+            rulesApplied: ruleResult.results.map(r => r.ruleName)
+          })
+
+          // 应用规则执行结果
+          for (const result of ruleResult.results) {
+            // 规则执行结果已经通过actions应用到了routingContext中
+            if (routingContext.routing.provider) {
+              selectedProvider = routingContext.routing.provider
+            }
+            if (routingContext.routing.model) {
+              model = routingContext.routing.model
+            }
+            if (routingContext.routing.parameters) {
+              parameters = { ...parameters, ...routingContext.routing.parameters }
+            }
+          }
+        }
+      } catch (error) {
+        logger.warn('Custom routing rules execution failed, continuing with default routing:', {
+          userId,
+          requestId,
+          error: error.message
+        })
+      }
     }
 
     // A/B测试：检查是否有适用于当前请求的测试
@@ -935,5 +1023,27 @@ function calculateQualityScore(response, model) {
   } catch (error) {
     console.warn('质量评分计算失败:', error.message)
     return 50 // 默认中等分数
+  }
+}
+
+// 计算请求的预估成本
+function calculateEstimatedCost(model, parameters) {
+  try {
+    const { max_tokens = 1000 } = parameters
+
+    // 简化的成本估算，实际应用中应该基于历史数据和更精确的模型
+    const costPerThousandTokens = {
+      'gpt-4': 0.03,
+      'gpt-4-turbo': 0.01,
+      'gpt-3.5-turbo': 0.002,
+      'claude-3-opus': 0.015,
+      'claude-3-sonnet': 0.003,
+      'claude-3-haiku': 0.00025
+    }
+
+    const costPerToken = costPerThousandTokens[model] || 0.01
+    return (max_tokens / 1000) * costPerToken
+  } catch (error) {
+    return 0.01 // 默认预估成本
   }
 }

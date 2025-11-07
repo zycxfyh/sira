@@ -64,6 +64,7 @@
 | 💬 **对话历史管理** | Redis式存储、上下文连续、记忆网络 | 🧠 智能对话体验 |
 | 📊 **A/B测试框架** | 多变量测试、流量分配、实时分析和自动化优化 | ⚡ 科学优化AI体验 |
  📡 **Webhook通知系统** | 异步事件通知、可靠投递、重试机制和安全验证 | 🔄 实时异步通信 |
+ 🎛️ **自定义规则引擎** | 灵活条件匹配、规则优先级、上下文感知的智能路由 | 🎯 自定义业务逻辑 |
 
 ---
 
@@ -1217,6 +1218,146 @@ function verifySignature(payload, signature, secret) {
   );
 }
 ```
+
+### 🎛️ 自定义规则引擎 API使用示例
+
+```bash
+# 获取所有规则
+curl http://localhost:9876/rules
+
+# 创建智能路由规则
+curl -X POST http://localhost:9876/rules \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium用户智能路由",
+    "description": "Premium用户自动路由到GPT-4",
+    "priority": 10,
+    "conditions": [
+      {
+        "type": "field",
+        "field": "user.tier",
+        "operator": "equals",
+        "value": "premium"
+      }
+    ],
+    "actions": [
+      {
+        "type": "setField",
+        "params": {
+          "field": "routing.provider",
+          "value": "openai"
+        }
+      }
+    ],
+    "tags": ["routing", "premium"]
+  }'
+
+# 获取规则详情
+curl http://localhost:9876/rules/rule_1234567890
+
+# 更新规则配置
+curl -X PUT http://localhost:9876/rules/rule_1234567890 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "priority": 15,
+    "enabled": true
+  }'
+
+# 测试规则条件
+curl -X POST http://localhost:9876/rules/rule_1234567890/test \
+  -H "Content-Type: application/json" \
+  -d '{
+    "context": {
+      "user": {
+        "tier": "premium",
+        "id": "user123"
+      },
+      "request": {
+        "model": "gpt-4",
+        "estimatedCost": 0.5
+      }
+    }
+  }'
+
+# 执行规则
+curl -X POST http://localhost:9876/rules/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "context": {
+      "user": {
+        "tier": "premium",
+        "id": "user123"
+      },
+      "request": {
+        "model": "gpt-4",
+        "estimatedCost": 0.5
+      }
+    },
+    "options": {
+      "maxResults": 5,
+      "dryRun": false
+    }
+  }'
+
+# 查看规则统计
+curl http://localhost:9876/rules/stats/rule_1234567890
+
+# 查看规则引擎统计
+curl http://localhost:9876/rules/engine/stats
+
+# 删除规则
+curl -X DELETE http://localhost:9876/rules/rule_1234567890
+
+# 获取规则模板
+curl http://localhost:9876/rules/templates
+```
+
+#### 规则条件类型
+
+- **field**: 字段比较条件
+  ```json
+  {
+    "type": "field",
+    "field": "user.tier",
+    "operator": "equals",
+    "value": "premium"
+  }
+  ```
+
+- **expression**: 表达式条件
+  ```json
+  {
+    "type": "expression",
+    "field": "user.tier == 'premium' && request.estimatedCost > 1.0"
+  }
+  ```
+
+#### 支持的操作符
+
+- `equals/eq`: 等于
+- `notEquals/ne`: 不等于
+- `greaterThan/gt`: 大于
+- `greaterThanOrEqual/gte`: 大于等于
+- `lessThan/lt`: 小于
+- `lessThanOrEqual/lte`: 小于等于
+- `contains`: 包含
+- `notContains`: 不包含
+- `startsWith`: 以...开始
+- `endsWith`: 以...结束
+- `matches`: 正则匹配
+- `in`: 在数组中
+- `notIn`: 不在数组中
+- `exists`: 字段存在
+- `notExists`: 字段不存在
+
+#### 规则动作类型
+
+- **setField**: 设置字段值
+- **transform**: 转换字段值
+- **log**: 记录日志
+- **webhook**: 触发webhook
+- **modifyRequest**: 修改请求参数
+- **custom**: 自定义动作
 
 ## 🧪 测试验证
 
