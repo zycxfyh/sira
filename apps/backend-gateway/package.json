@@ -24,7 +24,7 @@
     "@nestjs/platform-socket.io": "^10.4.20",
     "@nestjs/websockets": "^10.4.20",
     "@prisma/client": "^5.22.0",
-    "@sentry/node": "^8.21.0",
+    "@sentry/node": "^10.23.0",
     "@socket.io/redis-adapter": "^8.3.0",
     "@tuheg/common-backend": "workspace:*",
     "bcryptjs": "^2.4.3",
