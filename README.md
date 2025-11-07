@@ -69,6 +69,7 @@
  🧠 **智能拆分路由** | 根据请求复杂度自动选择最优AI模型，性能/成本/质量多维度优化 | 🎯 智能模型选择 |
  🌐 **多语言支持** | 支持中英文界面、API响应本地化，智能语言检测和翻译服务 | 🌍 全球化AI服务 |
  📊 **批量处理接口** | 支持批量AI请求处理，高并发优化，智能队列管理和资源调度 | ⚡ 高性能批量处理 |
+ 📊 **实时流式响应** | 支持SSE/WebSocket实时流式响应，低延迟数据传输和连接管理 | 🌊 实时数据流 |
  🧠 **模型训练接口** | 支持用户自定义数据集进行模型微调，完整的训练生命周期管理 | 🎯 AI模型定制 |
 
 ---
@@ -1842,6 +1843,222 @@ curl http://localhost:9876/batch-processing/health
 - **异步处理**: 非阻塞的批量处理不影响其他请求
 - **智能调度**: 基于任务特性的智能调度算法
 - **资源复用**: 复用连接和计算资源提升效率
+
+### 📊 实时流式响应 API使用示例
+
+```bash
+# 建立SSE连接 (使用curl监听流式响应)
+curl -N http://localhost:9876/streaming/sse?streamId=stream_123
+
+# 建立WebSocket连接 (需要WebSocket客户端)
+# ws://localhost:9876/ws
+
+# 创建流式会话
+curl -X POST http://localhost:9876/streaming/streams \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "options": {
+        "maxConnections": 10,
+        "timeout": 300000
+    }
+  }'
+
+# 获取流式会话列表
+curl http://localhost:9876/streaming/streams?userId=user123
+
+# 获取流式会话详情
+curl http://localhost:9876/streaming/streams/stream_123
+
+# 加入流式会话
+curl -X POST http://localhost:9876/streaming/streams/stream_123/join \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connectionId": "conn_456"
+  }'
+
+# 向流发送数据
+curl -X POST http://localhost:9876/streaming/streams/stream_123/send \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": {
+        "message": "Hello from API",
+        "timestamp": "2024-01-01T12:00:00Z"
+    },
+    "eventType": "chat_message",
+    "metadata": {
+        "source": "api",
+        "priority": "normal"
+    }
+  }'
+
+# 离开流式会话
+curl -X POST http://localhost:9876/streaming/streams/stream_123/leave \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connectionId": "conn_456"
+  }'
+
+# 关闭流式会话
+curl -X DELETE http://localhost:9876/streaming/streams/stream_123 \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "session_complete"}'
+
+# 广播消息到所有连接
+curl -X POST http://localhost:9876/streaming/broadcast \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": {
+        "type": "announcement",
+        "content": "系统维护通知",
+        "level": "info"
+    },
+    "eventType": "system_announcement",
+    "metadata": {
+        "broadcast": true,
+        "priority": "high"
+    }
+  }'
+
+# 广播消息到指定用户
+curl -X POST http://localhost:9876/streaming/broadcast \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": {
+        "type": "notification",
+        "content": "您的任务已完成"
+    },
+    "userId": "user123",
+    "eventType": "user_notification"
+  }'
+
+# 获取流式响应统计
+curl http://localhost:9876/streaming/stats
+
+# 获取连接统计
+curl http://localhost:9876/streaming/connections/stats
+
+# 获取流统计
+curl http://localhost:9876/streaming/streams/stats
+
+# 健康检查
+curl http://localhost:9876/streaming/health
+```
+
+#### SSE (Server-Sent Events) 使用示例
+
+**JavaScript客户端:**
+```javascript
+// 建立SSE连接
+const eventSource = new EventSource('/streaming/sse?streamId=stream_123');
+
+// 监听连接事件
+eventSource.onopen = function(event) {
+    console.log('SSE connection opened');
+};
+
+// 监听自定义事件
+eventSource.addEventListener('chat_message', function(event) {
+    const data = JSON.parse(event.data);
+    console.log('Received chat message:', data);
+});
+
+// 监听数据事件
+eventSource.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    console.log('Received data:', data);
+};
+
+// 监听错误
+eventSource.onerror = function(event) {
+    console.error('SSE error:', event);
+};
+```
+
+#### WebSocket 使用示例
+
+**JavaScript客户端:**
+```javascript
+// 建立WebSocket连接
+const ws = new WebSocket('ws://localhost:9876/ws');
+
+// 监听连接打开
+ws.onopen = function(event) {
+    console.log('WebSocket connection opened');
+
+    // 发送加入流的消息
+    ws.send(JSON.stringify({
+        type: 'join_stream',
+        streamId: 'stream_123'
+    }));
+
+    // 发送心跳
+    setInterval(() => {
+        ws.send(JSON.stringify({
+            type: 'heartbeat'
+        }));
+    }, 30000);
+};
+
+// 监听消息
+ws.onmessage = function(event) {
+    const message = JSON.parse(event.data);
+
+    switch(message.type) {
+        case 'connection':
+            console.log('Connected:', message.payload);
+            break;
+        case 'data':
+            console.log('Received data:', message.payload);
+            break;
+        case 'pong':
+            console.log('Received pong');
+            break;
+        default:
+            console.log('Unknown message type:', message.type);
+    }
+};
+
+// 监听错误
+ws.onerror = function(error) {
+    console.error('WebSocket error:', error);
+};
+
+// 监听连接关闭
+ws.onclose = function(event) {
+    console.log('WebSocket connection closed:', event.code, event.reason);
+};
+```
+
+#### 流式响应特性
+
+- **低延迟传输**: SSE和WebSocket提供毫秒级延迟的数据传输
+- **双向通信**: WebSocket支持客户端到服务器的双向通信
+- **自动重连**: 内置连接断开检测和自动重连机制
+- **连接池管理**: 智能的连接生命周期管理和资源控制
+- **多租户隔离**: 支持多用户和多应用的流隔离
+- **扩展性设计**: 支持水平扩展和负载均衡部署
+
+#### 连接类型对比
+
+| 特性 | SSE | WebSocket |
+|------|-----|-----------|
+| 方向性 | 单向 (服务器到客户端) | 双向 |
+| 协议 | HTTP | WebSocket |
+| 浏览器支持 | 良好 | 良好 |
+| 代理支持 | 优秀 | 一般 |
+| 复杂性 | 简单 | 中等 |
+| 实时性 | 良好 | 优秀 |
+| 二进制支持 | 否 | 是 |
+| 连接开销 | 低 | 低 |
+
+#### 流式会话管理
+
+- **会话生命周期**: 创建、活跃、关闭的完整生命周期管理
+- **连接绑定**: 支持多个连接加入同一个流式会话
+- **权限控制**: 基于用户ID的流访问权限控制
+- **资源限制**: 防止单个流占用过多系统资源
+- **状态同步**: 实时同步流状态到所有连接的客户端
 
 ## 🧪 测试验证
 

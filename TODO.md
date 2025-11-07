@@ -20,6 +20,8 @@ Sira AI网关已完成核心功能开发（API密钥管理、参数管理、模�
 - ✅ **对话历史管理** - 保存用户对话历史，支持上下文持续
 - ✅ **A/B测试框架** - 对不同模型/供应商进行A/B测试，优化用户体验
 - ✅ **实时价格监控** - 监控所有供应商价格变动，自动调整路由策略
+- ✅ **实时流式响应** - 支持SSE/WebSocket实时流式响应，提升用户体验
+- ✅ **批量处理接口** - 支持批量请求处理，提高高并发场景下的效率
 
 ## 🚀 待实现的高级功能
 
@@ -301,32 +303,6 @@ POST /api/v1/batch/cancel/{id}
 
 ---
 
-### 🌊 流式响应 (优先级: 高)
-
-**功能描述**: 支持SSE/WebSocket实时流式响应，提升用户体验。
-
-**技术实现**:
-- Server-Sent Events (SSE)
-- WebSocket连接
-- 流式数据处理
-- 连接管理和清理
-- 错误恢复机制
-
-**借鉴项目**:
-- [OpenAI Streaming](https://platform.openai.com/docs/guides/text-generation/realtime) - 实时流式响应
-- [Anthropic Streaming](https://docs.anthropic.com/claude/docs/streaming) - Claude流式API
-- [Socket.IO](https://socket.io) - WebSocket库
-- [Server-Sent Events MDN](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) - SSE标准
-
-**API设计**:
-```javascript
-GET /api/v1/stream/chat (SSE)
-WebSocket /api/v1/ws/chat
-GET /api/v1/stream/completions
-POST /api/v1/stream/batch
-```
-
----
 
 ### 📈 实时价格监控 (优先级: 中)
 
