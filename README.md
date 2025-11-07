@@ -67,6 +67,7 @@
  🎛️ **自定义规则引擎** | 灵活条件匹配、规则优先级、上下文感知的智能路由 | 🎯 自定义业务逻辑 |
  📊 **入口统计和报告** | 详细的API统计、错误分析、性能报告和业务洞察 | 📈 数据驱动洞察 |
  🧠 **智能拆分路由** | 根据请求复杂度自动选择最优AI模型，性能/成本/质量多维度优化 | 🎯 智能模型选择 |
+ 🌐 **多语言支持** | 支持中英文界面、API响应本地化，智能语言检测和翻译服务 | 🌍 全球化AI服务 |
  🧠 **模型训练接口** | 支持用户自定义数据集进行模型微调，完整的训练生命周期管理 | 🎯 AI模型定制 |
 
 ---
@@ -1596,6 +1597,147 @@ curl http://localhost:9876/intelligent-routing/health
 | gpt-3.5-turbo | OpenAI | 4096 | 通用、对话、速度 | 复杂推理 | 1500ms | 99% |
 | claude-2 | Anthropic | 100000 | 推理、创造、长文本 | 编码 | 2500ms | 97% |
 | codellama-34b | Meta | 16384 | 编码、技术 | 创造 | 4000ms | 95% |
+
+### 🌐 多语言支持 API使用示例
+
+```bash
+# 获取支持的语言列表
+curl http://localhost:9876/multilingual/languages
+
+# 检测文本语言
+curl -X POST http://localhost:9876/multilingual/detect \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Hello, how are you today?"
+  }'
+
+# 获取当前请求的语言信息
+curl http://localhost:9876/multilingual/current
+
+# 翻译文本
+curl -X POST http://localhost:9876/multilingual/translate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Hello World",
+    "fromLanguage": "en-US",
+    "toLanguage": "zh-CN"
+  }'
+
+# 批量翻译文本
+curl -X POST http://localhost:9876/multilingual/translate-batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "texts": ["Hello", "World", "AI Gateway"],
+    "fromLanguage": "en-US",
+    "toLanguage": "zh-CN"
+  }'
+
+# 设置用户语言偏好
+curl -X POST http://localhost:9876/multilingual/preferences/user123 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "language": "zh-CN",
+    "timezone": "Asia/Shanghai"
+  }'
+
+# 获取用户语言偏好
+curl http://localhost:9876/multilingual/preferences/user123
+
+# 添加翻译资源
+curl -X POST http://localhost:9876/multilingual/resources/zh-CN/common \
+  -H "Content-Type: application/json" \
+  -d '{
+    "welcome": "欢迎使用",
+    "loading": "加载中...",
+    "error": "出错了"
+  }'
+
+# 获取翻译资源
+curl http://localhost:9876/multilingual/resources/zh-CN/common
+
+# 获取翻译提供商信息
+curl http://localhost:9876/multilingual/providers
+
+# 切换翻译提供商
+curl -X POST http://localhost:9876/multilingual/providers/openai/switch
+
+# 获取翻译统计信息
+curl http://localhost:9876/multilingual/stats
+
+# 获取缓存状态
+curl http://localhost:9876/multilingual/cache
+
+# 清除翻译缓存
+curl -X POST http://localhost:9876/multilingual/cache/clear
+
+# 健康检查
+curl http://localhost:9876/multilingual/health
+```
+
+#### 支持的语言列表
+
+多语言系统支持15种主要语言：
+
+| 语言代码 | 语言名称 | 原生名称 | 地区 | RTL |
+|----------|----------|----------|------|-----|
+| zh-CN | 中文(简体) | 中文(简体) | 🇨🇳 中国 | 否 |
+| zh-TW | 中文(繁体) | 中文(繁體) | 🇹🇼 台湾 | 否 |
+| en-US | 英语(美国) | English (US) | 🇺🇸 美国 | 否 |
+| en-GB | 英语(英国) | English (UK) | 🇬🇧 英国 | 否 |
+| ja-JP | 日语 | 日本語 | 🇯🇵 日本 | 否 |
+| ko-KR | 韩语 | 한국어 | 🇰🇷 韩国 | 否 |
+| fr-FR | 法语 | Français | 🇫🇷 法国 | 否 |
+| de-DE | 德语 | Deutsch | 🇩🇪 德国 | 否 |
+| es-ES | 西班牙语 | Español | 🇪🇸 西班牙 | 否 |
+| it-IT | 意大利语 | Italiano | 🇮🇹 意大利 | 否 |
+| pt-BR | 葡萄牙语(巴西) | Português (BR) | 🇧🇷 巴西 | 否 |
+| ru-RU | 俄语 | Русский | 🇷🇺 俄罗斯 | 否 |
+| ar-SA | 阿拉伯语 | العربية | 🇸🇦 沙特 | 是 |
+| hi-IN | 印地语 | हिन्दी | 🇮🇳 印度 | 否 |
+
+#### 翻译提供商支持
+
+- **Google Translate**: 支持所有语言，高质量翻译，需API密钥
+- **Azure Translator**: Microsoft Azure翻译服务，企业级支持
+- **OpenAI GPT**: 使用GPT模型进行翻译，适合创意和复杂文本
+
+#### 语言检测机制
+
+系统使用多层语言检测策略：
+
+1. **显式指定**: 检查`lang`查询参数、`x-language`请求头
+2. **用户偏好**: 从用户配置文件获取偏好语言
+3. **Accept-Language**: 解析HTTP Accept-Language头
+4. **地理位置**: 基于IP地址的地理位置检测
+5. **默认语言**: 使用系统默认语言(zh-CN)
+
+#### API响应本地化
+
+所有API响应都会根据用户语言偏好自动本地化：
+
+```json
+// 英文请求
+GET /api/models
+
+// 中文响应 (自动本地化)
+{
+  "success": true,
+  "message": "模型列表获取成功",
+  "data": [...],
+  "_localization": {
+    "language": "zh-CN",
+    "confidence": 0.9,
+    "method": "header"
+  }
+}
+```
+
+#### 翻译缓存策略
+
+- **24小时缓存**: 翻译结果缓存24小时以提高性能
+- **智能缓存键**: 基于文本内容、源语言、目标语言生成缓存键
+- **内存管理**: 自动清理过期缓存，防止内存泄漏
+- **缓存统计**: 提供缓存命中率和性能指标
 
 ## 🧪 测试验证
 

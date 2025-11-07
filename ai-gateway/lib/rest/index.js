@@ -56,6 +56,7 @@ module.exports = function ({ plugins, config } = {}) {
   app.use('/rules', require('./routes/rules')())
   app.use('/reports', require('./routes/reports')())
   app.use('/intelligent-routing', require('./routes/intelligent-routing')())
+  app.use('/multilingual', require('./routes/multilingual')())
   app.use('/model-training', require('./routes/model-training')())
 
   app.use((err, req, res, next) => {
