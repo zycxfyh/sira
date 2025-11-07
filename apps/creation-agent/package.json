@@ -25,7 +25,7 @@
     "@tuheg/common-backend": "workspace:*",
     "amqplib": "^0.10.9",
     "rxjs": "^7.8.2",
-    "zod": "^3.25.76"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.10",
