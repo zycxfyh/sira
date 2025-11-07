@@ -1,8 +1,8 @@
-# AI Gateway 项目免责声明
+# Sira 项目免责声明
 
 ## 🌟 项目介绍
 
-**AI Gateway** 是一个由学生开发者独立完成的学习项目。这个项目基于 Express Gateway、Kong 等开源技术栈，实现了AI API网关的核心功能。
+**Sira** 是一个由学生开发者独立完成的学习项目。这个项目基于 Express Gateway、Kong 等开源技术栈，实现了AI API网关的核心功能。
 
 ## 🎓 学习项目声明
 

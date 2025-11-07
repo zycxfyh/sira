@@ -1,7 +1,7 @@
-# Kong declarative configuration for AI Gateway
+# Kong declarative configuration for Sira
 # This file defines all Kong entities (services, routes, plugins, etc.)
 
-# Upstream targets for AI Gateway
+# Upstream targets for Sira
 upstreams:
   - name: ai-gateway-upstream
     targets:

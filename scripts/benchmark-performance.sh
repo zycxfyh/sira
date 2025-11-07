@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# AI Gateway Performance Benchmark Script
+# Sira Performance Benchmark Script
 # 用于测试AI网关的性能表现
 
 set -e
 
-echo "🚀 AI Gateway Performance Benchmark"
+echo "🚀 Sira Performance Benchmark"
 echo "=================================="
 
 # 配置参数
