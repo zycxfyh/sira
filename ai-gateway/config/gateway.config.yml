@@ -1,0 +1,58 @@
+http:
+  port: 8080
+  hostname: localhost
+apiEndpoints:
+  ai-api:
+    host: localhost
+    paths: ['/api/v1/ai/*']
+  admin-api:
+    host: localhost
+    paths: ['/admin/*']
+
+serviceEndpoints:
+  ai-router:
+    url: 'http://localhost:3000' # Placeholder, will be overridden by AI router policy
+  admin-service:
+    url: 'http://localhost:9876'
+
+policies:
+  - ai-router
+  - ai-cache
+  - cors
+  - expression
+  - headers
+  - jwt
+  - key-auth
+  - log
+  - oauth2
+  - oauth2-introspect
+  - proxy
+  - rate-limit
+  - request-transformer
+  - response-transformer
+
+pipelines:
+  ai-pipeline:
+    apiEndpoints:
+      - ai-api
+    policies:
+      - cors: {}
+      - key-auth:
+          apiKeyHeader: 'x-api-key'
+      - ai-cache:
+          ttl: 300
+          maxSize: 1000
+      - ai-router:
+          timeout: 30000
+          cacheEnabled: true
+
+  # admin-pipeline:
+  #   apiEndpoints:
+  #     - admin-api
+  #   policies:
+  #     - jwt: {}
+  #     - rate-limit:
+  #         windowMs: 900000
+  #         max: 100
+  #     - proxy:
+  #         serviceEndpoint: admin-service

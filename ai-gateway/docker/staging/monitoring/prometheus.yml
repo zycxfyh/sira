@@ -1,0 +1,197 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    monitor: 'ai-gateway-monitor'
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+    # Alertmanager service discovery
+    - dns_sd_configs:
+        - names:
+            - 'alertmanager'
+          type: 'A'
+          port: 9093
+          refresh_interval: 30s
+
+scrape_configs:
+  # Sira metrics with service discovery
+  - job_name: 'ai-gateway'
+    dns_sd_configs:
+      - names:
+          - 'ai-gateway'
+        type: 'A'
+        port: 8080
+        refresh_interval: 30s
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    relabel_configs:
+      - source_labels: [__meta_dns_name]
+        target_label: instance
+      - source_labels: [__meta_dns_name]
+        regex: '(.*)'
+        target_label: service
+        replacement: 'ai-gateway'
+    # Health check before scraping
+    http_config:
+      follow_redirects: true
+      enable_http2: true
+
+  # Sira health endpoint
+  - job_name: 'ai-gateway-health'
+    dns_sd_configs:
+      - names:
+          - 'ai-gateway'
+        type: 'A'
+        port: 8080
+        refresh_interval: 30s
+    metrics_path: '/health'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    params:
+      format: ['prometheus']
+
+  # Redis metrics with enhanced configuration
+  - job_name: 'redis'
+    dns_sd_configs:
+      - names:
+          - 'redis'
+        type: 'A'
+        port: 6379
+        refresh_interval: 30s
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    relabel_configs:
+      - source_labels: [__meta_dns_name]
+        target_label: instance
+    # Redis requires password authentication
+    # Note: Bearer token auth may not work for Redis metrics
+    # Consider using basic auth or removing this if Redis metrics are not available
+
+  # Kong API Gateway metrics
+  - job_name: 'kong-gateway'
+    dns_sd_configs:
+      - names:
+          - 'kong'
+        type: 'A'
+        port: 8001
+        refresh_interval: 30s
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    params:
+      format: ['prometheus']
+    relabel_configs:
+      - source_labels: [__meta_dns_name]
+        target_label: gateway_instance
+
+  # NATS Server metrics (if available)
+  - job_name: 'nats-server'
+    dns_sd_configs:
+      - names:
+          - 'nats'
+        type: 'A'
+        port: 8222
+        refresh_interval: 60s
+    metrics_path: '/'
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    relabel_configs:
+      - source_labels: [__meta_dns_name]
+        target_label: nats_instance
+    # Optional: only scrape if NATS is available
+    http_config:
+      follow_redirects: true
+
+  # Container metrics from cAdvisor with service discovery
+  - job_name: 'cadvisor'
+    dns_sd_configs:
+      - names:
+          - 'cadvisor'
+        type: 'A'
+        port: 8080
+        refresh_interval: 60s
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    relabel_configs:
+      - source_labels: [__meta_dns_name]
+        target_label: cadvisor_instance
+
+  # Docker daemon metrics (if available)
+  - job_name: 'docker'
+    static_configs:
+      - targets:
+          - 'docker.sock:9323'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    # Only enable if Docker metrics endpoint is available
+    http_config:
+      dial_timeout: 5s
+
+  # Node.js application metrics with fallback
+  - job_name: 'ai-gateway-node'
+    dns_sd_configs:
+      - names:
+          - 'ai-gateway'
+        type: 'A'
+        port: 8080
+        refresh_interval: 30s
+    metrics_path: '/metrics/node'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    relabel_configs:
+      - source_labels: [__meta_dns_name]
+        target_label: node_instance
+    # Optional: fallback to static config if DNS fails
+    static_configs:
+      - targets: ['ai-gateway:8080']
+
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metric_relabel_configs:
+      - regex: 'prometheus_.*'
+        action: keep
+
+  # Blackbox exporter for external endpoints (optional)
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://api.openai.com/v1/models
+          - https://api.anthropic.com/v1/messages
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+# Remote write configuration (for long-term storage)
+# remote_write:
+#   - url: "http://cortex:9009/api/prom/push"
+#     remote_timeout: 30s
+#     queue_config:
+#       capacity: 10000
+#       max_samples_per_send: 1000
+
+# Remote read configuration (for querying historical data)
+# remote_read:
+#   - url: "http://cortex:9009/api/prom/read"
+#     remote_timeout: 30s

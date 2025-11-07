@@ -1,0 +1,94 @@
+version: "1.0.0"
+name: "Sira Test Gateway"
+description: "Test configuration with mock AI services"
+
+http:
+  port: 3002
+  host: "localhost"
+
+https:
+  enabled: false
+
+admin:
+  port: 3003
+  host: "localhost"
+
+db:
+  url: "memory://"
+
+redis:
+  host: "localhost"
+  port: 6379
+
+apiEndpoints:
+  ai-api:
+    paths:
+      - "/api/v1/ai/*"
+    methods: ["GET", "POST"]
+
+serviceEndpoints:
+  openai:
+    url: "http://localhost:3002/v1"
+    timeout: 10000
+  anthropic:
+    url: "http://localhost:3002/v1"
+    timeout: 10000
+  azure:
+    url: "http://localhost:3002/openai/deployments/gpt-4"
+    timeout: 10000
+
+policies:
+  - name: "cors"
+  - name: "key-auth"
+    condition:
+      name: "pathMatch"
+      pattern: "/api/v1/ai/*"
+  - name: "ai-rate-limit"
+    condition:
+      name: "pathMatch"
+      pattern: "/api/v1/ai/*"
+  - name: "ai-cache"
+    condition:
+      name: "pathMatch"
+      pattern: "/api/v1/ai/*"
+  - name: "ai-router"
+    condition:
+      name: "pathMatch"
+      pattern: "/api/v1/ai/*"
+
+pipelines:
+  test-pipeline:
+    apiEndpoints:
+      - ai-api
+    policies:
+      - cors: {}
+      - key-auth:
+          apiKeyHeader: "x-api-key"
+      - ai-rate-limit:
+          windowMs: 900000
+          maxTokens: 100000
+      - ai-cache:
+          ttl: 300
+          maxSize: 1000
+      - ai-router:
+          timeout: 10000
+      - proxy:
+          target: "http://localhost:3001"
+
+users:
+  test-user:
+    username: "test-user"
+    firstname: "Test"
+    lastname: "User"
+    email: "test@example.com"
+
+apps:
+  test-app:
+    name: "Test Application"
+    redirectUri: "http://localhost:3000/callback"
+
+credentials:
+  - id: "test-key"
+    consumerId: "test-user"
+    type: "key-auth"
+    key: "test-api-key-123"

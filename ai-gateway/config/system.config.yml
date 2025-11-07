@@ -1,0 +1,30 @@
+db:
+  redis:
+    host: localhost
+    port: 6379
+    password: null
+    db: 0
+
+crypto:
+  cipherKey: ${EG_CRYPTO_CIPHER_KEY:-change-me-in-production}
+  algorithm: 'aes256'
+  keyEncoding: 'utf8'
+  ivEncoding: 'hex'
+
+session:
+  secret: ${EG_SESSION_SECRET:-change-me-in-production}
+  resave: false
+  saveUninitialized: false
+
+accessTokens:
+  timeToExpiry: 7200000
+
+refreshTokens:
+  timeToExpiry: 7200000
+
+authorizationCodes:
+  timeToExpiry: 300000
+
+policies:
+  - ai-router
+  - ai-cache

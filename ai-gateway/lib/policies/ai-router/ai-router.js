@@ -1,0 +1,411 @@
+const axios = require('axios')
+
+// AI Router Policy
+// Routes AI requests to appropriate providers based on cost, performance, and availability
+module.exports = function (params, config) {
+  const logger = config.logger || console
+
+  // Configuration validation
+  const validationErrors = validateConfiguration(params)
+  if (validationErrors.length > 0) {
+    const error = new Error(`AI Router configuration validation failed: ${validationErrors.join(', ')}`)
+    logger.error(error.message)
+    throw error
+  }
+
+  // Merge with default configuration
+  const finalConfig = Object.assign({
+    timeout: 30000,
+    retryAttempts: 3,
+    routingStrategy: 'cost', // cost, performance, availability
+    fallbackEnabled: true,
+    healthCheckInterval: 60000
+  }, params)
+
+  // AI Provider configurations
+  const providers = {
+    openai: {
+      baseUrl: 'https://api.openai.com/v1',
+      models: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+      costPerToken: { 'gpt-4': 0.03, 'gpt-4-turbo': 0.01, 'gpt-3.5-turbo': 0.002 },
+      authHeader: 'Authorization',
+      authPrefix: 'Bearer'
+    },
+    anthropic: {
+      baseUrl: 'https://api.anthropic.com/v1',
+      models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
+      costPerToken: { 'claude-3-opus': 0.015, 'claude-3-sonnet': 0.003, 'claude-3-haiku': 0.00025 },
+      authHeader: 'x-api-key',
+      authPrefix: ''
+    },
+    azure: {
+      baseUrl: process.env.AZURE_OPENAI_ENDPOINT || 'https://your-resource.openai.azure.com/',
+      models: ['gpt-4', 'gpt-3.5-turbo'],
+      costPerToken: { 'gpt-4': 0.03, 'gpt-3.5-turbo': 0.002 },
+      authHeader: 'api-key',
+      authPrefix: '',
+      deploymentMap: {
+        'gpt-4': 'gpt-4',
+        'gpt-3.5-turbo': 'gpt-35-turbo'
+      }
+    }
+  }
+
+  // Provider performance tracking
+  const providerStats = new Map()
+
+  // Initialize provider stats
+  Object.keys(providers).forEach(provider => {
+    providerStats.set(provider, {
+      successCount: 0,
+      errorCount: 0,
+      totalRequests: 0,
+      avgResponseTime: 0,
+      lastFailureTime: null,
+      isCircuitBreakerOpen: false
+    })
+  })
+
+  // Model to provider mapping
+  const modelProviders = {}
+  Object.entries(providers).forEach(([provider, providerConfig]) => {
+    providerConfig.models.forEach(model => {
+      if (!modelProviders[model]) {
+        modelProviders[model] = []
+      }
+      modelProviders[model].push(provider)
+    })
+  })
+
+  return function aiRouter (req, res, next) {
+    const startTime = Date.now()
+
+    // Extract AI model from request body
+    let model
+    try {
+      const body = req.body
+      model = body.model
+
+      if (!model) {
+        return res.status(400).json({
+          error: 'Model is required',
+          code: 'MISSING_MODEL'
+        })
+      }
+
+      // Check if model is supported
+      if (!modelProviders[model]) {
+        return res.status(400).json({
+          error: `Unsupported model: ${model}`,
+          code: 'UNSUPPORTED_MODEL'
+        })
+      }
+    } catch (error) {
+      logger.error('Failed to parse request body:', error)
+      return res.status(400).json({
+        error: 'Invalid request body',
+        code: 'INVALID_REQUEST'
+      })
+    }
+
+    // Select best provider for the model
+    const selectedProvider = selectBestProvider(model, req)
+
+    if (!selectedProvider) {
+      return res.status(503).json({
+        error: 'No available providers for model',
+        code: 'NO_AVAILABLE_PROVIDERS'
+      })
+    }
+
+    // Transform request for the selected provider
+    const transformedRequest = transformRequest(req.body, selectedProvider)
+
+    // Get provider configuration
+    const providerConfig = providers[selectedProvider]
+
+    // Build target URL
+    const targetUrl = buildTargetUrl(providerConfig, req.url, transformedRequest)
+
+    // Prepare headers
+    const headers = buildHeaders(providerConfig, req.headers)
+
+    // Make the request
+    axios({
+      method: req.method,
+      url: targetUrl,
+      headers,
+      data: transformedRequest,
+      timeout: params.timeout || 30000,
+      validateStatus: () => true // Don't throw on any status code
+    })
+      .then(response => {
+        const responseTime = Date.now() - startTime
+
+        // Record provider performance
+        recordProviderPerformance(selectedProvider, response.status < 400, responseTime)
+
+        // Transform response if needed
+        const transformedResponse = transformResponse(response.data, selectedProvider)
+
+        // Add custom headers
+        res.set({
+          'x-ai-provider': selectedProvider,
+          'x-ai-model': model,
+          'x-response-time': responseTime
+        })
+
+        // Send response
+        res.status(response.status).json(transformedResponse)
+
+        logger.info('AI request processed', {
+          model,
+          provider: selectedProvider,
+          responseTime,
+          statusCode: response.status
+        })
+      })
+      .catch(error => {
+        const responseTime = Date.now() - startTime
+
+        // Record provider performance
+        recordProviderPerformance(selectedProvider, false, responseTime)
+
+        logger.error('AI provider request failed', {
+          model,
+          provider: selectedProvider,
+          error: error.message,
+          responseTime
+        })
+
+        // Return error response
+        res.status(502).json({
+          error: 'AI provider error',
+          code: 'PROVIDER_ERROR',
+          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+      })
+  }
+
+  // Select best provider based on cost, performance, and availability
+  function selectBestProvider (model, req) {
+    const availableProviders = modelProviders[model]
+
+    if (!availableProviders || availableProviders.length === 0) {
+      return null
+    }
+
+    // Filter out providers with circuit breaker open
+    const healthyProviders = availableProviders.filter(provider => {
+      const stats = providerStats.get(provider)
+      return !stats.isCircuitBreakerOpen
+    })
+
+    if (healthyProviders.length === 0) {
+      // Reset circuit breaker for provider with oldest failure
+      const oldestFailure = availableProviders.reduce((oldest, provider) => {
+        const stats = providerStats.get(provider)
+        if (!oldest || (stats.lastFailureTime && stats.lastFailureTime < oldest.lastFailureTime)) {
+          return { provider, lastFailureTime: stats.lastFailureTime }
+        }
+        return oldest
+      }, null)
+
+      if (oldestFailure) {
+        const stats = providerStats.get(oldestFailure.provider)
+        stats.isCircuitBreakerOpen = false
+        stats.errorCount = Math.floor(stats.errorCount * 0.5)
+        logger.info(`Circuit breaker reset for provider: ${oldestFailure.provider}`)
+        return oldestFailure.provider
+      }
+
+      return availableProviders[0] // Fallback
+    }
+
+    // Select provider based on cost (cheapest first)
+    return healthyProviders.reduce((best, provider) => {
+      const bestCost = providers[best].costPerToken[model] || 0
+      const providerCost = providers[provider].costPerToken[model] || 0
+      return providerCost < bestCost ? provider : best
+    })
+  }
+
+  // Transform request for specific provider
+  function transformRequest (body, provider) {
+    const transformed = { ...body }
+
+    if (provider === 'anthropic') {
+      // Transform OpenAI format to Anthropic format
+      transformed.max_tokens = transformed.max_tokens || 4096
+      if (transformed.messages) {
+        // Extract system message
+        const systemMessage = transformed.messages.find(msg => msg.role === 'system')
+        if (systemMessage) {
+          transformed.system = systemMessage.content
+          transformed.messages = transformed.messages.filter(msg => msg.role !== 'system')
+        }
+
+        // Map roles
+        transformed.messages = transformed.messages.map(msg => ({
+          ...msg,
+          role: msg.role === 'assistant' ? 'assistant' : 'user'
+        }))
+      }
+    } else if (provider === 'azure') {
+      // Azure uses different endpoint structure
+      const deploymentName = providers.azure.deploymentMap[body.model] || body.model
+      transformed.model = deploymentName
+    }
+
+    return transformed
+  }
+
+  // Transform response to unified format
+  function transformResponse (data, provider) {
+    if (provider === 'anthropic') {
+      // Transform Anthropic response to OpenAI-like format
+      return {
+        id: data.id || `anthropic-${Date.now()}`,
+        object: 'chat.completion',
+        created: Math.floor(Date.now() / 1000),
+        model: data.model,
+        choices: [{
+          index: 0,
+          message: {
+            role: 'assistant',
+            content: data.content?.[0]?.text || ''
+          },
+          finish_reason: data.stop_reason || 'stop'
+        }],
+        usage: {
+          prompt_tokens: data.usage?.input_tokens || 0,
+          completion_tokens: data.usage?.output_tokens || 0,
+          total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
+        }
+      }
+    }
+
+    return data // OpenAI and Azure already return compatible format
+  }
+
+  // Build target URL
+  function buildTargetUrl (providerConfig, originalUrl, requestBody) {
+    let endpoint = originalUrl
+
+    if (providerConfig === providers.azure) {
+      // Azure uses deployment-based URLs
+      const deploymentName = providers.azure.deploymentMap[requestBody.model] || requestBody.model
+      endpoint = `/openai/deployments/${deploymentName}/chat/completions?api-version=2023-12-01`
+    }
+
+    return `${providerConfig.baseUrl}${endpoint}`
+  }
+
+  // Build headers for provider
+  function buildHeaders (providerConfig, originalHeaders) {
+    const headers = { ...originalHeaders }
+
+    // Remove hop-by-hop headers
+    delete headers.host
+    delete headers.connection
+    delete headers['keep-alive']
+    delete headers['proxy-authenticate']
+    delete headers['proxy-authorization']
+    delete headers.te
+    delete headers.trailers
+    delete headers['transfer-encoding']
+    delete headers.upgrade
+
+    // Set content type
+    headers['content-type'] = 'application/json'
+
+    // Add provider-specific authentication
+    const apiKey = getApiKey(providerConfig)
+    if (apiKey) {
+      if (providerConfig.authPrefix) {
+        headers[providerConfig.authHeader] = `${providerConfig.authPrefix} ${apiKey}`
+      } else {
+        headers[providerConfig.authHeader] = apiKey
+      }
+    }
+
+    return headers
+  }
+
+  // Get API key for provider
+  function getApiKey (providerConfig) {
+    // In production, these should come from secure environment variables
+    const keyMap = {
+      openai: process.env.OPENAI_API_KEY,
+      anthropic: process.env.ANTHROPIC_API_KEY,
+      azure: process.env.AZURE_OPENAI_API_KEY
+    }
+
+    return keyMap[providerConfig.name || Object.keys(providers).find(key => providers[key] === providerConfig)]
+  }
+
+  // Record provider performance
+  function recordProviderPerformance (provider, success, responseTime) {
+    const stats = providerStats.get(provider)
+    if (!stats) return
+
+    stats.totalRequests++
+    if (success) {
+      stats.successCount++
+      stats.avgResponseTime = (stats.avgResponseTime * (stats.totalRequests - 1) + responseTime) / stats.totalRequests
+    } else {
+      stats.errorCount++
+      stats.lastFailureTime = Date.now()
+
+      // Circuit breaker logic
+      const errorRate = stats.errorCount / stats.totalRequests
+      if (errorRate > 0.5 && stats.totalRequests > 10) {
+        stats.isCircuitBreakerOpen = true
+        logger.warn(`Circuit breaker opened for provider: ${provider}`, { errorRate, totalRequests: stats.totalRequests })
+      }
+    }
+
+    providerStats.set(provider, stats)
+  }
+}
+
+// Configuration validation function
+function validateConfiguration (params) {
+  const errors = []
+
+  if (!params) {
+    errors.push('Configuration object is required')
+    return errors
+  }
+
+  // Validate timeout
+  if (params.timeout !== undefined) {
+    if (typeof params.timeout !== 'number' || params.timeout < 1000 || params.timeout > 300000) {
+      errors.push('timeout must be a number between 1000 and 300000 milliseconds')
+    }
+  }
+
+  // Validate retry attempts
+  if (params.retryAttempts !== undefined) {
+    if (typeof params.retryAttempts !== 'number' || params.retryAttempts < 0 || params.retryAttempts > 10) {
+      errors.push('retryAttempts must be a number between 0 and 10')
+    }
+  }
+
+  // Validate routing strategy
+  if (params.routingStrategy !== undefined) {
+    const validStrategies = ['cost', 'performance', 'availability', 'round-robin']
+    if (!validStrategies.includes(params.routingStrategy)) {
+      errors.push(`routingStrategy must be one of: ${validStrategies.join(', ')}`)
+    }
+  }
+
+  // Validate health check interval
+  if (params.healthCheckInterval !== undefined) {
+    if (typeof params.healthCheckInterval !== 'number' || params.healthCheckInterval < 10000 || params.healthCheckInterval > 3600000) {
+      errors.push('healthCheckInterval must be a number between 10000 and 3600000 milliseconds')
+    }
+  }
+
+  return errors
+}
