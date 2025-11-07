@@ -66,6 +66,7 @@
  📡 **Webhook通知系统** | 异步事件通知、可靠投递、重试机制和安全验证 | 🔄 实时异步通信 |
  🎛️ **自定义规则引擎** | 灵活条件匹配、规则优先级、上下文感知的智能路由 | 🎯 自定义业务逻辑 |
  📊 **入口统计和报告** | 详细的API统计、错误分析、性能报告和业务洞察 | 📈 数据驱动洞察 |
+ 🧠 **智能拆分路由** | 根据请求复杂度自动选择最优AI模型，性能/成本/质量多维度优化 | 🎯 智能模型选择 |
  🧠 **模型训练接口** | 支持用户自定义数据集进行模型微调，完整的训练生命周期管理 | 🎯 AI模型定制 |
 
 ---
@@ -1486,6 +1487,117 @@ curl -X POST http://localhost:9876/reports/batch/generate \
 - `90d` - 最近90天
 - `1w` - 最近1周
 - `1m` - 最近1月
+
+### 🧠 智能拆分路由 API使用示例
+
+```bash
+# 执行智能路由决策
+curl -X POST http://localhost:9876/intelligent-routing/route \
+  -H "Content-Type: application/json" \
+  -d '{
+    "request": "请解释量子计算的基本原理",
+    "context": {
+      "userId": "user123",
+      "maxCost": 0.01,
+      "preferredProvider": "openai"
+    }
+  }'
+
+# 分析请求复杂度（不执行路由）
+curl -X POST http://localhost:9876/intelligent-routing/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "request": "写一个Python函数来实现二分查找算法"
+  }'
+
+# 批量路由决策
+curl -X POST http://localhost:9876/intelligent-routing/route-batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "requests": [
+      {"id": "req1", "content": "简单问候"},
+      {"id": "req2", "content": "复杂的技术问题需要详细解释"}
+    ],
+    "context": {
+      "userId": "user123",
+      "batchId": "batch_001"
+    }
+  }'
+
+# 获取当前路由策略
+curl http://localhost:9876/intelligent-routing/strategy
+
+# 设置路由策略为性能优先
+curl -X POST http://localhost:9876/intelligent-routing/strategy \
+  -H "Content-Type: application/json" \
+  -d '{"strategy": "performance_first"}'
+
+# 获取所有可用策略
+curl http://localhost:9876/intelligent-routing/strategies
+
+# 获取用户路由偏好
+curl http://localhost:9876/intelligent-routing/preferences/user123
+
+# 设置用户偏好（速度优先）
+curl -X POST http://localhost:9876/intelligent-routing/preferences/user123 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "speedPreference": "fast",
+    "budgetLimit": 0.02
+  }'
+
+# 获取路由统计信息
+curl http://localhost:9876/intelligent-routing/stats
+
+# 获取路由优化建议
+curl http://localhost:9876/intelligent-routing/suggestions
+
+# 获取所有可用模型
+curl http://localhost:9876/intelligent-routing/models
+
+# 获取特定模型详情
+curl http://localhost:9876/intelligent-routing/models/gpt-4
+
+# 获取缓存状态
+curl http://localhost:9876/intelligent-routing/cache
+
+# 清除路由缓存
+curl -X POST http://localhost:9876/intelligent-routing/cache/clear
+
+# 健康检查
+curl http://localhost:9876/intelligent-routing/health
+```
+
+#### 路由策略说明
+
+- **performance_first**: 性能优先 - 选择响应速度最快的模型
+- **cost_first**: 成本优先 - 选择成本最低的模型
+- **quality_first**: 质量优先 - 选择质量最好的模型
+- **balanced**: 均衡策略 - 在性能、成本、质量间取平衡
+- **adaptive**: 自适应策略 - 根据实时数据动态调整权重
+
+#### 复杂度分析维度
+
+智能路由通过以下维度分析请求复杂度：
+
+- **长度复杂度**: 基于内容长度、词数、句子数
+- **技术复杂度**: 检测技术术语数量
+- **推理复杂度**: 分析推理深度和问题复杂度
+- **代码复杂度**: 检测代码片段和编程元素
+- **数学复杂度**: 识别数学表达式和公式
+- **结构复杂度**: 评估内容结构化程度
+- **上下文复杂度**: 考虑对话历史和系统指令
+
+#### 支持的模型能力矩阵
+
+| 模型 | 提供商 | 最大Token | 擅长领域 | 弱点 | 平均响应时间 | 成功率 |
+|------|--------|-----------|----------|------|--------------|--------|
+| gpt-4 | OpenAI | 8192 | 推理、编码、分析 | 速度 | 3000ms | 98% |
+| gpt-3.5-turbo | OpenAI | 4096 | 通用、对话、速度 | 复杂推理 | 1500ms | 99% |
+| claude-2 | Anthropic | 100000 | 推理、创造、长文本 | 编码 | 2500ms | 97% |
+| codellama-34b | Meta | 16384 | 编码、技术 | 创造 | 4000ms | 95% |
+
+## 🧪 测试验证
 
 ### 🧠 模型训练接口 API使用示例
 
