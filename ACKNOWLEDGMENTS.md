@@ -10,15 +10,28 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[Express.js](https://github.com/expressjs/express)** - 快速、开放、极简的Web框架
 - **[Axios](https://github.com/axios/axios)** - 基于Promise的HTTP库
 - **[SuperAgent](https://github.com/ladjs/superagent)** - 轻量级渐进式AJAX API
+- **[SuperAgent Logger](https://github.com/ladjs/superagent-logger)** - SuperAgent请求日志记录
+- **[SuperAgent Prefix](https://github.com/ladjs/superagent-prefix)** - SuperAgent URL前缀插件
 - **[Node Fetch](https://github.com/node-fetch/node-fetch)** - 在Node.js中使用Fetch API
 - **[HTTP Proxy](https://github.com/http-party/node-http-proxy)** - Node.js HTTP代理
+- **[Proxy Agent](https://github.com/TooTallNate/proxy-agent)** - HTTP/HTTPS代理支持
+- **[Express Rate Limit](https://github.com/express-rate-limit/express-rate-limit)** - Express速率限制中间件
+- **[Express Session](https://github.com/expressjs/session)** - Express会话管理
+- **[Rate Limit Redis](https://github.com/wyattjoh/rate-limit-redis)** - Redis速率限制存储
 
 ### 身份验证 & 安全
 - **[Passport.js](https://github.com/jaredhanson/passport)** - Node.js身份验证中间件
+- **[Passport HTTP](https://github.com/jaredhanson/passport-http)** - HTTP基本认证策略
+- **[Passport HTTP Bearer](https://github.com/jaredhanson/passport-http-bearer)** - HTTP Bearer认证策略
+- **[Passport JWT](https://github.com/mikenicholson/passport-jwt)** - JWT认证策略
+- **[Passport Local](https://github.com/jaredhanson/passport-local)** - 本地用户名/密码认证
+- **[Passport OAuth2 Client Password](https://github.com/jaredhanson/passport-oauth2-client-password)** - OAuth2客户端密码策略
 - **[JWT](https://github.com/auth0/node-jsonwebtoken)** - JSON Web Token实现
 - **[bcryptjs](https://github.com/dcodeIO/bcrypt.js)** - 密码哈希库
 - **[OAuth2orize](https://github.com/jaredhanson/oauth2orize)** - OAuth2服务器框架
 - **[CORS](https://github.com/expressjs/cors)** - CORS中间件
+- **[Connect Ensure Login](https://github.com/jaredhanson/connect-ensure-login)** - 确保用户登录的中间件
+- **[Opossum](https://github.com/nodeshift/opossum)** - Node.js断路器模式实现
 
 ### 数据存储 & 缓存
 - **[Redis](https://redis.io/)** - 高性能键值数据库
@@ -27,11 +40,17 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 
 ### 配置 & 数据处理
 - **[JS-YAML](https://github.com/nodeca/js-yaml)** - YAML解析器和字符串化器
+- **[Yawn YAML](https://github.com/mohsen1/yawn-yaml)** - YAML编辑和格式化
 - **[AJV](https://github.com/ajv-validator/ajv)** - JSON Schema验证器
+- **[AJV Keywords](https://github.com/ajv-validator/ajv-keywords)** - AJV关键字扩展
 - **[JSON Schema Ref Parser](https://github.com/APIDevTools/json-schema-ref-parser)** - JSON Schema引用解析器
+- **[JSON Schema Merge AllOf](https://github.com/mokkabonna/json-schema-merge-allof)** - JSON Schema合并工具
 - **[Lodash](https://lodash.com/)** - JavaScript工具库
+- **[Lodash.flatmap](https://github.com/lodash/lodash)** - Lodash flatMap函数
 - **[UUID](https://github.com/uuidjs/uuid)** - RFC4122 UUID生成器
+- **[UUID62](https://github.com/SpiderStrategies/uuid62)** - UUID62编码器
 - **[Semver](https://github.com/npm/node-semver)** - 语义化版本控制
+- **[Minimatch](https://github.com/isaacs/minimatch)** - 通配符匹配库
 
 ### 日志 & 监控
 - **[Winston](https://github.com/winstonjs/winston)** - 多传输异步日志库
@@ -90,12 +109,31 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[ESLint Plugin Import](https://github.com/import-js/eslint-plugin-import)** - ESLint导入插件
 - **[ESLint Plugin Node](https://github.com/mysticatea/eslint-plugin-node)** - ESLint Node.js插件
 - **[ESLint Plugin Promise](https://github.com/eslint-community/eslint-plugin-promise)** - ESLint Promise插件
+- **[ESLint Plugin Standard](https://github.com/standard/eslint-plugin-standard)** - ESLint标准插件
 
-### CI/CD & 工具
-- **[Husky](https://github.com/typicode/husky)** - Git钩子管理
+### 测试框架 & 工具
+- **[Chai](https://github.com/chaijs/chai)** - BDD/TDD断言库
+- **[Should.js](https://github.com/shouldjs/should.js)** - 行为驱动的测试库
+- **[Supertest](https://github.com/ladjs/supertest)** - HTTP端到端测试库
+- **[Supertest Session](https://github.com/rjz/supertest-session)** - Supertest会话支持
+- **[Mocha LCOV Reporter](https://github.com/StevenLooman/mocha-lcov-reporter)** - Mocha LCOV报告器
+- **[Istanbul](https://github.com/gotwarlost/istanbul)** - JavaScript代码覆盖率工具
+
+### 构建 & 部署工具
+- **[CPR](https://github.com/davglass/cpr)** - 文件和目录复制工具
+- **[Find Free Port](https://github.com/tapjs/find-free-port)** - 查找可用网络端口
+- **[Husky](https://github.com/typicode/husky)** - Git钩子管理工具
 - **[Lint Staged](https://github.com/okonet/lint-staged)** - 对暂存的git文件运行linter
-- **[Codecov](https://github.com/codecov/codecov-node)** - 代码覆盖率报告
-- **[Find Free Port](https://github.com/tapjs/find-free-port)** - 查找可用端口
+- **[Codecov](https://github.com/codecov/codecov-node)** - 代码覆盖率报告工具
+- **[TMP](https://github.com/raszi/node-tmp)** - 临时文件和目录管理
+
+### 实用工具
+- **[Clone](https://github.com/pvorb/clone)** - 深拷贝JavaScript对象
+- **[Form URL Encoded](https://github.com/brandonhorst/form-urlencoded)** - 表单URL编码/解码
+- **[Find Up](https://github.com/sindresorhus/find-up)** - 向上查找文件或目录
+- **[Parent Require](https://github.com/floatdrop/parent-require)** - 从父级目录require模块
+- **[Vhost](https://github.com/expressjs/vhost)** - Express虚拟主机中间件
+- **[Yargs](https://github.com/yargs/yargs)** - 命令行参数解析
 
 ## 🤝 贡献框架
 
@@ -129,7 +167,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 
 ---
 
-*最后更新: 2025年11月8日*
+*最后更新: 2025年11月8日 (补充完整开源技术清单)*
 
 ## 🔄 更新日志
 
@@ -137,3 +175,8 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - 添加完整的开源技术致谢名单
 - 分类整理所有依赖包和工具
 - 包含基础设施和监控工具的致谢
+
+### v2.0.1 (2025-11-08)
+- 补充遗漏的开源技术：SuperAgent扩展、Passport策略、实用工具库
+- 添加完整的开发依赖：ESLint插件、测试工具、构建工具等
+- 完善开源技术清单，总计80+个开源项目
