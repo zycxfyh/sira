@@ -1,0 +1,54 @@
+# GitHub Pages Configuration
+title: "API 中转站 | AI API Gateway"
+description: "企业级AI API中转站，智能路由、缓存优化、批处理引擎，平均节省70%+ AI API费用"
+url: "https://zycxfyh.github.io"
+baseurl: "/sira"
+repository: "zycxfyh/sira"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:name/
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor/
+  - .bundle/
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - .vscode/
+  - .github/
+
+# Include files
+include:
+  - _pages
+
+# SEO
+author: "API 中转站项目"
+social:
+  name: "API 中转站"
+  links:
+    - https://github.com/zycxfyh/sira
+
+# Custom variables
+logo: /assets/logo.png
+github_username: zycxfyh
+repo_name: sira
+
+# Analytics (optional)
+# google_analytics: UA-XXXXXXXXX-X
