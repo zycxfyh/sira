@@ -54,6 +54,7 @@ module.exports = function ({ plugins, config } = {}) {
   app.use('/ab-tests', require('./routes/ab-tests')())
   app.use('/webhooks', require('./routes/webhooks')())
   app.use('/rules', require('./routes/rules')())
+  app.use('/reports', require('./routes/reports')())
 
   app.use((err, req, res, next) => {
     logger.debug(err.stack)

@@ -65,6 +65,7 @@
 | 📊 **A/B测试框架** | 多变量测试、流量分配、实时分析和自动化优化 | ⚡ 科学优化AI体验 |
  📡 **Webhook通知系统** | 异步事件通知、可靠投递、重试机制和安全验证 | 🔄 实时异步通信 |
  🎛️ **自定义规则引擎** | 灵活条件匹配、规则优先级、上下文感知的智能路由 | 🎯 自定义业务逻辑 |
+ 📊 **入口统计和报告** | 详细的API统计、错误分析、性能报告和业务洞察 | 📈 数据驱动洞察 |
 
 ---
 
@@ -1358,6 +1359,132 @@ curl http://localhost:9876/rules/templates
 - **webhook**: 触发webhook
 - **modifyRequest**: 修改请求参数
 - **custom**: 自定义动作
+
+### 📊 入口统计和报告 API使用示例
+
+```bash
+# 生成使用情况汇总报告
+curl -X POST http://localhost:9876/reports/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "usage-summary",
+    "timeRange": "24h",
+    "filters": {
+      "userId": "user123"
+    }
+  }'
+
+# 生成性能分析报告
+curl -X POST http://localhost:9876/reports/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "performance-analysis",
+    "timeRange": "7d"
+  }'
+
+# 获取总览仪表板数据
+curl http://localhost:9876/reports/dashboard/overview?timeRange=24h
+
+# 获取性能仪表板数据
+curl http://localhost:9876/reports/dashboard/performance?timeRange=24h
+
+# 导出报告为CSV格式
+curl -X POST http://localhost:9876/reports/export \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "usage-summary",
+    "timeRange": "30d",
+    "format": "csv",
+    "filename": "usage_report_2024"
+  }'
+
+# 创建自定义报告
+curl -X POST http://localhost:9876/reports/custom \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "我的业务仪表板",
+    "description": "自定义的业务指标仪表板",
+    "config": {
+      "widgets": [
+        {
+          "id": "usage_widget",
+          "title": "API使用情况",
+          "type": "usage-summary",
+          "position": {"x": 0, "y": 0},
+          "size": {"width": 6, "height": 4}
+        },
+        {
+          "id": "performance_widget",
+          "title": "性能指标",
+          "type": "performance-analysis",
+          "position": {"x": 6, "y": 0},
+          "size": {"width": 6, "height": 4}
+        }
+      ]
+    }
+  }'
+
+# 生成自定义报告
+curl -X POST http://localhost:9876/reports/custom/report_123/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "timeRange": "7d",
+    "format": "json"
+  }'
+
+# 获取报告类型列表
+curl http://localhost:9876/reports/types
+
+# 获取仪表板类型列表
+curl http://localhost:9876/reports/dashboards
+
+# 查看报告统计信息
+curl http://localhost:9876/reports/stats
+
+# 批量生成多个报告
+curl -X POST http://localhost:9876/reports/batch/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reports": [
+      {"id": "usage", "type": "usage-summary", "timeRange": "24h"},
+      {"id": "performance", "type": "performance-analysis", "timeRange": "24h"},
+      {"id": "errors", "type": "error-analysis", "timeRange": "24h"}
+    ]
+  }'
+```
+
+#### 支持的报告类型
+
+- `usage-summary` - 使用情况汇总报告
+- `performance-analysis` - 性能分析报告
+- `error-analysis` - 错误分析报告
+- `cost-analysis` - 成本分析报告
+- `user-behavior` - 用户行为分析报告
+- `provider-comparison` - 供应商对比报告
+- `trend-analysis` - 趋势分析报告
+- `custom-dashboard` - 自定义仪表板报告
+
+#### 支持的仪表板类型
+
+- `overview` - 系统总览仪表板
+- `performance` - 性能监控仪表板
+- `usage` - 使用情况仪表板
+- `errors` - 错误分析仪表板
+
+#### 支持的导出格式
+
+- `json` - JSON格式 (默认)
+- `csv` - CSV格式 (表格数据)
+- `html` - HTML格式 (带样式的报告)
+
+#### 时间范围格式
+
+- `24h` - 最近24小时
+- `7d` - 最近7天
+- `30d` - 最近30天
+- `90d` - 最近90天
+- `1w` - 最近1周
+- `1m` - 最近1月
 
 ## 🧪 测试验证
 
