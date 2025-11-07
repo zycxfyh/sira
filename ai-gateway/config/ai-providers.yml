@@ -10,6 +10,7 @@ providers:
     name: "OpenAI"
     description: "OpenAI GPT系列模型"
     base_url: "https://api.openai.com/v1"
+    pricing_url: "https://openai.com/api/pricing/"
     models:
       - "gpt-4"
       - "gpt-4-turbo"
@@ -30,6 +31,7 @@ providers:
     name: "Anthropic"
     description: "Claude AI模型系列"
     base_url: "https://api.anthropic.com"
+    pricing_url: "https://www.anthropic.com/api#pricing"
     models:
       - "claude-3-opus"
       - "claude-3-sonnet"
@@ -49,6 +51,7 @@ providers:
     description: "Microsoft Azure托管的OpenAI服务"
     base_url_template: "https://{resource-name}.openai.azure.com/openai/deployments/{deployment-name}"
     base_url: "https://your-resource.openai.azure.com/openai/deployments"
+    pricing_url: "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/"
     models:
       - "gpt-4"
       - "gpt-4-turbo"
@@ -67,6 +70,7 @@ providers:
     name: "Google Gemini"
     description: "Google的Gemini AI模型"
     base_url: "https://generativelanguage.googleapis.com/v1beta"
+    pricing_url: "https://ai.google.dev/pricing"
     models:
       - "gemini-pro"
       - "gemini-pro-vision"
@@ -85,6 +89,7 @@ providers:
     name: "DeepSeek"
     description: "深度求索的AI模型"
     base_url: "https://api.deepseek.com/v1"
+    pricing_url: "https://platform.deepseek.com/api-docs/pricing"
     models:
       - "deepseek-chat"
       - "deepseek-coder"
@@ -99,6 +104,7 @@ providers:
     name: "通义千问 (Qwen)"
     description: "阿里巴巴的通义千问AI模型"
     base_url: "https://dashscope.aliyuncs.com/api/v1"
+    pricing_url: "https://help.aliyun.com/zh/model-studio/developer-reference/tongyi-qianwen-pricing"
     models:
       - "qwen-turbo"
       - "qwen-plus"
@@ -119,6 +125,7 @@ providers:
     name: "文心一言 (ERNIE)"
     description: "百度的文心一言AI模型"
     base_url: "https://aip.baidubce.com/rpc/2.0/ai_custom/v1"
+    pricing_url: "https://cloud.baidu.com/doc/WENXINYIYAN/s/9lrzhegbe"
     models:
       - "ernie-4.0-8k"
       - "ernie-4.0-turbo-8k"
@@ -136,6 +143,7 @@ providers:
     name: "智谱GLM"
     description: "智谱AI的GLM模型系列"
     base_url: "https://open.bigmodel.cn/api/paas/v4"
+    pricing_url: "https://open.bigmodel.cn/pricing"
     models:
       - "glm-4"
       - "glm-4v"
@@ -152,6 +160,7 @@ providers:
     name: "Kimi (月之暗面)"
     description: "月之暗面的Kimi AI模型"
     base_url: "https://api.moonshot.cn/v1"
+    pricing_url: "https://platform.moonshot.cn/docs/pricing"
     models:
       - "moonshot-v1-8k"
       - "moonshot-v1-32k"
@@ -167,6 +176,7 @@ providers:
     name: "豆包 (Doubao)"
     description: "字节跳动的豆包AI模型"
     base_url: "https://ark.cn-beijing.volces.com/api/v3"
+    pricing_url: "https://www.volcengine.com/product/doubao"
     models:
       - "doubao-lite-4k"
       - "doubao-lite-32k"
@@ -183,6 +193,7 @@ providers:
     name: "腾讯混元 (Hunyuan)"
     description: "腾讯的混元AI模型"
     base_url: "https://api.hunyuan.cloud.tencent.com/v1"
+    pricing_url: "https://cloud.tencent.com/product/hunyuan/pricing"
     models:
       - "hunyuan-turbo"
       - "hunyuan-standard"
@@ -198,6 +209,7 @@ providers:
     name: "百度千帆 (Qianfan)"
     description: "百度智能云的千帆AI平台"
     base_url: "https://qianfan.baidubce.com/v2"
+    pricing_url: "https://cloud.baidu.com/product/wenxinworkshop"
     models:
       - "ernie-4.0-8k"
       - "ernie-3.5-8k"
@@ -215,6 +227,7 @@ providers:
     name: "Cohere"
     description: "Cohere的AI模型"
     base_url: "https://api.cohere.ai/v1"
+    pricing_url: "https://cohere.com/pricing"
     models:
       - "command"
       - "command-light"
@@ -230,6 +243,7 @@ providers:
     name: "AI21 Labs"
     description: "AI21 Labs的Jurassic模型"
     base_url: "https://api.ai21.com/studio/v1"
+    pricing_url: "https://www.ai21.com/pricing"
     models:
       - "j2-ultra"
       - "j2-mid"
@@ -244,6 +258,7 @@ providers:
     name: "Stability AI"
     description: "Stability AI的图像生成模型"
     base_url: "https://api.stability.ai/v1"
+    pricing_url: "https://platform.stability.ai/account/billing"
     models:
       - "stable-diffusion-xl-1024-v1-0"
       - "stable-diffusion-xl-1024-v0-9"
@@ -258,6 +273,7 @@ providers:
     name: "Midjourney"
     description: "Midjourney图像生成服务"
     base_url: "https://api.midjourney.com/v1"
+    pricing_url: "https://docs.midjourney.com/docs/plans"
     models:
       - "midjourney"
       - "midjourney-v5"
@@ -271,6 +287,7 @@ providers:
     name: "Replicate"
     description: "Replicate AI模型平台"
     base_url: "https://api.replicate.com/v1"
+    pricing_url: "https://replicate.com/pricing"
     models:
       - "llama-2-70b-chat"
       - "stable-diffusion"

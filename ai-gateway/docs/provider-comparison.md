@@ -405,3 +405,50 @@ await sira.batch.process(batchRequests, {
 - ✅ **企业级**: 完整的安全和监控体系
 
 通过Sira网关，您可以在不修改代码的情况下，享受到多供应商的优势，同时保持应用的稳定性和性能！🚀
+
+## ��� 官方价格文档链接
+
+### ������ 国际供应商价格文档
+
+| 供应商 | 价格文档链接 | 更新频率 | 计费方式 |
+|--------|-------------|----------|----------|
+| **OpenAI** | [��� https://openai.com/api/pricing/](https://openai.com/api/pricing/) | 实时 | Token-based |
+| **Anthropic** | [��� https://www.anthropic.com/api#pricing](https://www.anthropic.com/api#pricing) | 实时 | Token-based |
+| **Azure OpenAI** | [��� https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/](https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/) | 月度 | Token-based |
+| **Google Gemini** | [��� https://ai.google.dev/pricing](https://ai.google.dev/pricing) | 实时 | Token-based |
+| **Cohere** | [��� https://cohere.com/pricing](https://cohere.com/pricing) | 实时 | Token-based |
+| **AI21 Labs** | [��� https://www.ai21.com/pricing](https://www.ai21.com/pricing) | 实时 | Token-based |
+| **Stability AI** | [��� https://platform.stability.ai/account/billing](https://platform.stability.ai/account/billing) | 实时 | Credits |
+| **Midjourney** | [��� https://docs.midjourney.com/docs/plans](https://docs.midjourney.com/docs/plans) | 实时 | Credits |
+| **Replicate** | [��� https://replicate.com/pricing](https://replicate.com/pricing) | 实时 | Credits |
+
+### ������ 国内供应商价格文档
+
+| 供应商 | 价格文档链接 | 更新频率 | 计费方式 |
+|--------|-------------|----------|----------|
+| **DeepSeek** | [��� https://platform.deepseek.com/api-docs/pricing](https://platform.deepseek.com/api-docs/pricing) | 实时 | Token-based |
+| **通义千问** | [��� https://help.aliyun.com/zh/model-studio/developer-reference/tongyi-qianwen-pricing](https://help.aliyun.com/zh/model-studio/developer-reference/tongyi-qianwen-pricing) | 实时 | Token-based |
+| **文心一言** | [��� https://cloud.baidu.com/doc/WENXINYIYAN/s/9lrzhegbe](https://cloud.baidu.com/doc/WENXINYIYAN/s/9lrzhegbe) | 月度 | Token-based |
+| **智谱GLM** | [��� https://open.bigmodel.cn/pricing](https://open.bigmodel.cn/pricing) | 实时 | Token-based |
+| **Kimi** | [��� https://platform.moonshot.cn/docs/pricing](https://platform.moonshot.cn/docs/pricing) | 实时 | Token-based |
+| **豆包** | [��� https://www.volcengine.com/product/doubao](https://www.volcengine.com/product/doubao) | 月度 | Token-based |
+| **腾讯混元** | [��� https://cloud.tencent.com/product/hunyuan/pricing](https://cloud.tencent.com/product/hunyuan/pricing) | 月度 | Token-based |
+| **百度千帆** | [��� https://cloud.baidu.com/product/wenxinworkshop](https://cloud.baidu.com/product/wenxinworkshop) | 月度 | Token-based |
+
+### ��� 使用提示
+
+- **实时更新**: 建议定期查看官方价格文档，价格可能随时调整
+- **免费额度**: 大多数供应商提供免费试用额度
+- **批量优惠**: 企业用户可申请批量购买优惠
+- **汇率影响**: 国际供应商价格会受汇率波动影响
+
+### ��� 价格监控建议
+
+1. **设置价格提醒**: 关注主要供应商的价格变动
+2. **定期评估**: 每季度评估供应商性价比
+3. **备用方案**: 维护多个供应商的备用配置
+4. **成本控制**: 设置月度预算和使用上限
+
+---
+
+*价格信息仅供参考，以各供应商官方文档为准*
