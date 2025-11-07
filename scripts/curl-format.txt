@@ -1,1 +1,0 @@
-%{time_total} %{time_connect} %{time_starttransfer} %{http_code} %{size_download}
