@@ -9,7 +9,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "@sentry/vue": "^8.21.0",
+    "@sentry/vue": "^10.23.0",
     "axios": "^1.7.2",
     "pinia": "^2.1.7",
     "socket.io-client": "^4.7.5",
