@@ -3,11 +3,7 @@
 
 import { ref, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
-import type {
-  LoaderContext,
-  LoaderFunction,
-  RouteLoaderConfig,
-} from '../router/loader.types';
+import type { LoaderContext, LoaderFunction, RouteLoaderConfig } from '../router/loader.types';
 
 /**
  * @function useRouteLoader

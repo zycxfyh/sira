@@ -1,12 +1,12 @@
 // 文件路径: apps/backend-gateway/jest.config.js
-const sharedConfig = require('../../shared/jest.config.js');
+const baseConfig = require('../../shared/jest.config.js');
 
 module.exports = {
-  ...sharedConfig,
+  ...baseConfig,
   setupFiles: ['<rootDir>/../../../packages/common-backend/test/env-setup.js'],
   setupFilesAfterEnv: ['<rootDir>/../../../packages/common-backend/test/setup.ts'],
   moduleNameMapper: {
-    ...sharedConfig.moduleNameMapper,
+    ...baseConfig.moduleNameMapper,
     '^langfuse$': '<rootDir>/../../../tests/mocks/langfuse.ts',
     '^langfuse/(.*)$': '<rootDir>/../../../tests/mocks/langfuse.ts',
   },

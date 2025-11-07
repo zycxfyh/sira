@@ -145,18 +145,24 @@ export class SettingsService {
   private normalizeAiConfiguration(record: Record<string, unknown>) {
     const roles =
       Array.isArray(record.roles) && record.roles.length > 0
-        ? record.roles.map((r: unknown) => (typeof r === 'object' && r !== null && 'name' in r ? (r as Record<string, unknown>).name : r))
+        ? record.roles
+            .map((r: unknown) =>
+              typeof r === 'object' && r !== null && 'name' in r
+                ? (r as Record<string, unknown>).name
+                : r,
+            )
+            .filter((r): r is string => typeof r === 'string')
         : [];
 
     return {
-      id: record.id,
-      ownerId: record.ownerId,
-      provider: record.provider,
+      id: record.id as string,
+      ownerId: record.ownerId as string,
+      provider: record.provider as string,
       apiKey: record.apiKey ? '***REDACTED***' : '', // don't leak key in API responses (return empty string instead of null)
-      modelId: record.modelId,
-      baseUrl: record.baseUrl ?? null,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
+      modelId: record.modelId as string,
+      baseUrl: (record.baseUrl as string | null) ?? null,
+      createdAt: record.createdAt as Date,
+      updatedAt: record.updatedAt as Date,
       roles, // string[]
       // legacy compatibility for frontends expecting assignedRoles CSV:
       assignedRoles: roles.join(','),
@@ -218,7 +224,9 @@ export class SettingsService {
         }
         if (Array.isArray(resp.data)) {
           return {
-            models: resp.data.map((m: unknown) => (typeof m === 'string' ? m : (m as Record<string, unknown>).id)).filter(Boolean),
+            models: resp.data
+              .map((m: unknown) => (typeof m === 'string' ? m : (m as Record<string, unknown>).id))
+              .filter(Boolean) as string[],
           };
         }
         // fallback: return keys if object with keys looks like model map

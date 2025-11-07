@@ -48,9 +48,5 @@ module.exports = {
   // 模块配置
   moduleNameMapper: {
     ...baseModuleNameMapper,
-    // Mock external libraries to avoid dynamic import issues
-    '^langfuse-core$': '/c/Users/16663/Desktop/tuheg/tests/mocks/langfuse-core.ts',
-    '^langfuse-core/(.*)$': '/c/Users/16663/Desktop/tuheg/tests/mocks/langfuse-core.ts',
-    '^jsonrepair$': '/c/Users/16663/Desktop/tuheg/tests/mocks/jsonrepair.ts',
   },
 };

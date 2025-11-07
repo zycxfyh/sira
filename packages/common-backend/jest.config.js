@@ -10,6 +10,10 @@ module.exports = {
     ...baseConfig.moduleNameMapper,
     '^@tuheg/common-backend$': '<rootDir>/packages/common-backend/src/index.ts',
     '^@tuheg/common-backend/(.*)$': '<rootDir>/packages/common-backend/src/$1',
+    // Mock external libraries
+    '^langfuse-core$': '<rootDir>/tests/mocks/langfuse-core.ts',
+    '^langfuse-core/(.*)$': '<rootDir>/tests/mocks/langfuse-core.ts',
+    '^jsonrepair$': '<rootDir>/tests/mocks/jsonrepair.ts',
   },
   collectCoverageFrom: [
     '**/*.ts',

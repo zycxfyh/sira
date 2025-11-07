@@ -1,6 +1,6 @@
 // 文件路径: apps/nexus-engine/src/main.ts (已集成 Redis Adapter)
 
-import { NestFactory, INestApplication } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as Sentry from '@sentry/node';
 import helmet from 'helmet';
@@ -14,7 +14,7 @@ export class RedisIoAdapter extends IoAdapter {
   private adapterConstructor!: ReturnType<typeof createAdapter>;
 
   constructor(
-    app: INestApplication,
+    app: NestApplication,
     private readonly configService: ConfigService,
   ) {
     super(app);

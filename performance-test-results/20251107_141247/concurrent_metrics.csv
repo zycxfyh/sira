@@ -1,0 +1,8 @@
+metric,value
+total_requests,0
+successful_requests,0
+qps,0
+avg_response_time_ms,69.2
+min_response_time_ms,60
+max_response_time_ms,80
+p95_response_time_ms,72

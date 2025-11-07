@@ -179,8 +179,12 @@ export async function cleanAndParseJson(raw: unknown): Promise<unknown> {
     async () => {
       try {
         const { jsonrepair } = await import('jsonrepair');
-        return JSON.parse(jsonrepair(working));
-      } catch {
+        const repaired = jsonrepair(working);
+        console.log('jsonrepair input:', JSON.stringify(working));
+        console.log('jsonrepair output:', JSON.stringify(repaired));
+        return JSON.parse(repaired);
+      } catch (error) {
+        console.log('jsonrepair strategy failed:', error);
         // 如果jsonrepair不可用，跳过此策略，让下一个策略尝试
         return undefined;
       }

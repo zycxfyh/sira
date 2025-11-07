@@ -1,14 +1,8 @@
 import { Controller, Logger } from '@nestjs/common';
 import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 import { NarrativeService } from './narrative.service';
+import type { LogicCompletePayload } from '@tuheg/common-backend';
 import * as Sentry from '@sentry/node';
-
-// [核心] 定义“战报”的数据结构
-interface LogicCompletePayload {
-  gameId: string;
-  userId: string;
-  playerAction: unknown;
-}
 
 @Controller()
 export class NarrativeAgentController {

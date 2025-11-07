@@ -9,10 +9,12 @@ const noControlCharacters = (value: string) => {
   for (let i = 0; i < value.length; i++) {
     const charCode = value.charCodeAt(i);
     // 排除制表符(\t=9)、换行符(\n=10)、回车符(\r=13)
-    if ((charCode >= 0 && charCode <= 8) ||
-        (charCode >= 11 && charCode <= 12) ||
-        (charCode >= 14 && charCode <= 31) ||
-        charCode === 127) {
+    if (
+      (charCode >= 0 && charCode <= 8) ||
+      (charCode >= 11 && charCode <= 12) ||
+      (charCode >= 14 && charCode <= 31) ||
+      charCode === 127
+    ) {
       return false;
     }
   }
