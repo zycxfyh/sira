@@ -2,6 +2,7 @@ const axios = require('axios')
 const { usageAnalytics } = require('../../usage-analytics')
 const { parameterManager } = require('../../parameter-manager')
 const { promptTemplateManager } = require('../../prompt-template-manager')
+const { apiKeyManager } = require('../../api-key-manager')
 
 // AI Router Policy
 // Routes AI requests to appropriate providers based on cost, performance, and availability
@@ -256,14 +257,71 @@ module.exports = function (params, config) {
     // Transform request for the selected provider (包含参数转换)
     const transformedRequest = transformRequest(req.body, selectedProvider, parameters)
 
-    // Get provider configuration
+    // Get provider configuration and API key
     const providerConfig = providers[selectedProvider]
+
+    // 从API密钥管理器获取可用的密钥
+    const availableKeys = apiKeyManager.getAvailableKeys(selectedProvider, userId, ['read', 'write'])
+    if (availableKeys.length === 0) {
+      usageAnalytics.recordRequest({
+        userId,
+        requestId,
+        statusCode: 429,
+        error: 'NO_AVAILABLE_KEYS',
+        timestamp: new Date(),
+        responseTime: Date.now() - startTime
+      })
+
+      return res.status(429).json({
+        error: `No available API keys for provider: ${selectedProvider}`,
+        code: 'NO_AVAILABLE_KEYS'
+      })
+    }
+
+    // 选择最佳密钥
+    const selectedKey = apiKeyManager.selectBestKey(selectedProvider, userId, ['read', 'write'], {
+      strategy: 'least_used' // 使用最少使用的密钥
+    })
+
+    if (!selectedKey) {
+      usageAnalytics.recordRequest({
+        userId,
+        requestId,
+        statusCode: 429,
+        error: 'KEY_SELECTION_FAILED',
+        timestamp: new Date(),
+        responseTime: Date.now() - startTime
+      })
+
+      return res.status(429).json({
+        error: 'Failed to select API key',
+        code: 'KEY_SELECTION_FAILED'
+      })
+    }
+
+    // 获取完整的密钥信息
+    const keyData = apiKeyManager.getKey(selectedProvider, selectedKey.id)
+    if (!keyData) {
+      usageAnalytics.recordRequest({
+        userId,
+        requestId,
+        statusCode: 500,
+        error: 'KEY_RETRIEVAL_FAILED',
+        timestamp: new Date(),
+        responseTime: Date.now() - startTime
+      })
+
+      return res.status(500).json({
+        error: 'Failed to retrieve API key',
+        code: 'KEY_RETRIEVAL_FAILED'
+      })
+    }
 
     // Build target URL
     const targetUrl = buildTargetUrl(providerConfig, req.url, transformedRequest)
 
-    // Prepare headers
-    const headers = buildHeaders(providerConfig, req.headers)
+    // Prepare headers with API key from key manager
+    const headers = buildHeaders(providerConfig, req.headers, keyData)
 
     // Make the request
     axios({
@@ -286,6 +344,15 @@ module.exports = function (params, config) {
         // Extract token usage from response
         const tokens = extractTokenUsage(transformedResponse, selectedProvider)
         const cost = calculateCost(selectedProvider, model, tokens)
+
+        // 记录API密钥使用情况
+        apiKeyManager.recordKeyUsage(selectedKey.id, {
+          tokens: tokens.total || 0,
+          cost: cost || 0,
+          responseTime,
+          statusCode: response.status,
+          timestamp: new Date()
+        })
 
         // 记录成功请求统计
         usageAnalytics.recordRequest({
@@ -540,7 +607,7 @@ module.exports = function (params, config) {
   }
 
   // Build headers for provider
-  function buildHeaders (providerConfig, originalHeaders) {
+  function buildHeaders (providerConfig, originalHeaders, keyData) {
     const headers = { ...originalHeaders }
 
     // Remove hop-by-hop headers
@@ -557,13 +624,27 @@ module.exports = function (params, config) {
     // Set content type
     headers['content-type'] = 'application/json'
 
-    // Add provider-specific authentication
-    const apiKey = getApiKey(providerConfig)
-    if (apiKey) {
-      if (providerConfig.authPrefix) {
-        headers[providerConfig.authHeader] = `${providerConfig.authPrefix} ${apiKey}`
+    // Add provider-specific authentication using key from key manager
+    if (keyData && keyData.key) {
+      if (selectedProvider === 'openai' || selectedProvider === 'azure') {
+        headers['Authorization'] = `Bearer ${keyData.key}`
+      } else if (selectedProvider === 'anthropic') {
+        headers['x-api-key'] = keyData.key
+      } else if (selectedProvider === 'google_gemini') {
+        headers['x-goog-api-key'] = keyData.key
       } else {
-        headers[providerConfig.authHeader] = apiKey
+        // For other providers, use Bearer token by default
+        headers['Authorization'] = `Bearer ${keyData.key}`
+      }
+    } else {
+      // Fallback to legacy method if keyData is not available
+      const apiKey = getApiKey(providerConfig)
+      if (apiKey) {
+        if (providerConfig.authPrefix) {
+          headers[providerConfig.authHeader] = `${providerConfig.authPrefix} ${apiKey}`
+        } else {
+          headers[providerConfig.authHeader] = apiKey
+        }
       }
     }
 
