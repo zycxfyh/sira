@@ -20,7 +20,7 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^10.4.20",
     "@nestjs/microservices": "^10.4.20",
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^6.19.0",
     "@sentry/node": "^8.21.0",
     "@tuheg/common-backend": "workspace:*",
     "rxjs": "^7.8.2",
