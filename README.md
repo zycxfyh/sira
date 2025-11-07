@@ -1844,6 +1844,152 @@ curl http://localhost:9876/batch-processing/health
 - **智能调度**: 基于任务特性的智能调度算法
 - **资源复用**: 复用连接和计算资源提升效率
 
+### 🔐 API密钥管理 API使用示例
+
+```bash
+# 获取API密钥概览
+curl http://localhost:9876/api-keys
+
+# 获取指定供应商的所有密钥
+curl http://localhost:9876/api-keys/providers/openai
+
+# 添加新的API密钥
+curl -X POST http://localhost:9876/api-keys \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "openai",
+    "key": "sk-your-openai-api-key-here",
+    "name": "OpenAI Production Key",
+    "permissions": ["read", "write"],
+    "limits": {
+        "requestsPerMinute": 60,
+        "requestsPerHour": 1000,
+        "requestsPerDay": 10000,
+        "tokensPerMinute": 10000,
+        "tokensPerHour": 100000,
+        "tokensPerDay": 1000000
+    },
+    "tags": ["production", "gpt-4"],
+    "description": "生产环境GPT-4 API密钥"
+  }'
+
+# 获取特定API密钥的详细信息
+curl http://localhost:9876/api-keys/openai/key_123
+
+# 轮换API密钥
+curl -X POST http://localhost:9876/api-keys/openai/key_123/rotate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "newKey": "sk-new-openai-api-key-here",
+    "reason": "定期轮换"
+  }'
+
+# 删除API密钥
+curl -X DELETE http://localhost:9876/api-keys/openai/key_123
+
+# 获取密钥使用统计
+curl http://localhost:9876/api-keys/openai/key_123/usage
+
+# 设置密钥权限
+curl -X POST http://localhost:9876/api-keys/openai/key_123/permissions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "permissions": ["read"],
+    "userId": "user123"
+  }'
+
+# 批量添加密钥
+curl -X POST http://localhost:9876/api-keys/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "keys": [
+      {
+        "provider": "openai",
+        "key": "sk-key1",
+        "name": "Key 1"
+      },
+      {
+        "provider": "anthropic",
+        "key": "sk-ant-key1",
+        "name": "Anthropic Key 1"
+      }
+    ]
+  }'
+
+# 密钥健康检查
+curl http://localhost:9876/api-keys/health
+
+# 获取密钥轮换历史
+curl http://localhost:9876/api-keys/openai/key_123/rotation-history
+
+# 暂停/恢复密钥使用
+curl -X POST http://localhost:9876/api-keys/openai/key_123/status \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "paused",
+    "reason": "临时维护"
+  }'
+```
+
+#### API密钥管理特性
+
+- **AES-256加密**: 所有API密钥使用AES-256加密存储
+- **智能轮换**: 自动检测和轮换过期或高风险密钥
+- **多级权限**: 细粒度的权限控制（读、写、管理）
+- **用量限制**: 基于请求数和token数的多维度限制
+- **实时监控**: 密钥使用情况实时监控和告警
+- **批量操作**: 支持批量添加和管理密钥
+- **审计日志**: 完整的密钥操作审计记录
+
+#### 密钥轮换策略
+
+| 策略类型 | 触发条件 | 轮换频率 | 说明 |
+|----------|----------|----------|------|
+| 定期轮换 | 时间间隔 | 24-168小时 | 预防性安全措施 |
+| 用量轮换 | 请求/令牌数 | 自定义阈值 | 负载均衡和配额管理 |
+| 错误率轮换 | 失败率阈值 | 动态调整 | 质量保证 |
+| 手动轮换 | 管理员操作 | 按需 | 紧急响应 |
+
+#### 权限控制模型
+
+```json
+{
+  "permissions": {
+    "read": "允许读取和使用密钥",
+    "write": "允许修改密钥配置",
+    "admin": "允许管理所有密钥",
+    "rotate": "允许轮换密钥",
+    "delete": "允许删除密钥"
+  },
+  "scope": {
+    "global": "所有供应商",
+    "provider": "指定供应商",
+    "user": "指定用户"
+  }
+}
+```
+
+#### 用量限制配置
+
+```json
+{
+  "limits": {
+    "requestsPerMinute": 60,
+    "requestsPerHour": 1000,
+    "requestsPerDay": 10000,
+    "tokensPerMinute": 10000,
+    "tokensPerHour": 100000,
+    "tokensPerDay": 1000000,
+    "costPerDay": 100.0,
+    "costPerMonth": 2000.0
+  },
+  "burstAllowance": {
+    "enabled": true,
+    "multiplier": 1.5
+  }
+}
+```
+
 ### 📊 实时流式响应 API使用示例
 
 ```bash
