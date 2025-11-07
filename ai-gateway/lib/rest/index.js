@@ -48,6 +48,7 @@ module.exports = function ({ plugins, config } = {}) {
   app.use('/', require('./routes/api-keys')())
   app.use('/', require('./routes/game-ai')())
   app.use('/', require('./routes/image-generator')())
+  app.use('/', require('./routes/voice-processor')())
 
   app.use((err, req, res, next) => {
     logger.debug(err.stack)
