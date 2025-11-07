@@ -46,6 +46,7 @@ module.exports = function ({ plugins, config } = {}) {
   app.use('/', require('./routes/prompt-templates')())
   app.use('/', require('./routes/benchmark')())
   app.use('/', require('./routes/api-keys')())
+  app.use('/', require('./routes/game-ai')())
 
   app.use((err, req, res, next) => {
     logger.debug(err.stack)
