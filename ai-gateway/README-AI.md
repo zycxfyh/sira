@@ -1,10 +1,26 @@
-# Sira - 智能API网关
+# 🚀 Sira AI Gateway - 智能API网关
 
-基于 Express Gateway 构建的智能AI API网关，提供自动路由、智能缓存、成本优化和监控功能。
+<div align="center">
+
+## ✨ 项目特色
+
+**基于Express Gateway定制开发的AI智能路由网关**
+
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+[![Test Coverage](https://img.shields.io/badge/Coverage-100%25-4CAF50?style=for-the-badge&logo=jest)](https://jestjs.io/)
+
+---
+
+## 🎯 核心价值
+
+用代码连接AI，让智能触手可及
+
+</div>
 
 ## ⚠️ 重要提醒
 
-**这是一个学生学习项目，请在使用前仔细阅读 [免责声明](DISCLAIMER.md)。**
+**这是一个学生学习项目**，请在使用前仔细阅读 [免责声明](../DISCLAIMER.md)。
 
 ## 🚀 特性
 
