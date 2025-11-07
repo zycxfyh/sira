@@ -54,6 +54,8 @@
 | 🛡️ **错误处理机制** | 自动重试、熔断保护、详细错误诊断 | 🔧 99.9%稳定性保障 |
 | 📚 **完整配置指南** | 详细的配置文档，涵盖20+供应商 | 📖 开发者友好 |
 | 🎛️ **智能参数管理** | 预设参数模板、自动优化、供应商适配 | ⚡ 最佳性能配置 |
+| 🎭 **提示词模板库** | 专业模板、变量替换、智能推荐 | 📝 一键生成优质提示 |
+| 📊 **性能基准测试** | 响应时间、成本对比、质量评估 | ⚡ 科学评估AI模型性能 |
 
 ---
 
@@ -332,6 +334,232 @@ cat ai-gateway/docs/ai-provider-configuration-guide.md
 4. **🤖 选择模型**: 基于任务类型智能推荐
 5. **🔗 测试连接**: 自动验证配置正确性
 6. **📝 生成配置**: 自动创建标准配置文件
+
+## 🎭 提示词模板库
+
+### 智能提示词管理
+
+Sira提供完整的提示词模板管理系统，支持专业模板库、变量替换和智能推荐：
+
+```bash
+# 启动提示词模板管理工具
+./scripts/manage-prompt-templates.sh
+
+# 查看所有模板
+./scripts/manage-prompt-templates.sh --list
+
+# 搜索相关模板
+./scripts/manage-prompt-templates.sh --search
+
+# 渲染模板
+./scripts/manage-prompt-templates.sh --render
+```
+
+#### 内置模板分类
+
+| 分类 | 适用场景 | 模板数量 | 示例模板 |
+|------|----------|----------|----------|
+| **creative** | 创意写作、小说创作 | 3个 | 故事作家、诗歌创作者、剧本作家 |
+| **coding** | 编程开发、代码分析 | 3个 | 代码解释器、Bug修复助手、代码生成器 |
+| **business** | 商业应用、办公写作 | 2个 | 商务邮件撰写、报告撰写助手 |
+| **education** | 教育教学、学习辅导 | 2个 | 课程设计助手、测验题生成器 |
+| **communication** | 沟通交流、会议管理 | 2个 | 会议纪要生成、反馈分析助手 |
+| **analysis** | 数据分析、研究报告 | 2个 | 数据解读助手、研究报告摘要 |
+
+#### API使用示例
+
+```javascript
+// 使用内置模板
+const response = await fetch('/api/v1/ai/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'your-key'
+  },
+  body: JSON.stringify({
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: '写一个故事' }],
+    prompt_template: 'creative.story_writer',  // 使用故事写作模板
+    template_variables: {
+      theme: '时空旅行',
+      genre: '科幻冒险',
+      characters: '年轻科学家、AI助手、神秘外星人'
+    }
+  })
+});
+
+// 自定义变量
+const response = await fetch('/api/v1/ai/chat/completions', {
+  method: 'POST',
+  headers: {
+    'x-prompt-template': 'coding.code_explanation',  // 代码解释模板
+    'Content-Type': 'application/json',
+    'x-api-key': 'your-key'
+  },
+  body: JSON.stringify({
+    model: 'deepseek-chat',
+    messages: [{ role: 'user', content: '解释这段代码' }],
+    template_variables: {
+      language: 'JavaScript',
+      function: '用户认证函数',
+      audience: '初级开发者'
+    }
+  })
+});
+```
+
+#### 模板管理API
+
+```bash
+# 获取所有模板
+curl http://localhost:9876/prompt-templates
+
+# 搜索模板
+curl "http://localhost:9876/prompt-templates/search?q=写作"
+
+# 获取模板详情
+curl http://localhost:9876/prompt-templates/creative/story_writer
+
+# 渲染模板
+curl -X POST http://localhost:9876/prompt-templates/render \
+  -H "Content-Type: application/json" \
+  -d '{
+    "category": "creative",
+    "templateId": "story_writer",
+    "variables": {
+      "theme": "魔法世界",
+      "genre": "奇幻冒险"
+    }
+  }'
+
+# 获取推荐模板
+curl -X POST http://localhost:9876/prompt-templates/recommend \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taskDescription": "写一篇关于环保的文章",
+    "limit": 3
+  }'
+```
+
+### 自定义模板
+
+```bash
+# 添加自定义模板
+curl -X POST http://localhost:9876/prompt-templates/custom \
+  -H "Content-Type: application/json" \
+  -d '{
+    "category": "custom",
+    "templateId": "my_template",
+    "template": {
+      "name": "我的自定义模板",
+      "description": "专门用于特定任务的模板",
+      "template": "请{{action}}以下内容：\n\n{{content}}\n\n要求：\n- {{requirement1}}\n- {{requirement2}}",
+      "variables": ["action", "content", "requirement1", "requirement2"],
+      "tags": ["自定义", "专用"]
+    }
+  }'
+```
+
+## 📊 性能基准测试
+
+### 智能性能评估
+
+Sira提供全面的AI模型性能基准测试系统，支持响应时间、成本对比和质量评估：
+
+```bash
+# 运行性能基准测试
+./scripts/run-performance-benchmark.sh
+
+# 测试特定模型
+./scripts/run-performance-benchmark.sh --models gpt-4 deepseek-chat
+
+# 生成测试报告
+./scripts/run-performance-benchmark.sh --report
+```
+
+#### 测试维度
+
+| 测试类型 | 描述 | 指标 |
+|----------|------|------|
+| **响应时间测试** | 测量模型的响应速度 | 平均响应时间、P95响应时间 |
+| **成本效益分析** | 对比不同模型的成本表现 | 每Token成本、每请求成本 |
+| **质量评估** | 通过标准任务评估输出质量 | 准确性、一致性、创造性评分 |
+| **并发性能测试** | 测试高负载下的表现 | QPS、错误率、稳定性 |
+| **跨模型对比** | 相同任务在不同模型上的表现 | 性能对比图、成本对比图 |
+
+#### 性能基准API
+
+```bash
+# 运行基准测试
+curl -X POST http://localhost:9876/benchmark/run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "models": ["gpt-4", "claude-3-opus", "deepseek-chat"],
+    "tasks": ["creative_writing", "code_generation", "analysis"],
+    "iterations": 5
+  }'
+
+# 获取测试结果
+curl http://localhost:9876/benchmark/results
+
+# 对比分析
+curl -X POST http://localhost:9876/benchmark/compare \
+  -H "Content-Type: application/json" \
+  -d '{
+    "models": ["gpt-4", "deepseek-chat"],
+    "metric": "response_time"
+  }'
+```
+
+### 测试用例库
+
+Sira内置了丰富的测试用例库，涵盖各种应用场景：
+
+#### 创意写作测试
+- 短故事创作（500-1000字）
+- 诗歌生成（现代诗、十四行诗）
+- 剧本片段写作（对话生成）
+
+#### 编程开发测试
+- 代码解释任务
+- Bug修复挑战
+- 算法实现问题
+
+#### 商业应用测试
+- 邮件撰写任务
+- 报告生成
+- 数据分析案例
+
+#### 学术研究测试
+- 论文摘要生成
+- 研究问题分析
+- 实验设计建议
+
+### 自动化测试流程
+
+```yaml
+# 基准测试配置示例
+benchmark:
+  name: "月度性能评估"
+  schedule: "0 2 1 * *"  # 每月1日凌晨2点
+  models:
+    - gpt-4
+    - claude-3-opus
+    - deepseek-chat
+    - qwen-max
+  tasks:
+    - creative_writing
+    - code_generation
+    - business_analysis
+  iterations: 10
+  metrics:
+    - response_time
+    - cost_per_token
+    - quality_score
+  report:
+    format: "html"
+    recipients: ["admin@sira.com"]
+```
 
 ## 🎛️ 参数管理
 

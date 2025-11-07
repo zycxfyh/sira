@@ -1,6 +1,7 @@
 const axios = require('axios')
 const { usageAnalytics } = require('../../usage-analytics')
 const { parameterManager } = require('../../parameter-manager')
+const { promptTemplateManager } = require('../../prompt-template-manager')
 
 // AI Router Policy
 // Routes AI requests to appropriate providers based on cost, performance, and availability
@@ -87,13 +88,15 @@ module.exports = function (params, config) {
     const requestId = req.headers['x-request-id'] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
     // Extract AI model from request body
-    let model, parameters, taskType, parameterPreset
+    let model, parameters, taskType, parameterPreset, promptTemplate, templateVariables
     try {
       const body = req.body
       model = body.model
       parameters = body.parameters || {}
       taskType = body.task_type || req.headers['x-task-type']
       parameterPreset = body.parameter_preset || req.headers['x-parameter-preset']
+      promptTemplate = body.prompt_template || req.headers['x-prompt-template']
+      templateVariables = body.template_variables || {}
 
       if (!model) {
         // 记录错误统计
@@ -171,6 +174,44 @@ module.exports = function (params, config) {
           model,
           warnings: validation.warnings
         })
+      }
+
+      // 处理提示词模板
+      let renderedPrompt = null
+      if (promptTemplate) {
+        try {
+          const templateParts = promptTemplate.split('.')
+          if (templateParts.length === 2) {
+            const [category, templateId] = templateParts
+            const renderResult = promptTemplateManager.renderTemplate(category, templateId, templateVariables)
+
+            // 将渲染后的提示词替换到messages中
+            if (body.messages && Array.isArray(body.messages)) {
+              // 找到最后一个用户消息并替换内容
+              for (let i = body.messages.length - 1; i >= 0; i--) {
+                if (body.messages[i].role === 'user') {
+                  body.messages[i].content = renderResult.rendered
+                  renderedPrompt = renderResult
+                  break
+                }
+              }
+            }
+
+            logger.info(`Applied prompt template: ${promptTemplate}`, {
+              userId,
+              model,
+              template: renderResult.template.name
+            })
+          } else {
+            logger.warn(`Invalid prompt template format: ${promptTemplate}`, { userId })
+          }
+        } catch (error) {
+          logger.warn(`Prompt template rendering failed: ${promptTemplate}`, {
+            userId,
+            error: error.message
+          })
+          // 模板渲染失败不影响请求继续处理
+        }
       }
 
     } catch (error) {
