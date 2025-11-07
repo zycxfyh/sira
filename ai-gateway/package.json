@@ -43,7 +43,17 @@
     "test:integration:setup": "node test/mock-ai-server.js & sleep 3 && cross-env EG_CONFIG_DIR=config EG_HTTP_PORT=3004 EG_ADMIN_PORT=3005 node lib/index.js",
     "test:integration:run": "cross-env EG_HTTP_PORT=3002 EG_ADMIN_PORT=3003 mocha test/e2e --timeout 10000",
     "test:integration:cleanup": "pkill -f 'node test/mock-ai-server.js' && pkill -f 'node lib/index.js'",
-    "mocha:istanbul": "nyc --reporter=lcov npm run test:all && nyc report --report=lcov > coverage.lcov && codecov"
+    "mocha:istanbul": "nyc --reporter=lcov npm run test:all && nyc report --report=lcov > coverage.lcov && codecov",
+    "test:industrial": "node run-industrial-tests.js comprehensive",
+    "test:industrial:quick": "node run-industrial-tests.js quick",
+    "test:industrial:performance": "node run-industrial-tests.js performance",
+    "test:industrial:load": "node run-industrial-tests.js load --target-rps 50 --duration 60",
+    "test:industrial:stress": "node run-industrial-tests.js stress --intensity medium --scenario memory_stress",
+    "test:industrial:shell": "./scripts/industrial-testing.sh",
+    "test:industrial:ci": "./scripts/industrial-testing.sh --test-type comprehensive --coverage --performance --reports",
+    "mock:server": "node test/mock-ai-server.js",
+    "format:check": "prettier --check \"**/*.{js,json,md}\"",
+    "format:write": "prettier --write \"**/*.{js,json,md}\""
   },
   "lint-staged": {
     "*.js": [

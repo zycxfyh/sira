@@ -1,0 +1,671 @@
+name: Industrial Testing Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # 每周日凌晨2点运行完整测试
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Test Type'
+        required: true
+        default: 'comprehensive'
+        type: choice
+        options:
+          - comprehensive
+          - quick
+          - performance
+          - load
+          - stress
+      include_performance:
+        description: 'Include Performance Tests'
+        required: false
+        default: true
+        type: boolean
+      include_load:
+        description: 'Include Load Tests'
+        required: false
+        default: true
+        type: boolean
+      include_stress:
+        description: 'Include Stress Tests'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_ENV: test
+  CI: true
+  TEST_TYPE: ${{ github.event.inputs.test_type || 'comprehensive' }}
+
+jobs:
+  # 依赖检查和代码质量
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Run ESLint
+        run: |
+          cd ai-gateway
+          npm run lint
+
+      - name: Check code formatting
+        run: |
+          cd ai-gateway
+          npm run format:check
+
+      - name: Security audit
+        run: |
+          cd ai-gateway
+          npm audit --audit-level=moderate
+
+      - name: Upload ESLint results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eslint-results
+          path: ai-gateway/eslint-report.json
+          retention-days: 7
+
+  # 单元测试
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: quality-gate
+
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Run unit tests
+        run: |
+          cd ai-gateway
+          npm run test:unit
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-unit-${{ matrix.node-version }}
+          path: ai-gateway/coverage/
+          retention-days: 30
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-unit-${{ matrix.node-version }}
+          path: ai-gateway/test-results/
+          retention-days: 7
+
+  # 集成测试
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: unit-tests
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Start test services
+        run: |
+          cd ai-gateway
+          # 启动Mock AI服务器
+          npm run mock:server &
+          MOCK_PID=$!
+          echo "MOCK_PID=$MOCK_PID" >> $GITHUB_ENV
+
+          # 等待服务启动
+          timeout 30 bash -c 'until curl -f http://localhost:3000/health; do sleep 2; done'
+
+      - name: Run integration tests
+        run: |
+          cd ai-gateway
+          npm run test:integration
+
+      - name: Stop test services
+        if: always()
+        run: |
+          kill ${{ env.MOCK_PID }} || true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-integration
+          path: ai-gateway/test-results/
+          retention-days: 7
+
+  # 端到端测试
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: integration-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Install Playwright browsers
+        run: |
+          cd ai-gateway
+          npx playwright install --with-deps
+
+      - name: Start application
+        run: |
+          cd ai-gateway
+          npm start &
+          APP_PID=$!
+          echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+
+          # 等待应用启动
+          timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 3; done'
+
+      - name: Run E2E tests
+        run: |
+          cd ai-gateway
+          npm run test:e2e
+
+      - name: Stop application
+        if: always()
+        run: |
+          kill ${{ env.APP_PID }} || true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-e2e
+          path: ai-gateway/test-results/
+          retention-days: 7
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-screenshots
+          path: ai-gateway/test-results/screenshots/
+          retention-days: 7
+
+  # 性能测试
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: e2e-tests
+    if: github.event.inputs.include_performance != 'false'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Start application
+        run: |
+          cd ai-gateway
+          npm start &
+          APP_PID=$!
+          echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+
+          # 等待应用启动
+          timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 3; done'
+
+      - name: Run performance tests
+        run: |
+          cd ai-gateway
+          node run-industrial-tests.js performance
+
+      - name: Stop application
+        if: always()
+        run: |
+          kill ${{ env.APP_PID }} || true
+
+      - name: Upload performance reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports
+          path: ai-gateway/reports/performance/
+          retention-days: 30
+
+  # 负载测试
+  load-tests:
+    name: Load Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: performance-tests
+    if: github.event.inputs.include_load != 'false'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Start application
+        run: |
+          cd ai-gateway
+          npm start &
+          APP_PID=$!
+          echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+
+          # 等待应用启动
+          timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 3; done'
+
+      - name: Run load tests
+        run: |
+          cd ai-gateway
+          node run-industrial-tests.js load --target-rps 100 --duration 120
+
+      - name: Stop application
+        if: always()
+        run: |
+          kill ${{ env.APP_PID }} || true
+
+      - name: Upload load test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-reports
+          path: ai-gateway/reports/load/
+          retention-days: 30
+
+  # 压力测试
+  stress-tests:
+    name: Stress Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs: load-tests
+    if: github.event.inputs.include_stress != 'false'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Start application
+        run: |
+          cd ai-gateway
+          npm start &
+          APP_PID=$!
+          echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+
+          # 等待应用启动
+          timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 3; done'
+
+      - name: Run stress tests
+        run: |
+          cd ai-gateway
+          node run-industrial-tests.js stress --intensity medium --scenario memory_stress
+
+      - name: Stop application
+        if: always()
+        run: |
+          kill ${{ env.APP_PID }} || true
+
+      - name: Upload stress test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: stress-test-reports
+          path: ai-gateway/reports/stress/
+          retention-days: 30
+
+  # 可靠性测试 (仅在定时任务或手动触发时运行)
+  reliability-tests:
+    name: Reliability Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    needs: stress-tests
+    if: (github.event.schedule || github.event.inputs.test_type == 'comprehensive') && github.event.inputs.include_reliability != 'false'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Start application
+        run: |
+          cd ai-gateway
+          npm start &
+          APP_PID=$!
+          echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+
+          # 等待应用启动
+          timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 3; done'
+
+      - name: Run reliability tests
+        run: |
+          cd ai-gateway
+          timeout 3600 node run-industrial-tests.js comprehensive --include-reliability true --include-e2e false --parallel false
+
+      - name: Stop application
+        if: always()
+        run: |
+          kill ${{ env.APP_PID }} || true
+
+      - name: Upload reliability reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: reliability-reports
+          path: ai-gateway/reports/reliability/
+          retention-days: 30
+
+  # 安全测试
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: unit-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Run security audit
+        run: |
+          cd ai-gateway
+          npm audit --audit-level=moderate --json > security-audit.json || true
+
+      - name: Run code security scan
+        uses: github/super-linter/slim@v5
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_JAVASCRIPT_ES: true
+          VALIDATE_JSON: true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            ai-gateway/security-audit.json
+            ai-gateway/security-scan-results.json
+          retention-days: 30
+
+  # 生成最终报告
+  generate-reports:
+    name: Generate Final Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [unit-tests, integration-tests, e2e-tests, performance-tests, load-tests, stress-tests, security-tests]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ai-gateway/package-lock.json
+
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Install dependencies
+        run: |
+          cd ai-gateway
+          npm ci
+
+      - name: Generate comprehensive report
+        run: |
+          cd ai-gateway
+          node run-industrial-tests.js comprehensive --format html
+
+      - name: Upload final report
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-industrial-test-report
+          path: ai-gateway/reports/
+          retention-days: 30
+
+  # 质量门禁检查
+  quality-gate-check:
+    name: Quality Gate Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [unit-tests, integration-tests, e2e-tests, performance-tests, load-tests, stress-tests, security-tests]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          path: ./test-results
+
+      - name: Check quality gates
+        run: |
+          # 检查单元测试覆盖率
+          if [ -f "./test-results/coverage-unit-18/coverage-summary.json" ]; then
+            COVERAGE=$(jq '.total.lines.pct' ./test-results/coverage-unit-18/coverage-summary.json)
+            if (( $(echo "$COVERAGE < 85" | bc -l) )); then
+              echo "❌ 单元测试覆盖率不足: ${COVERAGE}% (需要 >= 85%)"
+              exit 1
+            fi
+            echo "✅ 单元测试覆盖率: ${COVERAGE}%"
+          fi
+
+          # 检查测试成功率
+          SUCCESS_COUNT=$(find ./test-results -name "*.json" -exec jq -r '.success' {} \; 2>/dev/null | grep -c "true" || echo "0")
+          TOTAL_COUNT=$(find ./test-results -name "*.json" -exec jq -r '.success' {} \; 2>/dev/null | wc -l || echo "1")
+
+          SUCCESS_RATE=$(( SUCCESS_COUNT * 100 / TOTAL_COUNT ))
+
+          if [ $SUCCESS_RATE -lt 95 ]; then
+            echo "❌ 测试成功率不足: ${SUCCESS_RATE}% (需要 >= 95%)"
+            exit 1
+          fi
+
+          echo "✅ 测试成功率: ${SUCCESS_RATE}%"
+
+      - name: Create quality gate badge
+        run: |
+          SUCCESS_RATE=$(find ./test-results -name "*.json" -exec jq -r '.success' {} \; 2>/dev/null | grep -c "true" || echo "0")
+          TOTAL_COUNT=$(find ./test-results -name "*.json" -exec jq -r '.success' {} \; 2>/dev/null | wc -l || echo "1")
+          SUCCESS_RATE=$(( SUCCESS_COUNT * 100 / TOTAL_COUNT ))
+
+          if [ $SUCCESS_RATE -ge 95 ]; then
+            echo "quality-gate-passed" > quality-gate-status.txt
+          else
+            echo "quality-gate-failed" > quality-gate-status.txt
+          fi
+
+      - name: Upload quality gate status
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-status
+          path: quality-gate-status.txt
+          retention-days: 7
+
+  # 部署到暂存环境 (仅在main分支且所有测试通过时)
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: quality-gate-check
+    if: github.ref == 'refs/heads/main' && needs.quality-gate-check.result == 'success'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "🚀 部署到暂存环境"
+          # 这里可以添加实际的部署命令
+          echo "部署完成"
+
+  # 通知
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [generate-reports, quality-gate-check]
+    if: always()
+
+    steps:
+      - name: Generate notification message
+        run: |
+          if [ "${{ needs.quality-gate-check.result }}" == "success" ]; then
+            echo "🎉 工业级测试全部通过！" > notification.txt
+            echo "" >> notification.txt
+            echo "✅ 所有质量门禁检查通过" >> notification.txt
+            echo "🚀 代码已准备好部署到生产环境" >> notification.txt
+          else
+            echo "❌ 工业级测试发现问题" > notification.txt
+            echo "" >> notification.txt
+            echo "⚠️ 部分测试失败或质量门禁未通过" >> notification.txt
+            echo "🔍 请查看详细报告以获取更多信息" >> notification.txt
+          fi
+
+      - name: Post to Slack
+        if: env.SLACK_WEBHOOK_URL
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: webhook-trigger
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Upload notification
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-notification
+          path: notification.txt
+          retention-days: 7

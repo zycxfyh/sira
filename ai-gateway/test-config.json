@@ -1,0 +1,367 @@
+{
+  "industrial_testing": {
+    "framework": {
+      "testTimeout": 300000,
+      "maxConcurrency": 10,
+      "retryAttempts": 3,
+      "reportDir": "./reports",
+      "baselineDir": "./baselines",
+      "configDir": "./config",
+      "enableChaos": false,
+      "enableLoadBalancing": true
+    },
+    "environments": {
+      "unit": {
+        "name": "单元测试",
+        "timeout": 60000,
+        "retries": 1
+      },
+      "integration": {
+        "name": "集成测试",
+        "timeout": 120000,
+        "retries": 2,
+        "services": ["mock-ai-server", "test-database"]
+      },
+      "e2e": {
+        "name": "端到端测试",
+        "timeout": 300000,
+        "retries": 1,
+        "browser": "chromium",
+        "viewport": { "width": 1280, "height": 720 },
+        "screenshots": true,
+        "videos": false
+      },
+      "performance": {
+        "name": "性能测试",
+        "timeout": 600000,
+        "retries": 1,
+        "loadProfile": "ramp",
+        "targetRPS": 100,
+        "duration": 300,
+        "warmupTime": 60,
+        "cooldownTime": 30
+      },
+      "load": {
+        "name": "负载测试",
+        "timeout": 900000,
+        "retries": 1,
+        "concurrentUsers": 100,
+        "rampUpTime": 120,
+        "testDuration": 300,
+        "targetRPS": 50
+      },
+      "stress": {
+        "name": "压力测试",
+        "timeout": 1200000,
+        "retries": 1,
+        "maxMemoryUsage": 0.8,
+        "maxCPUUsage": 0.9,
+        "testDuration": 600,
+        "intensity": "high"
+      },
+      "reliability": {
+        "name": "可靠性测试",
+        "timeout": 3600000,
+        "retries": 0,
+        "testDuration": 86400000,
+        "uptimeTarget": 99.9,
+        "checkInterval": 30000
+      },
+      "security": {
+        "name": "安全测试",
+        "timeout": 180000,
+        "retries": 1,
+        "scanTypes": ["dependency", "code", "container"],
+        "severityThreshold": "medium"
+      },
+      "chaos": {
+        "name": "混沌测试",
+        "timeout": 600000,
+        "retries": 1,
+        "failureTypes": ["network", "service", "resource"],
+        "intensity": "medium"
+      }
+    },
+    "test_scenarios": {
+      "ai_chat_performance": {
+        "name": "AI聊天性能测试",
+        "description": "测试AI聊天接口的性能表现",
+        "endpoint": "/chat/completions",
+        "method": "POST",
+        "payload": {
+          "model": "gpt-3.5-turbo",
+          "messages": [
+            { "role": "user", "content": "请写一首关于技术的诗" }
+          ],
+          "max_tokens": 100,
+          "temperature": 0.7
+        },
+        "headers": {
+          "Authorization": "Bearer sk-test-key"
+        },
+        "weight": 0.7,
+        "expectedResponseTime": 2000,
+        "expectedStatusCode": 200
+      },
+      "parameter_optimization": {
+        "name": "参数优化性能测试",
+        "description": "测试参数优化接口的性能",
+        "endpoint": "/parameters/optimize",
+        "method": "POST",
+        "payload": {
+          "parameters": {
+            "temperature": 0.8,
+            "top_p": 0.9,
+            "frequency_penalty": 0.1
+          },
+          "task_type": "creative"
+        },
+        "weight": 0.1,
+        "expectedResponseTime": 500,
+        "expectedStatusCode": 200
+      },
+      "batch_processing": {
+        "name": "批量处理性能测试",
+        "description": "测试批量处理接口的性能",
+        "endpoint": "/batch-processing/batches",
+        "method": "POST",
+        "payload": {
+          "requests": [
+            {
+              "id": "req_1",
+              "model": "gpt-3.5-turbo",
+              "prompt": "生成测试内容 1"
+            },
+            {
+              "id": "req_2",
+              "model": "gpt-3.5-turbo",
+              "prompt": "生成测试内容 2"
+            }
+          ]
+        },
+        "weight": 0.05,
+        "expectedResponseTime": 5000,
+        "expectedStatusCode": 202
+      },
+      "streaming_response": {
+        "name": "流式响应测试",
+        "description": "测试实时流式响应功能",
+        "endpoint": "/streaming/streams",
+        "method": "POST",
+        "payload": {
+          "userId": "test_user",
+          "options": {
+            "maxConnections": 5
+          }
+        },
+        "weight": 0.05,
+        "expectedResponseTime": 1000,
+        "expectedStatusCode": 201
+      },
+      "api_key_management": {
+        "name": "API密钥管理测试",
+        "description": "测试API密钥管理功能",
+        "endpoint": "/api-keys",
+        "method": "GET",
+        "headers": {
+          "x-admin": "true"
+        },
+        "weight": 0.03,
+        "expectedResponseTime": 200,
+        "expectedStatusCode": 200
+      },
+      "health_check": {
+        "name": "健康检查测试",
+        "description": "测试健康检查接口",
+        "endpoint": "/health",
+        "method": "GET",
+        "weight": 0.02,
+        "expectedResponseTime": 100,
+        "expectedStatusCode": 200
+      }
+    },
+    "load_profiles": {
+      "constant": {
+        "name": "恒定负载",
+        "description": "维持恒定的请求率",
+        "pattern": "steady",
+        "parameters": {
+          "rps": 50,
+          "duration": 300
+        }
+      },
+      "ramp": {
+        "name": "阶梯负载",
+        "description": "逐渐增加负载",
+        "pattern": "increasing",
+        "parameters": {
+          "startRPS": 10,
+          "endRPS": 100,
+          "rampTime": 120,
+          "holdTime": 180
+        }
+      },
+      "spike": {
+        "name": "峰值负载",
+        "description": "突发高负载",
+        "pattern": "burst",
+        "parameters": {
+          "normalRPS": 20,
+          "spikeRPS": 200,
+          "spikeDuration": 30,
+          "spikeInterval": 300
+        }
+      },
+      "random": {
+        "name": "随机负载",
+        "description": "随机变化的负载",
+        "pattern": "random",
+        "parameters": {
+          "baseRPS": 50,
+          "variance": 0.5,
+          "duration": 300
+        }
+      },
+      "stress": {
+        "name": "压力负载",
+        "description": "持续增加的压力",
+        "pattern": "stress",
+        "parameters": {
+          "startUsers": 1,
+          "maxUsers": 200,
+          "userIncrement": 5,
+          "duration": 600
+        }
+      }
+    },
+    "quality_gates": {
+      "unit_tests": {
+        "success_rate": 95.0,
+        "coverage": {
+          "branches": 80.0,
+          "functions": 85.0,
+          "lines": 85.0,
+          "statements": 85.0
+        }
+      },
+      "integration_tests": {
+        "success_rate": 90.0,
+        "performance_degradation": 10.0
+      },
+      "e2e_tests": {
+        "success_rate": 85.0,
+        "max_duration": 600000
+      },
+      "performance_tests": {
+        "response_time_p95": 2000,
+        "throughput": 50,
+        "error_rate": 1.0
+      },
+      "reliability_tests": {
+        "uptime": 99.9,
+        "mttr": 300000,
+        "error_budget": 0.1
+      },
+      "security_tests": {
+        "vulnerability_count": 0,
+        "severity_threshold": "medium"
+      }
+    },
+    "reporting": {
+      "formats": ["html", "json", "xml", "pdf"],
+      "include_charts": true,
+      "include_trends": true,
+      "include_screenshots": true,
+      "include_performance": true,
+      "include_security": true,
+      "retention_days": 30,
+      "alert_thresholds": {
+        "test_failure_rate": 5.0,
+        "performance_degradation": 15.0,
+        "security_vulnerabilities": 1
+      }
+    },
+    "ci_cd": {
+      "stages": [
+        "dependency_check",
+        "lint",
+        "unit_test",
+        "integration_test",
+        "e2e_test",
+        "performance_test",
+        "security_scan",
+        "deploy_staging",
+        "reliability_test",
+        "deploy_production"
+      ],
+      "parallel_execution": {
+        "unit_test": 4,
+        "integration_test": 2,
+        "e2e_test": 3,
+        "performance_test": 1
+      },
+      "timeouts": {
+        "unit_test": 600,
+        "integration_test": 1200,
+        "e2e_test": 1800,
+        "performance_test": 3600,
+        "security_scan": 1800
+      },
+      "artifacts": {
+        "reports": "reports/**/*",
+        "coverage": "coverage/**/*",
+        "screenshots": "test-results/screenshots/**/*",
+        "videos": "test-results/videos/**/*"
+      }
+    },
+    "notifications": {
+      "slack": {
+        "enabled": true,
+        "webhook_url": "${SLACK_WEBHOOK_URL}",
+        "channels": {
+          "success": "#ci-success",
+          "failure": "#ci-failure",
+          "alerts": "#alerts"
+        },
+        "notify_on": ["failure", "alert", "quality_gate_breach"]
+      },
+      "email": {
+        "enabled": false,
+        "smtp_server": "${SMTP_SERVER}",
+        "recipients": ["team@company.com"],
+        "notify_on": ["failure", "weekly_report"]
+      },
+      "webhook": {
+        "enabled": true,
+        "url": "${WEBHOOK_URL}",
+        "headers": {
+          "Authorization": "Bearer ${WEBHOOK_TOKEN}",
+          "Content-Type": "application/json"
+        }
+      }
+    },
+    "baselines": {
+      "performance": {
+        "response_time_p50": 500,
+        "response_time_p95": 1500,
+        "response_time_p99": 3000,
+        "throughput_rps": 100,
+        "error_rate_percent": 0.1,
+        "memory_usage_mb": 512,
+        "cpu_usage_percent": 70
+      },
+      "reliability": {
+        "uptime_percent": 99.9,
+        "mtbf_hours": 168,
+        "mttr_minutes": 30,
+        "error_budget_percent": 0.1
+      },
+      "quality": {
+        "test_coverage_percent": 85,
+        "cyclomatic_complexity": 10,
+        "duplication_percent": 3,
+        "vulnerabilities_count": 0
+      }
+    }
+  }
+}
