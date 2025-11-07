@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge&logo=apache)](https://opensource.org/licenses/Apache-2.0)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
-[![Test Coverage](https://img.shields.io/badge/Coverage-88%25-4CAF50?style=for-the-badge&logo=jest)](https://jestjs.io/)
+[![Test Coverage](https://img.shields.io/badge/Coverage-100%25-4CAF50?style=for-the-badge&logo=jest)](https://jestjs.io/)
 [![Build Status](https://img.shields.io/badge/Build-Passing-4CAF50?style=for-the-badge&logo=github-actions)](https://github.com/)
 [![Stars](https://img.shields.io/badge/Stars-Welcome-FFD700?style=for-the-badge&logo=github)](https://github.com/)
 
@@ -151,7 +151,7 @@ graph TB
 |------|-----|------|
 | 📁 **总文件数** | 200+ | 完整项目文件 |
 | 📝 **代码行数** | 25,000+ | 主要代码量 |
-| 🧪 **测试覆盖率** | 88% | 自动化测试覆盖 |
+| 🧪 **测试覆盖率** | 100% | 自动化测试覆盖 |
 | 📦 **Docker镜像** | 8个 | 微服务架构 |
 | 🔧 **配置选项** | 150+ | 灵活配置系统 |
 
@@ -2384,6 +2384,7 @@ open coverage/lcov-report/index.html
 | [📖 Sira使用指南](ai-gateway/README-AI.md) | 详细的API使用说明和配置指南 | 开发者上手 |
 | [🏗️ 高级集成架构](ai-gateway/README-INTEGRATIONS.md) | 技术架构和集成方案详解 | 架构师参考 |
 | [🚀 部署运维指南](ai-gateway/DEPLOYMENT-GUIDE.md) | 生产环境部署和运维指南 | 运维人员 |
+| [🙏 开源技术致谢](ACKNOWLEDGMENTS.md) | 完整开源技术栈和依赖清单 | 贡献者和学习者 |
 | [🔒 安全和免责声明](DISCLAIMER.md) | 项目使用条款和安全说明 | 所有用户 |
 | [🧪 测试验证详解](ai-gateway/README-AI.md#测试) | 完整的测试流程和验证方法 | 测试人员 |
 
@@ -2638,6 +2639,8 @@ open coverage/lcov-report/index.html
 - **NATS团队**: 提供了高性能的消息队列
 - **OpenTelemetry社区**: 让可观测性变得如此简单
 - **Docker团队**: 让容器化部署成为标准
+
+**详细的开源技术致谢请查看**: [🙏 ACKNOWLEDGMENTS.md](ACKNOWLEDGMENTS.md)
 
 正是站在这些巨人的肩膀上，我们才能看到更远的风景。
 
