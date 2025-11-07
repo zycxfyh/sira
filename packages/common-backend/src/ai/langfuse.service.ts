@@ -61,7 +61,11 @@ export class LangfuseService implements OnModuleInit, OnModuleDestroy {
   /**
    * 创建新的追踪
    */
-  async createTrace(name: string, metadata?: Record<string, any>, tags?: string[]): Promise<LangfuseTrace> {
+  async createTrace(
+    name: string,
+    metadata?: Record<string, any>,
+    tags?: string[],
+  ): Promise<LangfuseTrace> {
     if (!this.langfuse) {
       return this.createMockTrace(name, metadata, tags);
     }
@@ -185,7 +189,9 @@ export class LangfuseService implements OnModuleInit, OnModuleDestroy {
         output,
         metadata,
       });
-      this.logger.debug(`Recorded model call generation: ${generation.id} for model ${modelName} in trace ${traceId}`);
+      this.logger.debug(
+        `Recorded model call generation: ${generation.id} for model ${modelName} in trace ${traceId}`,
+      );
     } catch (error) {
       this.logger.error('Failed to record Langfuse model call:', error);
     }
@@ -262,7 +268,11 @@ export class LangfuseService implements OnModuleInit, OnModuleDestroy {
   /**
    * 创建模拟追踪（当Langfuse不可用时）
    */
-  private createMockTrace(name: string, metadata?: Record<string, any>, tags?: string[]): LangfuseTrace {
+  private createMockTrace(
+    name: string,
+    metadata?: Record<string, any>,
+    tags?: string[],
+  ): LangfuseTrace {
     const trace: LangfuseTrace = {
       id: `mock-trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
@@ -277,7 +287,11 @@ export class LangfuseService implements OnModuleInit, OnModuleDestroy {
   /**
    * 创建模拟Span（当Langfuse不可用时）
    */
-  private createMockSpan(name: string, traceId: string, metadata?: Record<string, any>): LangfuseSpan {
+  private createMockSpan(
+    name: string,
+    traceId: string,
+    metadata?: Record<string, any>,
+  ): LangfuseSpan {
     const span: LangfuseSpan = {
       id: `mock-span_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,

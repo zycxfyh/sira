@@ -252,7 +252,7 @@ function handleSave() {
   }
 
   if (isNew.value) {
-    const { isNew, id, ...creationData } = dataToSave;
+    const { isNew: _isNew, id: _id, ...creationData } = dataToSave;
     settingsStore.createAiConfiguration(creationData);
   } else {
     settingsStore.updateAiConfiguration(props.config.id, dataToSave);

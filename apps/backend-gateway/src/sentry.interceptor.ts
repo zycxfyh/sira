@@ -7,7 +7,7 @@ import { Scope } from '@sentry/node'; // <-- [核心修正] 从 @sentry/node 导
 
 @Injectable()
 export class SentryInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
     const { user, params, route } = request;
 

@@ -11,16 +11,19 @@
 ## 核心设计理念
 
 ### 快速失败 (Fast Failure)
+
 - **理念**: 尽早发现问题，立即停止有问题的流程，避免资源浪费
 - **实现**: 多层验证机制，每个阶段都有明确的成功/失败标准
 - **优势**: 减少调试时间，提高开发效率，确保代码质量
 
 ### 阶段化执行 (Staged Execution)
+
 - **理念**: 将复杂流程分解为可控的独立阶段
 - **实现**: 每个阶段都有超时控制、错误处理和状态跟踪
 - **优势**: 便于问题定位，提高系统可观测性
 
 ### 智能监控 (Intelligent Monitoring)
+
 - **理念**: 自动检测失败模式，提供智能修复建议
 - **实现**: 基于历史数据和模式的异常检测系统
 - **优势**: 减少人工干预，提高问题解决效率
@@ -49,12 +52,14 @@
 **功能**: 结构化测试执行引擎，支持多阶段测试和智能失败处理
 
 **主要特性**:
+
 - 阶段化执行：依赖检查 → 本地验证 → 静态检查 → 单元测试 → 集成测试
 - 超时控制：每个阶段都有可配置的超时时间
 - 状态跟踪：详细记录每个阶段的执行状态、持续时间和错误信息
 - 并行执行：支持某些阶段的并行运行以提高效率
 
 **使用方法**:
+
 ```bash
 # 完整测试流程
 pnpm run industrial-test
@@ -70,12 +75,14 @@ pnpm run industrial-test:quick
 **功能**: 自动检测失败模式，生成智能报告和修复建议
 
 **主要特性**:
+
 - 模式识别：基于正则表达式识别常见失败模式
 - 历史分析：维护失败模式的历史数据和趋势分析
 - 智能告警：根据失败严重程度自动选择通知渠道
 - 修复建议：基于失败模式提供具体的修复指导
 
 **使用方法**:
+
 ```bash
 # 启动监控
 pnpm run industrial-monitor
@@ -91,12 +98,14 @@ pnpm run industrial-monitor
 **功能**: 统一的多包构建引擎，确保构建过程的一致性和可靠性
 
 **主要特性**:
+
 - 依赖分析：自动检测包间的依赖关系
 - 并行构建：支持包的并行构建以提高效率
 - 缓存优化：智能缓存构建产物，减少重复构建时间
 - 错误聚合：统一收集和报告所有包的构建错误
 
 **使用方法**:
+
 ```bash
 pnpm run industrial-build
 ```
@@ -106,12 +115,14 @@ pnpm run industrial-build
 **功能**: 支持多环境的自动化部署，包括蓝绿部署和金丝雀部署策略
 
 **主要特性**:
+
 - 环境管理：支持开发、测试、生产等多环境部署
 - 部署策略：蓝绿部署、金丝雀部署、滚动更新
 - 健康检查：部署后自动执行健康检查
 - 回滚支持：部署失败时自动或手动触发回滚
 
 **使用方法**:
+
 ```bash
 # 部署到测试环境
 pnpm run industrial-deploy
@@ -125,12 +136,14 @@ pnpm run industrial-deploy:prod
 **功能**: 生成详细的测试、构建和部署报告
 
 **主要特性**:
+
 - 多格式支持：生成HTML、JSON、Markdown等多种格式的报告
 - 合规报告：生成符合审计要求的合规性报告
 - 趋势分析：展示长期的质量和性能趋势
 - 自动化分发：自动将报告分发给相关团队成员
 
 **使用方法**:
+
 ```bash
 # 生成摘要报告
 pnpm run industrial-report
@@ -173,11 +186,13 @@ pnpm run industrial-report:compliance
 ### 环境变量配置
 
 **必需的环境变量**:
+
 - `NODE_ENV`: 运行环境 (development/staging/production)
 - `CI`: CI环境标识
 - `GITHUB_TOKEN`: GitHub API访问令牌
 
 **可选的环境变量**:
+
 - `INDUSTRIAL_LOG_LEVEL`: 日志级别 (debug/info/warn/error)
 - `INDUSTRIAL_TIMEOUT_MULTIPLIER`: 超时倍数调整
 - `INDUSTRIAL_NOTIFICATION_WEBHOOK`: 通知webhook地址
@@ -187,6 +202,7 @@ pnpm run industrial-report:compliance
 ### GitHub Actions工作流
 
 **主要工作流**:
+
 - `ci.yml`: 主要的CI流水线，包括构建、测试、安全扫描
 - `deploy-staging.yml`: 自动部署到测试环境
 - `deploy-production.yml`: 生产环境部署（需要人工批准）
@@ -194,6 +210,7 @@ pnpm run industrial-report:compliance
 - `performance.yml`: 性能测试和监控
 
 **质量门禁**:
+
 - 代码覆盖率 ≥ 80%
 - 零安全漏洞 (高危)
 - 零ESLint错误
@@ -225,6 +242,7 @@ pnpm run industrial-report:compliance
 ### 常见问题
 
 #### 1. 构建缓存问题
+
 ```bash
 # 清理缓存
 rm -rf .turbo node_modules/.cache
@@ -234,6 +252,7 @@ pnpm install
 ```
 
 #### 2. 测试超时
+
 ```bash
 # 调整超时设置
 export INDUSTRIAL_TIMEOUT_MULTIPLIER=1.5
@@ -241,6 +260,7 @@ pnpm run industrial-test
 ```
 
 #### 3. 部署失败
+
 ```bash
 # 查看部署日志
 pnpm run industrial-status
@@ -252,6 +272,7 @@ pnpm run industrial-recovery
 ### 调试模式
 
 启用详细日志：
+
 ```bash
 export INDUSTRIAL_LOG_LEVEL=debug
 pnpm run industrial-test
@@ -296,17 +317,20 @@ pnpm run industrial-test
 ## 故障演练
 
 ### 场景1: 构建失败
+
 1. 检查构建日志定位错误
 2. 运行失败模式分析：`./scripts/industrial-failure-monitor.sh analyze build.log`
 3. 根据建议修复问题
 4. 重新运行构建
 
 ### 场景2: 测试超时
+
 1. 检查是否有死锁或无限循环
 2. 调整超时设置或优化测试代码
 3. 考虑将大型测试拆分为更小的单元
 
 ### 场景3: 部署失败
+
 1. 检查部署日志和健康检查结果
 2. 验证环境配置和依赖服务状态
 3. 执行自动回滚或手动恢复

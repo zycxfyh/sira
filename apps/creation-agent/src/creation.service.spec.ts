@@ -61,16 +61,16 @@ describe('CreationService', () => {
     promptInjectionGuardMock = mockDeep<PromptInjectionGuard>();
     promptInjectionGuardMock.ensureSafeOrThrow.mockResolvedValue(undefined);
 
-  const module: TestingModule = await Test.createTestingModule({
-    providers: [
-      CreationService,
-      { provide: PrismaService, useValue: prismaMock },
-      { provide: DynamicAiSchedulerService, useValue: schedulerMock },
-      { provide: PromptManagerService, useValue: promptManagerMock },
-      { provide: EventBusService, useValue: eventBusMock },
-      { provide: PromptInjectionGuard, useValue: promptInjectionGuardMock },
-    ],
-  }).compile();
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CreationService,
+        { provide: PrismaService, useValue: prismaMock },
+        { provide: DynamicAiSchedulerService, useValue: schedulerMock },
+        { provide: PromptManagerService, useValue: promptManagerMock },
+        { provide: EventBusService, useValue: eventBusMock },
+        { provide: PromptInjectionGuard, useValue: promptInjectionGuardMock },
+      ],
+    }).compile();
 
     service = module.get<CreationService>(CreationService);
 
@@ -136,10 +136,13 @@ describe('CreationService', () => {
       }
 
       expect(prismaMock.$transaction).not.toHaveBeenCalled();
-      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', expect.objectContaining({
-        event: 'creation_failed',
-        userId: MOCK_PAYLOAD.userId,
-      }));
+      expect(eventBusMock.publish).toHaveBeenCalledWith(
+        'NOTIFY_USER',
+        expect.objectContaining({
+          event: 'creation_failed',
+          userId: MOCK_PAYLOAD.userId,
+        }),
+      );
     });
 
     it('should throw and publish failure event if database transaction fails', async () => {
@@ -156,10 +159,13 @@ describe('CreationService', () => {
         expect(error).toBe(dbError);
       }
 
-      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', expect.objectContaining({
-        event: 'creation_failed',
-        userId: MOCK_PAYLOAD.userId,
-      }));
+      expect(eventBusMock.publish).toHaveBeenCalledWith(
+        'NOTIFY_USER',
+        expect.objectContaining({
+          event: 'creation_failed',
+          userId: MOCK_PAYLOAD.userId,
+        }),
+      );
     });
 
     it('should propagate prompt injection errors before invoking AI', async () => {
@@ -178,10 +184,13 @@ describe('CreationService', () => {
 
       expect(mockedCallAiWithGuard).not.toHaveBeenCalled();
       expect(prismaMock.$transaction).not.toHaveBeenCalled();
-      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', expect.objectContaining({
-        event: 'creation_failed',
-        userId: MOCK_PAYLOAD.userId,
-      }));
+      expect(eventBusMock.publish).toHaveBeenCalledWith(
+        'NOTIFY_USER',
+        expect.objectContaining({
+          event: 'creation_failed',
+          userId: MOCK_PAYLOAD.userId,
+        }),
+      );
     });
   });
 });

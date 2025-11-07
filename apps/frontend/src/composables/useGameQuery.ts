@@ -65,7 +65,7 @@ export function useGame(gameId) {
  */
 export function useSubmitAction() {
   const { show: showToast } = useToast();
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient(); // 如果需要 invalidate 查询，可以取消注释
 
   return useMutation({
     mutationFn: async ({ gameId, action }) => {

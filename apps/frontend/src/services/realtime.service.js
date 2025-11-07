@@ -49,7 +49,9 @@ class RealtimeService {
     }
 
     // 从环境变量获取 WebSocket URL，如果没有则从 API URL 派生
-    const wsUrl = import.meta.env.VITE_WS_URL || (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace('http', 'ws');
+    const wsUrl =
+      import.meta.env.VITE_WS_URL ||
+      (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace('http', 'ws');
 
     console.log(`[RealtimeService] Attempting to connect to ${wsUrl}/updates...`);
 

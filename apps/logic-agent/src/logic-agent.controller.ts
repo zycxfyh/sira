@@ -43,7 +43,7 @@ export class LogicAgentController {
         );
         // 手动发送到死信队列
         channel.publish('dlx', 'logic_queue_dead', originalMsg.content, {
-          headers: { ...originalMsg.properties.headers, finalFailure: true }
+          headers: { ...originalMsg.properties.headers, finalFailure: true },
         });
         channel.ack(originalMsg);
       }

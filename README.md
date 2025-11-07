@@ -99,15 +99,15 @@ ls industrial-test-results/
 
 ## 📚 核心文档
 
-| 文档 | 说明 |
-| ---- | ---- |
-| [🏭 工业级自动化系统](AUTOMATION.md) | 完整的CI/CD和DevOps实践 |
-| [📋 系统技术规格书](docs/System-Technical-Specification.md) | 工业级系统规格和架构设计 |
-| [🏗️ 架构设计](ARCHITECTURE.md) | 微服务架构和设计原则 |
-| [🔒 安全指南](SECURITY.md) | 安全策略和最佳实践 |
-| [⚡ 核心机制优化](docs/core/core-mechanism-optimization.md) | AI叙事逻辑和性能优化 |
-| [📊 工业测试报告](industrial-test-results/) | 自动化测试结果和报告 |
-| [🚨 应急响应手册](deployment/emergency/incident-response-playbook.md) | 生产环境应急处理流程 |
+| 文档                                                                  | 说明                     |
+| --------------------------------------------------------------------- | ------------------------ |
+| [🏭 工业级自动化系统](AUTOMATION.md)                                  | 完整的CI/CD和DevOps实践  |
+| [📋 系统技术规格书](docs/System-Technical-Specification.md)           | 工业级系统规格和架构设计 |
+| [🏗️ 架构设计](ARCHITECTURE.md)                                        | 微服务架构和设计原则     |
+| [🔒 安全指南](SECURITY.md)                                            | 安全策略和最佳实践       |
+| [⚡ 核心机制优化](docs/core/core-mechanism-optimization.md)           | AI叙事逻辑和性能优化     |
+| [📊 工业测试报告](industrial-test-results/)                           | 自动化测试结果和报告     |
+| [🚨 应急响应手册](deployment/emergency/incident-response-playbook.md) | 生产环境应急处理流程     |
 
 ## 🎮 核心功能
 
@@ -171,16 +171,19 @@ pnpm industrial-deploy    # 生产部署
 ## 📊 性能指标
 
 ### 响应性能
+
 - **AI响应时间**: <3秒 (P95)
 - **实时同步延迟**: <100ms (WebSocket)
 - **API响应时间**: <200ms (P95)
 
 ### 系统容量
+
 - **并发用户支持**: 1000+
 - **系统可用性**: 99.9% SLA
 - **部署时间**: <5分钟
 
 ### 质量指标
+
 - **测试覆盖率**: ≥80%
 - **ESLint通过**: 0错误 (警告可接受)
 - **构建成功率**: 100%
@@ -302,16 +305,19 @@ LOG_MAX_FILES=5
 ### 开发流程
 
 1. **Fork 项目** 并创建特性分支
+
    ```bash
    git checkout -b feature/amazing-feature
    ```
 
 2. **运行工业级测试** 确保代码质量
+
    ```bash
    pnpm industrial-test
    ```
 
 3. **提交更改** 使用规范的提交信息
+
    ```bash
    git commit -m 'feat: add amazing feature'
    ```
@@ -340,11 +346,13 @@ LOG_MAX_FILES=5
 ## 🙏 致谢
 
 ### AI与技术栈
+
 - **🤖 AI模型**: OpenAI GPT-4 Turbo, Anthropic Claude-3, DeepSeek
 - **🔧 核心框架**: NestJS, Vue.js, Redis, PostgreSQL
 - **📚 开源社区**: LangChain, Prisma, Socket.IO, Docker等
 
 ### 工业级基础设施
+
 - **🏭 DevOps工具**: GitHub Actions, Prometheus, Grafana, Sentry
 - **🧪 测试框架**: Jest, Playwright, Industrial Test Suite
 - **📊 监控告警**: Alertmanager, PagerDuty集成

@@ -26,9 +26,7 @@ type ClerkEvent = {
 export class WebhooksController {
   private readonly logger = new Logger(WebhooksController.name);
 
-  constructor(
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
   @Post('clerk')
   async handleClerkWebhook(@Req() req: RawBodyRequest<Request>) {

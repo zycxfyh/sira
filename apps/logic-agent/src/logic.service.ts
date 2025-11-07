@@ -1,6 +1,11 @@
 // 文件路径: apps/backend/apps/logic-agent/src/logic.service.ts (已重构)
 
-import { Injectable, InternalServerErrorException, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { User } from '@prisma/client';
@@ -56,7 +61,7 @@ export class LogicService {
         {
           userId: jobData.userId,
           correlationId: jobData.correlationId,
-        }
+        },
       );
 
       if (!securityCheck.allowed) {

@@ -3,7 +3,7 @@
 
 import { render, type RenderOptions } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import { createRouter, createWebHistory, type Router } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import type { Component } from 'vue';
 
 /**

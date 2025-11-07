@@ -47,7 +47,10 @@ export class CreationAgentController {
         try {
           await this.creationService.notifyCreationFailure(data.userId, error);
         } catch (notifyError) {
-          this.logger.error(`Failed to notify user ${data.userId} of creation failure`, notifyError);
+          this.logger.error(
+            `Failed to notify user ${data.userId} of creation failure`,
+            notifyError,
+          );
         }
 
         // 达到最大重试次数，将消息发送到最终死信队列
@@ -56,7 +59,7 @@ export class CreationAgentController {
         );
         // 手动发送到死信队列（这里需要重新发布到死信交换）
         channel.publish('dlx', 'creation_queue_dead', originalMsg.content, {
-          headers: { ...originalMsg.properties.headers, finalFailure: true }
+          headers: { ...originalMsg.properties.headers, finalFailure: true },
         });
         channel.ack(originalMsg);
       }

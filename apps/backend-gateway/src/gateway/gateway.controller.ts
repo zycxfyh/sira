@@ -6,7 +6,7 @@ import { UpdatesGateway } from './updates.gateway';
 class SendToUserDto {
   userId!: string;
   event!: string;
-  data: any;
+  data: unknown;
 }
 
 @Controller('gateway')

@@ -97,12 +97,12 @@ export class CreationService {
       this.logger.log(`New game with ID ${newGame.id} successfully saved to database.`);
 
       this.eventBus.publish('NOTIFY_USER', {
-          userId: userId,
-          event: 'creation_completed',
-          data: {
-            message: `New world "${newGame.name}" created successfully.`,
-            gameId: newGame.id,
-          },
+        userId: userId,
+        event: 'creation_completed',
+        data: {
+          message: `New world "${newGame.name}" created successfully.`,
+          gameId: newGame.id,
+        },
       });
     } catch (error: unknown) {
       // <-- [核心修正] 明确 error 类型为 unknown
@@ -119,12 +119,12 @@ export class CreationService {
 
       try {
         await this.eventBus.publish('NOTIFY_USER', {
-            userId: userId,
-            event: 'creation_failed',
-            data: {
-              message: 'Failed to create new world.',
-              error: errorMessage,
-            },
+          userId: userId,
+          event: 'creation_failed',
+          data: {
+            message: 'Failed to create new world.',
+            error: errorMessage,
+          },
         });
       } catch (eventBusError) {
         this.logger.error(

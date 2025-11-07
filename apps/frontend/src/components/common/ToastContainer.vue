@@ -12,9 +12,7 @@
         <div class="toast-content">
           <span class="toast-icon">{{ getToastIcon(toast.type) }}</span>
           <span class="toast-message">{{ toast.message }}</span>
-          <button class="toast-close" @click.stop="removeToast(toast.id)">
-            ×
-          </button>
+          <button class="toast-close" @click.stop="removeToast(toast.id)">×</button>
         </div>
       </div>
     </TransitionGroup>

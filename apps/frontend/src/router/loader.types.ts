@@ -23,7 +23,7 @@ export interface LoaderContext {
  * @description Loader 函数类型
  * @template T - 返回的数据类型
  */
-export type LoaderFunction<T = unknown> = (context: LoaderContext) => Promise<T> | T;
+export type LoaderFunction<T = unknown> = (_context: LoaderContext) => Promise<T> | T;
 
 /**
  * @interface LoaderResult
@@ -50,7 +50,7 @@ export interface RouteLoaderConfig<T = unknown> {
   /** 缓存时间（毫秒） */
   cacheTime?: number;
   /** 错误处理函数 */
-  onError?: (error: Error, context: LoaderContext) => void;
+  onError?: (_error: Error, _context: LoaderContext) => void;
   /** 重试配置 */
   retry?: {
     /** 最大重试次数 */

@@ -50,26 +50,28 @@ describe('API Security Tests (e2e) - Framework Built-in Security', () => {
     app = moduleFixture.createNestApplication() as any;
 
     // Apply framework built-in security middleware (helmet)
-    app.use(helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", "data:", "https:"],
-          objectSrc: ["'none'"],
-          frameSrc: ["'none'"],
+    app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+            objectSrc: ["'none'"],
+            frameSrc: ["'none'"],
+          },
         },
-      },
-      hsts: {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true,
-      },
-      noSniff: true,
-      xssFilter: true,
-      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-    }));
+        hsts: {
+          maxAge: 31536000,
+          includeSubDomains: true,
+          preload: true,
+        },
+        noSniff: true,
+        xssFilter: true,
+        referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+      }),
+    );
 
     await app.init();
   });
@@ -122,10 +124,7 @@ describe('API Security Tests (e2e) - Framework Built-in Security', () => {
   describe('Input Size Limits', () => {
     it('should handle reasonable payload sizes', () => {
       const normalPayload = { data: 'x'.repeat(1000) };
-      return request(app.getHttpServer())
-        .post('/health')
-        .send(normalPayload)
-        .expect(400); // Health endpoint doesn't accept POST, but size should be fine
+      return request(app.getHttpServer()).post('/health').send(normalPayload).expect(400); // Health endpoint doesn't accept POST, but size should be fine
     });
   });
 
@@ -139,17 +138,13 @@ describe('API Security Tests (e2e) - Framework Built-in Security', () => {
     });
 
     it('should handle non-existent endpoints', () => {
-      return request(app.getHttpServer())
-        .get('/nonexistent-endpoint')
-        .expect(404);
+      return request(app.getHttpServer()).get('/nonexistent-endpoint').expect(404);
     });
   });
 
   describe('Basic Input Validation', () => {
     it('should handle query parameters', () => {
-      return request(app.getHttpServer())
-        .get('/health?test=value')
-        .expect(200);
+      return request(app.getHttpServer()).get('/health?test=value').expect(200);
     });
 
     it('should handle unicode characters in query params', () => {

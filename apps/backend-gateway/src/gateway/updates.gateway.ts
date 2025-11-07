@@ -46,7 +46,7 @@ export class UpdatesGateway implements OnGatewayConnection, OnGatewayDisconnect 
    * [!] 核心改造：向指定用户的房间广播事件，而不是向单个 socket ID 发送。
    * Redis Adapter 会确保消息被路由到正确的服务器实例上的正确客户端。
    */
-  public async sendToUser(userId: string, event: string, data: any): Promise<boolean> {
+  public async sendToUser(userId: string, event: string, data: unknown): Promise<boolean> {
     // 检查该房间是否存在（即用户是否在线）
     const sockets = await this.server.in(userId).fetchSockets();
 

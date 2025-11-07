@@ -7,7 +7,7 @@ import * as Sentry from '@sentry/node';
 interface LogicCompletePayload {
   gameId: string;
   userId: string;
-  playerAction: any;
+  playerAction: unknown;
 }
 
 @Controller()
@@ -46,7 +46,10 @@ export class NarrativeAgentController {
         try {
           await this.narrativeService.notifyNarrativeFailure(data.userId, data.gameId, error);
         } catch (notifyError) {
-          this.logger.error(`Failed to notify user ${data.userId} of narrative failure for game ${data.gameId}`, notifyError);
+          this.logger.error(
+            `Failed to notify user ${data.userId} of narrative failure for game ${data.gameId}`,
+            notifyError,
+          );
         }
 
         // 达到最大重试次数，将消息发送到最终死信队列
@@ -55,7 +58,7 @@ export class NarrativeAgentController {
         );
         // 手动发送到死信队列
         channel.publish('dlx', 'narrative_queue_dead', originalMsg.content, {
-          headers: { ...originalMsg.properties.headers, finalFailure: true }
+          headers: { ...originalMsg.properties.headers, finalFailure: true },
         });
         channel.ack(originalMsg);
       }

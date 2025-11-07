@@ -23,7 +23,7 @@
 import { ref, onMounted } from 'vue'; // [核心修正] 移除了 onUnmounted
 import { useGameStore } from '@/stores/game.store';
 import { useToast } from '@/composables/useToast';
-import { useRouter } from 'vue-router'; // [新增] 导入 useRouter
+// import { useRouter } from 'vue-router'; // [新增] 导入 useRouter，但暂时未使用
 
 // 导入所有子组件
 import CharacterHUD from '@/components/game/CharacterHUD.vue';
@@ -39,7 +39,7 @@ const props = defineProps({
 
 const gameStore = useGameStore();
 const { show: showToast } = useToast();
-const router = useRouter(); // [新增] 获取 router 实例
+// const router = useRouter(); // [新增] 获取 router 实例，但暂时未使用
 
 const isLoading = ref(true);
 const error = ref(null);

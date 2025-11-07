@@ -10,6 +10,7 @@
 ## 🛠️ 技术栈
 
 ### 核心框架
+
 - **🎯 框架**: Vue 3 (Composition API) + `<script setup>`
 - **⚡ 构建工具**: Vite 5.x (现代化构建)
 - **🎪 状态管理**: Pinia (Vuex 5替代方案)
@@ -18,6 +19,7 @@
 - **🔴 实时通信**: Socket.IO Client (WebSocket + 降级支持)
 
 ### 开发工具链
+
 - **🎨 样式**: 现代CSS + Flexbox/Grid + CSS变量
 - **🧪 测试**: Vitest + Vue Test Utils + Playwright (E2E)
 - **🔍 代码质量**: ESLint + TypeScript严格模式
@@ -25,6 +27,7 @@
 - **🏭 CI/CD**: GitHub Actions + Turbo (智能缓存)
 
 ### 工业级特性
+
 - **📊 监控**: Sentry前端监控 + 性能追踪
 - **🔒 安全**: CSP头 + 输入验证 + XSS防护
 - **♿ 无障碍**: WCAG 2.1 AA合规
@@ -248,6 +251,7 @@ open http://localhost:5173
 ### 🧪 测试与质量保证
 
 #### 单元测试
+
 ```bash
 # 运行前端单元测试
 pnpm test --filter=@tuheg/frontend
@@ -257,6 +261,7 @@ pnpm test --coverage
 ```
 
 #### 工业级测试套件
+
 ```bash
 # 运行完整工业测试 (推荐)
 pnpm industrial-test
@@ -269,6 +274,7 @@ pnpm industrial-test:quick
 ```
 
 #### 代码质量检查
+
 ```bash
 # ESLint检查 (0错误标准)
 pnpm lint
@@ -283,11 +289,13 @@ pnpm type-check
 ### 🏗️ 构建与部署
 
 #### 开发构建
+
 ```bash
 pnpm build:dev
 ```
 
 #### 生产构建
+
 ```bash
 pnpm build
 
@@ -296,6 +304,7 @@ pnpm build:analyze
 ```
 
 #### Docker构建
+
 ```bash
 # 构建Docker镜像
 docker build -f Dockerfile.frontend -t creation-ring-frontend .
@@ -347,34 +356,35 @@ export default defineConfig({
 ### 🧩 代码分割策略
 
 #### 路由级懒加载
+
 ```typescript
 // 自动代码分割
 const routes = [
   {
     path: '/game',
     component: () => import('./views/GameView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/creation',
-    component: () => import('./views/CreationHubView.vue')
-  }
+    component: () => import('./views/CreationHubView.vue'),
+  },
 ];
 ```
 
 #### 组件级分割
+
 ```vue
 <script setup>
 // AI组件按需加载
-const AiConfigCard = defineAsyncComponent(() =>
-  import('./components/common/AiConfigCard.vue')
-);
+const AiConfigCard = defineAsyncComponent(() => import('./components/common/AiConfigCard.vue'));
 </script>
 ```
 
 ### 💾 缓存策略
 
 #### HTTP缓存优化
+
 ```nginx
 # Nginx配置示例
 location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
@@ -384,6 +394,7 @@ location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
 ```
 
 #### 应用级缓存
+
 - **Pinia状态**: 持久化用户会话
 - **TanStack Query**: 智能API缓存
 - **WebSocket**: 实时状态同步
@@ -391,6 +402,7 @@ location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
 ### 📦 打包优化
 
 #### Vite高级优化
+
 ```javascript
 // vite.config.js
 export default {
@@ -399,16 +411,17 @@ export default {
       output: {
         manualChunks: {
           vendor: ['vue', 'pinia'],
-          ai: ['socket.io-client', 'axios']
-        }
-      }
+          ai: ['socket.io-client', 'axios'],
+        },
+      },
     },
-    chunkSizeWarningLimit: 1000
-  }
+    chunkSizeWarningLimit: 1000,
+  },
 };
 ```
 
 #### 资源优化
+
 - **🖼️ 图片**: WebP格式 + 响应式图片
 - **🎨 CSS**: 关键CSS内联 + 未使用代码移除
 - **📜 JavaScript**: 树摇优化 + 代码分割
@@ -425,6 +438,7 @@ export default {
 ### 🔬 单元测试
 
 #### 组件测试
+
 ```typescript
 // 组件逻辑测试示例
 import { describe, it, expect } from 'vitest';
@@ -434,7 +448,7 @@ import AiConfigCard from './AiConfigCard.vue';
 describe('AiConfigCard', () => {
   it('renders AI configuration correctly', () => {
     const wrapper = mount(AiConfigCard, {
-      props: { config: mockAiConfig }
+      props: { config: mockAiConfig },
     });
     expect(wrapper.text()).toContain('GPT-4');
   });
@@ -442,11 +456,13 @@ describe('AiConfigCard', () => {
 ```
 
 #### Store测试
+
 - Pinia状态变更测试
 - Action/S getter逻辑验证
 - 状态持久化测试
 
 #### 服务层测试
+
 - API调用mock测试
 - WebSocket通信测试
 - 错误处理和重试逻辑
@@ -454,6 +470,7 @@ describe('AiConfigCard', () => {
 ### 🔗 集成测试
 
 #### API集成
+
 ```typescript
 // API服务集成测试
 describe('GameAPI Integration', () => {
@@ -465,6 +482,7 @@ describe('GameAPI Integration', () => {
 ```
 
 #### WebSocket集成
+
 - 实时消息传递测试
 - 连接状态管理测试
 - 断线重连机制测试
@@ -472,6 +490,7 @@ describe('GameAPI Integration', () => {
 ### 🌐 E2E测试 (Playwright)
 
 #### 用户流程测试
+
 ```typescript
 // E2E用户旅程测试
 test('complete game creation flow', async ({ page }) => {
@@ -484,6 +503,7 @@ test('complete game creation flow', async ({ page }) => {
 ```
 
 #### 性能监控
+
 - Lighthouse自动评分
 - Core Web Vitals监控
 - 内存泄漏检测
@@ -493,6 +513,7 @@ test('complete game creation flow', async ({ page }) => {
 ### 🐳 多阶段Docker构建
 
 #### 优化的Dockerfile
+
 ```dockerfile
 # 多阶段构建 - 工业级优化
 FROM node:20-alpine AS base
@@ -523,6 +544,7 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 #### 构建命令
+
 ```bash
 # 构建优化版本
 docker build \
@@ -540,6 +562,7 @@ curl http://localhost:8080/health
 ### ☸️ Kubernetes部署
 
 #### Helm Chart结构
+
 ```
 charts/frontend/
 ├── Chart.yaml
@@ -553,6 +576,7 @@ charts/frontend/
 ```
 
 #### 部署命令
+
 ```bash
 # 使用Helm部署
 helm upgrade --install frontend ./charts/frontend \
@@ -568,6 +592,7 @@ kubectl logs -f deployment/frontend
 ### 🔧 Nginx配置优化
 
 #### 工业级Nginx配置
+
 ```nginx
 # /etc/nginx/nginx.conf
 worker_processes auto;
@@ -663,6 +688,7 @@ http {
 ### 📊 监控和可观测性
 
 #### 前端监控集成
+
 ```javascript
 // Sentry配置
 import * as Sentry from '@sentry/vue';
@@ -682,6 +708,7 @@ Sentry.init({
 ```
 
 #### 性能监控
+
 - **Core Web Vitals**: LCP, FID, CLS自动监控
 - **错误追踪**: 自动错误捕获和用户反馈
 - **用户行为**: 会话回放和热力图分析
@@ -699,6 +726,7 @@ Sentry.init({
 ### 📋 开发工作流
 
 1. **环境准备**
+
    ```bash
    # 安装依赖
    pnpm install
@@ -711,6 +739,7 @@ Sentry.init({
    ```
 
 2. **代码开发**
+
    ```bash
    # 创建特性分支
    git checkout -b feature/amazing-ui-component
@@ -721,6 +750,7 @@ Sentry.init({
    ```
 
 3. **质量验证**
+
    ```bash
    # 完整测试套件
    pnpm industrial-test
@@ -733,6 +763,7 @@ Sentry.init({
    ```
 
 4. **提交代码**
+
    ```bash
    # 规范提交
    git commit -m 'feat: add amazing UI component with tests'
@@ -744,12 +775,14 @@ Sentry.init({
 ### 🧪 质量标准
 
 #### 代码质量
+
 - **ESLint**: 0错误 (警告可接受)
 - **TypeScript**: 严格模式检查通过
 - **测试覆盖**: ≥80% (组件/服务/工具函数)
 - **性能**: Lighthouse评分 ≥95
 
 #### 提交规范
+
 ```
 feat: 新功能
 fix: 修复bug
@@ -761,6 +794,7 @@ chore: 构建/工具配置
 ```
 
 #### PR要求
+
 - ✅ 工业级测试通过
 - ✅ 代码审查通过
 - ✅ 文档更新完成
@@ -771,6 +805,7 @@ chore: 构建/工具配置
 #### 开发环境问题
 
 **Q: 热重载不工作？**
+
 ```bash
 # 清除缓存
 rm -rf node_modules/.vite
@@ -778,6 +813,7 @@ pnpm dev:frontend
 ```
 
 **Q: WebSocket连接失败？**
+
 ```javascript
 // 检查环境变量
 console.log(import.meta.env.VITE_WS_URL);
@@ -789,6 +825,7 @@ curl http://localhost:3000/health
 #### 构建部署问题
 
 **Q: 构建产物过大？**
+
 ```bash
 # 分析包大小
 pnpm build:analyze
@@ -800,6 +837,7 @@ pnpm build:analyze
 ```
 
 **Q: Docker构建失败？**
+
 ```bash
 # 检查Dockerfile语法
 docker build --no-cache -f Dockerfile.frontend .
@@ -811,6 +849,7 @@ ls -la apps/frontend/
 #### 性能优化问题
 
 **Q: 如何提升Lighthouse评分？**
+
 - 优化图片: WebP格式 + 响应式加载
 - 代码分割: 路由级懒加载
 - 缓存策略: HTTP缓存头配置
@@ -818,13 +857,13 @@ ls -la apps/frontend/
 
 ### 📚 相关文档
 
-| 文档 | 说明 |
-| ---- | ---- |
-| [🏭 系统技术规格书](../../docs/System-Technical-Specification.md) | 完整技术规范 |
-| [🏗️ 架构设计](../../ARCHITECTURE.md) | 系统架构说明 |
-| [🧪 工业测试](../../industrial-test-results/) | 测试报告和结果 |
-| [🚀 部署指南](../../deployment/) | 生产环境部署 |
-| [🔒 安全指南](../../SECURITY.md) | 安全策略和实践 |
+| 文档                                                              | 说明           |
+| ----------------------------------------------------------------- | -------------- |
+| [🏭 系统技术规格书](../../docs/System-Technical-Specification.md) | 完整技术规范   |
+| [🏗️ 架构设计](../../ARCHITECTURE.md)                              | 系统架构说明   |
+| [🧪 工业测试](../../industrial-test-results/)                     | 测试报告和结果 |
+| [🚀 部署指南](../../deployment/)                                  | 生产环境部署   |
+| [🔒 安全指南](../../SECURITY.md)                                  | 安全策略和实践 |
 
 ---
 

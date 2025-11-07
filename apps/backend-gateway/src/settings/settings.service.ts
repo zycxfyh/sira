@@ -44,7 +44,7 @@ export class SettingsService {
   }
 
   // Create AI configuration for a user
-  public async createAiSetting(userId: string, payload: any) {
+  public async createAiSetting(userId: string, payload: unknown) {
     // validate minimal shape
     const parsed = createAiSettingsSchema.safeParse(payload);
     if (!parsed.success) {
@@ -92,7 +92,7 @@ export class SettingsService {
       throw new BadRequestException('Not authorized to update this configuration');
     }
 
-    const dataToUpdate: any = {};
+    const dataToUpdate: Record<string, unknown> = {};
     if (payload.provider !== undefined) dataToUpdate.provider = payload.provider;
     if (payload.apiKey !== undefined) dataToUpdate.apiKey = payload.apiKey;
     if (payload.modelId !== undefined) dataToUpdate.modelId = payload.modelId;
@@ -142,10 +142,10 @@ export class SettingsService {
   }
 
   // Normalize DB record to API shape: includes roles: string[]
-  private normalizeAiConfiguration(record: any) {
+  private normalizeAiConfiguration(record: Record<string, unknown>) {
     const roles =
       Array.isArray(record.roles) && record.roles.length > 0
-        ? record.roles.map((r: any) => (r.name ? r.name : r.id))
+        ? record.roles.map((r: unknown) => (typeof r === 'object' && r !== null && 'name' in r ? (r as Record<string, unknown>).name : r))
         : [];
 
     return {
@@ -190,7 +190,7 @@ export class SettingsService {
 
         const resp = await lastValueFrom(resp$);
         const models = Array.isArray(resp.data?.data)
-          ? resp.data.data.map((m: any) => m.id).filter(Boolean)
+          ? resp.data.data.map((m: Record<string, unknown>) => m.id).filter(Boolean)
           : [];
 
         return { models };
@@ -212,13 +212,13 @@ export class SettingsService {
         if (Array.isArray(resp.data?.models)) {
           return {
             models: resp.data.models
-              .map((m: any) => (typeof m === 'string' ? m : m.id))
+              .map((m: unknown) => (typeof m === 'string' ? m : (m as Record<string, unknown>).id))
               .filter(Boolean),
           };
         }
         if (Array.isArray(resp.data)) {
           return {
-            models: resp.data.map((m: any) => (typeof m === 'string' ? m : m.id)).filter(Boolean),
+            models: resp.data.map((m: unknown) => (typeof m === 'string' ? m : (m as Record<string, unknown>).id)).filter(Boolean),
           };
         }
         // fallback: return keys if object with keys looks like model map

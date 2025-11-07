@@ -44,21 +44,21 @@ DevOps: CI/CD、监控、部署和应急响应。
 
 1.5. 术语表
 
-术语	英文	描述
+术语 英文 描述
 
-AI-GM	AI Game Master	扮演游戏主持人的AI系统。
+AI-GM AI Game Master 扮演游戏主持人的AI系统。
 
-观测者	Observer	系统的用户，即玩家。
+观测者 Observer 系统的用户，即玩家。
 
-中枢系统	Nexus	用户在游戏外的管理中心，用于管理游戏存档、设置等。
+中枢系统 Nexus 用户在游戏外的管理中心，用于管理游戏存档、设置等。
 
-代理	Agent	负责特定任务（如逻辑、叙事）的AI微服务。
+代理 Agent 负责特定任务（如逻辑、叙事）的AI微服务。
 
-状态变更指令	State Change Directive	由逻辑代理生成的、描述世界状态变化的结构化数据。
+状态变更指令 State Change Directive 由逻辑代理生成的、描述世界状态变化的结构化数据。
 
-快速失败	Fast Failure	一种CI/CD设计哲学，旨在尽早发现并中止有问题的流程。
+快速失败 Fast Failure 一种CI/CD设计哲学，旨在尽早发现并中止有问题的流程。
 
-质量门禁	Quality Gate	CI/CD流水线中用于确保代码质量的自动化检查点。
+质量门禁 Quality Gate CI/CD流水线中用于确保代码质量的自动化检查点。
 
 2. 系统概述
 
@@ -76,27 +76,27 @@ AI驱动的游戏世界生成: 用户提供一个核心概念，系统自动生�
 
 2.2. 技术栈
 
-领域	技术
+领域 技术
 
-前端	Vue 3 (Composition API), Pinia, Vite, Axios, Socket.IO Client, TanStack Query
+前端 Vue 3 (Composition API), Pinia, Vite, Axios, Socket.IO Client, TanStack Query
 
-后端	NestJS, TypeScript, Prisma
+后端 NestJS, TypeScript, Prisma
 
-数据库	PostgreSQL (with pgvector extension)
+数据库 PostgreSQL (with pgvector extension)
 
-缓存/消息队列	Redis
+缓存/消息队列 Redis
 
-服务间通信	RabbitMQ
+服务间通信 RabbitMQ
 
-AI框架	LangChain, Zod (用于结构化输出)
+AI框架 LangChain, Zod (用于结构化输出)
 
-认证	Clerk, JWT
+认证 Clerk, JWT
 
-部署与编排	Docker, Docker Compose, Kubernetes (K8s)
+部署与编排 Docker, Docker Compose, Kubernetes (K8s)
 
-CI/CD	GitHub Actions, Turbo
+CI/CD GitHub Actions, Turbo
 
-可观测性	Sentry, Prometheus, Grafana
+可观测性 Sentry, Prometheus, Grafana
 
 2.3. 架构原则
 

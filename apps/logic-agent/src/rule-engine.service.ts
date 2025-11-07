@@ -1,6 +1,11 @@
 // 文件路径: apps/backend/apps/logic-agent/src/rule-engine.service.ts (已修复 unknown 类型)
 
-import { Injectable, Logger, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import {

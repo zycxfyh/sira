@@ -1,7 +1,7 @@
 // 文件路径: src/composables/useAssets.js (已最终修复)
 
 // [核心修正] 导入正确的 ui.store 和 useUIStore
-import { useUIStore } from '@/stores/ui.store';
+// import { useUIStore } from '@/stores/ui.store'; // 暂时未使用
 import { useGameStore } from '@/stores/game.store';
 import { useAppStore } from '@/stores/app.store';
 import { useToast } from './useToast';
@@ -11,7 +11,7 @@ import { useToast } from './useToast';
  */
 export function useAssets() {
   // [核心修正] 获取正确的 store 实例
-  const uiStore = useUIStore();
+  // const uiStore = useUIStore(); // 暂时未使用，未来可能用于上传状态管理
   const gameStore = useGameStore();
   const appStore = useAppStore();
   const { show: showToast } = useToast();

@@ -146,12 +146,12 @@ describe('NarrativeService', () => {
       );
       expect(mockedCallAiWithGuard).toHaveBeenCalledTimes(1);
       expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', {
-          userId: MOCK_PAYLOAD.userId,
-          event: 'processing_completed',
-          data: expect.objectContaining({
-            message: 'AI response received.',
-            progression: MOCK_AI_RESPONSE,
-          }),
+        userId: MOCK_PAYLOAD.userId,
+        event: 'processing_completed',
+        data: expect.objectContaining({
+          message: 'AI response received.',
+          progression: MOCK_AI_RESPONSE,
+        }),
       });
     });
   });
@@ -161,12 +161,12 @@ describe('NarrativeService', () => {
       prismaMock.game.findUniqueOrThrow.mockRejectedValue(new NotFoundException());
       await service.processNarrative(MOCK_PAYLOAD);
       expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', {
-          userId: MOCK_PAYLOAD.userId,
-          event: 'processing_failed',
-          data: expect.objectContaining({
-            message: 'An error occurred during narrative generation.',
-            error: 'Not Found',
-          }),
+        userId: MOCK_PAYLOAD.userId,
+        event: 'processing_failed',
+        data: expect.objectContaining({
+          message: 'An error occurred during narrative generation.',
+          error: 'Not Found',
+        }),
       });
     });
 
@@ -186,12 +186,12 @@ describe('NarrativeService', () => {
       await service.processNarrative(MOCK_PAYLOAD);
 
       expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', {
-          userId: MOCK_PAYLOAD.userId,
-          event: 'processing_failed',
-          data: expect.objectContaining({
-            message: 'An error occurred during narrative generation.',
-            error: 'AI failed',
-          }),
+        userId: MOCK_PAYLOAD.userId,
+        event: 'processing_failed',
+        data: expect.objectContaining({
+          message: 'An error occurred during narrative generation.',
+          error: 'AI failed',
+        }),
       });
     });
 
@@ -208,11 +208,11 @@ describe('NarrativeService', () => {
 
       expect(mockedCallAiWithGuard).not.toHaveBeenCalled();
       expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', {
-          userId: MOCK_PAYLOAD.userId,
-          event: 'processing_failed',
-          data: expect.objectContaining({
-            message: 'An error occurred during narrative generation.',
-          }),
+        userId: MOCK_PAYLOAD.userId,
+        event: 'processing_failed',
+        data: expect.objectContaining({
+          message: 'An error occurred during narrative generation.',
+        }),
       });
     });
   });

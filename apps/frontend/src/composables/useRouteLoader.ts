@@ -6,7 +6,6 @@ import { useRoute } from 'vue-router';
 import type {
   LoaderContext,
   LoaderFunction,
-  LoaderResult,
   RouteLoaderConfig,
 } from '../router/loader.types';
 
@@ -129,7 +128,7 @@ export function useRouteLoader<T = unknown>(
   executeLoader();
 
   // 路由变化时重新加载
-  const stopWatcher = route.matched.length > 0 ? null : null; // 可以添加路由监听
+  // const stopWatcher = watch(route, executeLoader); // 可以添加路由监听
 
   return {
     data,

@@ -8,7 +8,7 @@ import { UpdatesGateway } from './updates.gateway';
 interface NotifyUserEvent {
   userId: string;
   event: string;
-  data: any;
+  data: unknown;
 }
 
 @Controller()

@@ -186,7 +186,7 @@ export class NarrativeService {
    */
   private async synthesizeNarrative(
     currentState: object,
-    playerAction: any,
+    playerAction: unknown,
     user: User,
   ): Promise<ProgressionResponse> {
     const provider = await this.scheduler.getProviderForRole(user, 'narrative_synthesis');
@@ -210,7 +210,7 @@ export class NarrativeService {
         playerAction: JSON.stringify(playerAction),
         system_prompt: systemPrompt,
       },
-      progressionResponseSchema as any,
+      progressionResponseSchema,
     );
   }
 }

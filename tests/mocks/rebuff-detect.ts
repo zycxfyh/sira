@@ -1,5 +1,7 @@
 // Mock implementation of Rebuff detect for testing
-export const detect = async (input: string): Promise<{
+export const detect = async (
+  input: string,
+): Promise<{
   injectionDetected: boolean;
   explanation?: string;
 }> => {

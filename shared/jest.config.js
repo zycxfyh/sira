@@ -38,16 +38,19 @@ module.exports = {
   },
   // 转换器配置
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      useESM: true,
-    }],
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
   },
   // 模块配置
   moduleNameMapper: {
     ...baseModuleNameMapper,
     // Mock external libraries to avoid dynamic import issues
-    '^langfuse-core$': '<rootDir>/../../../../tests/mocks/langfuse-core.ts',
-    '^langfuse-core/(.*)$': '<rootDir>/../../../../tests/mocks/langfuse-core.ts',
-    '^jsonrepair$': '<rootDir>/../../../../tests/mocks/jsonrepair.ts',
+    '^langfuse-core$': '/c/Users/16663/Desktop/tuheg/tests/mocks/langfuse-core.ts',
+    '^langfuse-core/(.*)$': '/c/Users/16663/Desktop/tuheg/tests/mocks/langfuse-core.ts',
+    '^jsonrepair$': '/c/Users/16663/Desktop/tuheg/tests/mocks/jsonrepair.ts',
   },
 };
