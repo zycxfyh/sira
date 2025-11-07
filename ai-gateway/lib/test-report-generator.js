@@ -14,7 +14,7 @@ const execAsync = util.promisify(exec)
  * 支持HTML、JSON、XML、PDF等多种格式的测试报告
  */
 class TestReportGenerator {
-  constructor(options = {}) {
+  constructor (options = {}) {
     this.options = {
       reportDir: options.reportDir || path.join(__dirname, '../reports'),
       templatesDir: options.templatesDir || path.join(__dirname, '../templates'),
@@ -32,7 +32,7 @@ class TestReportGenerator {
   /**
    * 初始化报告生成器
    */
-  async initialize() {
+  async initialize () {
     console.log('🔧 初始化测试报告生成器')
 
     // 创建必要的目录
@@ -48,7 +48,7 @@ class TestReportGenerator {
   /**
    * 确保必要的目录存在
    */
-  async ensureDirectories() {
+  async ensureDirectories () {
     const dirs = [
       this.options.reportDir,
       path.join(this.options.reportDir, 'html'),
@@ -72,7 +72,7 @@ class TestReportGenerator {
   /**
    * 加载报告历史
    */
-  async loadReportHistory() {
+  async loadReportHistory () {
     try {
       const historyFile = path.join(this.options.reportDir, 'report-history.json')
       const data = await fs.readFile(historyFile, 'utf8')
@@ -86,7 +86,7 @@ class TestReportGenerator {
   /**
    * 加载基准线数据
    */
-  async loadBaselines() {
+  async loadBaselines () {
     try {
       const baselinesDir = path.join(__dirname, '../baselines')
       const files = await fs.readdir(baselinesDir)
@@ -108,7 +108,7 @@ class TestReportGenerator {
   /**
    * 生成测试报告
    */
-  async generateReport(testResults, options = {}) {
+  async generateReport (testResults, options = {}) {
     const {
       format = 'html',
       testType = 'comprehensive',
@@ -165,7 +165,7 @@ class TestReportGenerator {
   /**
    * 准备报告数据
    */
-  prepareReportData(testResults, testType) {
+  prepareReportData (testResults, testType) {
     const reportData = {
       metadata: {
         generatedAt: new Date().toISOString(),
@@ -208,7 +208,7 @@ class TestReportGenerator {
   /**
    * 计算汇总数据
    */
-  calculateSummary(testResults) {
+  calculateSummary (testResults) {
     if (!Array.isArray(testResults)) {
       return {
         totalTests: 1,
@@ -243,7 +243,7 @@ class TestReportGenerator {
   /**
    * 聚合指标数据
    */
-  aggregateMetrics(testResults) {
+  aggregateMetrics (testResults) {
     const metrics = {
       responseTime: { min: Infinity, max: 0, avg: 0, values: [] },
       throughput: { current: 0, peak: 0, avg: 0 },
@@ -290,7 +290,7 @@ class TestReportGenerator {
   /**
    * 生成建议
    */
-  generateRecommendations(testResults, testType) {
+  generateRecommendations (testResults, testType) {
     const recommendations = []
     const summary = this.calculateSummary(testResults)
 
@@ -336,7 +336,7 @@ class TestReportGenerator {
   /**
    * 生成E2E测试建议
    */
-  generateE2ERecommendations(testResults) {
+  generateE2ERecommendations (testResults) {
     const recommendations = []
 
     const failedJourneys = testResults.filter(r => !r.success)
@@ -363,7 +363,7 @@ class TestReportGenerator {
   /**
    * 生成性能测试建议
    */
-  generatePerformanceRecommendations(testResults) {
+  generatePerformanceRecommendations (testResults) {
     const recommendations = []
     const metrics = this.aggregateMetrics(testResults)
 
@@ -389,7 +389,7 @@ class TestReportGenerator {
   /**
    * 生成负载测试建议
    */
-  generateLoadRecommendations(testResults) {
+  generateLoadRecommendations (testResults) {
     const recommendations = []
     const metrics = this.aggregateMetrics(testResults)
 
@@ -407,7 +407,7 @@ class TestReportGenerator {
   /**
    * 生成压力测试建议
    */
-  generateStressRecommendations(testResults) {
+  generateStressRecommendations (testResults) {
     const recommendations = []
 
     // 分析资源使用峰值
@@ -429,7 +429,7 @@ class TestReportGenerator {
   /**
    * 生成安全测试建议
    */
-  generateSecurityRecommendations(testResults) {
+  generateSecurityRecommendations (testResults) {
     const recommendations = []
 
     const securityFailures = testResults.filter(r =>
@@ -450,7 +450,7 @@ class TestReportGenerator {
   /**
    * 分析用户旅程
    */
-  analyzeUserJourneys(testResults) {
+  analyzeUserJourneys (testResults) {
     const journeyStats = {
       totalJourneys: testResults.length,
       completedJourneys: testResults.filter(r => r.success).length,
@@ -477,7 +477,7 @@ class TestReportGenerator {
     })
 
     if (Object.keys(failedSteps).length > 0) {
-      const mostFailed = Object.entries(failedSteps).sort(([,a], [,b]) => b - a)[0]
+      const mostFailed = Object.entries(failedSteps).sort(([, a], [, b]) => b - a)[0]
       journeyStats.mostFailedStep = {
         name: mostFailed[0],
         count: mostFailed[1]
@@ -499,7 +499,7 @@ class TestReportGenerator {
   /**
    * 分析性能数据
    */
-  analyzePerformance(testResults) {
+  analyzePerformance (testResults) {
     const performanceStats = {
       responseTimeDistribution: {},
       throughputAnalysis: {},
@@ -530,7 +530,7 @@ class TestReportGenerator {
   /**
    * 分析负载数据
    */
-  analyzeLoad(testResults) {
+  analyzeLoad (testResults) {
     return {
       scalabilityMetrics: {},
       resourceUtilization: {},
@@ -541,7 +541,7 @@ class TestReportGenerator {
   /**
    * 分析压力数据
    */
-  analyzeStress(testResults) {
+  analyzeStress (testResults) {
     return {
       breakingPoint: null,
       resourceLimits: {},
@@ -552,7 +552,7 @@ class TestReportGenerator {
   /**
    * 分析可靠性数据
    */
-  analyzeReliability(testResults) {
+  analyzeReliability (testResults) {
     return {
       uptime: '99.99%',
       mttr: 0,
@@ -564,7 +564,7 @@ class TestReportGenerator {
   /**
    * 分析安全数据
    */
-  analyzeSecurity(testResults) {
+  analyzeSecurity (testResults) {
     return {
       vulnerabilityCount: 0,
       riskLevels: {},
@@ -575,7 +575,7 @@ class TestReportGenerator {
   /**
    * 比较基准线
    */
-  compareWithBaseline(reportData, testType) {
+  compareWithBaseline (reportData, testType) {
     const baseline = this.baselines.get(testType)
     if (!baseline) return null
 
@@ -643,7 +643,7 @@ class TestReportGenerator {
   /**
    * 生成趋势分析
    */
-  generateTrendAnalysis(testType) {
+  generateTrendAnalysis (testType) {
     const recentReports = this.reportHistory
       .filter(r => r.testType === testType)
       .sort((a, b) => new Date(b.generatedAt) - new Date(a.generatedAt))
@@ -671,7 +671,7 @@ class TestReportGenerator {
   /**
    * 计算趋势
    */
-  calculateTrend(values) {
+  calculateTrend (values) {
     if (values.length < 3) return 'insufficient_data'
 
     const recent = values.slice(-3)
@@ -692,7 +692,7 @@ class TestReportGenerator {
   /**
    * 生成HTML报告
    */
-  async generateHTMLReport(reportData, includeCharts, includeScreenshots) {
+  async generateHTMLReport (reportData, includeCharts, includeScreenshots) {
     const htmlContent = this.buildHTMLReport(reportData, includeCharts, includeScreenshots)
     const fileName = `test-report-${Date.now()}.html`
     const filePath = path.join(this.options.reportDir, 'html', fileName)
@@ -711,7 +711,7 @@ class TestReportGenerator {
   /**
    * 生成JSON报告
    */
-  async generateJSONReport(reportData) {
+  async generateJSONReport (reportData) {
     const fileName = `test-report-${Date.now()}.json`
     const filePath = path.join(this.options.reportDir, 'json', fileName)
 
@@ -728,7 +728,7 @@ class TestReportGenerator {
   /**
    * 生成XML报告
    */
-  async generateXMLReport(reportData) {
+  async generateXMLReport (reportData) {
     const xmlContent = this.buildXMLReport(reportData)
     const fileName = `test-report-${Date.now()}.xml`
     const filePath = path.join(this.options.reportDir, 'xml', fileName)
@@ -746,7 +746,7 @@ class TestReportGenerator {
   /**
    * 生成PDF报告
    */
-  async generatePDFReport(reportData) {
+  async generatePDFReport (reportData) {
     // 这里可以集成PDF生成库，如puppeteer或pdfkit
     // 暂时生成简化版本
     const htmlReport = await this.generateHTMLReport(reportData, false, false)
@@ -769,7 +769,7 @@ class TestReportGenerator {
   /**
    * 构建HTML报告内容
    */
-  buildHTMLReport(reportData, includeCharts, includeScreenshots) {
+  buildHTMLReport (reportData, includeCharts, includeScreenshots) {
     const summary = reportData.summary
 
     return `
@@ -868,16 +868,16 @@ class TestReportGenerator {
                 <h2>🔍 详细结果</h2>
                 <table>
                     <tr><th>测试名称</th><th>状态</th><th>持续时间</th><th>详情</th></tr>
-                    ${Array.isArray(reportData.results) ?
-                        reportData.results.slice(0, 50).map(result => `
+                    ${Array.isArray(reportData.results)
+                        ? reportData.results.slice(0, 50).map(result => `
                             <tr>
                                 <td>${result.name || result.journey || '未知'}</td>
                                 <td class="${(result.success || result.passed) ? 'status-passed' : 'status-failed'}">${(result.success || result.passed) ? '通过' : '失败'}</td>
                                 <td>${result.duration || 0}ms</td>
                                 <td>${result.error || '无'}</td>
                             </tr>
-                        `).join('') :
-                        `<tr><td>${reportData.results.name || '单个测试'}</td><td class="${reportData.results.success ? 'status-passed' : 'status-failed'}">${reportData.results.success ? '通过' : '失败'}</td><td>${reportData.results.duration || 0}ms</td><td>${reportData.results.error || '无'}</td></tr>`
+                        `).join('')
+                        : `<tr><td>${reportData.results.name || '单个测试'}</td><td class="${reportData.results.success ? 'status-passed' : 'status-failed'}">${reportData.results.success ? '通过' : '失败'}</td><td>${reportData.results.duration || 0}ms</td><td>${reportData.results.error || '无'}</td></tr>`
                     }
                 </table>
             </div>
@@ -894,7 +894,7 @@ class TestReportGenerator {
   /**
    * 构建XML报告内容
    */
-  buildXMLReport(reportData) {
+  buildXMLReport (reportData) {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <test-report>
     <metadata>
@@ -912,12 +912,12 @@ class TestReportGenerator {
         <average-duration>${reportData.summary.averageDuration}</average-duration>
     </summary>
     <results>
-        ${Array.isArray(reportData.results) ?
-            reportData.results.map(result => `
+        ${Array.isArray(reportData.results)
+            ? reportData.results.map(result => `
         <test name="${result.name || result.journey || 'unknown'}" success="${result.success || result.passed}" duration="${result.duration || 0}">
             <error>${result.error || ''}</error>
-        </test>`).join('') :
-            `<test name="${reportData.results.name || 'single-test'}" success="${reportData.results.success}" duration="${reportData.results.duration || 0}">
+        </test>`).join('')
+            : `<test name="${reportData.results.name || 'single-test'}" success="${reportData.results.success}" duration="${reportData.results.duration || 0}">
                 <error>${reportData.results.error || ''}</error>
             </test>`
         }
@@ -935,7 +935,7 @@ class TestReportGenerator {
   /**
    * 保存报告到历史
    */
-  async saveReportToHistory(reportData, testType) {
+  async saveReportToHistory (reportData, testType) {
     const historyEntry = {
       id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       generatedAt: reportData.metadata.generatedAt,
@@ -958,7 +958,7 @@ class TestReportGenerator {
   /**
    * 生成报告摘要
    */
-  generateReportSummary(reportData) {
+  generateReportSummary (reportData) {
     return {
       totalTests: reportData.summary.totalTests,
       successRate: reportData.summary.successRate,
@@ -971,7 +971,7 @@ class TestReportGenerator {
   /**
    * 获取环境信息
    */
-  getEnvironmentInfo() {
+  getEnvironmentInfo () {
     return {
       nodeVersion: process.version,
       platform: process.platform,

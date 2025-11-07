@@ -8,7 +8,7 @@ let modelTrainingManager = null
  * 模型训练API路由
  * 借鉴Hugging Face和OpenAI的设计理念，提供完整的模型微调生命周期管理
  */
-function modelTrainingRoutes() {
+function modelTrainingRoutes () {
   const router = express.Router()
 
   // 初始化模型训练管理器
@@ -786,7 +786,7 @@ function modelTrainingRoutes() {
 }
 
 // 辅助函数：从buffer创建可读流
-function createReadStreamFromBuffer(buffer) {
+function createReadStreamFromBuffer (buffer) {
   const { Readable } = require('stream')
   const stream = new Readable()
   stream.push(buffer)

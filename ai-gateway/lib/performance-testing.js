@@ -15,7 +15,7 @@ const path = require('path')
  * 执行多种类型的性能测试：基准测试、负载测试、峰值测试、容量测试
  */
 class PerformanceTestingTool extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
 
     this.options = {
@@ -87,7 +87,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 初始化性能测试工具
    */
-  async initialize() {
+  async initialize () {
     console.log('🔧 初始化性能测试工具')
 
     // 创建报告目录
@@ -100,7 +100,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 初始化HTTP客户端池
    */
-  initializeHttpClients() {
+  initializeHttpClients () {
     for (let i = 0; i < this.options.concurrentUsers; i++) {
       const client = axios.create({
         baseURL: this.options.baseUrl,
@@ -134,7 +134,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 设置测试场景
    */
-  setupTestScenarios() {
+  setupTestScenarios () {
     // AI聊天性能测试
     this.testScenarios.set('ai_chat_performance', {
       name: 'AI聊天性能测试',
@@ -150,7 +150,7 @@ class PerformanceTestingTool extends EventEmitter {
         temperature: 0.7
       },
       headers: {
-        'Authorization': 'Bearer sk-test-key'
+        Authorization: 'Bearer sk-test-key'
       },
       weight: 0.7 // 70%的请求
     })
@@ -214,7 +214,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 运行性能测试
    */
-  async runPerformanceTest(config = {}) {
+  async runPerformanceTest (config = {}) {
     const {
       scenario = 'ai_chat_performance',
       testType = 'load', // benchmark, load, stress, spike, volume
@@ -268,7 +268,6 @@ class PerformanceTestingTool extends EventEmitter {
       this.emit('testComplete', report)
 
       return report
-
     } catch (error) {
       console.error('性能测试失败:', error.message)
       this.emit('testError', error)
@@ -282,7 +281,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 运行基准测试
    */
-  async runBenchmarkTest(scenario, duration) {
+  async runBenchmarkTest (scenario, duration) {
     console.log(`📈 运行基准测试: ${scenario}`)
 
     const scenarioConfig = this.testScenarios.get(scenario)
@@ -316,7 +315,6 @@ class PerformanceTestingTool extends EventEmitter {
           statusCode: response.status,
           timestamp: Date.now()
         })
-
       } catch (error) {
         const responseTime = performance.now() - startTime
         results.push({
@@ -338,7 +336,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 运行负载测试
    */
-  async runLoadTest(scenario, targetRPS, duration, concurrentUsers) {
+  async runLoadTest (scenario, targetRPS, duration, concurrentUsers) {
     console.log(`📊 运行负载测试: ${scenario} (${targetRPS} RPS)`)
 
     // 预热阶段
@@ -370,7 +368,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 运行压力测试
    */
-  async runStressTest(scenario, maxUsers, duration) {
+  async runStressTest (scenario, maxUsers, duration) {
     console.log(`💥 运行压力测试: ${scenario} (最大用户数: ${maxUsers})`)
 
     const scenarioConfig = this.testScenarios.get(scenario)
@@ -400,7 +398,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 运行峰值测试
    */
-  async runSpikeTest(scenario, targetRPS, duration) {
+  async runSpikeTest (scenario, targetRPS, duration) {
     console.log(`⚡ 运行峰值测试: ${scenario} (峰值RPS: ${targetRPS})`)
 
     const scenarioConfig = this.testScenarios.get(scenario)
@@ -410,8 +408,8 @@ class PerformanceTestingTool extends EventEmitter {
     // 正常负载 -> 峰值 -> 正常负载 的模式
     const phases = [
       { rps: targetRPS * 0.2, duration: duration * 0.3 }, // 正常负载
-      { rps: targetRPS, duration: duration * 0.4 },       // 峰值负载
-      { rps: targetRPS * 0.2, duration: duration * 0.3 }  // 恢复正常
+      { rps: targetRPS, duration: duration * 0.4 }, // 峰值负载
+      { rps: targetRPS * 0.2, duration: duration * 0.3 } // 恢复正常
     ]
 
     for (const phase of phases) {
@@ -434,7 +432,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 运行容量测试
    */
-  async runVolumeTest(scenario, duration) {
+  async runVolumeTest (scenario, duration) {
     console.log(`📦 运行容量测试: ${scenario}`)
 
     const scenarioConfig = this.testScenarios.get(scenario)
@@ -467,7 +465,6 @@ class PerformanceTestingTool extends EventEmitter {
           statusCode: response.status,
           timestamp: Date.now()
         })
-
       } catch (error) {
         results.push({
           success: false,
@@ -487,7 +484,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 创建负载测试工作线程
    */
-  createLoadWorker(scenario, interval, endTime, results) {
+  createLoadWorker (scenario, interval, endTime, results) {
     return new Promise(async (resolve) => {
       const scenarioConfig = this.testScenarios.get(scenario)
       const clientIndex = Math.floor(Math.random() * this.httpClients.length)
@@ -516,7 +513,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 创建压力测试工作线程
    */
-  createStressWorker(scenarioConfig, interval, endTime, results, workerId) {
+  createStressWorker (scenarioConfig, interval, endTime, results, workerId) {
     return new Promise(async (resolve) => {
       const clientIndex = workerId % this.httpClients.length
 
@@ -542,7 +539,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 创建峰值测试工作线程
    */
-  createSpikeWorker(scenarioConfig, interval, endTime, results, targetRPS) {
+  createSpikeWorker (scenarioConfig, interval, endTime, results, targetRPS) {
     return new Promise(async (resolve) => {
       const clientIndex = Math.floor(Math.random() * this.httpClients.length)
 
@@ -568,7 +565,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 预热阶段
    */
-  async warmupPhase(duration, scenarioConfig) {
+  async warmupPhase (duration, scenarioConfig) {
     this.testPhase = 'warmup'
     console.log(`🔥 预热阶段: ${duration}秒`)
 
@@ -595,7 +592,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 爬坡阶段
    */
-  async rampUpPhase(targetRPS, duration) {
+  async rampUpPhase (targetRPS, duration) {
     this.testPhase = 'ramp_up'
     console.log(`📈 爬坡阶段: 0 -> ${targetRPS} RPS (${duration}秒)`)
 
@@ -623,7 +620,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 冷却阶段
    */
-  async cooldownPhase() {
+  async cooldownPhase () {
     this.testPhase = 'cooldown'
     console.log(`❄️ 冷却阶段: ${this.options.cooldownTime}秒`)
 
@@ -634,7 +631,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 记录响应
    */
-  recordResponse(response, responseTime) {
+  recordResponse (response, responseTime) {
     this.metrics.responseTime.values.push(responseTime)
 
     if (responseTime < this.metrics.responseTime.min) {
@@ -663,7 +660,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 记录错误
    */
-  recordError(error, responseTime) {
+  recordError (error, responseTime) {
     this.metrics.errorRate.count++
 
     const errorType = this.categorizeError(error)
@@ -678,7 +675,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 记录性能条目
    */
-  recordPerformanceEntry(entry) {
+  recordPerformanceEntry (entry) {
     // 处理性能观察者记录的条目
     console.log(`性能条目: ${entry.name} - ${entry.duration.toFixed(2)}ms`)
   }
@@ -686,7 +683,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 分类错误
    */
-  categorizeError(error) {
+  categorizeError (error) {
     if (error.code === 'ECONNREFUSED') return 'connection_refused'
     if (error.code === 'ETIMEDOUT') return 'timeout'
     if (error.response?.status >= 500) return 'server_error'
@@ -697,21 +694,21 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 生成性能测试报告
    */
-  generatePerformanceReport(results) {
+  generatePerformanceReport (results) {
     const totalRequests = results.length
     const successfulRequests = results.filter(r => r.success).length
     const failedRequests = totalRequests - successfulRequests
 
     // 计算响应时间统计
     const responseTimes = results.filter(r => r.success).map(r => r.responseTime)
-    const avgResponseTime = responseTimes.length > 0 ?
-      responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0
+    const avgResponseTime = responseTimes.length > 0
+      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0
 
     const percentiles = this.calculatePercentiles(responseTimes, [50, 95, 99])
 
     // 计算吞吐量
-    const avgThroughput = this.metrics.throughput.timeline.length > 0 ?
-      this.metrics.throughput.timeline.reduce((sum, point) => sum + point.rps, 0) / this.metrics.throughput.timeline.length : 0
+    const avgThroughput = this.metrics.throughput.timeline.length > 0
+      ? this.metrics.throughput.timeline.reduce((sum, point) => sum + point.rps, 0) / this.metrics.throughput.timeline.length : 0
 
     // 计算错误率
     const errorRate = totalRequests > 0 ? (failedRequests / totalRequests * 100) : 0
@@ -746,7 +743,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 计算百分位数
    */
-  calculatePercentiles(values, percentiles) {
+  calculatePercentiles (values, percentiles) {
     if (values.length === 0) return {}
 
     const sorted = [...values].sort((a, b) => a - b)
@@ -763,7 +760,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 生成性能建议
    */
-  generatePerformanceRecommendations(avgResponseTime, errorRate, avgThroughput, percentiles) {
+  generatePerformanceRecommendations (avgResponseTime, errorRate, avgThroughput, percentiles) {
     const recommendations = []
 
     if (avgResponseTime > 2000) {
@@ -788,14 +785,14 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 休眠工具函数
    */
-  async sleep(ms) {
+  async sleep (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   /**
    * 清理测试环境
    */
-  async cleanup() {
+  async cleanup () {
     console.log('🧹 清理性能测试环境')
     this.isRunning = false
 
@@ -811,7 +808,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 获取当前状态
    */
-  getStatus() {
+  getStatus () {
     return {
       isRunning: this.isRunning,
       testPhase: this.testPhase,
@@ -828,7 +825,7 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 停止性能测试
    */
-  stop() {
+  stop () {
     this.isRunning = false
     console.log('🛑 性能测试已停止')
     this.emit('testStopped')

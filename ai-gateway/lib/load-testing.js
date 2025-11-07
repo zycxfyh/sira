@@ -12,7 +12,7 @@ const { performance } = require('perf_hooks')
  * 支持多种负载模式：恒定负载、阶梯负载、峰值负载、随机负载
  */
 class LoadTestingTool extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
 
     this.options = {
@@ -72,7 +72,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 初始化负载测试工具
    */
-  async initialize() {
+  async initialize () {
     console.log('🔧 初始化负载测试工具')
     this.setupDefaultScenarios()
   }
@@ -80,7 +80,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 设置默认测试场景
    */
-  setupDefaultScenarios() {
+  setupDefaultScenarios () {
     // AI聊天场景
     this.addScenario('ai_chat', {
       name: 'AI聊天负载测试',
@@ -95,7 +95,7 @@ class LoadTestingTool extends EventEmitter {
         temperature: 0.7
       },
       headers: {
-        'Authorization': 'Bearer sk-test-key',
+        Authorization: 'Bearer sk-test-key',
         'Content-Type': 'application/json'
       }
     })
@@ -147,7 +147,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 添加测试场景
    */
-  addScenario(name, config) {
+  addScenario (name, config) {
     this.testScenarios.set(name, {
       name: config.name || name,
       endpoint: config.endpoint,
@@ -162,7 +162,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 运行负载测试
    */
-  async runLoadTest(config) {
+  async runLoadTest (config) {
     const {
       scenario = 'ai_chat',
       loadProfile = 'ramp',
@@ -215,7 +215,6 @@ class LoadTestingTool extends EventEmitter {
       this.emit('testComplete', results)
 
       return results
-
     } catch (error) {
       console.error('负载测试失败:', error.message)
       this.emit('testError', error)
@@ -228,7 +227,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 恒定负载模式
    */
-  async constantLoad(config) {
+  async constantLoad (config) {
     const { scenario, targetRPS, duration, maxConcurrency } = config
     const interval = 1000 / targetRPS // 请求间隔(毫秒)
     const endTime = Date.now() + (duration * 1000)
@@ -246,7 +245,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 阶梯负载模式
    */
-  async rampLoad(config) {
+  async rampLoad (config) {
     const { scenario, targetRPS, duration, maxConcurrency } = config
     const rampUpTime = this.options.rampUpTime * 1000
     const endTime = Date.now() + (duration * 1000)
@@ -272,7 +271,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 峰值负载模式
    */
-  async spikeLoad(config) {
+  async spikeLoad (config) {
     const { scenario, targetRPS, duration, maxConcurrency } = config
     const spikeDuration = 10 // 10秒峰值
     const normalRPS = targetRPS * 0.2
@@ -299,7 +298,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 随机负载模式
    */
-  async randomLoad(config) {
+  async randomLoad (config) {
     const { scenario, targetRPS, duration, maxConcurrency } = config
     const endTime = Date.now() + (duration * 1000)
 
@@ -323,7 +322,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 压力测试模式
    */
-  async stressLoad(config) {
+  async stressLoad (config) {
     const { scenario, targetRPS, duration, maxConcurrency } = config
     const endTime = Date.now() + (duration * 1000)
     let currentConcurrency = 1
@@ -348,7 +347,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 创建工作线程
    */
-  createWorker(scenario, interval, endTime) {
+  createWorker (scenario, interval, endTime) {
     return new Promise(async (resolve) => {
       const timer = setInterval(async () => {
         if (Date.now() >= endTime) {
@@ -369,7 +368,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 发送HTTP请求
    */
-  async makeRequest(scenario) {
+  async makeRequest (scenario) {
     const startTime = performance.now()
 
     try {
@@ -383,7 +382,6 @@ class LoadTestingTool extends EventEmitter {
       const responseTime = performance.now() - startTime
 
       this.recordSuccess(responseTime, response.status)
-
     } catch (error) {
       const responseTime = performance.now() - startTime
       this.recordFailure(responseTime, error)
@@ -393,7 +391,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 记录成功请求
    */
-  recordSuccess(responseTime, statusCode) {
+  recordSuccess (responseTime, statusCode) {
     this.stats.totalRequests++
     this.stats.successfulRequests++
     this.stats.totalResponseTime += responseTime
@@ -425,7 +423,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 记录失败请求
    */
-  recordFailure(responseTime, error) {
+  recordFailure (responseTime, error) {
     this.stats.totalRequests++
     this.stats.failedRequests++
     this.stats.totalResponseTime += responseTime
@@ -443,7 +441,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 重置统计数据
    */
-  resetStats() {
+  resetStats () {
     this.stats = {
       totalRequests: 0,
       successfulRequests: 0,
@@ -462,12 +460,12 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 生成测试报告
    */
-  generateReport() {
+  generateReport () {
     const duration = (this.endTime - this.startTime) / 1000 // 秒
-    const avgResponseTime = this.stats.totalRequests > 0 ?
-      this.stats.totalResponseTime / this.stats.totalRequests : 0
-    const successRate = this.stats.totalRequests > 0 ?
-      (this.stats.successfulRequests / this.stats.totalRequests * 100).toFixed(2) : 0
+    const avgResponseTime = this.stats.totalRequests > 0
+      ? this.stats.totalResponseTime / this.stats.totalRequests : 0
+    const successRate = this.stats.totalRequests > 0
+      ? (this.stats.successfulRequests / this.stats.totalRequests * 100).toFixed(2) : 0
     const avgRPS = this.stats.totalRequests / duration
 
     // 计算响应时间分布
@@ -502,7 +500,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 计算百分位数
    */
-  calculatePercentiles(values, percentiles) {
+  calculatePercentiles (values, percentiles) {
     if (values.length === 0) return {}
 
     const sorted = [...values].sort((a, b) => a - b)
@@ -519,7 +517,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 计算吞吐量趋势
    */
-  calculateThroughputTrend() {
+  calculateThroughputTrend () {
     if (this.stats.throughput.length === 0) return []
 
     // 按时间窗口聚合吞吐量
@@ -548,7 +546,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 生成测试建议
    */
-  generateRecommendations(successRate, avgResponseTime, avgRPS) {
+  generateRecommendations (successRate, avgResponseTime, avgRPS) {
     const recommendations = []
 
     if (parseFloat(successRate) < 95) {
@@ -565,7 +563,7 @@ class LoadTestingTool extends EventEmitter {
 
     if (this.stats.errors.size > 0) {
       const topError = Array.from(this.stats.errors.entries())
-        .sort(([,a], [,b]) => b - a)[0]
+        .sort(([, a], [, b]) => b - a)[0]
       recommendations.push(`最常见的错误: ${topError[0]} (${topError[1]}次)`)
     }
 
@@ -575,7 +573,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 停止负载测试
    */
-  stop() {
+  stop () {
     this.isRunning = false
     console.log('🛑 负载测试已停止')
     this.emit('testStopped')
@@ -584,7 +582,7 @@ class LoadTestingTool extends EventEmitter {
   /**
    * 获取当前状态
    */
-  getStatus() {
+  getStatus () {
     return {
       isRunning: this.isRunning,
       startTime: this.startTime,

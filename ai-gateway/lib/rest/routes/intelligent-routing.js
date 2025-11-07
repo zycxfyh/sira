@@ -8,7 +8,7 @@ let intelligentRoutingManager = null
  * 借鉴OpenRouter的智能路由API设计理念
  * 提供复杂度感知的模型路由服务
  */
-function intelligentRoutingRoutes() {
+function intelligentRoutingRoutes () {
   const router = express.Router()
 
   // 初始化智能路由管理器

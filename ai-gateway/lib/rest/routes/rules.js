@@ -7,7 +7,7 @@ let rulesEngine = null
  * 规则引擎管理API路由
  * 借鉴RESTful设计理念，提供完整的规则生命周期管理和执行接口
  */
-function rulesRoutes() {
+function rulesRoutes () {
   const router = express.Router()
 
   // 初始化规则引擎

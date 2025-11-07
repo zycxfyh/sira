@@ -8,7 +8,7 @@ let multilingualManager = null
  * 借鉴i18n REST API和语言服务平台的优秀设计理念
  * 提供完整的多语言管理和翻译服务接口
  */
-function multilingualRoutes() {
+function multilingualRoutes () {
   const router = express.Router()
 
   // 获取多语言管理器实例
@@ -592,8 +592,8 @@ function multilingualRoutes() {
         health.status = 'degraded'
       }
 
-      const statusCode = health.status === 'healthy' ? 200 :
-                        health.status === 'degraded' ? 200 : 503
+      const statusCode = health.status === 'healthy' ? 200
+        : health.status === 'degraded' ? 200 : 503
 
       res.status(statusCode).json({
         success: true,

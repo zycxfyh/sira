@@ -7,7 +7,7 @@ let abTestManager = null
  * A/B测试API路由
  * 借鉴RESTful设计理念，提供完整的CRUD操作和分析接口
  */
-function abTestsRoutes() {
+function abTestsRoutes () {
   const router = express.Router()
 
   // 初始化A/B测试管理器

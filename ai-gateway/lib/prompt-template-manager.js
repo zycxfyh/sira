@@ -150,9 +150,9 @@ class PromptTemplateManager {
 编程语言：{{language}}
 代码功能：{{function}}
 代码片段：
-```
+\`\`\`
 {{code}}
-```
+\`\`\`
 
 请从以下几个方面进行详细解释：
 

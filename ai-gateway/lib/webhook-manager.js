@@ -8,7 +8,7 @@ const path = require('path')
  * 支持异步事件通知、可靠投递、重试机制和安全验证
  */
 class WebhookManager {
-  constructor(options = {}) {
+  constructor (options = {}) {
     this.configPath = options.configPath || path.join(__dirname, '../config/webhooks.json')
     this.deliveryLogPath = options.deliveryLogPath || path.join(__dirname, '../data/webhook-deliveries.json')
     this.secretKey = options.secretKey || process.env.WEBHOOK_SECRET || 'sira-webhook-secret-key'
@@ -28,7 +28,7 @@ class WebhookManager {
   /**
    * 初始化Webhook管理器
    */
-  async initialize() {
+  async initialize () {
     if (this.initialized) return
 
     try {
@@ -50,7 +50,7 @@ class WebhookManager {
   /**
    * 注册webhook
    */
-  async registerWebhook(webhookConfig) {
+  async registerWebhook (webhookConfig) {
     const webhookId = webhookConfig.id || this.generateWebhookId()
 
     if (this.webhooks.has(webhookId)) {
@@ -91,7 +91,7 @@ class WebhookManager {
   /**
    * 更新webhook
    */
-  async updateWebhook(webhookId, updates) {
+  async updateWebhook (webhookId, updates) {
     const webhook = this.webhooks.get(webhookId)
     if (!webhook) {
       throw new Error(`Webhook ${webhookId} 不存在`)
@@ -120,7 +120,7 @@ class WebhookManager {
   /**
    * 删除webhook
    */
-  async deleteWebhook(webhookId) {
+  async deleteWebhook (webhookId) {
     if (!this.webhooks.has(webhookId)) {
       throw new Error(`Webhook ${webhookId} 不存在`)
     }
@@ -137,7 +137,7 @@ class WebhookManager {
   /**
    * 触发webhook事件
    */
-  async triggerEvent(eventType, eventData, options = {}) {
+  async triggerEvent (eventType, eventData, options = {}) {
     const event = {
       id: this.generateEventId(),
       type: eventType,
@@ -160,7 +160,7 @@ class WebhookManager {
       return { delivered: 0, total: 0 }
     }
 
-    let delivered = 0
+    const delivered = 0
     const deliveries = []
 
     // 为每个匹配的webhook创建投递任务
@@ -196,7 +196,7 @@ class WebhookManager {
   /**
    * 手动重试失败的投递
    */
-  async retryFailedDeliveries(webhookId = null) {
+  async retryFailedDeliveries (webhookId = null) {
     const failedDeliveries = this.deliveryQueue.filter(delivery =>
       delivery.status === 'failed' &&
       (!webhookId || delivery.webhookId === webhookId)
@@ -214,7 +214,7 @@ class WebhookManager {
   /**
    * 获取webhook统计信息
    */
-  getWebhookStats(webhookId = null) {
+  getWebhookStats (webhookId = null) {
     if (webhookId) {
       const webhook = this.webhooks.get(webhookId)
       const history = this.deliveryHistory.get(webhookId) || []
@@ -260,7 +260,7 @@ class WebhookManager {
   /**
    * 测试webhook连接
    */
-  async testWebhook(webhookId) {
+  async testWebhook (webhookId) {
     const webhook = this.webhooks.get(webhookId)
     if (!webhook) {
       throw new Error(`Webhook ${webhookId} 不存在`)
@@ -292,28 +292,28 @@ class WebhookManager {
   /**
    * 生成webhook ID
    */
-  generateWebhookId() {
+  generateWebhookId () {
     return `wh_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 生成事件ID
    */
-  generateEventId() {
+  generateEventId () {
     return `evt_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 生成webhook密钥
    */
-  generateSecret() {
+  generateSecret () {
     return crypto.randomBytes(32).toString('hex')
   }
 
   /**
    * 验证webhook配置
    */
-  validateWebhookConfig(webhook) {
+  validateWebhookConfig (webhook) {
     if (!webhook.url) throw new Error('Webhook URL不能为空')
     if (!this.isValidUrl(webhook.url)) throw new Error('无效的URL格式')
 
@@ -329,7 +329,7 @@ class WebhookManager {
   /**
    * 检查URL是否有效
    */
-  isValidUrl(string) {
+  isValidUrl (string) {
     try {
       const url = new URL(string)
       return url.protocol === 'http:' || url.protocol === 'https:'
@@ -341,7 +341,7 @@ class WebhookManager {
   /**
    * 检查事件是否匹配webhook
    */
-  matchesEvent(webhook, event) {
+  matchesEvent (webhook, event) {
     // 检查事件类型
     const eventMatches = webhook.events.some(pattern => {
       if (pattern === '*') return true
@@ -368,7 +368,7 @@ class WebhookManager {
   /**
    * 启动投递处理器
    */
-  startDeliveryProcessor() {
+  startDeliveryProcessor () {
     setInterval(() => {
       this.processDeliveryQueue()
     }, 1000) // 每秒检查一次队列
@@ -377,7 +377,7 @@ class WebhookManager {
   /**
    * 处理投递队列
    */
-  async processDeliveryQueue() {
+  async processDeliveryQueue () {
     if (this.deliveryQueue.length === 0) return
     if (this.activeDeliveries.size >= this.concurrencyLimit) return
 
@@ -402,7 +402,7 @@ class WebhookManager {
   /**
    * 处理单个投递
    */
-  async processDelivery(delivery) {
+  async processDelivery (delivery) {
     const webhook = this.webhooks.get(delivery.webhookId)
     if (!webhook || webhook.status !== 'active') {
       delivery.status = 'cancelled'
@@ -459,7 +459,7 @@ class WebhookManager {
   /**
    * 投递webhook
    */
-  async deliverWebhook(webhook, event) {
+  async deliverWebhook (webhook, event) {
     const payload = JSON.stringify(event)
 
     // 生成签名
@@ -512,7 +512,7 @@ class WebhookManager {
   /**
    * 生成签名
    */
-  generateSignature(payload, secret) {
+  generateSignature (payload, secret) {
     const hmac = crypto.createHmac('sha256', secret)
     hmac.update(payload, 'utf8')
     return `sha256=${hmac.digest('hex')}`
@@ -521,7 +521,7 @@ class WebhookManager {
   /**
    * 验证签名
    */
-  verifySignature(payload, signature, secret) {
+  verifySignature (payload, signature, secret) {
     const expectedSignature = this.generateSignature(payload, secret)
     return crypto.timingSafeEqual(
       Buffer.from(signature),
@@ -532,7 +532,7 @@ class WebhookManager {
   /**
    * 记录投递历史
    */
-  recordDeliveryHistory(webhookId, record) {
+  recordDeliveryHistory (webhookId, record) {
     if (!this.deliveryHistory.has(webhookId)) {
       this.deliveryHistory.set(webhookId, [])
     }
@@ -549,7 +549,7 @@ class WebhookManager {
   /**
    * 加载webhook配置
    */
-  async loadWebhookConfigurations() {
+  async loadWebhookConfigurations () {
     try {
       const data = await fs.readFile(this.configPath, 'utf8')
       const configs = JSON.parse(data)
@@ -567,7 +567,7 @@ class WebhookManager {
   /**
    * 保存webhook配置
    */
-  async saveWebhookConfigurations() {
+  async saveWebhookConfigurations () {
     const configs = {}
     for (const [webhookId, webhook] of this.webhooks) {
       configs[webhookId] = webhook
@@ -580,7 +580,7 @@ class WebhookManager {
   /**
    * 加载投递历史
    */
-  async loadDeliveryHistory() {
+  async loadDeliveryHistory () {
     try {
       const data = await fs.readFile(this.deliveryLogPath, 'utf8')
       const history = JSON.parse(data)
@@ -598,7 +598,7 @@ class WebhookManager {
   /**
    * 保存投递历史
    */
-  async saveDeliveryHistory() {
+  async saveDeliveryHistory () {
     const history = {}
     for (const [webhookId, records] of this.deliveryHistory) {
       history[webhookId] = records

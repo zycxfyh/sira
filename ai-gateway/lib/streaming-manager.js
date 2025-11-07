@@ -8,7 +8,7 @@ const WebSocket = require('ws')
  * 提供高性能的SSE和WebSocket流式响应服务
  */
 class StreamingManager extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
 
     this.configPath = options.configPath || require('path').join(__dirname, '../config/streaming.json')
@@ -58,7 +58,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 初始化流式响应管理器
    */
-  async initialize() {
+  async initialize () {
     try {
       // 加载配置
       await this.loadConfiguration()
@@ -82,7 +82,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 创建SSE连接
    */
-  createSSEConnection(req, res, options = {}) {
+  createSSEConnection (req, res, options = {}) {
     const connectionId = this.generateConnectionId()
     const streamId = options.streamId || this.generateStreamId()
 
@@ -90,9 +90,9 @@ class StreamingManager extends EventEmitter {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Cache-Control',
+      'Access-Control-Allow-Headers': 'Cache-Control'
     })
 
     // 创建连接信息
@@ -152,7 +152,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 创建WebSocket连接
    */
-  createWebSocketConnection(ws, req, options = {}) {
+  createWebSocketConnection (ws, req, options = {}) {
     const connectionId = this.generateConnectionId()
     const streamId = options.streamId || this.generateStreamId()
 
@@ -216,7 +216,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 发送流式数据
    */
-  async sendStreamData(streamId, data, options = {}) {
+  async sendStreamData (streamId, data, options = {}) {
     const stream = this.activeStreams.get(streamId)
     if (!stream) {
       throw new Error(`流 ${streamId} 不存在`)
@@ -242,7 +242,6 @@ class StreamingManager extends EventEmitter {
 
         // 更新连接活跃时间
         connection.lastActivity = Date.now()
-
       } catch (error) {
         console.error(`发送流数据失败 ${connectionId}:`, error.message)
         this.closeConnection(connectionId, 'send_error')
@@ -260,7 +259,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 创建流式会话
    */
-  createStream(userId, options = {}) {
+  createStream (userId, options = {}) {
     const streamId = this.generateStreamId()
 
     const stream = {
@@ -292,7 +291,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 将连接加入流
    */
-  joinStream(streamId, connectionId) {
+  joinStream (streamId, connectionId) {
     const stream = this.activeStreams.get(streamId)
     const connection = this.activeConnections.get(connectionId)
 
@@ -327,7 +326,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 离开流
    */
-  leaveStream(streamId, connectionId) {
+  leaveStream (streamId, connectionId) {
     const stream = this.activeStreams.get(streamId)
     if (stream) {
       stream.connections.delete(connectionId)
@@ -346,7 +345,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 关闭流
    */
-  closeStream(streamId, reason = 'manual') {
+  closeStream (streamId, reason = 'manual') {
     const stream = this.activeStreams.get(streamId)
     if (!stream) return
 
@@ -370,7 +369,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 发送SSE事件
    */
-  sendSSEEvent(res, event, data, metadata = {}) {
+  sendSSEEvent (res, event, data, metadata = {}) {
     try {
       const eventData = {
         event,
@@ -395,7 +394,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 发送WebSocket消息
    */
-  sendWebSocketMessage(ws, type, payload, metadata = {}) {
+  sendWebSocketMessage (ws, type, payload, metadata = {}) {
     try {
       const message = {
         type,
@@ -413,7 +412,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 处理WebSocket消息
    */
-  handleWebSocketMessage(connectionId, data) {
+  handleWebSocketMessage (connectionId, data) {
     try {
       const connection = this.wsConnections.get(connectionId)
       if (!connection) return
@@ -451,7 +450,6 @@ class StreamingManager extends EventEmitter {
         default:
           this.emit('wsMessageReceived', { connectionId, message })
       }
-
     } catch (error) {
       console.error(`处理WebSocket消息失败 ${connectionId}:`, error.message)
     }
@@ -460,7 +458,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 广播消息到所有连接
    */
-  broadcast(message, options = {}) {
+  broadcast (message, options = {}) {
     const { userId, eventType = 'broadcast', metadata = {} } = options
 
     let connections = Array.from(this.activeConnections.values())
@@ -488,7 +486,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 关闭连接
    */
-  closeConnection(connectionId, reason = 'manual') {
+  closeConnection (connectionId, reason = 'manual') {
     const connection = this.activeConnections.get(connectionId)
     if (!connection) return
 
@@ -523,7 +521,6 @@ class StreamingManager extends EventEmitter {
       console.log(`🔌 连接已关闭: ${connectionId} (${reason})`)
 
       this.emit('connectionClosed', { connectionId, reason })
-
     } catch (error) {
       console.error(`关闭连接失败 ${connectionId}:`, error.message)
     }
@@ -532,7 +529,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 获取连接统计
    */
-  getConnectionStats() {
+  getConnectionStats () {
     const now = Date.now()
     const connections = Array.from(this.activeConnections.values())
 
@@ -586,7 +583,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 获取流统计
    */
-  getStreamStats() {
+  getStreamStats () {
     const streams = Array.from(this.activeStreams.values())
 
     const stats = {
@@ -630,21 +627,21 @@ class StreamingManager extends EventEmitter {
   /**
    * 生成连接ID
    */
-  generateConnectionId() {
+  generateConnectionId () {
     return `conn_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 生成流ID
    */
-  generateStreamId() {
+  generateStreamId () {
     return `stream_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 启动连接清理
    */
-  startConnectionCleanup() {
+  startConnectionCleanup () {
     // 每分钟清理超时连接
     setInterval(() => {
       const now = Date.now()
@@ -661,7 +658,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 启动性能监控
    */
-  startPerformanceMonitoring() {
+  startPerformanceMonitoring () {
     // 每30秒更新性能统计
     setInterval(() => {
       this.emit('performanceStats', this.performanceStats)
@@ -671,7 +668,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 启动保活机制
    */
-  startKeepAlive() {
+  startKeepAlive () {
     // 每30秒发送保活消息
     setInterval(() => {
       const now = Date.now()
@@ -705,7 +702,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 加载配置
    */
-  async loadConfiguration() {
+  async loadConfiguration () {
     try {
       const fs = require('fs').promises
       const data = await fs.readFile(this.configPath, 'utf8')
@@ -714,7 +711,6 @@ class StreamingManager extends EventEmitter {
       if (config.performanceStats) {
         this.performanceStats = { ...this.performanceStats, ...config.performanceStats }
       }
-
     } catch (error) {
       if (error.code !== 'ENOENT') {
         console.warn('加载流式响应配置失败:', error.message)
@@ -725,7 +721,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 保存配置
    */
-  async saveConfiguration() {
+  async saveConfiguration () {
     try {
       const fs = require('fs').promises
       const config = {
@@ -743,7 +739,7 @@ class StreamingManager extends EventEmitter {
   /**
    * 获取性能统计
    */
-  getPerformanceStatistics() {
+  getPerformanceStatistics () {
     return {
       ...this.performanceStats,
       connectionStats: this.getConnectionStats(),

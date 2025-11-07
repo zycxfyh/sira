@@ -13,7 +13,7 @@ const os = require('os')
  * 模拟高负载、资源耗尽、内存泄漏等极端场景
  */
 class StressTestingTool extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
 
     this.options = {
@@ -62,7 +62,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 初始化压力测试工具
    */
-  async initialize() {
+  async initialize () {
     console.log('🔧 初始化压力测试工具')
     await this.failureInjector.initialize()
     await this.resilienceTester.initialize()
@@ -71,7 +71,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 运行压力测试
    */
-  async runStressTest(config = {}) {
+  async runStressTest (config = {}) {
     const {
       scenario = 'full_system',
       intensity = 'high',
@@ -115,7 +115,6 @@ class StressTestingTool extends EventEmitter {
       this.emit('testComplete', results)
 
       return results
-
     } catch (error) {
       console.error('压力测试失败:', error.message)
       this.emit('testError', error)
@@ -129,7 +128,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 预热阶段
    */
-  async warmupPhase(duration) {
+  async warmupPhase (duration) {
     this.testPhase = 'warmup'
     console.log(`🔥 预热阶段: ${duration}秒`)
 
@@ -146,7 +145,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 压力阶段
    */
-  async stressPhase(scenario, intensity, duration, enableFailures) {
+  async stressPhase (scenario, intensity, duration, enableFailures) {
     this.testPhase = 'stress'
     console.log(`💥 压力阶段: ${scenario} (${intensity}) - ${duration}秒`)
 
@@ -193,7 +192,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 故障注入阶段
    */
-  async failureInjectionPhase(duration) {
+  async failureInjectionPhase (duration) {
     this.testPhase = 'failure_injection'
     console.log(`💣 故障注入阶段: ${duration}秒`)
 
@@ -211,7 +210,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 恢复阶段
    */
-  async recoveryPhase(duration) {
+  async recoveryPhase (duration) {
     this.testPhase = 'recovery'
     console.log(`🔄 恢复阶段: ${duration}秒`)
 
@@ -233,14 +232,14 @@ class StressTestingTool extends EventEmitter {
   /**
    * 应用内存压力
    */
-  async applyMemoryStress(intensity, endTime) {
+  async applyMemoryStress (intensity, endTime) {
     console.log(`🧠 应用内存压力: ${intensity}强度`)
 
     const memoryChunks = []
-    let chunkSize = this.getIntensityValue(intensity, {
-      low: 10 * 1024 * 1024,    // 10MB
-      medium: 50 * 1024 * 1024,  // 50MB
-      high: 200 * 1024 * 1024,   // 200MB
+    const chunkSize = this.getIntensityValue(intensity, {
+      low: 10 * 1024 * 1024, // 10MB
+      medium: 50 * 1024 * 1024, // 50MB
+      high: 200 * 1024 * 1024, // 200MB
       extreme: 500 * 1024 * 1024 // 500MB
     })
 
@@ -278,7 +277,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 应用CPU压力
    */
-  async applyCPUStress(intensity, endTime) {
+  async applyCPUStress (intensity, endTime) {
     console.log(`⚡ 应用CPU压力: ${intensity}强度`)
 
     const workerCount = this.getIntensityValue(intensity, {
@@ -301,7 +300,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 创建CPU压力工作线程
    */
-  createCPUWorker(endTime) {
+  createCPUWorker (endTime) {
     return new Promise((resolve) => {
       const worker = async () => {
         while (Date.now() < endTime) {
@@ -324,7 +323,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 应用网络压力
    */
-  async applyNetworkStress(intensity, endTime) {
+  async applyNetworkStress (intensity, endTime) {
     console.log(`🌐 应用网络压力: ${intensity}强度`)
 
     const connectionCount = this.getIntensityValue(intensity, {
@@ -347,7 +346,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 创建网络连接
    */
-  async createNetworkConnection(endTime) {
+  async createNetworkConnection (endTime) {
     // 模拟网络连接压力
     const axios = require('axios')
 
@@ -366,7 +365,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 应用IO压力
    */
-  async applyIOStress(intensity, endTime) {
+  async applyIOStress (intensity, endTime) {
     console.log(`💾 应用IO压力: ${intensity}强度`)
 
     const fileCount = this.getIntensityValue(intensity, {
@@ -389,7 +388,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 创建IO工作线程
    */
-  async createIOWorker(endTime, workerId) {
+  async createIOWorker (endTime, workerId) {
     const fs = require('fs').promises
     const path = require('path')
     const os = require('os')
@@ -419,7 +418,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 随机注入故障
    */
-  async injectFailuresRandomly(endTime) {
+  async injectFailuresRandomly (endTime) {
     while (Date.now() < endTime) {
       const failureTypes = ['network_latency', 'memory_leak', 'cpu_spike', 'disk_full']
       const randomFailure = failureTypes[Math.floor(Math.random() * failureTypes.length)]
@@ -436,7 +435,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 监控系统状态
    */
-  async monitorSystem() {
+  async monitorSystem () {
     const timestamp = Date.now()
 
     // 内存监控
@@ -470,7 +469,7 @@ class StressTestingTool extends EventEmitter {
     const diskStats = {
       timestamp,
       free: Math.floor(Math.random() * 1000000000), // 模拟数据
-      used: Math.floor(Math.random() * 1000000000)  // 模拟数据
+      used: Math.floor(Math.random() * 1000000000) // 模拟数据
     }
     this.systemMetrics.disk.push(diskStats)
 
@@ -490,7 +489,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 修剪指标数据
    */
-  trimMetrics(cutoffTime) {
+  trimMetrics (cutoffTime) {
     const trimArray = (arr, timeKey = 'timestamp') => {
       const startIndex = arr.findIndex(item => item[timeKey] >= cutoffTime)
       if (startIndex > 0) {
@@ -508,7 +507,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 停止所有压力源
    */
-  async stopAllStressSources() {
+  async stopAllStressSources () {
     console.log('🛑 停止所有压力源')
 
     // 停止内存压力
@@ -526,7 +525,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 清理测试环境
    */
-  async cleanup() {
+  async cleanup () {
     console.log('🧹 清理压力测试环境')
 
     await this.stopAllStressSources()
@@ -545,7 +544,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 生成压力测试报告
    */
-  generateStressReport() {
+  generateStressReport () {
     const memoryStats = this.calculateMemoryStats()
     const cpuStats = this.calculateCPUStats()
     const failureStats = this.failureInjector.getStats()
@@ -568,7 +567,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 计算内存统计
    */
-  calculateMemoryStats() {
+  calculateMemoryStats () {
     if (this.systemMetrics.memory.length === 0) return {}
 
     const memoryData = this.systemMetrics.memory
@@ -587,7 +586,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 计算CPU统计
    */
-  calculateCPUStats() {
+  calculateCPUStats () {
     if (this.systemMetrics.cpu.length === 0) return {}
 
     const cpuData = this.systemMetrics.cpu
@@ -603,12 +602,12 @@ class StressTestingTool extends EventEmitter {
   /**
    * 计算系统负载
    */
-  calculateSystemLoad() {
-    const memoryLoad = this.systemMetrics.memory.length > 0 ?
-      this.systemMetrics.memory[this.systemMetrics.memory.length - 1].usagePercent / 100 : 0
+  calculateSystemLoad () {
+    const memoryLoad = this.systemMetrics.memory.length > 0
+      ? this.systemMetrics.memory[this.systemMetrics.memory.length - 1].usagePercent / 100 : 0
 
-    const cpuLoad = this.systemMetrics.cpu.length > 0 ?
-      this.systemMetrics.cpu[this.systemMetrics.cpu.length - 1].total / 1000000 : 0 // 转换为秒
+    const cpuLoad = this.systemMetrics.cpu.length > 0
+      ? this.systemMetrics.cpu[this.systemMetrics.cpu.length - 1].total / 1000000 : 0 // 转换为秒
 
     return {
       memory: memoryLoad,
@@ -620,7 +619,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 生成压力测试建议
    */
-  generateStressRecommendations(memoryStats, cpuStats, failureStats) {
+  generateStressRecommendations (memoryStats, cpuStats, failureStats) {
     const recommendations = []
 
     if (memoryStats.peakUsagePercent > 85) {
@@ -645,7 +644,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 获取强度对应的数值
    */
-  getIntensityValue(intensity, values) {
+  getIntensityValue (intensity, values) {
     switch (intensity) {
       case 'low': return values.low
       case 'medium': return values.medium
@@ -658,14 +657,14 @@ class StressTestingTool extends EventEmitter {
   /**
    * 休眠工具函数
    */
-  async sleep(ms) {
+  async sleep (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   /**
    * 获取当前状态
    */
-  getStatus() {
+  getStatus () {
     return {
       isRunning: this.isRunning,
       testPhase: this.testPhase,
@@ -684,7 +683,7 @@ class StressTestingTool extends EventEmitter {
   /**
    * 停止压力测试
    */
-  stop() {
+  stop () {
     this.isRunning = false
     console.log('🛑 压力测试已停止')
     this.emit('testStopped')
@@ -695,15 +694,15 @@ class StressTestingTool extends EventEmitter {
  * 故障注入器
  */
 class FailureInjector {
-  constructor() {
+  constructor () {
     this.failures = new Map()
   }
 
-  async initialize() {
+  async initialize () {
     console.log('🔧 初始化故障注入器')
   }
 
-  async injectFailure(type, options = {}) {
+  async injectFailure (type, options = {}) {
     console.log(`💣 注入故障: ${type}`)
 
     switch (type) {
@@ -726,19 +725,19 @@ class FailureInjector {
     this.failures.set(Date.now(), { type, options })
   }
 
-  async injectRandomFailure() {
+  async injectRandomFailure () {
     const types = ['network_latency', 'memory_leak', 'cpu_spike']
     const randomType = types[Math.floor(Math.random() * types.length)]
     await this.injectFailure(randomType)
   }
 
-  async injectNetworkLatency(options) {
+  async injectNetworkLatency (options) {
     // 模拟网络延迟 (简化实现)
     console.log('🌐 模拟网络延迟')
     await new Promise(resolve => setTimeout(resolve, options.duration || 5000))
   }
 
-  async injectMemoryLeak(options) {
+  async injectMemoryLeak (options) {
     // 模拟内存泄漏
     console.log('🧠 模拟内存泄漏')
     const leaks = []
@@ -748,7 +747,7 @@ class FailureInjector {
     // 故意不清理，模拟泄漏
   }
 
-  async injectCPUSpike(options) {
+  async injectCPUSpike (options) {
     // 模拟CPU峰值
     console.log('⚡ 模拟CPU峰值')
     const start = Date.now()
@@ -757,19 +756,19 @@ class FailureInjector {
     }
   }
 
-  async injectDiskFull(options) {
+  async injectDiskFull (options) {
     // 模拟磁盘满载 (简化实现)
     console.log('💾 模拟磁盘满载')
     // 这里可以创建大量临时文件
   }
 
-  async cleanup() {
+  async cleanup () {
     // 清理所有注入的故障
     if (global.gc) global.gc()
     console.log('🧹 故障注入器清理完成')
   }
 
-  getStats() {
+  getStats () {
     return {
       totalFailures: this.failures.size,
       failureTypes: Array.from(this.failures.values()).reduce((acc, f) => {
@@ -784,15 +783,15 @@ class FailureInjector {
  * 恢复机制测试器
  */
 class ResilienceTester {
-  constructor() {
+  constructor () {
     this.recoveryTests = []
   }
 
-  async initialize() {
+  async initialize () {
     console.log('🔧 初始化恢复机制测试器')
   }
 
-  async testRecovery() {
+  async testRecovery () {
     // 测试系统的恢复能力
     const recoveryTest = {
       timestamp: Date.now(),
@@ -810,7 +809,6 @@ class ResilienceTester {
 
       // 检查是否有未处理的错误
       // 这里可以添加更多恢复检查
-
     } catch (error) {
       recoveryTest.status = 'failed'
       recoveryTest.error = error.message
@@ -819,11 +817,11 @@ class ResilienceTester {
     this.recoveryTests.push(recoveryTest)
   }
 
-  async cleanup() {
+  async cleanup () {
     console.log('🧹 恢复机制测试器清理完成')
   }
 
-  getStats() {
+  getStats () {
     const passed = this.recoveryTests.filter(t => t.status === 'passed').length
     const warnings = this.recoveryTests.filter(t => t.status === 'warning').length
     const failed = this.recoveryTests.filter(t => t.status === 'failed').length

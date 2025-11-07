@@ -7,7 +7,7 @@ const path = require('path')
  * 支持灵活的条件匹配、规则优先级、上下文感知的路由决策
  */
 class RulesEngine {
-  constructor(options = {}) {
+  constructor (options = {}) {
     this.configPath = options.configPath || path.join(__dirname, '../config/rules.json')
     this.rules = new Map() // ruleId -> rule配置
     this.ruleSets = new Map() // ruleSetId -> ruleSet配置
@@ -27,7 +27,7 @@ class RulesEngine {
   /**
    * 初始化规则引擎
    */
-  async initialize() {
+  async initialize () {
     if (this.initialized) return
 
     try {
@@ -47,7 +47,7 @@ class RulesEngine {
   /**
    * 创建规则
    */
-  async createRule(ruleConfig) {
+  async createRule (ruleConfig) {
     const ruleId = ruleConfig.id || this.generateRuleId()
 
     if (this.rules.has(ruleId)) {
@@ -89,7 +89,7 @@ class RulesEngine {
   /**
    * 创建规则集
    */
-  async createRuleSet(ruleSetConfig) {
+  async createRuleSet (ruleSetConfig) {
     const ruleSetId = ruleSetConfig.id || this.generateRuleSetId()
 
     if (this.ruleSets.has(ruleSetId)) {
@@ -128,7 +128,7 @@ class RulesEngine {
   /**
    * 执行规则
    */
-  async executeRules(context, options = {}) {
+  async executeRules (context, options = {}) {
     const startTime = Date.now()
     const ruleSetId = options.ruleSetId
     const maxResults = options.maxResults || 10
@@ -207,7 +207,6 @@ class RulesEngine {
         } else {
           rule.failureCount++
         }
-
       } catch (error) {
         rule.failureCount++
         this.stats.failedMatches++
@@ -243,7 +242,7 @@ class RulesEngine {
   /**
    * 更新规则
    */
-  async updateRule(ruleId, updates) {
+  async updateRule (ruleId, updates) {
     const rule = this.rules.get(ruleId)
     if (!rule) {
       throw new Error(`规则 ${ruleId} 不存在`)
@@ -277,7 +276,7 @@ class RulesEngine {
   /**
    * 删除规则
    */
-  async deleteRule(ruleId) {
+  async deleteRule (ruleId) {
     if (!this.rules.has(ruleId)) {
       throw new Error(`规则 ${ruleId} 不存在`)
     }
@@ -299,7 +298,7 @@ class RulesEngine {
   /**
    * 删除规则集
    */
-  async deleteRuleSet(ruleSetId) {
+  async deleteRuleSet (ruleSetId) {
     if (!this.ruleSets.has(ruleSetId)) {
       throw new Error(`规则集 ${ruleSetId} 不存在`)
     }
@@ -312,7 +311,7 @@ class RulesEngine {
   /**
    * 获取规则统计信息
    */
-  getRuleStats(ruleId = null) {
+  getRuleStats (ruleId = null) {
     if (ruleId) {
       const rule = this.rules.get(ruleId)
       if (!rule) return null
@@ -356,7 +355,7 @@ class RulesEngine {
   /**
    * 测试规则条件
    */
-  async testRuleCondition(ruleId, context) {
+  async testRuleCondition (ruleId, context) {
     const rule = this.rules.get(ruleId)
     if (!rule) {
       throw new Error(`规则 ${ruleId} 不存在`)
@@ -378,21 +377,21 @@ class RulesEngine {
   /**
    * 生成规则ID
    */
-  generateRuleId() {
+  generateRuleId () {
     return `rule_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 生成规则集ID
    */
-  generateRuleSetId() {
+  generateRuleSetId () {
     return `ruleset_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 验证规则配置
    */
-  validateRuleConfig(rule) {
+  validateRuleConfig (rule) {
     if (!rule.name) throw new Error('规则名称不能为空')
     if (!Array.isArray(rule.conditions)) throw new Error('conditions必须是数组')
     if (!Array.isArray(rule.actions)) throw new Error('actions必须是数组')
@@ -423,7 +422,7 @@ class RulesEngine {
   /**
    * 编译条件表达式
    */
-  compileConditions(conditions) {
+  compileConditions (conditions) {
     return conditions.map(condition => {
       try {
         return this.compileCondition(condition)
@@ -436,7 +435,7 @@ class RulesEngine {
   /**
    * 编译单个条件
    */
-  compileCondition(condition) {
+  compileCondition (condition) {
     const { type, field, operator, value, options = {} } = condition
 
     switch (type) {
@@ -454,7 +453,7 @@ class RulesEngine {
   /**
    * 编译字段条件
    */
-  compileFieldCondition(field, operator, value, options) {
+  compileFieldCondition (field, operator, value, options) {
     return (context) => {
       const fieldValue = this.getFieldValue(context, field)
       return this.evaluateOperator(fieldValue, operator, value, options)
@@ -464,7 +463,7 @@ class RulesEngine {
   /**
    * 编译表达式条件
    */
-  compileExpressionCondition(expression, options) {
+  compileExpressionCondition (expression, options) {
     // 简化的表达式解析器，支持基本的比较和逻辑运算
     return (context) => {
       try {
@@ -481,7 +480,7 @@ class RulesEngine {
   /**
    * 编译脚本条件
    */
-  compileScriptCondition(script, options) {
+  compileScriptCondition (script, options) {
     return (context) => {
       try {
         // 创建安全的执行环境
@@ -510,7 +509,7 @@ class RulesEngine {
   /**
    * 评估规则
    */
-  async evaluateRule(rule, context) {
+  async evaluateRule (rule, context) {
     const result = {
       matched: false,
       conditions: [],
@@ -531,7 +530,6 @@ class RulesEngine {
 
       result.matched = true
       result.metadata = this.extractRuleMetadata(rule, context)
-
     } catch (error) {
       result.error = error.message
       console.warn(`规则评估失败: ${rule.id} - ${error.message}`)
@@ -543,7 +541,7 @@ class RulesEngine {
   /**
    * 执行规则动作
    */
-  async executeRuleActions(rule, context, matchResult) {
+  async executeRuleActions (rule, context, matchResult) {
     const results = []
 
     for (const action of rule.actions) {
@@ -572,7 +570,7 @@ class RulesEngine {
   /**
    * 执行单个动作
    */
-  async executeAction(action, context, matchResult) {
+  async executeAction (action, context, matchResult) {
     const { type, params = {} } = action
 
     switch (type) {
@@ -596,7 +594,7 @@ class RulesEngine {
   /**
    * 获取字段值
    */
-  getFieldValue(context, fieldPath) {
+  getFieldValue (context, fieldPath) {
     const parts = fieldPath.split('.')
     let value = context
 
@@ -614,7 +612,7 @@ class RulesEngine {
   /**
    * 评估操作符
    */
-  evaluateOperator(fieldValue, operator, expectedValue, options) {
+  evaluateOperator (fieldValue, operator, expectedValue, options) {
     switch (operator) {
       case 'equals':
       case 'eq':
@@ -635,11 +633,11 @@ class RulesEngine {
       case 'lte':
         return fieldValue <= expectedValue
       case 'contains':
-        return Array.isArray(fieldValue) ? fieldValue.includes(expectedValue) :
-               typeof fieldValue === 'string' ? fieldValue.includes(expectedValue) : false
+        return Array.isArray(fieldValue) ? fieldValue.includes(expectedValue)
+          : typeof fieldValue === 'string' ? fieldValue.includes(expectedValue) : false
       case 'notContains':
-        return Array.isArray(fieldValue) ? !fieldValue.includes(expectedValue) :
-               typeof fieldValue === 'string' ? !fieldValue.includes(expectedValue) : true
+        return Array.isArray(fieldValue) ? !fieldValue.includes(expectedValue)
+          : typeof fieldValue === 'string' ? !fieldValue.includes(expectedValue) : true
       case 'startsWith':
         return typeof fieldValue === 'string' && fieldValue.startsWith(expectedValue)
       case 'endsWith':
@@ -662,7 +660,7 @@ class RulesEngine {
   /**
    * 评估简单表达式
    */
-  evaluateSimpleExpression(expression, context) {
+  evaluateSimpleExpression (expression, context) {
     // 简化的表达式解析，实际应用中可以使用更强大的表达式引擎
     // 支持形如: user.tier == 'premium' && request.model == 'gpt-4'
     const sanitizedExpression = expression.replace(/(\w+)/g, (match) => {
@@ -683,7 +681,7 @@ class RulesEngine {
   /**
    * 获取规则集中的规则
    */
-  getRulesFromRuleSet(ruleSet) {
+  getRulesFromRuleSet (ruleSet) {
     const rules = ruleSet.rules
       .map(ruleId => this.rules.get(ruleId))
       .filter(rule => rule && rule.enabled)
@@ -699,7 +697,7 @@ class RulesEngine {
   /**
    * 提取规则元数据
    */
-  extractRuleMetadata(rule, context) {
+  extractRuleMetadata (rule, context) {
     return {
       ruleId: rule.id,
       ruleName: rule.name,
@@ -713,7 +711,7 @@ class RulesEngine {
   /**
    * 生成上下文指纹
    */
-  generateContextFingerprint(context) {
+  generateContextFingerprint (context) {
     const hash = crypto.createHash('md5')
     hash.update(JSON.stringify(context))
     return hash.digest('hex').substring(0, 8)
@@ -722,7 +720,7 @@ class RulesEngine {
   /**
    * 编译所有规则
    */
-  compileRules() {
+  compileRules () {
     for (const [ruleId, rule] of this.rules) {
       try {
         rule.compiledConditions = this.compileConditions(rule.conditions)
@@ -736,13 +734,13 @@ class RulesEngine {
 
   // ==================== 动作执行方法 ====================
 
-  executeSetFieldAction(params, context) {
+  executeSetFieldAction (params, context) {
     const { field, value } = params
     this.setFieldValue(context, field, value)
     return { field, value }
   }
 
-  executeTransformAction(params, context) {
+  executeTransformAction (params, context) {
     const { field, transform } = params
     const originalValue = this.getFieldValue(context, field)
     const transformedValue = this.applyTransform(originalValue, transform)
@@ -750,7 +748,7 @@ class RulesEngine {
     return { field, originalValue, transformedValue }
   }
 
-  executeLogAction(params, context, matchResult) {
+  executeLogAction (params, context, matchResult) {
     const { level = 'info', message, includeContext = false } = params
     const logData = {
       message,
@@ -762,7 +760,7 @@ class RulesEngine {
     return { level, message, logged: true }
   }
 
-  async executeWebhookAction(params, context, matchResult) {
+  async executeWebhookAction (params, context, matchResult) {
     const { url, method = 'POST', headers = {}, body } = params
 
     // 触发webhook事件
@@ -780,7 +778,7 @@ class RulesEngine {
     return { webhookTriggered: true, url, method }
   }
 
-  executeModifyRequestAction(params, context) {
+  executeModifyRequestAction (params, context) {
     const { modifications } = params
 
     for (const mod of modifications) {
@@ -796,7 +794,7 @@ class RulesEngine {
     return { modifications: modifications.length }
   }
 
-  async executeCustomAction(params, context, matchResult) {
+  async executeCustomAction (params, context, matchResult) {
     const { function: func, args = [] } = params
 
     if (typeof func === 'function') {
@@ -808,7 +806,7 @@ class RulesEngine {
 
   // ==================== 工具方法 ====================
 
-  setFieldValue(obj, fieldPath, value) {
+  setFieldValue (obj, fieldPath, value) {
     const parts = fieldPath.split('.')
     const lastPart = parts.pop()
     let current = obj
@@ -823,7 +821,7 @@ class RulesEngine {
     current[lastPart] = value
   }
 
-  applyTransform(value, transform) {
+  applyTransform (value, transform) {
     const { type, params = {} } = transform
 
     switch (type) {
@@ -846,7 +844,7 @@ class RulesEngine {
 
   // ==================== 配置管理 ====================
 
-  async loadRuleConfigurations() {
+  async loadRuleConfigurations () {
     try {
       const data = await fs.readFile(this.configPath, 'utf8')
       const config = JSON.parse(data)
@@ -873,7 +871,7 @@ class RulesEngine {
     }
   }
 
-  async saveRuleConfigurations() {
+  async saveRuleConfigurations () {
     const config = {
       rules: Object.fromEntries(this.rules),
       ruleSets: Object.fromEntries(this.ruleSets),

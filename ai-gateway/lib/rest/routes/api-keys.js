@@ -6,7 +6,6 @@ const { apiKeyManager } = require('../../api-key-manager')
  */
 
 module.exports = function (router, { logger }) {
-
   /**
    * GET /api-keys
    * 获取API密钥概览

@@ -7,7 +7,6 @@ const { testCases, testSuites, getTestCase, getTestSuite } = require('../../benc
  */
 
 module.exports = function (router, { logger }) {
-
   /**
    * GET /benchmark/test-cases
    * 获取所有测试用例
@@ -176,7 +175,7 @@ module.exports = function (router, { logger }) {
           // 这里可以实现结果通知机制
           logger.info(`基准测试完成: ${result.testId}`)
         } catch (error) {
-          logger.error(`基准测试失败:`, error)
+          logger.error('基准测试失败:', error)
         }
       }, 100) // 短暂延迟后继续处理
 
@@ -198,7 +197,6 @@ module.exports = function (router, { logger }) {
       } catch (error) {
         // 错误已经在manager中处理
       }
-
     } catch (error) {
       logger.error('启动基准测试失败:', error)
       res.status(500).json({

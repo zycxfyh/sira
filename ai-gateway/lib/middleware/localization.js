@@ -7,7 +7,7 @@ let multilingualManager = null
  * 自动检测用户语言偏好并本地化API响应
  * 借鉴Express i18n中间件和国际化框架的设计理念
  */
-function localizationMiddleware(options = {}) {
+function localizationMiddleware (options = {}) {
   // 初始化多语言管理器（延迟初始化，避免循环依赖）
   if (!multilingualManager) {
     multilingualManager = new MultilingualManager(options)
@@ -37,7 +37,7 @@ function localizationMiddleware(options = {}) {
       const originalJson = res.json.bind(res)
 
       // 重写json方法以支持本地化
-      res.json = async function(data) {
+      res.json = async function (data) {
         try {
           // 检查是否需要本地化
           const shouldLocalize = shouldLocalizeResponse(req, res, data)
@@ -79,7 +79,7 @@ function localizationMiddleware(options = {}) {
       const originalSend = res.send.bind(res)
 
       // 重写send方法以支持本地化
-      res.send = async function(data) {
+      res.send = async function (data) {
         try {
           // 如果是JSON数据，尝试本地化
           if (typeof data === 'object' && data !== null) {
@@ -117,7 +117,6 @@ function localizationMiddleware(options = {}) {
       }
 
       next()
-
     } catch (error) {
       console.error('本地化中间件错误:', error)
       // 中间件错误不应该阻塞请求处理
@@ -129,7 +128,7 @@ function localizationMiddleware(options = {}) {
 /**
  * 判断是否应该本地化响应
  */
-function shouldLocalizeResponse(req, res, data) {
+function shouldLocalizeResponse (req, res, data) {
   // 检查是否为API响应
   if (!req.path.startsWith('/api') && !req.path.startsWith('/v1')) {
     return false
@@ -173,7 +172,7 @@ function shouldLocalizeResponse(req, res, data) {
 /**
  * 检查对象是否包含需要翻译的文本
  */
-function containsTranslatableText(obj, depth = 0) {
+function containsTranslatableText (obj, depth = 0) {
   // 防止无限递归
   if (depth > 5) return false
 
@@ -204,14 +203,14 @@ function containsTranslatableText(obj, depth = 0) {
 /**
  * 获取多语言管理器实例
  */
-function getMultilingualManager() {
+function getMultilingualManager () {
   return multilingualManager
 }
 
 /**
  * 设置多语言管理器实例（用于测试）
  */
-function setMultilingualManager(manager) {
+function setMultilingualManager (manager) {
   multilingualManager = manager
 }
 

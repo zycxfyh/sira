@@ -6,7 +6,6 @@ const { usageAnalytics } = require('../../usage-analytics')
  */
 
 module.exports = function (router, { logger }) {
-
   /**
    * GET /analytics/stats
    * 获取全局统计数据

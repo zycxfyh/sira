@@ -8,7 +8,7 @@ let streamingManager = null
  * 借鉴OpenAI流式API和Twitter Streaming API的设计理念
  * 提供完整的SSE和WebSocket流式响应管理接口
  */
-function streamingRoutes() {
+function streamingRoutes () {
   const router = express.Router()
 
   // 初始化流式响应管理器
@@ -34,7 +34,6 @@ function streamingRoutes() {
 
       // SSE连接已建立，响应将在createSSEConnection中处理
       console.log(`📡 SSE流已建立: ${result.connectionId}`)
-
     } catch (error) {
       console.error('建立SSE连接失败:', error)
       if (!res.headersSent) {
@@ -624,8 +623,8 @@ function streamingRoutes() {
         health.warnings = (health.warnings || []).concat(['连接错误率较高'])
       }
 
-      const statusCode = health.status === 'healthy' ? 200 :
-                        health.status === 'warning' ? 200 : 503
+      const statusCode = health.status === 'healthy' ? 200
+        : health.status === 'warning' ? 200 : 503
 
       res.status(statusCode).json({
         success: true,

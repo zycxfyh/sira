@@ -3,59 +3,59 @@
  * 提供完整的游戏AI功能接口
  */
 
-const express = require('express');
-const { gameAIManager } = require('../../game-ai-manager');
+const express = require('express')
+const { gameAIManager } = require('../../game-ai-manager')
 
-const router = express.Router();
+const router = express.Router()
 
 // 中间件：错误处理
 const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
+  Promise.resolve(fn(req, res, next)).catch(next)
+}
 
 // 中间件：验证会话存在
 const validateSession = (req, res, next) => {
-  const { sessionId } = req.params || req.body;
+  const { sessionId } = req.params || req.body
   if (!sessionId) {
     return res.status(400).json({
       success: false,
       error: '缺少会话ID'
-    });
+    })
   }
 
-  const session = gameAIManager.getSession(sessionId);
+  const session = gameAIManager.getSession(sessionId)
   if (!session) {
     return res.status(404).json({
       success: false,
       error: '会话不存在'
-    });
+    })
   }
 
-  req.session = session;
-  next();
-};
+  req.session = session
+  next()
+}
 
 // 中间件：验证角色存在
 const validateCharacter = (req, res, next) => {
-  const { characterId } = req.params || req.body;
+  const { characterId } = req.params || req.body
   if (!characterId) {
     return res.status(400).json({
       success: false,
       error: '缺少角色ID'
-    });
+    })
   }
 
-  const character = gameAIManager.getCharacter(characterId);
+  const character = gameAIManager.getCharacter(characterId)
   if (!character) {
     return res.status(404).json({
       success: false,
       error: '角色不存在'
-    });
+    })
   }
 
-  req.character = character;
-  next();
-};
+  req.character = character
+  next()
+}
 
 // ==================== 会话管理 ====================
 
@@ -70,14 +70,14 @@ router.post('/sessions', asyncHandler(async (req, res) => {
     playerClass = 'warrior',
     playerLevel = 1,
     currentScene = 'village'
-  } = req.body;
+  } = req.body
 
   // 验证输入
   if (!GAME_TYPES[gameType]) {
     return res.status(400).json({
       success: false,
       error: '无效的游戏类型'
-    });
+    })
   }
 
   try {
@@ -87,7 +87,7 @@ router.post('/sessions', asyncHandler(async (req, res) => {
       playerClass,
       playerLevel,
       currentScene
-    });
+    })
 
     res.json({
       success: true,
@@ -103,21 +103,21 @@ router.post('/sessions', asyncHandler(async (req, res) => {
           lastActivity: session.lastActivity
         }
       }
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-}));
+}))
 
 /**
  * 获取会话详情
  * GET /game/sessions/:sessionId
  */
 router.get('/sessions/:sessionId', validateSession, (req, res) => {
-  const session = req.session;
+  const session = req.session
 
   res.json({
     success: true,
@@ -136,8 +136,8 @@ router.get('/sessions/:sessionId', validateSession, (req, res) => {
         lastActivity: session.lastActivity
       }
     }
-  });
-});
+  })
+})
 
 /**
  * 删除游戏会话
@@ -145,18 +145,18 @@ router.get('/sessions/:sessionId', validateSession, (req, res) => {
  */
 router.delete('/sessions/:sessionId', validateSession, (req, res) => {
   try {
-    gameAIManager.deleteSession(req.params.sessionId);
+    gameAIManager.deleteSession(req.params.sessionId)
     res.json({
       success: true,
       message: '会话已删除'
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-});
+})
 
 // ==================== 角色管理 ====================
 
@@ -171,13 +171,13 @@ router.post('/characters', asyncHandler(async (req, res) => {
     background = '',
     location = 'village',
     level = 1
-  } = req.body;
+  } = req.body
 
   if (!name || !personality) {
     return res.status(400).json({
       success: false,
       error: '角色名称和性格特点都是必需的'
-    });
+    })
   }
 
   try {
@@ -187,7 +187,7 @@ router.post('/characters', asyncHandler(async (req, res) => {
       background,
       location,
       level
-    });
+    })
 
     res.json({
       success: true,
@@ -202,21 +202,21 @@ router.post('/characters', asyncHandler(async (req, res) => {
           createdAt: character.createdAt
         }
       }
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-}));
+}))
 
 /**
  * 获取角色详情
  * GET /game/characters/:characterId
  */
 router.get('/characters/:characterId', validateCharacter, (req, res) => {
-  const character = req.character;
+  const character = req.character
 
   res.json({
     success: true,
@@ -234,25 +234,25 @@ router.get('/characters/:characterId', validateCharacter, (req, res) => {
         status: character.status
       }
     }
-  });
-});
+  })
+})
 
 /**
  * 获取角色记忆
  * GET /game/character/:characterId/memory?sessionId=xxx
  */
 router.get('/character/:characterId/memory', validateCharacter, (req, res) => {
-  const { sessionId } = req.query;
-  const character = req.character;
+  const { sessionId } = req.query
+  const character = req.character
 
   if (!sessionId) {
     return res.status(400).json({
       success: false,
       error: '缺少会话ID参数'
-    });
+    })
   }
 
-  const memories = character.getRelevantMemories(sessionId, '', 10);
+  const memories = character.getRelevantMemories(sessionId, '', 10)
 
   res.json({
     success: true,
@@ -269,19 +269,19 @@ router.get('/character/:characterId/memory', validateCharacter, (req, res) => {
         }))
       }
     }
-  });
-});
+  })
+})
 
 /**
  * 更新角色
  * PUT /game/characters/:characterId
  */
 router.put('/characters/:characterId', validateCharacter, asyncHandler(async (req, res) => {
-  const updates = req.body;
-  const character = req.character;
+  const updates = req.body
+  const character = req.character
 
   try {
-    const updatedCharacter = gameAIManager.updateCharacter(character.id, updates);
+    const updatedCharacter = gameAIManager.updateCharacter(character.id, updates)
     res.json({
       success: true,
       data: {
@@ -295,14 +295,14 @@ router.put('/characters/:characterId', validateCharacter, asyncHandler(async (re
           lastInteraction: updatedCharacter.lastInteraction
         }
       }
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-}));
+}))
 
 /**
  * 删除角色
@@ -310,18 +310,18 @@ router.put('/characters/:characterId', validateCharacter, asyncHandler(async (re
  */
 router.delete('/characters/:characterId', validateCharacter, (req, res) => {
   try {
-    gameAIManager.deleteCharacter(req.params.characterId);
+    gameAIManager.deleteCharacter(req.params.characterId)
     res.json({
       success: true,
       message: '角色已删除'
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-});
+})
 
 // ==================== 对话功能 ====================
 
@@ -335,13 +335,13 @@ router.post('/npc-chat', asyncHandler(async (req, res) => {
     characterId,
     playerInput,
     sceneDescription = ''
-  } = req.body;
+  } = req.body
 
   if (!sessionId || !characterId || !playerInput) {
     return res.status(400).json({
       success: false,
       error: '会话ID、角色ID和玩家输入都是必需的'
-    });
+    })
   }
 
   try {
@@ -350,21 +350,21 @@ router.post('/npc-chat', asyncHandler(async (req, res) => {
       characterId,
       playerInput,
       sceneDescription
-    );
+    )
 
     res.json({
       success: true,
       data: {
         dialogue
       }
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-}));
+}))
 
 // ==================== 任务管理 ====================
 
@@ -377,20 +377,20 @@ router.post('/generate-quest', asyncHandler(async (req, res) => {
     sessionId,
     genre = 'adventure',
     difficulty = 'medium'
-  } = req.body;
+  } = req.body
 
   if (!sessionId) {
     return res.status(400).json({
       success: false,
       error: '缺少会话ID'
-    });
+    })
   }
 
   try {
     const quest = await gameAIManager.generateQuest(sessionId, {
       genre,
       difficulty
-    });
+    })
 
     res.json({
       success: true,
@@ -407,27 +407,27 @@ router.post('/generate-quest', asyncHandler(async (req, res) => {
           createdAt: quest.createdAt
         }
       }
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-}));
+}))
 
 /**
  * 获取任务详情
  * GET /game/quests/:questId
  */
 router.get('/quests/:questId', (req, res) => {
-  const quest = gameAIManager.quests.get(req.params.questId);
+  const quest = gameAIManager.quests.get(req.params.questId)
 
   if (!quest) {
     return res.status(404).json({
       success: false,
       error: '任务不存在'
-    });
+    })
   }
 
   res.json({
@@ -448,8 +448,8 @@ router.get('/quests/:questId', (req, res) => {
         tags: quest.tags
       }
     }
-  });
-});
+  })
+})
 
 // ==================== 故事管理 ====================
 
@@ -463,13 +463,13 @@ router.post('/advance-story', asyncHandler(async (req, res) => {
     playerChoice,
     currentStory = '',
     background = ''
-  } = req.body;
+  } = req.body
 
   if (!sessionId || !playerChoice) {
     return res.status(400).json({
       success: false,
       error: '会话ID和玩家选择都是必需的'
-    });
+    })
   }
 
   try {
@@ -477,21 +477,21 @@ router.post('/advance-story', asyncHandler(async (req, res) => {
       sessionId,
       playerChoice,
       currentStory
-    );
+    )
 
     res.json({
       success: true,
       data: {
         storyResult
       }
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-}));
+}))
 
 // ==================== 世界状态 ====================
 
@@ -505,13 +505,13 @@ router.post('/world-state', asyncHandler(async (req, res) => {
     playerAction,
     currentState = '',
     impactScope = ''
-  } = req.body;
+  } = req.body
 
   if (!sessionId || !playerAction) {
     return res.status(400).json({
       success: false,
       error: '会话ID和玩家行动都是必需的'
-    });
+    })
   }
 
   try {
@@ -520,21 +520,21 @@ router.post('/world-state', asyncHandler(async (req, res) => {
       playerAction,
       currentState,
       impactScope
-    );
+    )
 
     res.json({
       success: true,
       data: {
         worldUpdate
       }
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-}));
+}))
 
 // ==================== 快速开始 ====================
 
@@ -547,14 +547,14 @@ router.post('/quick-start', asyncHandler(async (req, res) => {
     playerName = '冒险者',
     gameType = 'adventure',
     playerClass = 'warrior'
-  } = req.body;
+  } = req.body
 
   try {
     const result = await gameAIManager.quickStartGame({
       playerName,
       gameType,
       playerClass
-    });
+    })
 
     res.json({
       success: true,
@@ -574,14 +574,14 @@ router.post('/quick-start', asyncHandler(async (req, res) => {
         },
         initialDialogue: result.initialDialogue
       }
-    });
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
-    });
+    })
   }
-}));
+}))
 
 // ==================== 统计信息 ====================
 
@@ -590,15 +590,15 @@ router.post('/quick-start', asyncHandler(async (req, res) => {
  * GET /game/stats
  */
 router.get('/stats', (req, res) => {
-  const stats = gameAIManager.getStats();
+  const stats = gameAIManager.getStats()
 
   res.json({
     success: true,
     data: {
       stats
     }
-  });
-});
+  })
+})
 
 // ==================== 数据导出 ====================
 
@@ -607,13 +607,13 @@ router.get('/stats', (req, res) => {
  * POST /game/export
  */
 router.post('/export', asyncHandler(async (req, res) => {
-  const { includeSessions = true, includeCharacters = true, includeQuests = true } = req.body;
+  const { includeSessions = true, includeCharacters = true, includeQuests = true } = req.body
 
   const exportData = {
     timestamp: new Date(),
     version: '1.0',
     data: {}
-  };
+  }
 
   if (includeSessions) {
     exportData.data.sessions = Array.from(gameAIManager.sessions.values()).map(session => ({
@@ -626,7 +626,7 @@ router.post('/export', asyncHandler(async (req, res) => {
       stats: session.stats,
       createdAt: session.createdAt,
       lastActivity: session.lastActivity
-    }));
+    }))
   }
 
   if (includeCharacters) {
@@ -640,7 +640,7 @@ router.post('/export', asyncHandler(async (req, res) => {
       stats: character.stats,
       createdAt: character.createdAt,
       lastInteraction: character.lastInteraction
-    }));
+    }))
   }
 
   if (includeQuests) {
@@ -653,13 +653,13 @@ router.post('/export', asyncHandler(async (req, res) => {
       progress: quest.progress,
       assignedTo: quest.assignedTo,
       createdAt: quest.createdAt
-    }));
+    }))
   }
 
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Content-Disposition', `attachment; filename="game-ai-export-${Date.now()}.json"`);
-  res.json(exportData);
-}));
+  res.setHeader('Content-Type', 'application/json')
+  res.setHeader('Content-Disposition', `attachment; filename="game-ai-export-${Date.now()}.json"`)
+  res.json(exportData)
+}))
 
 // ==================== 健康检查 ====================
 
@@ -668,7 +668,7 @@ router.post('/export', asyncHandler(async (req, res) => {
  * GET /game/health
  */
 router.get('/health', (req, res) => {
-  const stats = gameAIManager.getStats();
+  const stats = gameAIManager.getStats()
 
   res.json({
     success: true,
@@ -682,8 +682,8 @@ router.get('/health', (req, res) => {
         quests: stats.totalQuests
       }
     }
-  });
-});
+  })
+})
 
 // 游戏类型常量 (供前端使用)
 const GAME_TYPES = {
@@ -702,7 +702,7 @@ const GAME_TYPES = {
     themes: ['魔法', '神话', '王国'],
     characterClasses: ['knight', 'wizard', 'druid', 'necromancer']
   }
-};
+}
 
 /**
  * 获取游戏类型配置
@@ -714,7 +714,7 @@ router.get('/types', (req, res) => {
     data: {
       gameTypes: GAME_TYPES
     }
-  });
-});
+  })
+})
 
-module.exports = router;
+module.exports = router

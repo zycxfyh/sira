@@ -90,16 +90,21 @@ module.exports = function (params, config) {
     const userId = req.headers['x-user-id'] || req.headers['user-id'] || req.ip || 'anonymous'
     const requestId = req.headers['x-request-id'] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    // Initialize rules engine for custom routing rules
-    let rulesEngine = null
-    try {
-      if (!global.rulesEngine) {
-        global.rulesEngine = new RulesEngine()
-        await global.rulesEngine.initialize()
+    // Initialize rules engine for custom routing rules asynchronously
+    const initializeRulesEngine = () => {
+      if (global.rulesEngine) {
+        return Promise.resolve(global.rulesEngine)
       }
-      rulesEngine = global.rulesEngine
-    } catch (error) {
-      logger.warn('Rules engine initialization failed, continuing without custom rules:', error.message)
+      return new Promise((resolve, reject) => {
+        const rulesEngine = new RulesEngine()
+        rulesEngine.initialize().then(() => {
+          global.rulesEngine = rulesEngine
+          resolve(rulesEngine)
+        }).catch(error => {
+          logger.warn('Rules engine initialization failed, continuing without custom rules:', error.message)
+          resolve(null)
+        })
+      })
     }
 
     // Extract AI model from request body
@@ -285,13 +290,14 @@ module.exports = function (params, config) {
     }
 
     // 执行自定义路由规则
-    if (rulesEngine) {
-      try {
-        const ruleResult = await rulesEngine.executeRules(routingContext, {
-          ruleSetId: params.routingRuleSetId || 'routing-rules',
-          maxResults: 5,
-          dryRun: false
-        })
+    initializeRulesEngine().then(async (rulesEngine) => {
+      if (rulesEngine) {
+        try {
+          const ruleResult = await rulesEngine.executeRules(routingContext, {
+            ruleSetId: params.routingRuleSetId || 'routing-rules',
+            maxResults: 5,
+            dryRun: false
+          })
 
         if (ruleResult.matched && ruleResult.results.length > 0) {
           logger.info(`Applied ${ruleResult.results.length} custom routing rules`, {
@@ -321,7 +327,9 @@ module.exports = function (params, config) {
           error: error.message
         })
       }
-    }
+    }).catch(error => {
+      logger.warn('Rules engine execution failed:', error.message)
+    })
 
     // A/B测试：检查是否有适用于当前请求的测试
     let abTestAllocation = null

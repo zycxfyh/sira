@@ -8,7 +8,7 @@ const { performanceBenchmarkManager } = require('./performance-benchmark-manager
  * 提供全面的API统计、错误分析、性能报告和业务洞察
  */
 class ReportGenerator {
-  constructor(options = {}) {
+  constructor (options = {}) {
     this.configPath = options.configPath || path.join(__dirname, '../config/reports.json')
     this.reportsPath = options.reportsPath || path.join(__dirname, '../data/reports')
     this.templatesPath = options.templatesPath || path.join(__dirname, '../templates/reports')
@@ -35,7 +35,7 @@ class ReportGenerator {
   /**
    * 初始化报告生成器
    */
-  async initialize() {
+  async initialize () {
     if (this.initialized) return
 
     try {
@@ -60,7 +60,7 @@ class ReportGenerator {
   /**
    * 生成报告
    */
-  async generateReport(reportType, options = {}) {
+  async generateReport (reportType, options = {}) {
     const {
       timeRange = '24h',
       filters = {},
@@ -130,7 +130,7 @@ class ReportGenerator {
   /**
    * 创建自定义报告配置
    */
-  async createCustomReport(config) {
+  async createCustomReport (config) {
     const reportId = config.id || this.generateReportId()
 
     if (this.customReports.has(reportId)) {
@@ -159,7 +159,7 @@ class ReportGenerator {
   /**
    * 导出报告
    */
-  async exportReport(report, format = 'json', options = {}) {
+  async exportReport (report, format = 'json', options = {}) {
     const { filename, includeMetadata = true } = options
 
     let exportData
@@ -216,7 +216,7 @@ class ReportGenerator {
   /**
    * 获取仪表板数据
    */
-  async getDashboardData(dashboardType = 'overview', options = {}) {
+  async getDashboardData (dashboardType = 'overview', options = {}) {
     const { timeRange = '24h', refresh = false } = options
 
     const cacheKey = `dashboard_${dashboardType}_${timeRange}`
@@ -263,7 +263,7 @@ class ReportGenerator {
   /**
    * 生成使用情况汇总报告
    */
-  async generateUsageSummaryReport(options) {
+  async generateUsageSummaryReport (options) {
     const { timeFilter, filters } = options
 
     const usageData = await usageAnalytics.getAggregatedStats({
@@ -301,7 +301,7 @@ class ReportGenerator {
   /**
    * 生成性能分析报告
    */
-  async generatePerformanceAnalysisReport(options) {
+  async generatePerformanceAnalysisReport (options) {
     const { timeFilter, filters } = options
 
     const performanceData = await usageAnalytics.getPerformanceStats({
@@ -335,7 +335,7 @@ class ReportGenerator {
   /**
    * 生成错误分析报告
    */
-  async generateErrorAnalysisReport(options) {
+  async generateErrorAnalysisReport (options) {
     const { timeFilter, filters } = options
 
     const errorData = await usageAnalytics.getErrorStats({
@@ -369,7 +369,7 @@ class ReportGenerator {
   /**
    * 生成成本分析报告
    */
-  async generateCostAnalysisReport(options) {
+  async generateCostAnalysisReport (options) {
     const { timeFilter, filters } = options
 
     const costData = await usageAnalytics.getCostStats({
@@ -406,7 +406,7 @@ class ReportGenerator {
   /**
    * 生成用户行为报告
    */
-  async generateUserBehaviorReport(options) {
+  async generateUserBehaviorReport (options) {
     const { timeFilter, filters } = options
 
     const behaviorData = await usageAnalytics.getUserBehaviorStats({
@@ -441,7 +441,7 @@ class ReportGenerator {
   /**
    * 生成供应商对比报告
    */
-  async generateProviderComparisonReport(options) {
+  async generateProviderComparisonReport (options) {
     const { timeFilter, filters } = options
 
     const comparisonData = await usageAnalytics.getProviderComparison({
@@ -474,7 +474,7 @@ class ReportGenerator {
   /**
    * 生成趋势分析报告
    */
-  async generateTrendAnalysisReport(options) {
+  async generateTrendAnalysisReport (options) {
     const { timeFilter, filters } = options
 
     const trendData = await usageAnalytics.getTrendAnalysis({
@@ -514,7 +514,7 @@ class ReportGenerator {
   /**
    * 生成自定义仪表板报告
    */
-  async generateCustomDashboardReport(options) {
+  async generateCustomDashboardReport (options) {
     const { timeFilter, filters, config } = options
 
     const dashboardConfig = config || {}
@@ -550,7 +550,7 @@ class ReportGenerator {
 
   // ==================== 仪表板生成方法 ====================
 
-  async generateOverviewDashboard(timeFilter) {
+  async generateOverviewDashboard (timeFilter) {
     const [usage, performance, errors] = await Promise.all([
       this.generateUsageSummaryReport({ timeFilter }),
       this.generatePerformanceAnalysisReport({ timeFilter }),
@@ -576,7 +576,7 @@ class ReportGenerator {
     }
   }
 
-  async generatePerformanceDashboard(timeFilter) {
+  async generatePerformanceDashboard (timeFilter) {
     const performance = await this.generatePerformanceAnalysisReport({ timeFilter })
 
     return {
@@ -597,7 +597,7 @@ class ReportGenerator {
     }
   }
 
-  async generateUsageDashboard(timeFilter) {
+  async generateUsageDashboard (timeFilter) {
     const usage = await this.generateUsageSummaryReport({ timeFilter })
 
     return {
@@ -618,7 +618,7 @@ class ReportGenerator {
     }
   }
 
-  async generateErrorDashboard(timeFilter) {
+  async generateErrorDashboard (timeFilter) {
     const errors = await this.generateErrorAnalysisReport({ timeFilter })
 
     return {
@@ -643,9 +643,9 @@ class ReportGenerator {
   /**
    * 解析时间范围
    */
-  parseTimeRange(timeRange) {
+  parseTimeRange (timeRange) {
     const now = new Date()
-    let startTime, endTime = now
+    let startTime; const endTime = now
 
     const match = timeRange.match(/^(\d+)([hdwm])$/)
     if (!match) {
@@ -682,7 +682,7 @@ class ReportGenerator {
   /**
    * 计算趋势
    */
-  calculateTrend(dataPoints) {
+  calculateTrend (dataPoints) {
     if (!dataPoints || dataPoints.length < 2) return null
 
     const values = dataPoints.map(p => p.value)
@@ -712,7 +712,7 @@ class ReportGenerator {
   /**
    * 计算增长率
    */
-  calculateGrowthRate(data) {
+  calculateGrowthRate (data) {
     if (!data || data.length < 2) return 0
 
     const first = data[0].value
@@ -724,7 +724,7 @@ class ReportGenerator {
   /**
    * 计算相关性
    */
-  calculateCorrelation(data1, data2) {
+  calculateCorrelation (data1, data2) {
     if (!data1 || !data2 || data1.length !== data2.length || data1.length < 2) {
       return 0
     }
@@ -745,7 +745,7 @@ class ReportGenerator {
   /**
    * 生成告警
    */
-  generateAlerts(usage, performance, errors) {
+  generateAlerts (usage, performance, errors) {
     const alerts = []
 
     // 响应时间告警
@@ -788,7 +788,7 @@ class ReportGenerator {
   /**
    * 计算KPI指标
    */
-  calculateKPIs(usage, performance, errors) {
+  calculateKPIs (usage, performance, errors) {
     return {
       responseTime: {
         value: performance.responseTime.avg,
@@ -816,7 +816,7 @@ class ReportGenerator {
   /**
    * 转换为CSV格式
    */
-  convertToCSV(report) {
+  convertToCSV (report) {
     // 简化的CSV转换，实际实现会更复杂
     const lines = ['Type,Generated At,Time Range']
     lines.push(`${report.type},${report.generatedAt},${report.timeRange}`)
@@ -827,7 +827,7 @@ class ReportGenerator {
   /**
    * 转换为HTML格式
    */
-  convertToHTML(report) {
+  convertToHTML (report) {
     return `
 <!DOCTYPE html>
 <html>
@@ -856,7 +856,7 @@ class ReportGenerator {
   /**
    * 转换为PDF格式 (占位符)
    */
-  async convertToPDF(report) {
+  async convertToPDF (report) {
     // 需要安装pdf生成库，如puppeteer
     throw new Error('PDF导出功能暂未实现')
   }
@@ -864,14 +864,14 @@ class ReportGenerator {
   /**
    * 生成报告ID
    */
-  generateReportId() {
+  generateReportId () {
     return `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   /**
    * 启动定时报告生成器
    */
-  startScheduledReportGenerator() {
+  startScheduledReportGenerator () {
     // 每小时检查一次定时报告
     setInterval(() => {
       this.processScheduledReports()
@@ -881,7 +881,7 @@ class ReportGenerator {
   /**
    * 处理定时报告
    */
-  async processScheduledReports() {
+  async processScheduledReports () {
     const now = new Date()
 
     for (const [reportId, report] of this.customReports) {
@@ -908,7 +908,6 @@ class ReportGenerator {
           // 更新最后生成时间
           report.lastGeneratedAt = now.toISOString()
           await this.saveReportConfigurations()
-
         } catch (error) {
           console.error(`定时报告生成失败: ${reportId} - ${error.message}`)
         }
@@ -919,7 +918,7 @@ class ReportGenerator {
   /**
    * 检查是否应该生成定时报告
    */
-  shouldGenerateScheduledReport(report, now) {
+  shouldGenerateScheduledReport (report, now) {
     if (!report.lastGeneratedAt) return true
 
     const lastGenerated = new Date(report.lastGeneratedAt)
@@ -942,7 +941,7 @@ class ReportGenerator {
   /**
    * 加载报告配置
    */
-  async loadReportConfigurations() {
+  async loadReportConfigurations () {
     try {
       const data = await fs.readFile(this.configPath, 'utf8')
       const config = JSON.parse(data)
@@ -962,7 +961,7 @@ class ReportGenerator {
   /**
    * 保存报告配置
    */
-  async saveReportConfigurations() {
+  async saveReportConfigurations () {
     const config = {
       customReports: Object.fromEntries(this.customReports)
     }

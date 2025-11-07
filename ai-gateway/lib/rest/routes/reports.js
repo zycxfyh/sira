@@ -7,7 +7,7 @@ let reportGenerator = null
  * 报告管理API路由
  * 借鉴RESTful设计理念，提供完整的报告生成、管理和导出功能
  */
-function reportsRoutes() {
+function reportsRoutes () {
   const router = express.Router()
 
   // 初始化报告生成器
@@ -585,7 +585,7 @@ function reportsRoutes() {
 }
 
 // 报告类型名称映射
-function getReportTypeName(type) {
+function getReportTypeName (type) {
   const names = {
     'usage-summary': '使用情况汇总',
     'performance-analysis': '性能分析',
@@ -600,7 +600,7 @@ function getReportTypeName(type) {
 }
 
 // 报告类型描述映射
-function getReportTypeDescription(type) {
+function getReportTypeDescription (type) {
   const descriptions = {
     'usage-summary': 'API调用的总体统计信息，包括请求量、用户数、成本等',
     'performance-analysis': '系统性能指标分析，包括响应时间、吞吐量等',
@@ -615,7 +615,7 @@ function getReportTypeDescription(type) {
 }
 
 // 报告类型参数映射
-function getReportTypeParameters(type) {
+function getReportTypeParameters (type) {
   const baseParams = {
     timeRange: { type: 'string', default: '24h', description: '时间范围 (例如: 24h, 7d, 30d)' },
     filters: { type: 'object', default: {}, description: '过滤条件' },

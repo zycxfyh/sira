@@ -13,7 +13,7 @@ const axios = require('axios')
  * 模拟真实用户行为，测试完整的功能流程
  */
 class E2ETestingTool extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
 
     this.options = {
@@ -74,7 +74,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 初始化端到端测试工具
    */
-  async initialize() {
+  async initialize () {
     console.log('🔧 初始化端到端测试工具')
 
     // 启动浏览器
@@ -98,7 +98,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 设置用户旅程
    */
-  setupUserJourneys() {
+  setupUserJourneys () {
     // AI聊天旅程
     this.userJourneys.set('ai_chat_journey', {
       name: 'AI聊天完整旅程',
@@ -188,7 +188,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 运行端到端测试
    */
-  async runE2ETest(config = {}) {
+  async runE2ETest (config = {}) {
     const {
       journeys = Array.from(this.userJourneys.keys()),
       parallel = false,
@@ -244,7 +244,6 @@ class E2ETestingTool extends EventEmitter {
       this.emit('testComplete', summary)
 
       return summary
-
     } catch (error) {
       console.error('端到端测试失败:', error.message)
       this.emit('testError', error)
@@ -258,7 +257,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 运行用户旅程
    */
-  async runUserJourney(journeyName, retries = 2, timeout = this.options.timeout) {
+  async runUserJourney (journeyName, retries = 2, timeout = this.options.timeout) {
     const journey = this.userJourneys.get(journeyName)
     if (!journey) {
       throw new Error(`用户旅程不存在: ${journeyName}`)
@@ -281,7 +280,6 @@ class E2ETestingTool extends EventEmitter {
           duration,
           attempt
         }
-
       } catch (error) {
         console.warn(`⚠️ 用户旅程失败: ${journeyName} (尝试 ${attempt}) - ${error.message}`)
         lastError = error
@@ -307,7 +305,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 执行旅程步骤
    */
-  async executeJourney(journey, timeout) {
+  async executeJourney (journey, timeout) {
     // 创建新的页面实例
     const page = await this.browser.newPage()
     await page.setViewport(this.options.viewport)
@@ -346,7 +344,6 @@ class E2ETestingTool extends EventEmitter {
             await page.screenshot({ path: screenshotPath })
             results.screenshots.push(screenshotPath)
           }
-
         } catch (error) {
           console.error(`  ❌ 步骤失败: ${step.name} - ${error.message}`)
 
@@ -366,7 +363,6 @@ class E2ETestingTool extends EventEmitter {
           throw error // 重新抛出错误，中止旅程
         }
       }
-
     } finally {
       // 清理页面
       if (this.options.enableScreenshots) {
@@ -381,7 +377,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 执行单个步骤
    */
-  async executeStep(page, step) {
+  async executeStep (page, step) {
     switch (step.action) {
       case 'navigate':
         await page.goto(this.options.baseUrl + step.url)
@@ -526,7 +522,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 执行登录
    */
-  async performLogin(page, userKey) {
+  async performLogin (page, userKey) {
     const user = this.testUsers[userKey]
     if (!user) {
       throw new Error(`测试用户不存在: ${userKey}`)
@@ -544,7 +540,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 执行登出
    */
-  async performLogout(page) {
+  async performLogout (page) {
     await page.click('#logout-button, .logout-link')
     await page.waitForSelector('#login-form, .login-page')
   }
@@ -552,7 +548,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 选择AI模型
    */
-  async selectAIModel(page, model) {
+  async selectAIModel (page, model) {
     await page.selectOption('#model-selector, .model-select', model)
     await page.waitForTimeout(500) // 等待模型切换
   }
@@ -560,7 +556,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 发送聊天消息
    */
-  async sendChatMessage(page, message) {
+  async sendChatMessage (page, message) {
     await page.fill('#message-input, .chat-input', message)
     await page.click('#send-button, .send-btn')
   }
@@ -568,14 +564,14 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 等待AI回复
    */
-  async waitForAIResponse(page) {
+  async waitForAIResponse (page) {
     await page.waitForSelector('.ai-response, .bot-message', { timeout: 30000 })
   }
 
   /**
    * 验证AI回复
    */
-  async verifyAIResponse(page) {
+  async verifyAIResponse (page) {
     const responseElement = await page.$('.ai-response, .bot-message')
     if (!responseElement) {
       throw new Error('未找到AI回复元素')
@@ -590,7 +586,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 导出对话
    */
-  async exportConversation(page) {
+  async exportConversation (page) {
     await page.click('#export-button, .export-btn')
     await page.waitForTimeout(2000) // 等待导出完成
   }
@@ -598,7 +594,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 添加API密钥
    */
-  async addAPIKey(page, provider, key) {
+  async addAPIKey (page, provider, key) {
     await page.fill('#provider-select', provider)
     await page.fill('#api-key-input', key)
     await page.click('#add-key-button')
@@ -608,7 +604,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 验证API密钥状态
    */
-  async verifyAPIKeyStatus(page) {
+  async verifyAPIKeyStatus (page) {
     const statusElement = await page.$('.key-status')
     const status = await statusElement.textContent()
     if (status.includes('error') || status.includes('failed')) {
@@ -619,7 +615,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 测试API密钥连接
    */
-  async testAPIKeyConnection(page) {
+  async testAPIKeyConnection (page) {
     await page.click('#test-connection-button')
     await page.waitForSelector('.connection-success, .test-passed', { timeout: 10000 })
   }
@@ -627,7 +623,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 轮换API密钥
    */
-  async rotateAPIKey(page) {
+  async rotateAPIKey (page) {
     await page.click('#rotate-key-button')
     await page.waitForSelector('.rotation-success, .key-rotated')
   }
@@ -635,7 +631,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 设置API密钥权限
    */
-  async setAPIKeyPermissions(page) {
+  async setAPIKeyPermissions (page) {
     await page.check('#read-permission')
     await page.check('#write-permission')
     await page.click('#save-permissions-button')
@@ -645,7 +641,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 监控API密钥使用
    */
-  async monitorAPIKeyUsage(page) {
+  async monitorAPIKeyUsage (page) {
     // 检查使用统计是否存在
     const usageElement = await page.$('.usage-stats, .key-usage')
     if (!usageElement) {
@@ -656,7 +652,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 删除API密钥
    */
-  async deleteAPIKey(page) {
+  async deleteAPIKey (page) {
     await page.click('#delete-key-button')
     await page.waitForSelector('.confirm-delete', { timeout: 5000 })
     await page.click('.confirm-delete-button')
@@ -666,7 +662,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 创建批量任务
    */
-  async createBatchTask(page) {
+  async createBatchTask (page) {
     await page.click('#create-batch-button, .new-batch-btn')
     await page.waitForSelector('.batch-form, .batch-config')
   }
@@ -674,7 +670,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 上传批量文件
    */
-  async uploadBatchFile(page) {
+  async uploadBatchFile (page) {
     const fileInput = await page.$('#file-upload, .batch-file-input')
     await fileInput.setInputFiles('./test-data/batch-input.json')
     await page.waitForSelector('.file-uploaded, .upload-success')
@@ -683,7 +679,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 配置批量参数
    */
-  async configureBatchParams(page) {
+  async configureBatchParams (page) {
     await page.selectOption('#batch-model', 'gpt-3.5-turbo')
     await page.fill('#batch-max-tokens', '100')
     await page.click('#save-batch-config')
@@ -692,7 +688,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 启动批量处理
    */
-  async startBatchProcessing(page) {
+  async startBatchProcessing (page) {
     await page.click('#start-batch-button')
     await page.waitForSelector('.batch-started, .processing-status')
   }
@@ -700,7 +696,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 监控批量进度
    */
-  async monitorBatchProgress(page) {
+  async monitorBatchProgress (page) {
     // 等待一段时间让批量处理进行
     await page.waitForTimeout(5000)
 
@@ -714,7 +710,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 验证批量结果
    */
-  async verifyBatchResults(page) {
+  async verifyBatchResults (page) {
     await page.waitForSelector('.batch-completed, .results-ready', { timeout: 30000 })
     const resultsElement = await page.$('.batch-results')
     const resultsText = await resultsElement.textContent()
@@ -726,7 +722,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 下载批量结果
    */
-  async downloadBatchResults(page) {
+  async downloadBatchResults (page) {
     await page.click('#download-results-button')
     await page.waitForTimeout(2000) // 等待下载开始
   }
@@ -734,7 +730,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 建立流式连接
    */
-  async establishStreamConnection(page) {
+  async establishStreamConnection (page) {
     await page.click('#connect-stream-button, .stream-connect')
     await page.waitForSelector('.stream-connected, .connection-established')
   }
@@ -742,7 +738,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 发送流式消息
    */
-  async sendStreamingMessage(page) {
+  async sendStreamingMessage (page) {
     await page.fill('#stream-message-input', '请流式回复这个消息')
     await page.click('#send-stream-button')
   }
@@ -750,7 +746,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 观察流式响应
    */
-  async observeStreamingResponse(page) {
+  async observeStreamingResponse (page) {
     await page.waitForSelector('.streaming-response, .stream-output', { timeout: 10000 })
     // 验证流式响应是否实时更新
     const initialContent = await page.$eval('.streaming-response', el => el.textContent)
@@ -765,7 +761,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 测试流连接稳定性
    */
-  async testStreamStability(page) {
+  async testStreamStability (page) {
     // 发送多个消息测试连接稳定性
     for (let i = 0; i < 3; i++) {
       await page.fill('#stream-message-input', `测试消息 ${i + 1}`)
@@ -778,7 +774,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 断开流式连接
    */
-  async disconnectStream(page) {
+  async disconnectStream (page) {
     await page.click('#disconnect-stream-button, .stream-disconnect')
     await page.waitForSelector('.stream-disconnected, .connection-closed')
   }
@@ -786,7 +782,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 查看系统状态
    */
-  async viewSystemStatus(page) {
+  async viewSystemStatus (page) {
     await page.click('#system-status-tab, .status-link')
     await page.waitForSelector('.system-metrics, .status-dashboard')
   }
@@ -794,7 +790,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 检查性能指标
    */
-  async checkPerformanceMetrics(page) {
+  async checkPerformanceMetrics (page) {
     const metricsElement = await page.$('.performance-metrics, .metrics-display')
     if (!metricsElement) {
       throw new Error('未找到性能指标')
@@ -804,7 +800,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 查看用户统计
    */
-  async viewUserStats(page) {
+  async viewUserStats (page) {
     await page.click('#user-stats-tab')
     await page.waitForSelector('.user-statistics, .stats-table')
   }
@@ -812,7 +808,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 监控API使用
    */
-  async monitorApiUsage(page) {
+  async monitorApiUsage (page) {
     await page.click('#api-usage-tab')
     await page.waitForSelector('.api-usage-charts, .usage-metrics')
   }
@@ -820,7 +816,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 检查告警
    */
-  async checkAlerts(page) {
+  async checkAlerts (page) {
     await page.click('#alerts-tab')
     // 检查是否有严重告警
     const criticalAlerts = await page.$$('.alert-critical, .alert-error')
@@ -832,7 +828,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 导出报告
    */
-  async exportReports(page) {
+  async exportReports (page) {
     await page.click('#export-report-button')
     await page.waitForTimeout(3000) // 等待导出完成
   }
@@ -840,7 +836,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 生成端到端测试摘要
    */
-  generateE2ESummary(results) {
+  generateE2ESummary (results) {
     const totalJourneys = results.length
     const successfulJourneys = results.filter(r => r.success).length
     const failedJourneys = totalJourneys - successfulJourneys
@@ -851,8 +847,8 @@ class E2ETestingTool extends EventEmitter {
       sum + (r.steps?.filter(s => s.success).length || 0), 0)
     const failedSteps = totalSteps - successfulSteps
 
-    const avgDuration = results.length > 0 ?
-      results.reduce((sum, r) => sum + r.duration, 0) / results.length : 0
+    const avgDuration = results.length > 0
+      ? results.reduce((sum, r) => sum + r.duration, 0) / results.length : 0
 
     return {
       summary: {
@@ -873,7 +869,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 生成端到端测试建议
    */
-  generateE2ERecommendations(results) {
+  generateE2ERecommendations (results) {
     const recommendations = []
 
     const failedJourneys = results.filter(r => !r.success)
@@ -899,14 +895,14 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 休眠工具函数
    */
-  async sleep(ms) {
+  async sleep (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   /**
    * 清理测试环境
    */
-  async cleanup() {
+  async cleanup () {
     console.log('🧹 清理端到端测试环境')
 
     if (this.page) {
@@ -925,7 +921,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 获取当前状态
    */
-  getStatus() {
+  getStatus () {
     return {
       isRunning: this.isRunning,
       currentTest: this.currentTest,
@@ -937,7 +933,7 @@ class E2ETestingTool extends EventEmitter {
   /**
    * 停止端到端测试
    */
-  stop() {
+  stop () {
     this.isRunning = false
     console.log('🛑 端到端测试已停止')
     this.emit('testStopped')

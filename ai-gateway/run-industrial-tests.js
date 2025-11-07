@@ -16,13 +16,13 @@ const fs = require('fs').promises
 const path = require('path')
 
 class IndustrialTestRunner {
-  constructor() {
+  constructor () {
     this.framework = null
     this.config = null
     this.reporter = null
   }
 
-  async initialize() {
+  async initialize () {
     console.log('🚀 初始化工业级测试运行器...')
 
     // 加载配置
@@ -38,7 +38,7 @@ class IndustrialTestRunner {
     console.log('✅ 工业级测试运行器初始化完成')
   }
 
-  async loadConfiguration() {
+  async loadConfiguration () {
     try {
       const configPath = path.join(__dirname, 'test-config.json')
       const configData = await fs.readFile(configPath, 'utf8')
@@ -57,7 +57,7 @@ class IndustrialTestRunner {
     }
   }
 
-  async runComprehensiveTest(options = {}) {
+  async runComprehensiveTest (options = {}) {
     console.log('🧪 开始运行全面工业级测试...')
 
     const {
@@ -345,14 +345,13 @@ class IndustrialTestRunner {
         totalTime,
         results
       }
-
     } catch (error) {
       console.error('❌ 工业级测试失败:', error.message)
       throw error
     }
   }
 
-  async runQuickTest(options = {}) {
+  async runQuickTest (options = {}) {
     console.log('⚡ 运行快速测试套件...')
 
     const {
@@ -430,7 +429,7 @@ class IndustrialTestRunner {
     }
   }
 
-  async runPerformanceBenchmark(options = {}) {
+  async runPerformanceBenchmark (options = {}) {
     console.log('📊 运行性能基准测试...')
 
     const perfTool = new PerformanceTestingTool()
@@ -459,7 +458,6 @@ class IndustrialTestRunner {
           metrics: result.summary,
           details: result
         })
-
       } catch (error) {
         results.push({
           scenario: scenario.name,
@@ -489,7 +487,7 @@ class IndustrialTestRunner {
     }
   }
 
-  async runLoadTest(options = {}) {
+  async runLoadTest (options = {}) {
     console.log('📈 运行负载测试...')
 
     const {
@@ -525,7 +523,7 @@ class IndustrialTestRunner {
     }
   }
 
-  async runStressTest(options = {}) {
+  async runStressTest (options = {}) {
     console.log('💥 运行压力测试...')
 
     const {
@@ -561,12 +559,12 @@ class IndustrialTestRunner {
     }
   }
 
-  async sleep(ms) {
+  async sleep (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   // 显示帮助信息
-  showHelp() {
+  showHelp () {
     console.log(`
 Sira AI网关 - 工业级测试运行器
 
@@ -618,7 +616,7 @@ EXAMPLES:
 }
 
 // 命令行接口
-async function main() {
+async function main () {
   const args = process.argv.slice(2)
   const command = args[0]
 
@@ -679,7 +677,6 @@ async function main() {
 
     // 根据测试结果设置退出码
     process.exit(result.success ? 0 : 1)
-
   } catch (error) {
     console.error('测试运行失败:', error.message)
     process.exit(1)

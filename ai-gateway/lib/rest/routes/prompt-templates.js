@@ -6,7 +6,6 @@ const { promptTemplateManager } = require('../../prompt-template-manager')
  */
 
 module.exports = function (router, { logger }) {
-
   /**
    * GET /prompt-templates
    * 获取所有提示词模板

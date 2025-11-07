@@ -7,7 +7,7 @@ const path = require('path')
  * 支持多变量测试、流量分配、实时分析和自动化优化
  */
 class ABTestManager {
-  constructor(options = {}) {
+  constructor (options = {}) {
     this.configPath = options.configPath || path.join(__dirname, '../config/ab-tests.json')
     this.resultsPath = options.resultsPath || path.join(__dirname, '../data/ab-test-results.json')
     this.tests = new Map()
@@ -19,7 +19,7 @@ class ABTestManager {
   /**
    * 初始化A/B测试管理器
    */
-  async initialize() {
+  async initialize () {
     if (this.initialized) return
 
     try {
@@ -41,7 +41,7 @@ class ABTestManager {
   /**
    * 创建A/B测试
    */
-  async createTest(testConfig) {
+  async createTest (testConfig) {
     const testId = testConfig.id || this.generateTestId()
 
     if (this.tests.has(testId)) {
@@ -83,7 +83,7 @@ class ABTestManager {
   /**
    * 启动测试
    */
-  async startTest(testId) {
+  async startTest (testId) {
     const test = this.tests.get(testId)
     if (!test) {
       throw new Error(`测试 ${testId} 不存在`)
@@ -107,7 +107,7 @@ class ABTestManager {
   /**
    * 暂停测试
    */
-  async pauseTest(testId) {
+  async pauseTest (testId) {
     const test = this.tests.get(testId)
     if (!test) {
       throw new Error(`测试 ${testId} 不存在`)
@@ -123,7 +123,7 @@ class ABTestManager {
   /**
    * 停止测试
    */
-  async stopTest(testId) {
+  async stopTest (testId) {
     const test = this.tests.get(testId)
     if (!test) {
       throw new Error(`测试 ${testId} 不存在`)
@@ -140,7 +140,7 @@ class ABTestManager {
   /**
    * 为用户分配测试变体
    */
-  allocateVariant(testId, userId, context = {}) {
+  allocateVariant (testId, userId, context = {}) {
     const test = this.tests.get(testId)
     if (!test || test.status !== 'running') {
       return null
@@ -173,7 +173,7 @@ class ABTestManager {
   /**
    * 记录测试结果
    */
-  async recordResult(testId, variantId, userId, metrics) {
+  async recordResult (testId, variantId, userId, metrics) {
     const test = this.tests.get(testId)
     if (!test) return
 
@@ -206,7 +206,7 @@ class ABTestManager {
   /**
    * 获取测试结果分析
    */
-  getTestAnalysis(testId) {
+  getTestAnalysis (testId) {
     const test = this.tests.get(testId)
     const results = this.results.get(testId)
 
@@ -275,7 +275,7 @@ class ABTestManager {
   /**
    * 获取所有测试概览
    */
-  getTestsOverview() {
+  getTestsOverview () {
     const overview = []
 
     for (const [testId, test] of this.tests) {
@@ -303,7 +303,7 @@ class ABTestManager {
   /**
    * 删除测试
    */
-  async deleteTest(testId) {
+  async deleteTest (testId) {
     if (!this.tests.has(testId)) {
       throw new Error(`测试 ${testId} 不存在`)
     }
@@ -323,14 +323,14 @@ class ABTestManager {
   /**
    * 生成测试ID
    */
-  generateTestId() {
+  generateTestId () {
     return `ab_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 验证测试配置
    */
-  validateTestConfig(test) {
+  validateTestConfig (test) {
     if (!test.name) throw new Error('测试名称不能为空')
     if (!test.variants || test.variants.length < 2) throw new Error('至少需要2个测试变体')
     if (!test.target) throw new Error('测试目标不能为空')
@@ -351,7 +351,7 @@ class ABTestManager {
   /**
    * 初始化测试结果
    */
-  initializeTestResults(test) {
+  initializeTestResults (test) {
     return {
       testId: test.id,
       metrics: {},
@@ -363,7 +363,7 @@ class ABTestManager {
   /**
    * 初始化流量分配器
    */
-  initializeTrafficAllocators() {
+  initializeTrafficAllocators () {
     for (const [testId, test] of this.tests) {
       if (test.status === 'running') {
         this.initializeTrafficAllocator(test)
@@ -374,7 +374,7 @@ class ABTestManager {
   /**
    * 初始化单个测试的流量分配器
    */
-  initializeTrafficAllocator(test) {
+  initializeTrafficAllocator (test) {
     const allocator = new TrafficAllocator(test)
     this.trafficAllocators.set(test.id, allocator)
   }
@@ -382,7 +382,7 @@ class ABTestManager {
   /**
    * 检查测试条件
    */
-  checkTestConditions(test, context) {
+  checkTestConditions (test, context) {
     const conditions = test.conditions
 
     if (conditions.userId && !context.userId?.match(new RegExp(conditions.userId))) {
@@ -407,7 +407,7 @@ class ABTestManager {
   /**
    * 加载测试配置
    */
-  async loadTestConfigurations() {
+  async loadTestConfigurations () {
     try {
       const data = await fs.readFile(this.configPath, 'utf8')
       const configs = JSON.parse(data)
@@ -426,7 +426,7 @@ class ABTestManager {
   /**
    * 保存测试配置
    */
-  async saveTestConfigurations() {
+  async saveTestConfigurations () {
     const configs = {}
     for (const [testId, test] of this.tests) {
       configs[testId] = test
@@ -439,7 +439,7 @@ class ABTestManager {
   /**
    * 加载测试结果
    */
-  async loadTestResults() {
+  async loadTestResults () {
     try {
       const data = await fs.readFile(this.resultsPath, 'utf8')
       const results = JSON.parse(data)
@@ -457,7 +457,7 @@ class ABTestManager {
   /**
    * 保存测试结果
    */
-  async saveTestResults() {
+  async saveTestResults () {
     const results = {}
     for (const [testId, result] of this.results) {
       results[testId] = result
@@ -470,14 +470,14 @@ class ABTestManager {
   /**
    * 计算平均值
    */
-  calculateMean(values) {
+  calculateMean (values) {
     return values.reduce((sum, value) => sum + value, 0) / values.length
   }
 
   /**
    * 计算中位数
    */
-  calculateMedian(values) {
+  calculateMedian (values) {
     const sorted = [...values].sort((a, b) => a - b)
     const mid = Math.floor(sorted.length / 2)
     return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
@@ -486,7 +486,7 @@ class ABTestManager {
   /**
    * 计算标准差
    */
-  calculateStd(values) {
+  calculateStd (values) {
     const mean = this.calculateMean(values)
     const squaredDiffs = values.map(value => Math.pow(value - mean, 2))
     return Math.sqrt(this.calculateMean(squaredDiffs))
@@ -495,7 +495,7 @@ class ABTestManager {
   /**
    * 计算统计显著性 (简化版t检验)
    */
-  calculateSignificance(groupA, groupB) {
+  calculateSignificance (groupA, groupB) {
     const valuesA = groupA.map(d => d.value)
     const valuesB = groupB.map(d => d.value)
 
@@ -525,7 +525,7 @@ class ABTestManager {
   /**
    * 近似p值计算
    */
-  approximatePValue(t, df) {
+  approximatePValue (t, df) {
     // 简化的t分布累积分布函数近似
     const x = t / Math.sqrt(df)
     const p = 1 / (1 + Math.exp(-x * 1.5))
@@ -535,7 +535,7 @@ class ABTestManager {
   /**
    * 确定测试获胜者
    */
-  determineWinner(analysis) {
+  determineWinner (analysis) {
     if (!analysis.metrics || Object.keys(analysis.metrics).length === 0) {
       return null
     }
@@ -563,8 +563,8 @@ class ABTestManager {
         const variantData = metricData[variantId]
         if (variantData && variantData.count > 10) { // 至少10个样本
           // 对于响应时间，越低越好；对于其他指标，越高越好
-          const value = metricName === 'response_time' ?
-            -variantData.mean : variantData.mean
+          const value = metricName === 'response_time'
+            ? -variantData.mean : variantData.mean
           score += value
           metricCount++
         }
@@ -592,7 +592,7 @@ class ABTestManager {
  * 流量分配器 - 支持多种分配策略
  */
 class TrafficAllocator {
-  constructor(test) {
+  constructor (test) {
     this.test = test
     this.userAssignments = new Map() // userId -> variantId
     this.strategy = test.allocation || 'even'
@@ -602,7 +602,7 @@ class TrafficAllocator {
   /**
    * 为用户分配变体
    */
-  allocate(userId) {
+  allocate (userId) {
     // 如果用户已被分配，返回之前的分配
     if (this.userAssignments.has(userId)) {
       return this.userAssignments.get(userId)
@@ -616,7 +616,7 @@ class TrafficAllocator {
   /**
    * 为新用户分配变体
    */
-  allocateNew(userId) {
+  allocateNew (userId) {
     const variants = this.test.variants
     const variantIds = variants.map(v => v.id)
 
@@ -635,7 +635,7 @@ class TrafficAllocator {
   /**
    * 均匀分配
    */
-  allocateEvenly(userId, variantIds) {
+  allocateEvenly (userId, variantIds) {
     const hash = crypto.createHash('md5').update(userId).digest('hex')
     const index = parseInt(hash.substring(0, 8), 16) % variantIds.length
     return variantIds[index]
@@ -644,7 +644,7 @@ class TrafficAllocator {
   /**
    * 加权分配
    */
-  allocateWeighted(userId, variantIds) {
+  allocateWeighted (userId, variantIds) {
     const totalWeight = variantIds.reduce((sum, id) => sum + (this.weights[id] || 1), 0)
     const hash = crypto.createHash('md5').update(userId).digest('hex')
     const random = parseInt(hash.substring(0, 8), 16) / 0xFFFFFFFF
@@ -663,7 +663,7 @@ class TrafficAllocator {
   /**
    * 自适应分配 (简化为均匀分配，实际可以基于实时性能)
    */
-  allocateAdaptively(userId, variantIds) {
+  allocateAdaptively (userId, variantIds) {
     // 实际实现中可以基于实时性能指标调整权重
     // 这里简化为均匀分配
     return this.allocateEvenly(userId, variantIds)

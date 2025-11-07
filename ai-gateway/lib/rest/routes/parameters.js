@@ -6,7 +6,6 @@ const { parameterManager } = require('../../parameter-manager')
  */
 
 module.exports = function (router, { logger }) {
-
   /**
    * GET /parameters
    * 获取所有参数信息
@@ -20,7 +19,7 @@ module.exports = function (router, { logger }) {
         detailed = false
       } = req.query
 
-      let result = {}
+      const result = {}
 
       if (preset) {
         // 获取特定预设
@@ -350,7 +349,7 @@ module.exports = function (router, { logger }) {
         parameters,
         provider,
         model,
-        message = "Hello, this is a parameter test.",
+        message = 'Hello, this is a parameter test.',
         taskType
       } = req.body
 
@@ -383,7 +382,7 @@ module.exports = function (router, { logger }) {
         validation,
         mockResponse: {
           success: true,
-          message: "Parameter test successful",
+          message: 'Parameter test successful',
           model,
           provider,
           input: message,
@@ -412,7 +411,7 @@ module.exports = function (router, { logger }) {
 /**
  * 获取优化改进说明
  */
-function getOptimizationImprovements(original, optimized) {
+function getOptimizationImprovements (original, optimized) {
   const improvements = []
 
   // 检查参数是否被优化

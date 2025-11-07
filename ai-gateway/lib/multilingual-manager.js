@@ -8,7 +8,7 @@ const path = require('path')
  * 提供完整的多语言界面和API响应本地化服务
  */
 class MultilingualManager extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
 
     this.configPath = options.configPath || path.join(__dirname, '../config/multilingual.json')
@@ -174,7 +174,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 初始化多语言管理器
    */
-  async initialize() {
+  async initialize () {
     try {
       // 创建必要的目录
       await fs.mkdir(this.localesPath, { recursive: true })
@@ -202,7 +202,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 检测用户语言
    */
-  detectLanguage(request, context = {}) {
+  detectLanguage (request, context = {}) {
     // 1. 检查显式指定的语言
     const acceptLanguage = request.headers['accept-language']
     const queryLanguage = request.query.lang || request.query.language
@@ -242,17 +242,17 @@ class MultilingualManager extends EventEmitter {
     return {
       language: detectedLanguage,
       confidence: this.calculateDetectionConfidence(detectedLanguage, request, context),
-      method: detectedLanguage === queryLanguage ? 'query' :
-              detectedLanguage === headerLanguage ? 'header' :
-              context.userId ? 'preference' :
-              acceptLanguage ? 'accept-language' : 'default'
+      method: detectedLanguage === queryLanguage ? 'query'
+        : detectedLanguage === headerLanguage ? 'header'
+          : context.userId ? 'preference'
+            : acceptLanguage ? 'accept-language' : 'default'
     }
   }
 
   /**
    * 翻译文本
    */
-  async translate(text, fromLanguage, toLanguage, options = {}) {
+  async translate (text, fromLanguage, toLanguage, options = {}) {
     const startTime = Date.now()
     this.translationStats.totalRequests++
 
@@ -300,7 +300,6 @@ class MultilingualManager extends EventEmitter {
       })
 
       return translation
-
     } catch (error) {
       console.error(`翻译失败 (${fromLanguage} -> ${toLanguage}):`, error.message)
 
@@ -320,7 +319,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 本地化API响应
    */
-  async localizeResponse(response, targetLanguage, context = {}) {
+  async localizeResponse (response, targetLanguage, context = {}) {
     if (!response || typeof response !== 'object') {
       return response
     }
@@ -349,7 +348,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 获取本地化资源
    */
-  async getLocalizedResource(resourceKey, language, namespace = 'common') {
+  async getLocalizedResource (resourceKey, language, namespace = 'common') {
     const resources = await this.loadLanguageResources(language)
     const namespaceResources = resources[namespace] || {}
 
@@ -359,7 +358,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 设置用户语言偏好
    */
-  async setUserLanguagePreference(userId, language, preferences = {}) {
+  async setUserLanguagePreference (userId, language, preferences = {}) {
     if (!this.supportedLanguages[language]) {
       throw new Error(`不支持的语言: ${language}`)
     }
@@ -387,7 +386,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 获取用户语言偏好
    */
-  getUserLanguagePreference(userId) {
+  getUserLanguagePreference (userId) {
     return this.userPreferences.get(userId) || {
       language: this.defaultLanguage,
       updatedAt: new Date().toISOString()
@@ -397,7 +396,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 添加翻译资源
    */
-  async addTranslationResource(language, namespace, resources) {
+  async addTranslationResource (language, namespace, resources) {
     if (!this.supportedLanguages[language]) {
       throw new Error(`不支持的语言: ${language}`)
     }
@@ -437,16 +436,16 @@ class MultilingualManager extends EventEmitter {
   /**
    * 获取翻译统计
    */
-  getTranslationStatistics(timeRange = '1h') {
+  getTranslationStatistics (timeRange = '1h') {
     const stats = { ...this.translationStats }
 
     // 计算缓存命中率
-    stats.cacheHitRate = stats.totalRequests > 0 ?
-      (stats.cacheHits / stats.totalRequests) : 0
+    stats.cacheHitRate = stats.totalRequests > 0
+      ? (stats.cacheHits / stats.totalRequests) : 0
 
     // 计算API调用率
-    stats.apiCallRate = stats.totalRequests > 0 ?
-      (stats.apiCalls / stats.totalRequests) : 0
+    stats.apiCallRate = stats.totalRequests > 0
+      ? (stats.apiCalls / stats.totalRequests) : 0
 
     return stats
   }
@@ -454,7 +453,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 清除翻译缓存
    */
-  clearTranslationCache() {
+  clearTranslationCache () {
     const cacheSize = this.translationCache.size
     this.translationCache.clear()
 
@@ -473,7 +472,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 解析Accept-Language头
    */
-  parseAcceptLanguage(acceptLanguage) {
+  parseAcceptLanguage (acceptLanguage) {
     // 简化的语言解析逻辑
     const languages = acceptLanguage.split(',').map(lang => {
       const [language, quality = '1'] = lang.trim().split(';q=')
@@ -503,7 +502,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 根据IP检测语言（简化实现）
    */
-  detectLanguageByIP(ip) {
+  detectLanguageByIP (ip) {
     // 简化的地理位置检测
     // 在实际实现中，这里应该调用地理位置API
     const ipPrefixes = {
@@ -523,7 +522,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 计算检测置信度
    */
-  calculateDetectionConfidence(language, request, context) {
+  calculateDetectionConfidence (language, request, context) {
     let confidence = 0.5 // 基础置信度
 
     // 如果是显式指定的，置信度最高
@@ -549,7 +548,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 执行翻译
    */
-  async performTranslation(text, fromLanguage, toLanguage, options) {
+  async performTranslation (text, fromLanguage, toLanguage, options) {
     const provider = this.translationProviders[this.activeProvider]
 
     if (!provider?.enabled) {
@@ -573,7 +572,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 使用Google Translate API翻译
    */
-  async translateWithGoogle(text, fromLanguage, toLanguage, options) {
+  async translateWithGoogle (text, fromLanguage, toLanguage, options) {
     const provider = this.translationProviders.google
 
     if (!provider.apiKey) {
@@ -601,7 +600,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 使用Azure Translator API翻译
    */
-  async translateWithAzure(text, fromLanguage, toLanguage, options) {
+  async translateWithAzure (text, fromLanguage, toLanguage, options) {
     const provider = this.translationProviders.azure
 
     if (!provider.apiKey || !provider.region) {
@@ -637,7 +636,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 使用OpenAI GPT翻译
    */
-  async translateWithOpenAI(text, fromLanguage, toLanguage, options) {
+  async translateWithOpenAI (text, fromLanguage, toLanguage, options) {
     const provider = this.translationProviders.openai
 
     if (!provider.apiKey) {
@@ -652,7 +651,7 @@ class MultilingualManager extends EventEmitter {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${provider.apiKey}`,
+        Authorization: `Bearer ${provider.apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -675,7 +674,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 本地化对象
    */
-  async localizeObject(obj, targetLanguage, context) {
+  async localizeObject (obj, targetLanguage, context) {
     const localized = { ...obj }
 
     // 递归处理对象中的字符串
@@ -696,7 +695,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 判断字段是否需要翻译
    */
-  shouldTranslateField(fieldName, value) {
+  shouldTranslateField (fieldName, value) {
     // 不翻译的字段
     const skipFields = [
       'id', 'userId', 'email', 'phone', 'url', 'code', 'status',
@@ -719,7 +718,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 翻译错误消息
    */
-  async translateError(error, targetLanguage) {
+  async translateError (error, targetLanguage) {
     if (typeof error === 'string') {
       return await this.translate(error, 'en-US', targetLanguage)
     }
@@ -736,7 +735,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 加载语言资源
    */
-  async loadLanguageResources(language) {
+  async loadLanguageResources (language) {
     if (this.translationCache.has(`resources_${language}`)) {
       return this.translationCache.get(`resources_${language}`)
     }
@@ -759,7 +758,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 加载所有翻译资源
    */
-  async loadTranslationResources() {
+  async loadTranslationResources () {
     for (const language of Object.keys(this.supportedLanguages)) {
       await this.loadLanguageResources(language)
     }
@@ -768,7 +767,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 生成缓存键
    */
-  generateCacheKey(text, fromLanguage, toLanguage) {
+  generateCacheKey (text, fromLanguage, toLanguage) {
     const crypto = require('crypto')
     const hash = crypto.createHash('md5')
     hash.update(`${text}:${fromLanguage}:${toLanguage}`)
@@ -778,7 +777,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 更新翻译统计
    */
-  updateTranslationStats(responseTime) {
+  updateTranslationStats (responseTime) {
     const alpha = 0.1 // 指数移动平均
     this.translationStats.avgResponseTime =
       this.translationStats.avgResponseTime * (1 - alpha) + responseTime * alpha
@@ -788,7 +787,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 启动缓存清理
    */
-  startCacheCleanup() {
+  startCacheCleanup () {
     // 每小时清理过期缓存
     setInterval(() => {
       const now = Date.now()
@@ -810,7 +809,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 启动统计更新
    */
-  startStatisticsUpdate() {
+  startStatisticsUpdate () {
     // 每分钟重置计数器（用于计算率）
     setInterval(() => {
       // 这里可以添加更详细的统计更新逻辑
@@ -820,7 +819,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 加载配置
    */
-  async loadConfiguration() {
+  async loadConfiguration () {
     try {
       const data = await fs.readFile(this.configPath, 'utf8')
       const config = JSON.parse(data)
@@ -838,7 +837,6 @@ class MultilingualManager extends EventEmitter {
       if (config.defaultLanguage) {
         this.defaultLanguage = config.defaultLanguage
       }
-
     } catch (error) {
       if (error.code !== 'ENOENT') {
         console.warn('加载多语言配置失败:', error.message)
@@ -849,7 +847,7 @@ class MultilingualManager extends EventEmitter {
   /**
    * 保存配置
    */
-  async saveConfiguration() {
+  async saveConfiguration () {
     try {
       const config = {
         userPreferences: Object.fromEntries(this.userPreferences),

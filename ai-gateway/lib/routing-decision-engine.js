@@ -6,7 +6,7 @@ const { EventEmitter } = require('events')
  * 综合考虑复杂度、性能、成本、可用性等多维度因素进行最优路由决策
  */
 class RoutingDecisionEngine extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
 
     this.configPath = options.configPath || require('path').join(__dirname, '../config/routing-decision.json')
@@ -15,10 +15,10 @@ class RoutingDecisionEngine extends EventEmitter {
 
     // 决策权重配置
     this.weights = {
-      performance: 0.3,    // 性能权重 (响应时间、成功率)
-      cost: 0.25,          // 成本权重 (价格、预算)
-      quality: 0.25,       // 质量权重 (模型能力匹配度)
-      availability: 0.2    // 可用性权重 (当前负载、配额)
+      performance: 0.3, // 性能权重 (响应时间、成功率)
+      cost: 0.25, // 成本权重 (价格、预算)
+      quality: 0.25, // 质量权重 (模型能力匹配度)
+      availability: 0.2 // 可用性权重 (当前负载、配额)
     }
 
     // 模型能力矩阵
@@ -97,7 +97,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 初始化决策引擎
    */
-  async initialize() {
+  async initialize () {
     try {
       // 加载配置
       await this.loadConfiguration()
@@ -115,7 +115,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 做出路由决策
    */
-  async makeRoutingDecision(request, context = {}) {
+  async makeRoutingDecision (request, context = {}) {
     const decision = {
       model: null,
       provider: null,
@@ -172,7 +172,6 @@ class RoutingDecisionEngine extends EventEmitter {
 
       // 5. 记录决策历史
       this.recordDecision(decision, decisionContext)
-
     } catch (error) {
       console.error('路由决策失败:', error)
       decision.reasoning.push(`决策过程出错: ${error.message}`)
@@ -190,7 +189,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 构建决策上下文
    */
-  async buildDecisionContext(request, context) {
+  async buildDecisionContext (request, context) {
     const decisionContext = {
       userId: context.userId || 'anonymous',
       requestId: context.requestId || this.generateRequestId(),
@@ -240,7 +239,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 生成候选模型列表
    */
-  generateCandidates(context) {
+  generateCandidates (context) {
     const candidates = []
 
     // 基于复杂度推荐的模型
@@ -300,7 +299,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 评估候选模型
    */
-  async evaluateCandidates(candidates, context) {
+  async evaluateCandidates (candidates, context) {
     const evaluations = []
 
     for (const candidate of candidates) {
@@ -343,7 +342,6 @@ class RoutingDecisionEngine extends EventEmitter {
           evaluation.totalScore += 1.0
           evaluation.reasoning.push('A/B测试指定模型 +1.0')
         }
-
       } catch (error) {
         console.error(`评估模型 ${candidate.model} 失败:`, error)
         evaluation.totalScore = 0
@@ -359,14 +357,14 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 性能评分
    */
-  async scorePerformance(candidate, context) {
+  async scorePerformance (candidate, context) {
     const capability = candidate.capability
     let score = 0
 
     // 响应时间评分 (越快越好)
     const responseTime = await this.getCurrentResponseTime(candidate.model)
-    const targetTime = context.userPreferences.speedPreference === 'fast' ? 2000 :
-                      context.userPreferences.speedPreference === 'slow' ? 5000 : 3000
+    const targetTime = context.userPreferences.speedPreference === 'fast' ? 2000
+      : context.userPreferences.speedPreference === 'slow' ? 5000 : 3000
 
     if (responseTime <= targetTime * 0.5) score += 1.0
     else if (responseTime <= targetTime) score += 0.8
@@ -386,7 +384,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 成本评分
    */
-  scoreCost(candidate, context) {
+  scoreCost (candidate, context) {
     const capability = candidate.capability
 
     // 如果有预算限制，基于预算打分
@@ -407,7 +405,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 质量评分
    */
-  scoreQuality(candidate, context) {
+  scoreQuality (candidate, context) {
     const capability = candidate.capability
     const taskType = context.complexity.taskType || context.taskType
 
@@ -433,7 +431,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 可用性评分
    */
-  async scoreAvailability(candidate, context) {
+  async scoreAvailability (candidate, context) {
     // 检查当前负载和配额状态
     const loadStatus = await this.getProviderLoadStatus(candidate.provider)
     const quotaStatus = await this.getProviderQuotaStatus(candidate.provider, context.userId)
@@ -454,7 +452,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 计算加权总分
    */
-  calculateWeightedScore(scores) {
+  calculateWeightedScore (scores) {
     return (
       scores.performance * this.weights.performance +
       scores.cost * this.weights.cost +
@@ -466,7 +464,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 选择最优候选者
    */
-  selectOptimalCandidate(evaluations, context) {
+  selectOptimalCandidate (evaluations, context) {
     if (evaluations.length === 0) return null
 
     // 按总分排序
@@ -491,7 +489,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 备选候选者选择策略
    */
-  selectFallbackCandidate(evaluations, context) {
+  selectFallbackCandidate (evaluations, context) {
     // 优先选择最便宜的可用模型
     const cheapest = evaluations.reduce((min, current) =>
       current.capability.costPerToken < min.capability.costPerToken ? current : min
@@ -508,7 +506,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 评估复杂度匹配度
    */
-  assessComplexityMatch(model, complexity) {
+  assessComplexityMatch (model, complexity) {
     const modelTier = this.getModelTier(model)
     const complexityTier = this.getComplexityTier(complexity)
 
@@ -520,7 +518,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取模型等级
    */
-  getModelTier(model) {
+  getModelTier (model) {
     const tiers = {
       'gpt-4': 5,
       'claude-2': 4,
@@ -536,13 +534,13 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取复杂度等级
    */
-  getComplexityTier(complexity) {
+  getComplexityTier (complexity) {
     const tiers = {
-      'very_high': 5,
-      'high': 4,
-      'medium': 3,
-      'low_medium': 2,
-      'low': 1
+      very_high: 5,
+      high: 4,
+      medium: 3,
+      low_medium: 2,
+      low: 1
     }
     return tiers[complexity] || 3
   }
@@ -550,7 +548,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取模型对应的提供商
    */
-  getProviderForModel(model) {
+  getProviderForModel (model) {
     const providerMap = {
       'gpt-4': 'openai',
       'gpt-3.5-turbo': 'openai',
@@ -566,7 +564,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取当前响应时间
    */
-  async getCurrentResponseTime(model) {
+  async getCurrentResponseTime (model) {
     // 从性能指标中获取，或使用默认值
     const metrics = this.performanceMetrics.get(model)
     return metrics?.avgResponseTime || this.modelCapabilities[model]?.avgResponseTime || 2000
@@ -575,7 +573,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取历史性能评分
    */
-  async getHistoricalPerformanceScore(model, userId) {
+  async getHistoricalPerformanceScore (model, userId) {
     // 简化的历史评分逻辑
     const userHistory = this.performanceMetrics.get(`${userId}_${model}`)
     return userHistory?.successRate || 0.5
@@ -584,14 +582,14 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取提供商负载状态
    */
-  async getProviderLoadStatus(provider) {
+  async getProviderLoadStatus (provider) {
     // 模拟负载检测，实际应该从监控系统获取
     const loads = {
-      'openai': Math.random() * 0.8,
-      'anthropic': Math.random() * 0.7,
-      'google': Math.random() * 0.6,
-      'meta': Math.random() * 0.5,
-      'mistral': Math.random() * 0.4
+      openai: Math.random() * 0.8,
+      anthropic: Math.random() * 0.7,
+      google: Math.random() * 0.6,
+      meta: Math.random() * 0.5,
+      mistral: Math.random() * 0.4
     }
     return loads[provider] || 0.5
   }
@@ -599,7 +597,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取提供商配额状态
    */
-  async getProviderQuotaStatus(provider, userId) {
+  async getProviderQuotaStatus (provider, userId) {
     // 模拟配额检测
     return Math.random() * 0.6 // 0-0.6表示配额使用率
   }
@@ -607,7 +605,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取性能历史
    */
-  async getPerformanceHistory(userId) {
+  async getPerformanceHistory (userId) {
     // 简化的性能历史
     return {
       avgResponseTime: 2000,
@@ -620,7 +618,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 记录决策历史
    */
-  recordDecision(decision, context) {
+  recordDecision (decision, context) {
     const historyEntry = {
       decisionId: decision.metadata.decisionId,
       timestamp: decision.metadata.timestamp,
@@ -649,7 +647,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取决策统计
    */
-  getDecisionStatistics(timeRange = '1h') {
+  getDecisionStatistics (timeRange = '1h') {
     const now = Date.now()
     const rangeMs = this.parseTimeRange(timeRange)
 
@@ -701,16 +699,16 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 解析时间范围
    */
-  parseTimeRange(range) {
+  parseTimeRange (range) {
     const unit = range.slice(-1)
     const value = parseInt(range.slice(0, -1))
 
     const multipliers = {
-      's': 1000,
-      'm': 60 * 1000,
-      'h': 60 * 60 * 1000,
-      'd': 24 * 60 * 60 * 1000,
-      'w': 7 * 24 * 60 * 60 * 1000
+      s: 1000,
+      m: 60 * 1000,
+      h: 60 * 60 * 1000,
+      d: 24 * 60 * 60 * 1000,
+      w: 7 * 24 * 60 * 60 * 1000
     }
 
     return value * (multipliers[unit] || 60 * 60 * 1000)
@@ -719,21 +717,21 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 生成决策ID
    */
-  generateDecisionId() {
+  generateDecisionId () {
     return `decision_${Date.now()}_${require('crypto').randomBytes(4).toString('hex')}`
   }
 
   /**
    * 生成请求ID
    */
-  generateRequestId() {
+  generateRequestId () {
     return `req_${Date.now()}_${require('crypto').randomBytes(4).toString('hex')}`
   }
 
   /**
    * 启动性能监控
    */
-  startPerformanceMonitoring() {
+  startPerformanceMonitoring () {
     // 每5分钟更新一次性能指标
     setInterval(() => {
       this.updatePerformanceMetrics()
@@ -743,7 +741,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 更新性能指标
    */
-  async updatePerformanceMetrics() {
+  async updatePerformanceMetrics () {
     // 这里应该从实际的监控系统获取数据
     // 暂时使用模拟数据
     for (const [model, capability] of Object.entries(this.modelCapabilities)) {
@@ -760,7 +758,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 加载配置
    */
-  async loadConfiguration() {
+  async loadConfiguration () {
     try {
       const fs = require('fs').promises
       const path = require('path')
@@ -780,7 +778,6 @@ class RoutingDecisionEngine extends EventEmitter {
       if (config.weights) {
         this.weights = { ...this.weights, ...config.weights }
       }
-
     } catch (error) {
       if (error.code !== 'ENOENT') {
         console.warn('加载路由决策配置失败:', error.message)
@@ -792,7 +789,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 保存配置
    */
-  async saveConfiguration() {
+  async saveConfiguration () {
     try {
       const fs = require('fs').promises
       const config = {

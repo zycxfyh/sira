@@ -261,5 +261,4 @@ module.exports = function (params, config) {
   }
 
   return aiRateLimit
-  return aiRateLimit
 }

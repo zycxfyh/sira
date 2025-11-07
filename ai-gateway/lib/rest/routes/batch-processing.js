@@ -8,7 +8,7 @@ let batchProcessingManager = null
  * 借鉴AWS Batch API和Google Cloud Batch的设计理念
  * 提供完整的批量AI请求处理和监控接口
  */
-function batchProcessingRoutes() {
+function batchProcessingRoutes () {
   const router = express.Router()
 
   // 初始化批量处理管理器
@@ -619,8 +619,8 @@ function batchProcessingRoutes() {
         health.warnings = ['队列积压严重']
       }
 
-      const statusCode = health.status === 'healthy' ? 200 :
-                        health.status === 'degraded' ? 200 : 503
+      const statusCode = health.status === 'healthy' ? 200
+        : health.status === 'degraded' ? 200 : 503
 
       res.status(statusCode).json({
         success: true,

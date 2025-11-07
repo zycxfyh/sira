@@ -8,7 +8,7 @@ const { EventEmitter } = require('events')
  * 支持用户自定义数据集进行模型微调，提供完整的训练生命周期管理
  */
 class ModelTrainingManager extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
 
     this.configPath = options.configPath || path.join(__dirname, '../config/model-training.json')
@@ -42,7 +42,7 @@ class ModelTrainingManager extends EventEmitter {
         supportedFormats: ['json', 'csv', 'txt'],
         pricing: {
           'bert-base': 0.001,
-          'gpt2': 0.002,
+          gpt2: 0.002,
           't5-small': 0.003
         }
       },
@@ -72,7 +72,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 初始化模型训练管理器
    */
-  async initialize() {
+  async initialize () {
     if (this.initialized) return
 
     try {
@@ -103,7 +103,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 创建训练作业
    */
-  async createTrainingJob(jobConfig) {
+  async createTrainingJob (jobConfig) {
     const jobId = jobConfig.id || this.generateJobId()
 
     if (this.trainingJobs.has(jobId)) {
@@ -177,7 +177,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 上传数据集
    */
-  async uploadDataset(datasetConfig, fileStream) {
+  async uploadDataset (datasetConfig, fileStream) {
     const datasetId = datasetConfig.id || this.generateDatasetId()
 
     if (this.datasets.has(datasetId)) {
@@ -241,7 +241,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 开始训练作业
    */
-  async startTrainingJob(jobId) {
+  async startTrainingJob (jobId) {
     const job = this.trainingJobs.get(jobId)
     if (!job) {
       throw new Error(`训练作业 ${jobId} 不存在`)
@@ -281,7 +281,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 停止训练作业
    */
-  async stopTrainingJob(jobId, reason = 'manual') {
+  async stopTrainingJob (jobId, reason = 'manual') {
     const job = this.trainingJobs.get(jobId)
     if (!job) {
       throw new Error(`训练作业 ${jobId} 不存在`)
@@ -311,7 +311,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 获取训练作业状态
    */
-  getTrainingJobStatus(jobId) {
+  getTrainingJobStatus (jobId) {
     const job = this.trainingJobs.get(jobId)
     if (!job) return null
 
@@ -321,8 +321,8 @@ class ModelTrainingManager extends EventEmitter {
       status: job.status,
       progress: job.progress,
       startTime: job.monitoring.startTime,
-      estimatedEndTime: job.monitoring.startTime ?
-        new Date(new Date(job.monitoring.startTime).getTime() + (job.resources.maxHours * 60 * 60 * 1000)).toISOString() : null,
+      estimatedEndTime: job.monitoring.startTime
+        ? new Date(new Date(job.monitoring.startTime).getTime() + (job.resources.maxHours * 60 * 60 * 1000)).toISOString() : null,
       currentEpoch: job.monitoring.metrics.currentEpoch || 0,
       totalEpochs: job.config.epochs,
       loss: job.monitoring.metrics.loss,
@@ -337,7 +337,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 获取训练日志
    */
-  getTrainingLogs(jobId, options = {}) {
+  getTrainingLogs (jobId, options = {}) {
     const job = this.trainingJobs.get(jobId)
     if (!job) return null
 
@@ -358,7 +358,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 部署训练完成的模型
    */
-  async deployTrainedModel(jobId, deploymentConfig = {}) {
+  async deployTrainedModel (jobId, deploymentConfig = {}) {
     const job = this.trainingJobs.get(jobId)
     if (!job) {
       throw new Error(`训练作业 ${jobId} 不存在`)
@@ -425,7 +425,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 获取用户模型列表
    */
-  getUserModels(userId) {
+  getUserModels (userId) {
     const userModels = []
 
     for (const [modelId, model] of this.deployedModels) {
@@ -450,7 +450,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 删除部署的模型
    */
-  async deleteDeployedModel(modelId) {
+  async deleteDeployedModel (modelId) {
     const model = this.deployedModels.get(modelId)
     if (!model) {
       throw new Error(`模型 ${modelId} 不存在`)
@@ -473,28 +473,28 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 生成作业ID
    */
-  generateJobId() {
+  generateJobId () {
     return `job_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 生成数据集ID
    */
-  generateDatasetId() {
+  generateDatasetId () {
     return `ds_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 生成模型ID
    */
-  generateModelId() {
+  generateModelId () {
     return `model_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`
   }
 
   /**
    * 验证作业配置
    */
-  validateJobConfig(config) {
+  validateJobConfig (config) {
     if (!config.name) throw new Error('作业名称不能为空')
     if (!config.datasetId) throw new Error('数据集ID不能为空')
     if (!config.baseModel) throw new Error('基础模型不能为空')
@@ -520,7 +520,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 验证数据集
    */
-  async validateDataset(filePath, format) {
+  async validateDataset (filePath, format) {
     const validation = {
       isValid: true,
       recordCount: 0,
@@ -555,7 +555,6 @@ class ModelTrainingManager extends EventEmitter {
       }
 
       validation.isValid = validation.errors.length === 0
-
     } catch (error) {
       validation.isValid = false
       validation.errors.push(`文件读取失败: ${error.message}`)
@@ -567,7 +566,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 计算预估成本
    */
-  async calculateEstimatedCost(job) {
+  async calculateEstimatedCost (job) {
     const provider = this.providers.get(job.provider)
     if (!provider) return 0
 
@@ -585,7 +584,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 启动训练作业监控器
    */
-  startJobMonitor() {
+  startJobMonitor () {
     // 每30秒检查一次作业状态
     setInterval(() => {
       this.checkRunningJobs()
@@ -595,7 +594,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 检查运行中的作业
    */
-  async checkRunningJobs() {
+  async checkRunningJobs () {
     for (const [jobId, job] of this.trainingJobs) {
       if (['preparing', 'training', 'validating'].includes(job.status)) {
         try {
@@ -610,7 +609,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 启动训练过程 (模拟)
    */
-  async startTrainingProcess(job) {
+  async startTrainingProcess (job) {
     // 模拟训练过程 - 实际实现会调用相应提供商的API
     console.log(`🎯 开始训练作业: ${job.id}`)
 
@@ -672,7 +671,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 更新作业状态 (模拟)
    */
-  async updateJobStatus(job) {
+  async updateJobStatus (job) {
     // 实际实现会调用提供商API获取真实状态
     // 这里只是模拟
     return job
@@ -681,7 +680,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 部署模型到提供商 (模拟)
    */
-  async deployModelToProvider(model) {
+  async deployModelToProvider (model) {
     // 模拟部署过程
     setTimeout(async () => {
       model.status = 'deployed'
@@ -698,7 +697,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 从提供商删除模型 (模拟)
    */
-  async deleteModelFromProvider(model) {
+  async deleteModelFromProvider (model) {
     // 实际实现会调用提供商API
     console.log(`删除模型 ${model.id} 从提供商 ${model.provider}`)
   }
@@ -706,7 +705,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 停止提供商训练 (模拟)
    */
-  async stopProviderTraining(job) {
+  async stopProviderTraining (job) {
     // 实际实现会调用提供商API
     console.log(`停止训练作业 ${job.id} 在提供商 ${job.provider}`)
   }
@@ -714,7 +713,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 加载配置
    */
-  async loadConfigurations() {
+  async loadConfigurations () {
     try {
       const data = await fs.readFile(this.configPath, 'utf8')
       const config = JSON.parse(data)
@@ -746,7 +745,7 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 保存配置
    */
-  async saveConfigurations() {
+  async saveConfigurations () {
     const config = {
       trainingJobs: Object.fromEntries(this.trainingJobs),
       datasets: Object.fromEntries(this.datasets),

@@ -6,7 +6,7 @@ const crypto = require('crypto')
  * 通过多维度分析请求复杂度，智能选择最合适的AI模型
  */
 class ComplexityAnalyzer {
-  constructor(options = {}) {
+  constructor (options = {}) {
     this.options = {
       maxTokensThreshold: options.maxTokensThreshold || 1000,
       technicalTermsThreshold: options.technicalTermsThreshold || 5,
@@ -39,28 +39,28 @@ class ComplexityAnalyzer {
 
     // 代码模式
     this.codePatterns = [
-      /```[\s\S]*?```/g,  // 代码块
-      /`[^`]+`/g,          // 内联代码
-      /\b(function|class|def|public|private|protected)\b/g,  // 编程关键词
-      /\b(import|from|include|require)\b/g,  // 导入语句
-      /\b(if|else|for|while|do|switch|case)\b/g,  // 控制流
-      /\b(int|string|bool|float|double|char)\b/g,  // 数据类型
-      /[{}();[\]]/g,  // 编程符号
-      /\bSELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER\b/g,  // SQL关键词
-      /<\w+[^>]*>[\s\S]*?<\/\w+>/g,  // HTML/XML标签
-      /@\w+/g,  // 装饰器/注解
-      /#[a-fA-F0-9]{3,6}\b/g  // 颜色代码
+      /```[\s\S]*?```/g, // 代码块
+      /`[^`]+`/g, // 内联代码
+      /\b(function|class|def|public|private|protected)\b/g, // 编程关键词
+      /\b(import|from|include|require)\b/g, // 导入语句
+      /\b(if|else|for|while|do|switch|case)\b/g, // 控制流
+      /\b(int|string|bool|float|double|char)\b/g, // 数据类型
+      /[{}();[\]]/g, // 编程符号
+      /\bSELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER\b/g, // SQL关键词
+      /<\w+[^>]*>[\s\S]*?<\/\w+>/g, // HTML/XML标签
+      /@\w+/g, // 装饰器/注解
+      /#[a-fA-F0-9]{3,6}\b/g // 颜色代码
     ]
 
     // 数学表达式模式
     this.mathPatterns = [
-      /\b\d+\s*[\+\-\*\/]\s*\d+/g,  // 基础运算
-      /\b\d+\s*\^\s*\d+/g,  // 幂运算
-      /\bsqrt\(|sin\(|cos\(|tan\(|log\(|ln\(/g,  // 数学函数
-      /\b∫|∂|∑|∏|∞|≤|≥|≠|≈\b/g,  // 数学符号
-      /\b\d+\.\d+|\b\d+\/\d+\b/g,  // 小数和分数
-      /\b[a-zA-Z]\s*=\s*[^=]/g,  // 变量赋值
-      /\bequation|formula|calculate|compute|derive/g  // 数学关键词
+      /\b\d+\s*[+\-*/]\s*\d+/g, // 基础运算
+      /\b\d+\s*\^\s*\d+/g, // 幂运算
+      /\bsqrt\(|sin\(|cos\(|tan\(|log\(|ln\(/g, // 数学函数
+      /\b∫|∂|∑|∏|∞|≤|≥|≠|≈\b/g, // 数学符号
+      /\b\d+\.\d+|\b\d+\/\d+\b/g, // 小数和分数
+      /\b[a-zA-Z]\s*=\s*[^=]/g, // 变量赋值
+      /\bequation|formula|calculate|compute|derive/g // 数学关键词
     ]
 
     // 任务类型识别模式
@@ -103,7 +103,7 @@ class ComplexityAnalyzer {
   /**
    * 分析请求复杂度
    */
-  analyzeComplexity(request) {
+  analyzeComplexity (request) {
     const analysis = {
       complexity: 'low',
       confidence: 0,
@@ -159,7 +159,6 @@ class ComplexityAnalyzer {
 
       // 生成推理说明
       analysis.reasoning = this.generateReasoning(analysis, dimensions)
-
     } catch (error) {
       console.error('Complexity analysis failed:', error)
       analysis.complexity = 'medium' // 出错时使用中等复杂度作为fallback
@@ -172,7 +171,7 @@ class ComplexityAnalyzer {
   /**
    * 提取请求内容
    */
-  extractContent(request) {
+  extractContent (request) {
     // 从不同格式的请求中提取内容
     if (typeof request === 'string') {
       return request
@@ -198,7 +197,7 @@ class ComplexityAnalyzer {
   /**
    * 估算token数量
    */
-  estimateTokens(text) {
+  estimateTokens (text) {
     // 简单估算：英文大约1个token对应4个字符，中文大约1个token对应1.5个字符
     const englishChars = (text.match(/[a-zA-Z\s]/g) || []).length
     const otherChars = text.length - englishChars
@@ -212,13 +211,13 @@ class ComplexityAnalyzer {
   /**
    * 分析长度复杂度
    */
-  analyzeLengthComplexity(content) {
+  analyzeLengthComplexity (content) {
     const length = content.length
     const wordCount = content.split(/\s+/).length
     const sentenceCount = content.split(/[.!?]+/).length
 
     let score = 0
-    let reasoning = []
+    const reasoning = []
 
     if (length > 5000) {
       score += 3
@@ -247,7 +246,7 @@ class ComplexityAnalyzer {
   /**
    * 分析技术复杂度
    */
-  analyzeTechnicalComplexity(content) {
+  analyzeTechnicalComplexity (content) {
     const lowerContent = content.toLowerCase()
     let technicalTermCount = 0
 
@@ -257,7 +256,7 @@ class ComplexityAnalyzer {
     }
 
     let score = 0
-    let reasoning = []
+    const reasoning = []
 
     if (technicalTermCount > this.options.technicalTermsThreshold * 2) {
       score += 3
@@ -278,7 +277,7 @@ class ComplexityAnalyzer {
   /**
    * 分析推理复杂度
    */
-  analyzeReasoningComplexity(content) {
+  analyzeReasoningComplexity (content) {
     const lowerContent = content.toLowerCase()
     let reasoningIndicatorCount = 0
 
@@ -302,7 +301,7 @@ class ComplexityAnalyzer {
     const totalIndicators = reasoningIndicatorCount + questionCount
 
     let score = 0
-    let reasoning = []
+    const reasoning = []
 
     if (totalIndicators > 5) {
       score += 3
@@ -323,7 +322,7 @@ class ComplexityAnalyzer {
   /**
    * 分析代码复杂度
    */
-  analyzeCodeComplexity(content) {
+  analyzeCodeComplexity (content) {
     let codeScore = 0
     let codeSnippetCount = 0
 
@@ -343,7 +342,7 @@ class ComplexityAnalyzer {
     }
 
     let score = 0
-    let reasoning = []
+    const reasoning = []
 
     if (codeSnippetCount > this.options.codeSnippetThreshold) {
       score += 3
@@ -364,7 +363,7 @@ class ComplexityAnalyzer {
   /**
    * 分析数学复杂度
    */
-  analyzeMathComplexity(content) {
+  analyzeMathComplexity (content) {
     let mathScore = 0
     let mathElementCount = 0
 
@@ -388,7 +387,7 @@ class ComplexityAnalyzer {
     }
 
     let score = 0
-    let reasoning = []
+    const reasoning = []
 
     if (mathElementCount > this.options.mathExpressionThreshold * 2) {
       score += 3
@@ -409,7 +408,7 @@ class ComplexityAnalyzer {
   /**
    * 分析结构复杂度
    */
-  analyzeStructuralComplexity(content) {
+  analyzeStructuralComplexity (content) {
     // 检查列表和结构化内容
     const bulletPoints = (content.match(/^[\s]*[-*+]\s/gm) || []).length
     const numberedLists = (content.match(/^[\s]*\d+\.\s/gm) || []).length
@@ -419,7 +418,7 @@ class ComplexityAnalyzer {
     const structuralElements = bulletPoints + numberedLists + headers + tables
 
     let score = 0
-    let reasoning = []
+    const reasoning = []
 
     if (structuralElements > 10) {
       score += 2
@@ -441,9 +440,9 @@ class ComplexityAnalyzer {
   /**
    * 分析上下文复杂度
    */
-  analyzeContextComplexity(request) {
+  analyzeContextComplexity (request) {
     let score = 0
-    let reasoning = []
+    const reasoning = []
 
     // 检查消息历史长度
     if (request.messages && request.messages.length > 10) {
@@ -466,7 +465,7 @@ class ComplexityAnalyzer {
   /**
    * 分析紧急程度
    */
-  analyzeUrgencyComplexity(content) {
+  analyzeUrgencyComplexity (content) {
     const lowerContent = content.toLowerCase()
     let urgencyScore = 0
 
@@ -477,7 +476,7 @@ class ComplexityAnalyzer {
     }
 
     let score = 0
-    let reasoning = []
+    const reasoning = []
 
     if (urgencyScore > 2) {
       score += 2
@@ -495,7 +494,7 @@ class ComplexityAnalyzer {
   /**
    * 识别任务类型
    */
-  identifyTaskType(content) {
+  identifyTaskType (content) {
     const lowerContent = content.toLowerCase()
     const scores = {}
 
@@ -525,7 +524,7 @@ class ComplexityAnalyzer {
   /**
    * 计算综合复杂度分数
    */
-  calculateComplexityScore(dimensions, taskType) {
+  calculateComplexityScore (dimensions, taskType) {
     let totalScore = 0
     const weights = {
       length: 0.2,
@@ -560,7 +559,7 @@ class ComplexityAnalyzer {
   /**
    * 分类复杂度等级
    */
-  classifyComplexity(score) {
+  classifyComplexity (score) {
     if (score >= 4.0) return 'very_high'
     if (score >= 2.5) return 'high'
     if (score >= 1.5) return 'medium'
@@ -571,7 +570,7 @@ class ComplexityAnalyzer {
   /**
    * 计算置信度
    */
-  calculateConfidence(dimensions) {
+  calculateConfidence (dimensions) {
     // 基于各维度的分析一致性计算置信度
     const scores = Object.values(dimensions).map(d => d.score)
     const mean = scores.reduce((a, b) => a + b, 0) / scores.length
@@ -587,7 +586,7 @@ class ComplexityAnalyzer {
   /**
    * 确定处理时间
    */
-  determineProcessingTime(complexity, taskType) {
+  determineProcessingTime (complexity, taskType) {
     const timeMap = {
       very_high: 'slow',
       high: 'medium',
@@ -611,7 +610,7 @@ class ComplexityAnalyzer {
   /**
    * 推荐模型
    */
-  recommendModels(complexity, taskType, dimensions) {
+  recommendModels (complexity, taskType, dimensions) {
     const recommendations = []
 
     // 基于复杂度推荐模型
@@ -658,7 +657,7 @@ class ComplexityAnalyzer {
   /**
    * 生成推理说明
    */
-  generateReasoning(analysis, dimensions) {
+  generateReasoning (analysis, dimensions) {
     const reasoning = []
 
     reasoning.push(`综合复杂度: ${analysis.complexity} (置信度: ${analysis.confidence})`)
@@ -683,7 +682,7 @@ class ComplexityAnalyzer {
   /**
    * 批量分析请求
    */
-  analyzeBatch(requests) {
+  analyzeBatch (requests) {
     const results = []
 
     for (const request of requests) {

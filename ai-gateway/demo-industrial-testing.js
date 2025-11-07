@@ -8,19 +8,19 @@
 const { IndustrialTestRunner } = require('./run-industrial-tests')
 
 class IndustrialTestingDemo {
-  constructor() {
+  constructor () {
     this.runner = null
   }
 
-  async initialize() {
+  async initialize () {
     console.log('🎬 欢迎使用Sira AI网关工业级测试演示')
-    console.log('=' .repeat(60))
+    console.log('='.repeat(60))
 
     this.runner = new IndustrialTestRunner()
     await this.runner.initialize()
   }
 
-  async runDemo() {
+  async runDemo () {
     try {
       console.log('\n📋 演示内容:')
       console.log('1. 快速测试套件 (快速失败机制演示)')
@@ -40,14 +40,13 @@ class IndustrialTestingDemo {
       console.log('\n🎉 工业级测试演示完成!')
       console.log('✅ 快速失败机制已成功演示')
       console.log('查看 reports/ 目录中的详细报告')
-
     } catch (error) {
       console.error('演示过程中发生错误:', error.message)
       console.log('提示: 这是一个演示，某些功能需要完整的环境支持')
     }
   }
 
-  async demoQuickTest() {
+  async demoQuickTest () {
     console.log('\n🔬 演示 1: 快速测试套件')
     console.log('-'.repeat(40))
 
@@ -66,15 +65,13 @@ class IndustrialTestingDemo {
       console.log(`   状态: ${result.success ? '通过' : '失败'}`)
       console.log(`   测试数量: ${result.results.length}`)
       console.log(`   报告位置: ${result.report.reports.json.path}`)
-
     } catch (error) {
       console.log(`⚠️  快速测试跳过: ${error.message}`)
       console.log('   提示: 这需要运行中的网关服务')
     }
   }
 
-
-  async demoReportGeneration() {
+  async demoReportGeneration () {
     console.log('\n📋 演示 2: 测试报告生成')
     console.log('-'.repeat(40))
 
@@ -96,17 +93,16 @@ class IndustrialTestingDemo {
         includeTrends: false
       })
 
-      console.log(`✅ 报告生成完成`)
+      console.log('✅ 报告生成完成')
       console.log(`   HTML报告: ${report.reports.html.path}`)
       console.log(`   测试摘要: ${report.summary.totalTests} 测试, 成功率 ${report.summary.successRate}`)
-
     } catch (error) {
       console.log(`⚠️  报告生成演示失败: ${error.message}`)
       console.log('   提示: 这是一个演示，报告生成功能需要完整环境')
     }
   }
 
-  async explainFailFast() {
+  async explainFailFast () {
     console.log('\n🚫 演示 3: 快速失败机制说明')
     console.log('-'.repeat(40))
 
@@ -136,10 +132,9 @@ class IndustrialTestingDemo {
     console.log('   • 及早发现系统性问题')
   }
 
-
-  showUsageExamples() {
+  showUsageExamples () {
     console.log('\n💡 使用示例:')
-    console.log('=' .repeat(60))
+    console.log('='.repeat(60))
     console.log('')
     console.log('# 运行完整工业级测试')
     console.log('npm run test:industrial')
@@ -164,7 +159,7 @@ class IndustrialTestingDemo {
     console.log('')
   }
 
-  async showSystemInfo() {
+  async showSystemInfo () {
     console.log('\n🖥️  系统信息:')
     console.log('-'.repeat(40))
 
@@ -182,7 +177,7 @@ class IndustrialTestingDemo {
 }
 
 // 主函数
-async function main() {
+async function main () {
   const demo = new IndustrialTestingDemo()
 
   try {
@@ -196,7 +191,6 @@ async function main() {
     console.log('- 第一次运行可能需要下载浏览器和依赖项')
     console.log('- 测试报告保存在 ai-gateway/reports/ 目录中')
     console.log('- 如需自定义测试，请编辑 test-config.json 文件')
-
   } catch (error) {
     console.error('演示失败:', error.message)
     console.log('\n🔧 故障排除:')

@@ -7,7 +7,7 @@ let webhookManager = null
  * Webhook管理API路由
  * 借鉴Stripe和GitHub的webhook管理设计，提供完整的webhook生命周期管理
  */
-function webhooksRoutes() {
+function webhooksRoutes () {
   const router = express.Router()
 
   // 初始化Webhook管理器

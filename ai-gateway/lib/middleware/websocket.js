@@ -9,7 +9,7 @@ let wss = null
  * 借鉴Socket.IO和原生WebSocket的设计理念
  * 提供WebSocket连接管理和流式数据传输
  */
-function createWebSocketServer(server, options = {}) {
+function createWebSocketServer (server, options = {}) {
   // 初始化流式响应管理器
   if (!streamingManager) {
     streamingManager = new StreamingManager(options.streamingOptions || {})
@@ -40,7 +40,6 @@ function createWebSocketServer(server, options = {}) {
 
       // 设置连接特定的消息处理器（如果需要的话）
       // 这里主要通过StreamingManager处理
-
     } catch (error) {
       console.error('WebSocket连接处理失败:', error)
       ws.close(1011, 'Connection setup failed')
@@ -63,7 +62,7 @@ function createWebSocketServer(server, options = {}) {
  * WebSocket路由中间件
  * 用于Express应用中的WebSocket路由处理
  */
-function websocketMiddleware(options = {}) {
+function websocketMiddleware (options = {}) {
   return (req, res, next) => {
     // 如果是WebSocket升级请求，传递给WebSocket服务器
     if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
@@ -105,21 +104,21 @@ function websocketMiddleware(options = {}) {
 /**
  * 获取WebSocket服务器实例
  */
-function getWebSocketServer() {
+function getWebSocketServer () {
   return wss
 }
 
 /**
  * 获取流式响应管理器实例
  */
-function getStreamingManager() {
+function getStreamingManager () {
   return streamingManager
 }
 
 /**
  * 广播消息到所有WebSocket连接
  */
-function broadcastToWebSockets(message, options = {}) {
+function broadcastToWebSockets (message, options = {}) {
   if (!streamingManager) {
     throw new Error('StreamingManager not initialized')
   }
@@ -133,7 +132,7 @@ function broadcastToWebSockets(message, options = {}) {
 /**
  * 发送消息到特定WebSocket连接
  */
-function sendToWebSocket(connectionId, message, options = {}) {
+function sendToWebSocket (connectionId, message, options = {}) {
   if (!streamingManager) {
     throw new Error('StreamingManager not initialized')
   }
@@ -154,7 +153,7 @@ function sendToWebSocket(connectionId, message, options = {}) {
 /**
  * 获取WebSocket连接统计
  */
-function getWebSocketStats() {
+function getWebSocketStats () {
   if (!streamingManager) {
     return { error: 'StreamingManager not initialized' }
   }
