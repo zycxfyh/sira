@@ -52,6 +52,7 @@
 | 💰 **实时价格监控** | 集成官方价格文档，智能成本优化 | 📈 实时掌握价格变动 |
 | 🎯 **智能配置向导** | 交互式供应商配置，自动测试连接 | ⚡ 5分钟完成配置 |
 | 🛡️ **错误处理机制** | 自动重试、熔断保护、详细错误诊断 | 🔧 99.9%稳定性保障 |
+| 📚 **完整配置指南** | 详细的配置文档，涵盖20+供应商 | 📖 开发者友好 |
 
 ---
 
@@ -62,6 +63,7 @@
   <a href="#-模块导航"><img src="https://img.shields.io/badge/📚-模块文档-4ECDC4?style=for-the-badge" alt="模块文档"/></a>
   <a href="#-测试验证"><img src="https://img.shields.io/badge/🧪-测试验证-45B7D1?style=for-the-badge" alt="测试验证"/></a>
   <a href="#-部署指南"><img src="https://img.shields.io/badge/🚀-部署指南-96CEB4?style=for-the-badge" alt="部署指南"/></a>
+  <a href="#-配置指南"><img src="https://img.shields.io/badge/⚙️-配置指南-4ECDC4?style=for-the-badge" alt="配置指南"/></a>
   <a href="#-许可证"><img src="https://img.shields.io/badge/📄-许可证-FECA57?style=for-the-badge" alt="许可证"/></a>
   <a href="#-贡献与交流"><img src="https://img.shields.io/badge/🤝-贡献交流-FF9FF3?style=for-the-badge" alt="贡献交流"/></a>
 </p>
@@ -293,6 +295,69 @@ await errorHandler.withRetry(async () => {
 - 🌐 **网络错误**: 指数退避重试
 - 🚫 **API密钥错误**: 详细错误提示
 - 💰 **配额不足**: 自动切换到备用供应商
+
+## ⚙️ 配置指南
+
+### 完整配置流程
+
+详细的AI供应商配置指南，涵盖从选择供应商到生产部署的完整流程：
+
+```bash
+# 📖 查看完整配置指南
+cat ai-gateway/docs/ai-provider-configuration-guide.md
+
+# 🎯 快速配置向导
+./scripts/setup-ai-provider.sh
+
+# 🔗 测试连接
+./scripts/test-provider-connection.sh --all
+```
+
+#### 支持的供应商一览
+
+| 类别 | 供应商 | 特点 | 配置难度 |
+|------|--------|------|----------|
+| **入门推荐** | DeepSeek | ¥0.001/1K tokens，配置简单 | ⭐⭐⭐ |
+| **企业首选** | Azure OpenAI | 企业级SLA，支持私有部署 | ⭐⭐⭐⭐⭐ |
+| **功能全面** | OpenAI | GPT-4系列，功能最全 | ⭐⭐⭐⭐ |
+| **性价比优** | 通义千问 | 阿里云生态，多模态支持 | ⭐⭐⭐⭐ |
+| **学术级** | 智谱GLM | 推理能力强，学术模型 | ⭐⭐⭐⭐ |
+
+### 配置步骤详解
+
+1. **🎯 选择供应商**: 20+供应商支持，根据需求选择
+2. **🔑 配置API密钥**: 自动验证格式和有效性
+3. **📥 拉取模型列表**: 实时获取最新可用模型
+4. **🤖 选择模型**: 基于任务类型智能推荐
+5. **🔗 测试连接**: 自动验证配置正确性
+6. **📝 生成配置**: 自动创建标准配置文件
+
+### 高级配置选项
+
+```yaml
+# 多供应商负载均衡
+routing:
+  strategy: "load_balance"
+  providers:
+    - name: "openai"
+      weight: 30
+    - name: "deepseek"
+      weight: 50
+    - name: "anthropic"
+      weight: 20
+
+# 企业级安全配置
+security:
+  encryption: true
+  audit_logs: true
+  rate_limiting: true
+
+# 智能缓存配置
+cache:
+  enabled: true
+  ttl: 3600
+  compression: true
+```
 
 ### 🛠️ 开发环境搭建
 
