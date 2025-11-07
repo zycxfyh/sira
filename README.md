@@ -68,6 +68,7 @@
  📊 **入口统计和报告** | 详细的API统计、错误分析、性能报告和业务洞察 | 📈 数据驱动洞察 |
  🧠 **智能拆分路由** | 根据请求复杂度自动选择最优AI模型，性能/成本/质量多维度优化 | 🎯 智能模型选择 |
  🌐 **多语言支持** | 支持中英文界面、API响应本地化，智能语言检测和翻译服务 | 🌍 全球化AI服务 |
+ 📊 **批量处理接口** | 支持批量AI请求处理，高并发优化，智能队列管理和资源调度 | ⚡ 高性能批量处理 |
  🧠 **模型训练接口** | 支持用户自定义数据集进行模型微调，完整的训练生命周期管理 | 🎯 AI模型定制 |
 
 ---
@@ -1738,6 +1739,109 @@ GET /api/models
 - **智能缓存键**: 基于文本内容、源语言、目标语言生成缓存键
 - **内存管理**: 自动清理过期缓存，防止内存泄漏
 - **缓存统计**: 提供缓存命中率和性能指标
+
+### 📊 批量处理接口 API使用示例
+
+```bash
+# 提交批量处理任务
+curl -X POST http://localhost:9876/batch-processing/batches \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "文本分类批量任务",
+    "requests": [
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "这是一段正面评价"}],
+        "max_tokens": 100
+      },
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "这是一段负面评价"}],
+        "max_tokens": 100
+      }
+    ],
+    "priority": "normal",
+    "config": {
+      "continueOnError": true,
+      "maxConcurrency": 5,
+      "timeout": 300000
+    }
+  }'
+
+# 获取批量任务列表
+curl http://localhost:9876/batch-processing/batches?userId=user123
+
+# 获取批量任务状态
+curl http://localhost:9876/batch-processing/batches/batch_1234567890/status
+
+# 获取批量任务结果
+curl http://localhost:9876/batch-processing/batches/batch_1234567890/results?limit=10
+
+# 取消批量任务
+curl -X POST http://localhost:9876/batch-processing/batches/batch_1234567890/cancel \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "user_cancelled"}'
+
+# 删除批量任务
+curl -X DELETE http://localhost:9876/batch-processing/batches/batch_1234567890
+
+# 获取队列状态
+curl http://localhost:9876/batch-processing/queue
+
+# 获取批量处理模板
+curl http://localhost:9876/batch-processing/templates
+
+# 获取批量处理统计
+curl http://localhost:9876/batch-processing/stats
+
+# 获取缓存状态
+curl http://localhost:9876/batch-processing/cache
+
+# 清除批量处理缓存
+curl -X POST http://localhost:9876/batch-processing/cache/clear
+
+# 健康检查
+curl http://localhost:9876/batch-processing/health
+```
+
+#### 批量处理特性
+
+- **智能队列管理**: 基于优先级的多级队列调度系统
+- **并发控制**: 信号量机制控制并发请求数量
+- **负载均衡**: 自动分配工作负载到多个处理单元
+- **错误处理**: 支持失败重试和部分失败继续处理
+- **进度跟踪**: 实时监控处理进度和性能指标
+- **结果缓存**: 智能缓存重复请求以提升性能
+
+#### 优先级队列系统
+
+- **high**: 高优先级队列 - 立即处理，适用于紧急任务
+- **normal**: 普通队列 - 标准处理顺序
+- **low**: 低优先级队列 - 延迟处理，适用于非紧急任务
+
+#### 并发控制机制
+
+- **信号量控制**: 限制同时处理的批量任务数量
+- **动态调整**: 根据系统负载自动调整并发度
+- **资源隔离**: 每个批量任务独立控制并发数量
+- **公平调度**: 防止单个任务占用过多资源
+
+#### 批量处理模板
+
+系统提供预定义的批量处理模板：
+
+- **文本分类**: 批量对文本进行情感分析或分类
+- **内容生成**: 批量生成相关内容和文章
+- **数据分析**: 批量进行数据分析和洞察
+- **翻译任务**: 批量翻译多语言内容
+
+#### 性能优化策略
+
+- **请求批处理**: 将多个请求合并处理以减少网络开销
+- **结果缓存**: 缓存相同请求的结果避免重复计算
+- **异步处理**: 非阻塞的批量处理不影响其他请求
+- **智能调度**: 基于任务特性的智能调度算法
+- **资源复用**: 复用连接和计算资源提升效率
 
 ## 🧪 测试验证
 
