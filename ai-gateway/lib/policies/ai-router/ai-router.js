@@ -1,5 +1,6 @@
 const axios = require('axios')
 const { usageAnalytics } = require('../../usage-analytics')
+const { parameterManager } = require('../../parameter-manager')
 
 // AI Router Policy
 // Routes AI requests to appropriate providers based on cost, performance, and availability
@@ -86,10 +87,13 @@ module.exports = function (params, config) {
     const requestId = req.headers['x-request-id'] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
     // Extract AI model from request body
-    let model
+    let model, parameters, taskType, parameterPreset
     try {
       const body = req.body
       model = body.model
+      parameters = body.parameters || {}
+      taskType = body.task_type || req.headers['x-task-type']
+      parameterPreset = body.parameter_preset || req.headers['x-parameter-preset']
 
       if (!model) {
         // 记录错误统计
@@ -125,6 +129,50 @@ module.exports = function (params, config) {
           code: 'UNSUPPORTED_MODEL'
         })
       }
+
+      // 处理参数预设
+      if (parameterPreset) {
+        const preset = parameterManager.getParameterPreset(parameterPreset)
+        if (preset) {
+          parameters = { ...preset.parameters, ...parameters }
+          logger.info(`Applied parameter preset: ${parameterPreset}`, { userId, model })
+        } else {
+          logger.warn(`Unknown parameter preset: ${parameterPreset}`, { userId })
+        }
+      }
+
+      // 优化参数
+      parameters = parameterManager.optimizeParameters(parameters, taskType, model)
+
+      // 验证参数
+      const validation = parameterManager.validateParameters(parameters)
+      if (!validation.valid) {
+        usageAnalytics.recordRequest({
+          userId,
+          requestId,
+          statusCode: 400,
+          error: 'INVALID_PARAMETERS',
+          timestamp: new Date(),
+          responseTime: Date.now() - startTime
+        })
+
+        return res.status(400).json({
+          error: 'Invalid parameters',
+          code: 'INVALID_PARAMETERS',
+          details: validation.errors,
+          warnings: validation.warnings
+        })
+      }
+
+      // 记录参数警告
+      if (validation.warnings.length > 0) {
+        logger.warn('Parameter warnings', {
+          userId,
+          model,
+          warnings: validation.warnings
+        })
+      }
+
     } catch (error) {
       logger.error('Failed to parse request body:', error)
 
@@ -164,8 +212,8 @@ module.exports = function (params, config) {
       })
     }
 
-    // Transform request for the selected provider
-    const transformedRequest = transformRequest(req.body, selectedProvider)
+    // Transform request for the selected provider (包含参数转换)
+    const transformedRequest = transformRequest(req.body, selectedProvider, parameters)
 
     // Get provider configuration
     const providerConfig = providers[selectedProvider]
@@ -320,12 +368,20 @@ module.exports = function (params, config) {
   }
 
   // Transform request for specific provider
-  function transformRequest (body, provider) {
+  function transformRequest (body, provider, parameters) {
     const transformed = { ...body }
+
+    // 转换通用参数为供应商特定格式
+    try {
+      const providerParameters = parameterManager.transformParameters(parameters, provider, body.model)
+      Object.assign(transformed, providerParameters)
+    } catch (error) {
+      logger.warn(`Parameter transformation failed for ${provider}:`, error.message)
+      // 继续处理，使用原始参数
+    }
 
     if (provider === 'anthropic') {
       // Transform OpenAI format to Anthropic format
-      transformed.max_tokens = transformed.max_tokens || 4096
       if (transformed.messages) {
         // Extract system message
         const systemMessage = transformed.messages.find(msg => msg.role === 'system')
@@ -339,11 +395,38 @@ module.exports = function (params, config) {
           ...msg,
           role: msg.role === 'assistant' ? 'assistant' : 'user'
         }))
+
+        // 确保max_tokens参数正确
+        if (transformed.max_tokens_to_sample) {
+          transformed.max_tokens = transformed.max_tokens_to_sample
+          delete transformed.max_tokens_to_sample
+        }
       }
     } else if (provider === 'azure') {
       // Azure uses different endpoint structure
       const deploymentName = providers.azure.deploymentMap[body.model] || body.model
       transformed.model = deploymentName
+    } else if (provider === 'google_gemini') {
+      // Google Gemini format
+      if (transformed.messages) {
+        // Convert messages to Gemini format
+        const lastMessage = transformed.messages[transformed.messages.length - 1]
+        transformed.contents = [{
+          parts: [{ text: lastMessage.content }]
+        }]
+        delete transformed.messages
+      }
+    }
+
+    // 清理不支持的参数
+    const providerMapping = parameterManager.parameterMappings.providers[provider]
+    if (providerMapping) {
+      for (const [commonParam, providerParam] of Object.entries(providerMapping)) {
+        if (providerParam === null && transformed[commonParam] !== undefined) {
+          delete transformed[commonParam]
+          logger.debug(`Removed unsupported parameter: ${commonParam} for ${provider}`)
+        }
+      }
     }
 
     return transformed

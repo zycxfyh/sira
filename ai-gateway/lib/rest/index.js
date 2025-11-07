@@ -42,6 +42,7 @@ module.exports = function ({ plugins, config } = {}) {
   app.use('/policies', require('./routes/policies')({ config }))
   app.use('/schemas', require('./routes/schemas')())
   app.use('/', require('./routes/analytics')())
+  app.use('/', require('./routes/parameters')())
 
   app.use((err, req, res, next) => {
     logger.debug(err.stack)

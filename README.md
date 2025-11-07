@@ -53,6 +53,7 @@
 | 🎯 **智能配置向导** | 交互式供应商配置，自动测试连接 | ⚡ 5分钟完成配置 |
 | 🛡️ **错误处理机制** | 自动重试、熔断保护、详细错误诊断 | 🔧 99.9%稳定性保障 |
 | 📚 **完整配置指南** | 详细的配置文档，涵盖20+供应商 | 📖 开发者友好 |
+| 🎛️ **智能参数管理** | 预设参数模板、自动优化、供应商适配 | ⚡ 最佳性能配置 |
 
 ---
 
@@ -332,6 +333,117 @@ cat ai-gateway/docs/ai-provider-configuration-guide.md
 5. **🔗 测试连接**: 自动验证配置正确性
 6. **📝 生成配置**: 自动创建标准配置文件
 
+## 🎛️ 参数管理
+
+### 智能参数配置
+
+Sira提供完整的AI模型参数管理，支持预设模板、自动优化和供应商适配：
+
+```bash
+# 启动参数管理工具
+./scripts/manage-parameters.sh
+
+# 查看参数预设
+./scripts/manage-parameters.sh --presets
+
+# 验证参数配置
+./scripts/manage-parameters.sh --validate
+
+# 优化参数配置
+./scripts/manage-parameters.sh --optimize
+```
+
+#### 参数预设模板
+
+| 预设名称 | 适用场景 | 关键参数 |
+|----------|----------|----------|
+| **creative** | 创意写作、小说创作 | `temperature: 0.9, top_p: 0.9` |
+| **coding** | 代码生成、编程助手 | `temperature: 0.2, frequency_penalty: 0.5` |
+| **analytical** | 数据分析、逻辑推理 | `temperature: 0.1, top_p: 0.1` |
+| **conversational** | 日常对话、客服 | `temperature: 0.7, presence_penalty: 0.1` |
+| **translation** | 文本翻译 | `temperature: 0.3, frequency_penalty: 0.2` |
+| **summarization** | 内容总结 | `temperature: 0.1, max_tokens: 1024` |
+
+#### API使用示例
+
+```javascript
+// 使用预设参数
+const response = await fetch('/api/v1/ai/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'your-key'
+  },
+  body: JSON.stringify({
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: '写一首诗' }],
+    parameter_preset: 'creative'  // 使用创意写作预设
+  })
+});
+
+// 自定义参数
+const response = await fetch('/api/v1/ai/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'your-key'
+  },
+  body: JSON.stringify({
+    model: 'deepseek-chat',
+    messages: [{ role: 'user', content: '写一个排序算法' }],
+    parameters: {
+      temperature: 0.2,
+      top_p: 0.1,
+      frequency_penalty: 0.5,
+      max_tokens: 1024
+    }
+  })
+});
+
+// 任务类型自动优化
+const response = await fetch('/api/v1/ai/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'your-key',
+    'x-task-type': 'coding'  // 自动优化为编程参数
+  },
+  body: JSON.stringify({
+    model: 'claude-3-sonnet',
+    messages: [{ role: 'user', content: '解释递归函数' }]
+  })
+});
+```
+
+### 参数验证和优化
+
+```bash
+# 验证参数配置
+curl -X POST http://localhost:9876/parameters/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "parameters": {
+      "temperature": 0.8,
+      "top_p": 0.9,
+      "max_tokens": 2000
+    },
+    "provider": "openai",
+    "model": "gpt-4"
+  }'
+
+# 优化参数配置
+curl -X POST http://localhost:9876/parameters/optimize \
+  -H "Content-Type: application/json" \
+  -d '{
+    "parameters": {
+      "temperature": 1.0,
+      "max_tokens": 5000
+    },
+    "taskType": "creative",
+    "model": "gpt-4"
+  }'
+```
+
 ### 高级配置选项
 
 ```yaml
@@ -357,6 +469,13 @@ cache:
   enabled: true
   ttl: 3600
   compression: true
+
+# 参数优化配置
+parameters:
+  auto_optimize: true
+  presets_enabled: true
+  validation_strict: false
+  provider_adaptation: true
 ```
 
 ### 🛠️ 开发环境搭建
