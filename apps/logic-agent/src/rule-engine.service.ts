@@ -1,6 +1,6 @@
 // 文件路径: apps/backend/apps/logic-agent/src/rule-engine.service.ts (已修复 unknown 类型)
 
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import {
@@ -31,6 +31,8 @@ export class RuleEngineService {
         for (const directive of directives) {
           if (directive.op === 'update_character') {
             await this.handleUpdateCharacter(transactionClient, gameId, directive);
+          } else {
+            throw new BadRequestException(`Unknown directive operation: ${directive.op}`);
           }
         }
       });
@@ -38,6 +40,11 @@ export class RuleEngineService {
       this.logger.log(`Successfully executed ${directives.length} directives for game ${gameId}.`);
     } catch (error: unknown) {
       // <-- [核心修正] 明确 error 类型为 unknown
+      // 如果是BadRequestException，直接重新抛出
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
       const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
       this.logger.error(
         `Transaction failed during rule execution for game ${gameId}`,

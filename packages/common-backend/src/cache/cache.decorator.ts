@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/cache/cache.decorator.ts
-// 灵感来源: NestJS Cache Manager
 // 核心理念: 缓存装饰器，简化缓存使用
 
 import { SetMetadata } from '@nestjs/common';

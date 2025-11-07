@@ -1,6 +1,6 @@
 // 文件路径: apps/backend/apps/logic-agent/src/logic.service.ts (已重构)
 
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, BadRequestException } from '@nestjs/common';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { User } from '@prisma/client';
@@ -15,6 +15,7 @@ import {
   PromptManagerService,
   callAiWithGuard, // <-- 导入护栏函数
   AiGenerationException, // <-- 导入自定义异常
+  PromptInjectionGuard, // <-- 导入提示注入防护
 } from '@tuheg/common-backend';
 
 @Injectable()
@@ -26,6 +27,7 @@ export class LogicService {
     private readonly ruleEngine: RuleEngineService,
     private readonly eventBus: EventBusService,
     private readonly promptManager: PromptManagerService,
+    private readonly promptInjectionGuard: PromptInjectionGuard,
   ) {}
 
   public async processLogic(jobData: GameActionJobData): Promise<void> {
@@ -48,8 +50,21 @@ export class LogicService {
     user: User,
   ): Promise<DirectiveSet> {
     try {
+      // [安全修复] 在调用AI之前检查输入是否包含提示注入攻击
+      const securityCheck = await this.promptInjectionGuard.checkInput(
+        JSON.stringify(jobData.playerAction),
+        {
+          userId: jobData.userId,
+          correlationId: jobData.correlationId,
+        }
+      );
+
+      if (!securityCheck.allowed) {
+        throw new BadRequestException(`Input failed security validation: ${securityCheck.reason}`);
+      }
+
       const provider = await this.scheduler.getProviderForRole(user, 'logic_parsing');
-      const parser = StructuredOutputParser.fromZodSchema(directiveSetSchema as any);
+      const parser = StructuredOutputParser.fromZodSchema(directiveSetSchema);
       const systemPrompt = this.promptManager.getPrompt('01_logic_engine.md');
 
       const prompt = new PromptTemplate({
@@ -75,6 +90,11 @@ export class LogicService {
 
       return response;
     } catch (error: unknown) {
+      // 如果是BadRequestException（如提示注入检查失败），直接重新抛出
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
       const errorMessage =
         error instanceof AiGenerationException
           ? 'AI Guard: Failed to generate valid directives.'

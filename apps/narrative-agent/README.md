@@ -35,12 +35,14 @@ apps/narrative-agent/
 #### 1. Narrative Service (叙事生成服务)
 
 **功能职责**:
+
 - 接收逻辑处理完成的事件
 - 调用AI模型生成叙事内容
 - 协调Synthesizer和Critic Agent
 - 通过网关推送结果给前端
 
 **核心流程**:
+
 ```typescript
 async processNarrative(payload: LogicCompletePayload): Promise<void> {
   // 1. 获取游戏完整状态
@@ -54,11 +56,11 @@ async processNarrative(payload: LogicCompletePayload): Promise<void> {
   // 3. 可选：审查和优化 (当前被注释)
   // const finalProgression = await this.reviewWithCritic(...);
 
-  // 4. 通过网关推送给用户
-  await this.httpService.post(this.GATEWAY_URL, {
+  // 4. 发布叙事生成完成事件
+  await this.eventBus.publish('NARRATIVE_GENERATION_COMPLETED', {
     userId: payload.userId,
-    event: 'processing_completed',
-    data: { progression: finalProgression }
+    gameId: payload.gameId,
+    progression: finalProgression
   });
 }
 ```
@@ -68,11 +70,13 @@ async processNarrative(payload: LogicCompletePayload): Promise<void> {
 **双Agent协作模式** (当前优化为单Agent模式):
 
 ##### Synthesizer Agent (叙事合成器)
+
 - **职责**: 直接生成高质量的叙事内容和行动选项
 - **输入**: 游戏状态 + 玩家行动
 - **输出**: 完整的ProgressionResponse
 
 ##### Critic Agent (审查家) - 预留功能
+
 - **职责**: 审查和优化Synthesizer的初稿
 - **输入**: 游戏状态 + 玩家行动 + 初稿
 - **输出**: 优化后的ProgressionResponse
@@ -81,11 +85,13 @@ async processNarrative(payload: LogicCompletePayload): Promise<void> {
 #### 3. Message Queue Controller (消息队列控制器)
 
 **功能职责**:
+
 - 监听Logic Agent完成的消息
 - 触发叙事生成流程
 - 处理消息确认和错误恢复
 
 **消息处理**:
+
 ```typescript
 @MessagePattern('LOGIC_PROCESSING_COMPLETE')
 async handleLogicComplete(@Payload() data: LogicCompletePayload) {
@@ -107,40 +113,46 @@ Narrative Agent使用结构化输出确保生成的内容符合预定格式：
 ```typescript
 const progressionResponseSchema = z.object({
   narrative: z.string().describe('对玩家行动结果的生动叙事描述'),
-  options: z.array(z.object({
-    dimension: z.string(),      // 行动维度 (战斗/社交/探索等)
-    check: z.string(),          // 检查类型 (力量/智力/魅力等)
-    success_rate: z.string(),   // 成功率估计
-    text: z.string(),           // 行动描述
-  })).nullable(),
+  options: z
+    .array(
+      z.object({
+        dimension: z.string(), // 行动维度 (战斗/社交/探索等)
+        check: z.string(), // 检查类型 (力量/智力/魅力等)
+        success_rate: z.string(), // 成功率估计
+        text: z.string(), // 行动描述
+      }),
+    )
+    .nullable(),
 });
 ```
 
 ### 2. 输入数据结构
 
 **LogicCompletePayload**:
+
 ```typescript
 interface LogicCompletePayload {
-  gameId: string;        // 游戏ID
-  userId: string;        // 用户ID
-  playerAction: any;     // 玩家行动详情
+  gameId: string; // 游戏ID
+  userId: string; // 用户ID
+  playerAction: any; // 玩家行动详情
 }
 ```
 
 ### 3. 输出数据结构
 
 **ProgressionResponse**:
+
 ```typescript
 interface ProgressionResponse {
-  narrative: string;           // 生动叙事文本
+  narrative: string; // 生动叙事文本
   options: ActionOption[] | null; // 后续行动选项
 }
 
 interface ActionOption {
-  dimension: string;     // 行动分类
-  check: string;         // 所需能力
-  success_rate: string;  // 成功概率
-  text: string;          // 行动描述
+  dimension: string; // 行动分类
+  check: string; // 所需能力
+  success_rate: string; // 成功概率
+  text: string; // 行动描述
 }
 ```
 
@@ -171,6 +183,7 @@ Logic Agent完成 → Narrative Agent接收 → Synthesizer直接生成 → 推�
 ```
 
 **优势**:
+
 - 响应速度快
 - 资源消耗少
 - 维护简单
@@ -182,11 +195,13 @@ Logic Agent完成 → Narrative Agent接收 → Synthesizer初稿 → Critic审�
 ```
 
 **优势**:
+
 - 叙事质量更高
 - 内容更连贯
 - 错误率更低
 
 **启用方式**:
+
 ```typescript
 // 在 synthesizeNarrative 后添加
 if (this.needsCriticReview(finalProgression, gameState)) {
@@ -199,6 +214,7 @@ if (this.needsCriticReview(finalProgression, gameState)) {
 ### 1. Synthesizer提示词
 
 使用 `02_narrative_engine.md`，包含：
+
 - AI-GM人格设定
 - 叙事生成指南
 - 行动选项设计原则
@@ -207,6 +223,7 @@ if (this.needsCriticReview(finalProgression, gameState)) {
 ### 2. Critic提示词 (预留)
 
 使用 `03_critic_agent.md`，包含：
+
 - 内容质量评估标准
 - 叙事优化策略
 - 一致性检查规则
@@ -224,16 +241,16 @@ try {
   // 记录错误
   this.logger.error(`Failed to process narrative task`, error);
 
-  // 尝试发送错误消息给用户
+  // 发布错误事件
   try {
-    await this.httpService.post(this.GATEWAY_URL, {
+    await this.eventBus.publish('NARRATIVE_GENERATION_FAILED', {
       userId: payload.userId,
-      event: 'processing_failed',
-      data: { error: error.message }
+      gameId: payload.gameId,
+      error: error.message,
     });
-  } catch (gatewayError) {
-    // 网关通信失败的最后防线
-    this.logger.error('CRITICAL: Failed to send error via gateway', gatewayError);
+  } catch (eventError) {
+    // 事件发布失败的最后防线
+    this.logger.error('CRITICAL: Failed to publish error event', eventError);
   }
 
   channel.nack(originalMsg);
@@ -274,7 +291,7 @@ try {
 ### 2. 消息流
 
 ```
-Logic Agent → RabbitMQ(LOGIC_PROCESSING_COMPLETE) → Narrative Agent → 网关推送
+Logic Agent → RabbitMQ(LOGIC_PROCESSING_COMPLETE) → Narrative Agent → RabbitMQ(NARRATIVE_GENERATION_COMPLETED/FAILED) → Gateway → WebSocket推送
 ```
 
 ## 依赖关系
@@ -300,9 +317,6 @@ Logic Agent → RabbitMQ(LOGIC_PROCESSING_COMPLETE) → Narrative Agent → 网�
 ```bash
 # RabbitMQ配置
 RABBITMQ_URL=amqp://localhost:5672
-
-# 网关配置
-GATEWAY_URL=http://nexus-engine:3000/gateway/send-to-user
 
 # AI配置
 OPENAI_API_KEY=sk-...
@@ -407,14 +421,14 @@ spec:
   template:
     spec:
       containers:
-      - name: narrative-agent
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
+        - name: narrative-agent
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '500m'
+            limits:
+              memory: '1Gi'
+              cpu: '1000m'
 ```
 
 ## 故障排查
@@ -426,10 +440,10 @@ spec:
    - 验证提示词文件完整性
    - 查看AI服务响应日志
 
-2. **网关通信失败**
-   - 检查GATEWAY_URL配置
-   - 验证网关服务可用性
-   - 查看网络连接状态
+2. **事件发布失败**
+   - 检查RabbitMQ连接配置
+   - 验证消息队列可用性
+   - 查看事件总线连接状态
 
 3. **消息积压**
    - 检查RabbitMQ连接
@@ -449,6 +463,7 @@ spec:
 ### 架构演进
 
 当前架构可以演进为：
+
 - **多模型集成**: 支持多种AI模型组合
 - **流式生成**: 实时流式输出叙事内容
 - **交互式叙事**: 支持玩家中途干预

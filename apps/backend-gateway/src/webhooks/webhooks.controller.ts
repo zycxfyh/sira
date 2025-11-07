@@ -9,7 +9,6 @@ import {
   Req,
 } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import type { PrismaService } from '@tuheg/common-backend';
 import type { Request } from 'express';
 import { Webhook } from 'svix';
 
@@ -28,7 +27,6 @@ export class WebhooksController {
   private readonly logger = new Logger(WebhooksController.name);
 
   constructor(
-    private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
   ) {}
 

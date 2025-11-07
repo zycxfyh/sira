@@ -8,6 +8,9 @@
     <!-- [核心] 在这里挂载我们的新模态框 -->
     <AISettingsModal v-if="uiStore.isAiSettingsModalVisible" />
     <ProcessingOverlay />
+
+    <!-- Toast通知容器 -->
+    <ToastContainer />
   </div>
 </template>
 
@@ -24,6 +27,7 @@ import ProcessingOverlay from '@/components/common/ProcessingOverlay.vue';
 import WeaverConsoleModal from '@/components/common/WeaverConsoleModal.vue';
 // [核心] 导入新创建的模态框组件
 import AISettingsModal from '@/components/common/AISettingsModal.vue';
+import ToastContainer from '@/components/common/ToastContainer.vue';
 
 const authStore = useAuthStore();
 const uiStore = useUIStore();

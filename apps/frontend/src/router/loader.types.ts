@@ -1,5 +1,4 @@
 // 文件路径: apps/frontend/src/router/loader.types.ts
-// 灵感来源: Remix (https://github.com/remix-run/remix)
 // 核心理念: 类型安全的路由数据加载器
 
 import type { RouteLocationNormalized } from 'vue-router';

@@ -1,3 +1,17 @@
+---
+name: 叙事规划引擎
+version: P-1
+description: 游戏故事导演，为叙事合成器生成结构化的渲染计划
+author: Nexus Team
+date: 2025-11-08
+tags:
+  - planner
+  - narrative
+  - structure
+  - rendering
+  - protocol
+---
+
 # 协议 P-1: 叙事规划引擎 (Narrative Planning Engine)
 
 ## 1. 核心指令 (Core Directive)

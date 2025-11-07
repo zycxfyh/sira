@@ -3,6 +3,7 @@
 // [核心修正] 导入正确的 ui.store 和 useUIStore
 import { useUIStore } from '@/stores/ui.store';
 import { useGameStore } from '@/stores/game.store';
+import { useAppStore } from '@/stores/app.store';
 import { useToast } from './useToast';
 
 /**
@@ -12,6 +13,7 @@ export function useAssets() {
   // [核心修正] 获取正确的 store 实例
   const uiStore = useUIStore();
   const gameStore = useGameStore();
+  const appStore = useAppStore();
   const { show: showToast } = useToast();
 
   /**
@@ -39,8 +41,8 @@ export function useAssets() {
           data.coreIdentity &&
           Array.isArray(data.personality)
         ) {
-          // 这个状态应该属于 CreationHubView 或一个专门的 creation store
-          // 我们暂时假设父组件会处理它
+          // 存储解析后的角色卡数据到 app store 中供 CharacterDrivenPath.vue 使用
+          appStore.setUploadedCharacterCard(data);
           console.log('Character card parsed:', data);
           showToast(`角色卡 "${data.name}" 已成功载入！`, 'success');
         } else {

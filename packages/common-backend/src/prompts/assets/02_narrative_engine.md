@@ -1,3 +1,17 @@
+---
+name: 分层叙事引擎
+version: N-2
+description: 双重角色叙事引擎，将世界状态变更渲染成生动沉浸的故事
+author: Nexus Team
+date: 2025-11-08
+tags:
+  - narrative
+  - synthesis
+  - storytelling
+  - tiered
+  - protocol
+---
+
 # 协议 N-2: 分层叙事引擎 (Tiered Narrative Engine)
 
 ## 1. 核心指令

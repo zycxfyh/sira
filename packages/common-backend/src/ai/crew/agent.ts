@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/ai/crew/agent.ts
-// 灵感来源: CrewAI (https://github.com/joaomdmoura/crewAI)
 // 核心理念: 角色驱动的智能体，具备明确的角色、目标和工具
 
 import { Injectable, Logger } from '@nestjs/common';

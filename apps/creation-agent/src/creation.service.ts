@@ -2,8 +2,6 @@
 
 import { Prisma } from '@prisma/client';
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { User } from '@prisma/client';
@@ -14,6 +12,8 @@ import {
   PromptManagerService,
   callAiWithGuard,
   AiGenerationException,
+  EventBusService,
+  PromptInjectionGuard,
 } from '@tuheg/common-backend';
 
 interface GameCreationPayload {
@@ -45,14 +45,13 @@ type ArchitectResponse = z.infer<typeof architectResponseSchema>;
 @Injectable()
 export class CreationService {
   private readonly logger = new Logger(CreationService.name);
-  private readonly GATEWAY_URL =
-    process.env.GATEWAY_URL || 'http://nexus-engine:3000/gateway/send-to-user';
 
   constructor(
     private readonly scheduler: DynamicAiSchedulerService,
     private readonly prisma: PrismaService,
     private readonly promptManager: PromptManagerService,
-    private readonly httpService: HttpService,
+    private readonly eventBus: EventBusService,
+    private readonly promptInjectionGuard: PromptInjectionGuard,
   ) {}
 
   public async createNewWorld(payload: GameCreationPayload): Promise<void> {
@@ -61,6 +60,10 @@ export class CreationService {
     const pseudoUser = { id: userId } as User;
 
     try {
+      // [安全修复] 在调用AI之前检查用户输入是否包含提示注入攻击
+      await this.promptInjectionGuard.ensureSafeOrThrow(concept, {
+        userId: userId,
+      });
       const initialWorld = await this.generateInitialWorld(concept, pseudoUser);
       this.logger.log(`AI has generated initial world: "${initialWorld.gameName}"`);
 
@@ -76,7 +79,7 @@ export class CreationService {
           data: {
             gameId: game.id,
             name: initialWorld.character.name,
-            card: initialWorld.character.card as any,
+            card: initialWorld.character.card,
           },
         });
 
@@ -85,7 +88,7 @@ export class CreationService {
             data: initialWorld.worldBook.map((entry) => ({
               gameId: game.id,
               key: entry.key,
-              content: entry.content as any,
+              content: entry.content,
             })),
           });
         }
@@ -93,16 +96,14 @@ export class CreationService {
       });
       this.logger.log(`New game with ID ${newGame.id} successfully saved to database.`);
 
-      await firstValueFrom(
-        this.httpService.post(this.GATEWAY_URL, {
+      this.eventBus.publish('NOTIFY_USER', {
           userId: userId,
           event: 'creation_completed',
           data: {
             message: `New world "${newGame.name}" created successfully.`,
             gameId: newGame.id,
           },
-        }),
-      );
+      });
     } catch (error: unknown) {
       // <-- [核心修正] 明确 error 类型为 unknown
       let errorMessage = 'An unknown error occurred during world creation';
@@ -117,22 +118,52 @@ export class CreationService {
       );
 
       try {
-        await firstValueFrom(
-          this.httpService.post(this.GATEWAY_URL, {
+        await this.eventBus.publish('NOTIFY_USER', {
             userId: userId,
             event: 'creation_failed',
             data: {
               message: 'Failed to create new world.',
               error: errorMessage,
             },
-          }),
-        );
-      } catch (gatewayError) {
+        });
+      } catch (eventBusError) {
         this.logger.error(
-          'CRITICAL: Failed to even send the creation failure message via gateway.',
-          gatewayError,
+          'CRITICAL: Failed to even send the creation failure message via event bus.',
+          eventBusError,
         );
       }
+
+      // 重新抛出异常以保持测试兼容性
+      throw error;
+    }
+  }
+
+  /**
+   * 专门用于在所有重试都失败后的最终失败通知
+   * 这个方法确保即使消息被发送到DLQ，用户也能收到失败通知
+   */
+  public async notifyCreationFailure(userId: string, error: unknown): Promise<void> {
+    let errorMessage = 'An unknown error occurred during world creation';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    try {
+      await this.eventBus.publish('NOTIFY_USER', {
+        userId: userId,
+        event: 'creation_failed',
+        data: {
+          message: 'Failed to create new world after all retry attempts.',
+          error: errorMessage,
+          finalFailure: true, // 标记这是最终失败，不再重试
+        },
+      });
+      this.logger.log(`Sent final creation failure notification to user ${userId}`);
+    } catch (eventBusError) {
+      this.logger.error(
+        `CRITICAL: Failed to send final creation failure notification to user ${userId}`,
+        eventBusError,
+      );
     }
   }
 
@@ -156,7 +187,7 @@ export class CreationService {
           concept,
           system_prompt: systemPrompt,
         },
-        architectResponseSchema as any,
+        architectResponseSchema,
       );
       return response;
     } catch (error: unknown) {

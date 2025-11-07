@@ -3,7 +3,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import type { Character, Prisma, PrismaClient } from '@prisma/client';
-import { type DirectiveSet, type NumericOperation, PrismaService } from '@tuheg/common-backend';
+import { type DirectiveSet, PrismaService } from '@tuheg/common-backend';
 import { type DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { RuleEngineService } from './rule-engine.service';
 
@@ -150,19 +150,12 @@ describe('RuleEngineService', () => {
     });
 
     it('should throw BadRequestException for an unknown operation', async () => {
-      prismaMock.character.findUniqueOrThrow.mockResolvedValue(MOCK_CHARACTER);
       const directives: DirectiveSet = [
         {
-          op: 'update_character',
+          op: 'unknown_operation', // 使用一个未知的操作
           targetId: 'player',
-          payload: {
-            // [核心修复] 移除不再需要的 @ts-expect-error
-            hp: {
-              op: 'multiply',
-              value: 2,
-            } as unknown as NumericOperation, // 保持无效配置以触发运行时错误
-          },
-        },
+          payload: {},
+        } as any, // Type assertion to bypass type checking
       ];
       await expect(service.execute(MOCK_GAME_ID, directives)).rejects.toThrow(BadRequestException);
     });

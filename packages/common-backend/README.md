@@ -1,8 +1,11 @@
-# Common Backend (通用后端包)
+# 📦 Common Backend (通用后端包) - 系统技术底座
 
-## 概述
+## 📋 概述
 
-Common Backend是创世星环系统中最重要的共享包，提供所有后端服务共同使用的核心功能和基础设施。它采用模块化设计，包含数据库访问、AI服务、缓存、事件总线、监控等多种功能组件，是整个系统的技术底座。
+Common Backend是创世星环系统中**最重要的共享包**，提供所有后端服务共同使用的核心功能和基础设施。它采用模块化设计，包含数据库访问、AI服务、缓存、事件总线、监控等多种功能组件，是整个系统的**技术底座**。
+
+[![Core Package](https://img.shields.io/badge/core-package-critical-red.svg)](../../docs/System-Technical-Specification.md)
+[![Tested](https://img.shields.io/badge/tested-✅-brightgreen.svg)](../../industrial-test-results/)
 
 ## 技术栈
 
@@ -57,16 +60,19 @@ packages/common-backend/
 ### 1. 数据库层 (Prisma)
 
 **功能职责**:
+
 - 数据库连接和查询
 - 数据迁移管理
 - 类型安全的数据访问
 
 **关键组件**:
+
 - **PrismaService**: 数据库服务封装
 - **PrismaModule**: 数据库模块配置
 - **schema.prisma**: 数据库模式定义
 
 **核心特性**:
+
 ```typescript
 @Injectable()
 export class PrismaService extends PrismaClient {
@@ -92,11 +98,13 @@ export class PrismaService extends PrismaClient {
 #### Dynamic AI Scheduler (动态AI调度器)
 
 **功能职责**:
+
 - 根据任务类型智能选择AI模型
 - 支持多AI提供商切换
 - 用户配置管理
 
 **核心逻辑**:
+
 ```typescript
 @Injectable()
 export class DynamicAiSchedulerService {
@@ -116,17 +124,19 @@ export class DynamicAiSchedulerService {
 #### AI Guard (AI护栏)
 
 **功能职责**:
+
 - 验证AI输出格式正确性
 - 自动重试失败的AI调用
 - 结构化错误处理
 
 **核心实现**:
+
 ```typescript
 export async function callAiWithGuard<T>(
   chain: Runnable,
   inputs: Record<string, any>,
   schema: ZodSchema<T>,
-  maxRetries: number = 3
+  maxRetries: number = 3,
 ): Promise<T> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -144,11 +154,13 @@ export async function callAiWithGuard<T>(
 #### 提示词管理器
 
 **功能职责**:
+
 - 动态加载和管理提示词模板
 - 变量替换和格式化
 - 版本控制和缓存
 
 **支持的提示词**:
+
 - `00_persona_and_framework.md` - AI-GM人格框架
 - `01_logic_engine.md` - 逻辑引擎协议
 - `02_narrative_engine.md` - 叙事引擎协议
@@ -158,11 +170,13 @@ export async function callAiWithGuard<T>(
 ### 3. 事件总线 (Event Bus)
 
 **功能职责**:
+
 - 服务间异步通信
 - 事件发布订阅模式
 - Redis-backed消息队列
 
 **核心实现**:
+
 ```typescript
 @Injectable()
 export class EventBusService {
@@ -181,11 +195,13 @@ export class EventBusService {
 ### 4. 缓存服务
 
 **功能职责**:
+
 - 多级缓存策略
 - Redis缓存集成
 - 装饰器支持的缓存
 
 **使用示例**:
+
 ```typescript
 @Cache('user:profile', 300) // 缓存5分钟
 async getUserProfile(userId: string): Promise<UserProfile> {
@@ -199,6 +215,7 @@ async getUserProfile(userId: string): Promise<UserProfile> {
 #### 性能监控
 
 **功能职责**:
+
 - 请求响应时间监控
 - 内存使用追踪
 - 自定义性能指标
@@ -206,6 +223,7 @@ async getUserProfile(userId: string): Promise<UserProfile> {
 #### Sentry集成
 
 **功能职责**:
+
 - 错误监控和追踪
 - 性能 profiling
 - 用户行为分析
@@ -215,11 +233,13 @@ async getUserProfile(userId: string): Promise<UserProfile> {
 #### Zod验证管道
 
 **功能职责**:
+
 - 请求数据验证
 - 自动错误格式化
 - 类型安全保证
 
 **使用示例**:
+
 ```typescript
 @Post()
 async createGame(
@@ -241,6 +261,7 @@ async createGame(
 #### 向量搜索服务
 
 **功能职责**:
+
 - 语义搜索历史对话
 - 相似场景检索
 - 上下文增强
@@ -248,11 +269,13 @@ async createGame(
 #### 记忆层次服务
 
 **功能职责**:
+
 - 分层记忆管理
 - 重要性评分
 - 上下文摘要
 
 **记忆层次结构**:
+
 ```
 长期记忆 (Long-term Memory)
     ├─ 角色设定 (Character Card)
@@ -271,11 +294,13 @@ async createGame(
 ### 8. 插件系统
 
 **功能职责**:
+
 - 动态插件加载
 - 扩展功能注册
 - 热插拔支持
 
 **插件类型**:
+
 - AI提供商插件
 - 游戏规则插件
 - 监控插件
@@ -286,6 +311,7 @@ async createGame(
 #### 熔断器 (Circuit Breaker)
 
 **功能职责**:
+
 - 防止级联故障
 - 自动故障恢复
 - 降级处理
@@ -293,6 +319,7 @@ async createGame(
 #### 重试策略
 
 **功能职责**:
+
 - 指数退避重试
 - 最大重试次数限制
 - 错误类型分类
@@ -520,6 +547,7 @@ Backend Gateway → Common Backend ← Logic Agent
 ### 架构演进
 
 当前架构可以演进为：
+
 - **微服务网格**: Service Mesh集成 (Istio/Linkerd)
 - **事件驱动**: 完全的事件驱动架构
 - **多云部署**: 支持多云环境部署

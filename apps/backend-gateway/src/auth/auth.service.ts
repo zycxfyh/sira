@@ -1,7 +1,7 @@
 // 文件路径: apps/nexus-engine/src/auth/auth.service.ts
 
 import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
-import * as bcrypt from 'bcryptjs';
+import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 
@@ -29,7 +29,7 @@ export class AuthService {
       throw new ConflictException('Email already registered.');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
 
     const user = await this.prisma.user.create({
       data: {
@@ -47,7 +47,7 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     // [还原] 使用 bcrypt.compare
-    if (user && (await bcrypt.compare(pass, user.password))) {
+    if (user && (await bcryptjs.compare(pass, user.password))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...result } = user;
       return result;

@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/config/config.module.ts
-// 灵感来源: Zod Config + dotenv-expand
 // 核心理念: 类型安全的环境配置模块
 
 import { Module, OnModuleInit } from '@nestjs/common';

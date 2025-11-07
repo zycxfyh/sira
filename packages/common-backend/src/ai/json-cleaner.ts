@@ -157,7 +157,7 @@ function normalizeQuotes(raw: string): string {
  * // => { name: "test" }
  * ```
  */
-export function cleanAndParseJson(raw: unknown): unknown {
+export async function cleanAndParseJson(raw: unknown): Promise<unknown> {
   // 如果已经是对象或数组，直接返回（避免不必要的处理）
   if (typeof raw !== 'string') {
     return raw;
@@ -178,23 +178,21 @@ export function cleanAndParseJson(raw: unknown): unknown {
     // 策略 2: 使用 jsonrepair 修复常见语法错误（如缺少逗号、括号不匹配等）
     async () => {
       try {
-        // @ts-ignore - 动态导入，忽略TypeScript类型检查
         const { jsonrepair } = await import('jsonrepair');
         return JSON.parse(jsonrepair(working));
-      } catch (error) {
-        // 如果jsonrepair不可用，跳过此策略
-        throw new Error('jsonrepair not available');
+      } catch {
+        // 如果jsonrepair不可用，跳过此策略，让下一个策略尝试
+        return undefined;
       }
     },
     // 策略 3: 先修复引号再使用 jsonrepair（处理单引号 JSON）
     async () => {
       try {
-        // @ts-ignore - 动态导入，忽略TypeScript类型检查
         const { jsonrepair } = await import('jsonrepair');
         return JSON.parse(jsonrepair(normalizeQuotes(working)));
-      } catch (error) {
-        // 如果jsonrepair不可用，跳过此策略
-        throw new Error('jsonrepair not available');
+      } catch {
+        // 如果jsonrepair不可用，跳过此策略，让下一个策略尝试
+        return undefined;
       }
     },
     // 策略 4: 仅修复引号（如果 jsonrepair 也不起作用）
@@ -204,7 +202,11 @@ export function cleanAndParseJson(raw: unknown): unknown {
   let lastError: unknown;
   for (const attempt of attempts) {
     try {
-      const parsed = attempt();
+      const parsed = await attempt();
+      // 如果策略返回undefined，跳过此策略
+      if (parsed === undefined) {
+        continue;
+      }
       // 验证结果是对象或数组（不接受原始值）
       if (isAcceptableJsonValue(parsed)) {
         return parsed;
@@ -214,6 +216,8 @@ export function cleanAndParseJson(raw: unknown): unknown {
     } catch (error) {
       // 解析失败，记录错误并尝试下一个策略
       lastError = error;
+      // 调试输出
+      console.log(`Strategy failed:`, error);
     }
   }
 

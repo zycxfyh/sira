@@ -46,13 +46,14 @@ interface ApiResponse<T = unknown> {
 ```
 
 **使用示例**:
+
 ```typescript
 // 成功响应
 const response: ApiResponse<User> = {
   data: { id: '1', email: 'user@example.com' },
   message: 'User retrieved successfully',
   status: 200,
-  timestamp: '2024-01-01T00:00:00Z'
+  timestamp: '2024-01-01T00:00:00Z',
 };
 
 // 错误响应
@@ -60,7 +61,7 @@ const errorResponse: ApiResponse<null> = {
   data: null,
   message: 'User not found',
   status: 404,
-  timestamp: '2024-01-01T00:00:00Z'
+  timestamp: '2024-01-01T00:00:00Z',
 };
 ```
 
@@ -82,6 +83,7 @@ interface ApiError {
 ```
 
 **使用示例**:
+
 ```typescript
 const validationError: ApiError = {
   message: 'Validation failed',
@@ -89,9 +91,9 @@ const validationError: ApiError = {
   status: 400,
   details: {
     email: 'Invalid email format',
-    password: 'Password too short'
+    password: 'Password too short',
   },
-  timestamp: '2024-01-01T00:00:00Z'
+  timestamp: '2024-01-01T00:00:00Z',
 };
 ```
 
@@ -130,13 +132,14 @@ interface PaginationParams {
 ```
 
 **使用示例**:
+
 ```typescript
 // 分页请求
 const params: PaginationParams = {
   page: 1,
   pageSize: 20,
   sortBy: 'createdAt',
-  sortOrder: 'desc'
+  sortOrder: 'desc',
 };
 
 // 分页响应
@@ -145,7 +148,7 @@ const response: PaginatedResponse<Game> = {
   total: 150,
   page: 1,
   pageSize: 20,
-  totalPages: 8
+  totalPages: 8,
 };
 ```
 
@@ -241,17 +244,16 @@ export const apiResponseSchema = <T extends z.ZodType>(dataSchema: T) =>
   });
 
 // 使用示例
-const userResponseSchema = apiResponseSchema(z.object({
-  id: z.string(),
-  email: z.string().email(),
-  name: z.string().optional(),
-}));
+const userResponseSchema = apiResponseSchema(
+  z.object({
+    id: z.string(),
+    email: z.string().email(),
+    name: z.string().optional(),
+  }),
+);
 
 // 验证函数
-export function validateApiResponse<T>(
-  response: unknown,
-  schema: z.ZodSchema<T>
-): T {
+export function validateApiResponse<T>(response: unknown, schema: z.ZodSchema<T>): T {
   return schema.parse(response);
 }
 ```
@@ -270,9 +272,9 @@ export function validateApiResponse<T>(
 ```typescript
 interface UserProfile {
   id: string;
-  name?: string;        // 可选属性
-  avatar?: string;      // 可选属性
-  bio: string;          // 必需属性
+  name?: string; // 可选属性
+  avatar?: string; // 可选属性
+  bio: string; // 必需属性
 }
 ```
 
@@ -330,7 +332,7 @@ interface Game {
 interface Game {
   id: string;
   name: string;
-  description?: string;  // 新增可选属性
+  description?: string; // 新增可选属性
 }
 ```
 
@@ -348,13 +350,13 @@ import { ApiResponse, User } from '@tuheg/shared-types';
 // 正确类型
 expectType<ApiResponse<User>>({
   data: { id: '1', email: 'test@example.com' },
-  status: 200
+  status: 200,
 });
 
 // 错误类型 (应该报错)
 expectError<ApiResponse<User>>({
   data: { id: '1', email: 'test@example.com', invalidProp: true },
-  status: 200
+  status: 200,
 });
 ```
 
@@ -365,7 +367,7 @@ describe('Shared Types Validation', () => {
   it('should validate API response', () => {
     const response = {
       data: { id: '1', email: 'test@example.com' },
-      status: 200
+      status: 200,
     };
 
     expect(() => validateApiResponse(response, userSchema)).not.toThrow();

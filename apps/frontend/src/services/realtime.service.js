@@ -48,12 +48,8 @@ class RealtimeService {
       return;
     }
 
-    // 从 .env.local 或默认值获取后端API基地址
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-    // 将 http://localhost:3000 转换为 ws://localhost:8080
-    // 这是一个简化的转换，假设 WebSocket 端口总是 8080
-    // 在生产环境中，这应该通过更健壮的方式配置
-    const wsUrl = apiBaseUrl.replace('http', 'ws').replace('3000', '8080');
+    // 从环境变量获取 WebSocket URL，如果没有则从 API URL 派生
+    const wsUrl = import.meta.env.VITE_WS_URL || (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace('http', 'ws');
 
     console.log(`[RealtimeService] Attempting to connect to ${wsUrl}/updates...`);
 

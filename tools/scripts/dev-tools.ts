@@ -1,5 +1,4 @@
 // 文件路径: tools/scripts/dev-tools.ts
-// 灵感来源: 多个项目的开发工具理念
 // 核心理念: 统一的开发工具脚本，提升开发效率
 
 import { execSync } from 'child_process';

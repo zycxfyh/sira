@@ -16,7 +16,7 @@ const app = createApp(App);
 
 Sentry.init({
   app,
-  dsn: 'https://32649f48cc92311f48b725cd96c3dbe3@o4510229377384448.ingest.us.sentry.io/4510229411790848',
+  dsn: import.meta.env.VITE_SENTRY_DSN,
   integrations: [
     Sentry.browserTracingIntegration({ router }),
     Sentry.replayIntegration({
@@ -40,7 +40,13 @@ uiStore.setRouter(router);
 
 app.mount('#app');
 
-// --- [核心重构] 建立响应式的实时连接 ---
+// --- [核心架构] WebSocket 生命周期与用户认证状态绑定 ---
+// 重要设计决策：WebSocket 连接不与特定组件生命周期绑定，
+// 而是与全局用户认证状态绑定。这确保了：
+// 1. 用户登录时自动建立连接
+// 2. 用户登出时自动断开连接
+// 3. 页面切换时连接保持稳定
+// 4. 避免组件卸载时意外断开连接
 const authStore = useAuthStore();
 const realtimeStore = useRealtimeStore();
 

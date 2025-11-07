@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/reactive/event-stream.ts
-// 灵感来源: RxJS (https://github.com/ReactiveX/rxjs)
 // 核心理念: 响应式数据流，使用 Observable 处理异步事件
 
 import { Injectable, Logger } from '@nestjs/common';

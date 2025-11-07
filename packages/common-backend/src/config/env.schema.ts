@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/config/env.schema.ts
-// 灵感来源: Zod Config (https://github.com/colinhacks/zod)
 // 核心理念: 类型安全的环境变量验证，启动时验证所有配置
 
 import { z } from 'zod';

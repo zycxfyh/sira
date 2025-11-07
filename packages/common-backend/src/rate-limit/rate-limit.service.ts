@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/rate-limit/rate-limit.service.ts
-// 灵感来源: express-rate-limit (https://github.com/express-rate-limit/express-rate-limit)
 // 核心理念: 滑动窗口限流算法，支持内存和 Redis 存储
 
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';

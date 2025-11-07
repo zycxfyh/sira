@@ -1,3 +1,17 @@
+---
+name: 逻辑推理引擎
+version: L-1
+description: 精确的逻辑推理引擎，用于分析世界状态和玩家行动，生成状态变更指令
+author: Nexus Team
+date: 2025-11-08
+tags:
+  - logic
+  - inference
+  - state-management
+  - directive
+  - protocol
+---
+
 # 协议 L-1: 逻辑推理引擎 (Logic Inference Engine)
 
 ## 1. 核心指令 (Core Directive)

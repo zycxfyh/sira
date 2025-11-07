@@ -1,5 +1,4 @@
 // 文件路径: packages/shared-types/src/api/types.ts
-// 灵感来源: T3 Stack (https://github.com/t3-oss/create-t3-app)
 // 核心理念: 前后端共享的 API 类型定义
 
 /**

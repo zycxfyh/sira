@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/ai/crew/crew.module.ts
-// 灵感来源: CrewAI (https://github.com/joaomdmoura/crewAI)
 // 核心理念: 模块化导出，方便其他模块使用
 
 import { Module } from '@nestjs/common';

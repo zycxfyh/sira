@@ -35,12 +35,14 @@ apps/logic-agent/
 #### 1. Logic Service (逻辑推理服务)
 
 **功能职责**:
+
 - 接收玩家行动数据
 - 调用AI模型进行逻辑推理
 - 生成结构化的状态变更指令
 - 协调规则引擎执行
 
 **核心流程**:
+
 ```typescript
 async processLogic(jobData: GameActionJobData): Promise<void> {
   // 1. 生成状态变更指令
@@ -57,36 +59,41 @@ async processLogic(jobData: GameActionJobData): Promise<void> {
 #### 2. Rule Engine Service (规则引擎服务)
 
 **功能职责**:
+
 - 执行状态变更指令
 - 应用游戏规则逻辑
 - 更新数据库状态
 - 确保数据一致性
 
 **支持的指令类型**:
+
 - **update_character**: 角色状态更新
   - HP/MP数值操作 (set/increment/decrement)
   - 状态字符串操作 (set/append/prepend)
 
 **指令示例**:
+
 ```typescript
 const directive: StateChangeDirective = {
   op: 'update_character',
   payload: {
     hp: { op: 'decrement', value: 10 },
-    status: { op: 'append', value: 'wounded' }
-  }
+    status: { op: 'append', value: 'wounded' },
+  },
 };
 ```
 
 #### 3. Message Queue Controller (消息队列控制器)
 
 **功能职责**:
+
 - 监听RabbitMQ消息队列
 - 处理玩家行动事件
 - 实现消息确认和重试机制
 - 错误处理和监控
 
 **消息处理流程**:
+
 ```typescript
 @MessagePattern('PLAYER_ACTION_SUBMITTED')
 async handlePlayerAction(@Payload() data: GameActionJobData) {
@@ -120,6 +127,7 @@ const prompt = new PromptTemplate({
 ### 2. 输入数据结构
 
 **GameActionJobData**:
+
 ```typescript
 interface GameActionJobData {
   gameId: string;
@@ -135,6 +143,7 @@ interface GameActionJobData {
 ### 3. 输出指令格式
 
 **DirectiveSet**: 状态变更指令数组
+
 ```typescript
 type DirectiveSet = StateChangeDirective[];
 
@@ -177,6 +186,7 @@ await this.prisma.$transaction(async (tx) => {
 ### 2. 数值操作
 
 支持多种数值修改操作：
+
 - **set**: 直接设置为指定值
 - **increment**: 增加指定值
 - **decrement**: 减少指定值
@@ -194,6 +204,7 @@ private applyNumericOperation(currentValue: number, op: NumericOperation): numbe
 ### 3. 字符串操作
 
 支持字符串拼接和替换：
+
 - **set**: 直接替换
 - **append**: 追加到末尾
 - **prepend**: 添加到开头
@@ -228,6 +239,7 @@ private applyNumericOperation(currentValue: number, op: NumericOperation): numbe
 ### 2. 死信队列处理
 
 实现消息重试和失败处理：
+
 - **最大重试次数**: 2次
 - **死信队列**: logic_agent_dlq
 - **错误监控**: 集成Sentry异常追踪
@@ -285,10 +297,10 @@ SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
 ```typescript
 // 队列选项
 const queueOptions = {
-  durable: true,                    // 队列持久化
+  durable: true, // 队列持久化
   deadLetterExchange: 'logic_agent_dlx', // 死信交换器
   deadLetterRoutingKey: 'logic_agent_dlq', // 死信路由键
-  messageTtl: 24 * 60 * 60 * 1000,   // 消息TTL: 24小时
+  messageTtl: 24 * 60 * 60 * 1000, // 消息TTL: 24小时
 };
 ```
 
@@ -415,14 +427,14 @@ spec:
   template:
     spec:
       containers:
-      - name: logic-agent
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "200m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
+        - name: logic-agent
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '200m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
 ```
 
 ## 故障排查
@@ -457,6 +469,7 @@ spec:
 ### 架构演进
 
 当前架构可以演进为：
+
 - **多模型支持**: 同时支持多种AI推理策略
 - **规则即代码**: 动态加载游戏规则
 - **事件驱动**: 更细粒度的事件处理

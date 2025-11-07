@@ -8,6 +8,7 @@ import {
   EventBusService,
   PrismaService,
   PromptManagerService,
+  PromptInjectionGuard,
   callAiWithGuard,
   GameActionJobData,
   DirectiveSet,
@@ -33,7 +34,17 @@ describe('LogicService', () => {
     const eventBusMock = mock<EventBusService>();
     const prismaMock = mock<PrismaService>();
     const schedulerMock = mock<DynamicAiSchedulerService>();
+    schedulerMock.getProviderForRole.mockResolvedValue({
+      model: { invoke: jest.fn().mockResolvedValue('mock response') } as any,
+    });
     const promptManagerMock = mock<PromptManagerService>();
+    const promptInjectionGuardMock = mock<PromptInjectionGuard>();
+    promptInjectionGuardMock.checkInput.mockResolvedValue({
+      allowed: true,
+      score: 0.1,
+      threshold: 0.7,
+      reason: 'passed',
+    });
     const ruleEngineMock = mock<RuleEngineService>({
       // 模拟 execute 方法为一个空的 resolved Promise
       execute: jest.fn().mockResolvedValue(undefined),
@@ -48,6 +59,7 @@ describe('LogicService', () => {
         { provide: PrismaService, useValue: prismaMock },
         { provide: DynamicAiSchedulerService, useValue: schedulerMock },
         { provide: PromptManagerService, useValue: promptManagerMock },
+        { provide: PromptInjectionGuard, useValue: promptInjectionGuardMock },
       ],
     })
       // 覆盖 RuleEngineService 的实例，以便我们可以监视它的方法

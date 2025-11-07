@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 // 1. 明确导入所有需要的“联邦服务”
 import { PrismaModule, HealthModule } from '@tuheg/common-backend';
 
@@ -15,6 +16,12 @@ import { AppService } from './app.service';
   imports: [
     // 3. 在 imports 数组中，清晰地列出所有依赖
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     PrismaModule, // <-- [核心修复] 我们现在明确声明：此应用依赖数据库
     HealthModule,
     AuthModule,

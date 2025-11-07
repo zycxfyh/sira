@@ -13,6 +13,7 @@ import { PrismaService } from '@tuheg/common-backend';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly prisma: PrismaService,
+    // @ts-expect-error - configService is used in super() call
     private readonly configService: ConfigService,
   ) {
     super({

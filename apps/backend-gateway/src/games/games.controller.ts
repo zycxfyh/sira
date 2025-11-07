@@ -13,17 +13,20 @@ import {
   HttpStatus,
   Patch,
 } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { GamesService } from './games.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '@prisma/client';
 
 // [核心修正] 从 @tuheg/common-backend 导入所有共享的 DTO 和管道
-import { ZodValidationPipe, SubmitActionDto, submitActionSchema } from '@tuheg/common-backend';
+import { ZodValidationPipe, submitActionSchema } from '@tuheg/common-backend';
+import type { SubmitActionDto } from '@tuheg/common-backend';
 
-// [注释] 本地 DTO 导入保持不变
-import { CreateNarrativeGameDto, createNarrativeGameSchema } from './dto/create-game.dto';
-import { UpdateCharacterDto, updateCharacterSchema } from './dto/update-character.dto';
+// [修正] 从 common-backend 导入游戏相关的 DTO 和 schema
+import type { CreateNarrativeGameDto } from '@tuheg/common-backend';
+import { createNarrativeGameSchema } from '@tuheg/common-backend';
+import type { UpdateCharacterDto } from '@tuheg/common-backend';
+import { updateCharacterSchema } from '@tuheg/common-backend';
 
 @Controller('games')
 @UseGuards(JwtAuthGuard)

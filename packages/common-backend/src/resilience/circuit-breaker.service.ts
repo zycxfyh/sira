@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/resilience/circuit-breaker.service.ts
-// 灵感来源: Resilience4j (https://github.com/resilience4j/resilience4j), Polly (https://github.com/App-vNext/Polly)
 // 核心理念: 熔断器模式，防止级联故障
 
 import { Injectable, Logger } from '@nestjs/common';

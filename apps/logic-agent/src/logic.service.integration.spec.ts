@@ -17,6 +17,8 @@ import {
 } from '@tuheg/common-backend';
 import { type MockProxy, mock } from 'jest-mock-extended';
 import { LogicService } from './logic.service';
+import { RuleEngineService } from './rule-engine.service';
+import { EventBusService } from '@tuheg/common-backend';
 
 // 测试子类，用于访问protected方法
 class TestLogicService extends LogicService {
@@ -37,6 +39,8 @@ describe('LogicService (Integration)', () => {
   let promptManagerMock: MockProxy<PromptManagerService>;
   let promptInjectionGuardMock: MockProxy<PromptInjectionGuard>;
   let langfuseServiceMock: MockProxy<LangfuseService>;
+  let ruleEngineMock: MockProxy<RuleEngineService>;
+  let eventBusMock: MockProxy<EventBusService>;
 
   // 将模拟函数进行类型转换
   const mockedCallAiWithGuard = callAiWithGuard as jest.Mock;
@@ -78,6 +82,8 @@ describe('LogicService (Integration)', () => {
     promptInjectionGuardMock.checkInput.mockResolvedValue(SAFE_GUARD_RESULT);
     promptInjectionGuardMock.ensureSafeOrThrow.mockResolvedValue(undefined);
     langfuseServiceMock = mock<LangfuseService>();
+    ruleEngineMock = mock<RuleEngineService>();
+    eventBusMock = mock<EventBusService>();
     langfuseServiceMock.createTrace.mockResolvedValue({
       id: 'mock-trace-id',
       name: 'mock-trace',
@@ -102,6 +108,8 @@ describe('LogicService (Integration)', () => {
         { provide: PromptManagerService, useValue: promptManagerMock },
         { provide: LangfuseService, useValue: langfuseServiceMock },
         { provide: PromptInjectionGuard, useValue: promptInjectionGuardMock },
+        { provide: RuleEngineService, useValue: ruleEngineMock },
+        { provide: EventBusService, useValue: eventBusMock },
       ],
     }).compile();
 
@@ -137,9 +145,7 @@ describe('LogicService (Integration)', () => {
         JSON.stringify(MOCK_JOB_DATA.playerAction),
         {
           userId: MOCK_JOB_DATA.userId,
-          gameId: MOCK_JOB_DATA.gameId,
           correlationId: MOCK_JOB_DATA.correlationId,
-          source: 'logic-agent:playerAction',
         },
       );
       expect(schedulerMock.getProviderForRole).toHaveBeenCalledTimes(1);

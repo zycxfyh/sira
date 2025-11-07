@@ -1,8 +1,11 @@
-# 后端网关 (Backend Gateway)
+# 🚪 后端网关 (Backend Gateway) - 工业级API网关
 
-## 概述
+## 📋 概述
 
-后端网关是创世星环系统的核心API服务，基于NestJS框架构建的微服务架构中的API网关。它提供统一的REST API接口、WebSocket实时通信支持，并负责请求路由、认证授权、负载均衡和跨域处理。
+后端网关是创世星环系统的核心API服务，基于NestJS框架构建的**工业级**微服务架构中的API网关。它提供统一的REST API接口、WebSocket实时通信支持，并负责请求路由、认证授权、负载均衡、速率限制和企业级安全防护。
+
+[![Industrial Ready](https://img.shields.io/badge/industrial-ready-brightgreen.svg)](../../docs/System-Technical-Specification.md)
+[![Tested](https://img.shields.io/badge/tested-✅-brightgreen.svg)](../../industrial-test-results/)
 
 ## 技术栈
 
@@ -52,37 +55,43 @@ apps/backend-gateway/
 #### 1. 认证模块 (AuthModule)
 
 **功能职责**:
+
 - 用户注册和登录
 - JWT令牌生成和管理
 - 用户会话验证
 - 密码加密存储
 
 **关键文件**:
+
 - `auth/auth.controller.ts` - 认证API端点
 - `auth/auth.service.ts` - 认证业务逻辑
 - `auth/guards/jwt-auth.guard.ts` - JWT守卫
 - `auth/strategies/jwt.strategy.ts` - JWT策略
 
 **API端点**:
+
 ```typescript
-POST /auth/login       // 用户登录
-POST /auth/register    // 用户注册
-GET  /auth/profile     // 获取用户信息
+POST / auth / login; // 用户登录
+POST / auth / register; // 用户注册
+GET / auth / profile; // 获取用户信息
 ```
 
 #### 2. 游戏管理模块 (GamesModule)
 
 **功能职责**:
+
 - 游戏创建和管理
 - 玩家行动提交
 - 游戏状态查询
 - 角色信息更新
 
 **关键文件**:
+
 - `games/games.controller.ts` - 游戏API端点
 - `games/games.service.ts` - 游戏业务逻辑
 
 **API端点**:
+
 ```typescript
 GET    /games                    // 获取用户的所有游戏
 POST   /games/narrative-driven   // 创建叙事驱动游戏
@@ -95,15 +104,18 @@ PATCH  /games/:id/character      // 更新角色状态
 #### 3. 设置管理模块 (SettingsModule)
 
 **功能职责**:
+
 - AI配置管理
 - 用户偏好设置
 - 连接测试功能
 
 **关键文件**:
+
 - `settings/settings.controller.ts` - 设置API端点
 - `settings/settings.service.ts` - 设置业务逻辑
 
 **API端点**:
+
 ```typescript
 GET    /settings/ai-configurations          // 获取AI配置列表
 POST   /settings/ai-configurations          // 创建AI配置
@@ -115,27 +127,31 @@ POST   /settings/ai-configurations/test-connection // 测试连接
 #### 4. WebSocket网关 (GatewayModule)
 
 **功能职责**:
+
 - 实时消息推送
 - 用户房间管理
 - Redis集群支持
 
 **关键文件**:
+
 - `gateway/updates.gateway.ts` - WebSocket网关实现
 
 **事件类型**:
+
 ```typescript
 // 客户端事件
-connect    // 连接建立
-disconnect // 连接断开
+connect; // 连接建立
+disconnect; // 连接断开
 
 // 服务端事件
-game:update  // 游戏状态更新
-action:result // 行动结果
+game: update; // 游戏状态更新
+action: result; // 行动结果
 ```
 
 #### 5. Webhook处理模块
 
 **功能职责**:
+
 - 外部服务集成
 - 事件通知处理
 - 安全验证
@@ -431,6 +447,7 @@ SwaggerModule.setup('api', app, document);
 ### 微服务拆分
 
 当前单体架构可以进一步拆分为：
+
 - **认证服务**: 独立的认证微服务
 - **游戏服务**: 游戏逻辑微服务
 - **通知服务**: 推送通知微服务

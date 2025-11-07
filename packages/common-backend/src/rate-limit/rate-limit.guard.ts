@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/rate-limit/rate-limit.guard.ts
-// 灵感来源: express-rate-limit (https://github.com/express-rate-limit/express-rate-limit)
 // 核心理念: API 限流保护，防止滥用和过载
 
 import {

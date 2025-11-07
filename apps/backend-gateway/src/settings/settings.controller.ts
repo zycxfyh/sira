@@ -13,7 +13,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { User, AiConfiguration } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SettingsService } from './settings.service';
@@ -22,13 +22,16 @@ import { SettingsService } from './settings.service';
 import { ZodValidationPipe } from '@tuheg/common-backend';
 
 // 导入DTO类型和Zod schema
-import { CreateAiSettingsDto, createAiSettingsSchema } from './dto/create-ai-settings.dto';
 import {
-  UpdateAiSettingsDto,
+  createAiSettingsSchema,
   updateAiSettingsSchema,
-  TestAiConnectionDto,
   testAiConnectionSchema,
-} from './dto/update-ai-settings.dto';
+} from '@tuheg/common-backend';
+import type {
+  CreateAiSettingsDto,
+  UpdateAiSettingsDto,
+  TestAiConnectionDto,
+} from '@tuheg/common-backend';
 
 @Controller('settings/ai-configurations')
 @UseGuards(JwtAuthGuard)

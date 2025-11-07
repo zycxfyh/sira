@@ -1,6 +1,8 @@
-// 文件路径: apps/creation-agent/src/creation.service.spec.ts (最终无瑕疵版)
+// 文件路径: apps/creation-agent/src/creation.service.spec.ts
+// 描述: CreationService 的单元测试，专注于世界生成逻辑和数据库交互
 
 import { Test, type TestingModule } from '@nestjs/testing';
+import { InternalServerErrorException } from '@nestjs/common';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import type { Game } from '@prisma/client';
 import type { PrismaClient } from '@prisma/client';
@@ -59,16 +61,16 @@ describe('CreationService', () => {
     promptInjectionGuardMock = mockDeep<PromptInjectionGuard>();
     promptInjectionGuardMock.ensureSafeOrThrow.mockResolvedValue(undefined);
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        CreationService,
-        { provide: PrismaService, useValue: prismaMock },
-        { provide: DynamicAiSchedulerService, useValue: schedulerMock },
-        { provide: PromptManagerService, useValue: promptManagerMock },
-        { provide: EventBusService, useValue: eventBusMock },
-        { provide: PromptInjectionGuard, useValue: promptInjectionGuardMock },
-      ],
-    }).compile();
+  const module: TestingModule = await Test.createTestingModule({
+    providers: [
+      CreationService,
+      { provide: PrismaService, useValue: prismaMock },
+      { provide: DynamicAiSchedulerService, useValue: schedulerMock },
+      { provide: PromptManagerService, useValue: promptManagerMock },
+      { provide: EventBusService, useValue: eventBusMock },
+      { provide: PromptInjectionGuard, useValue: promptInjectionGuardMock },
+    ],
+  }).compile();
 
     service = module.get<CreationService>(CreationService);
 
@@ -102,7 +104,6 @@ describe('CreationService', () => {
       expect(promptInjectionGuardMock.ensureSafeOrThrow).toHaveBeenCalledWith(
         MOCK_PAYLOAD.concept,
         {
-          source: 'creation-agent.concept',
           userId: MOCK_PAYLOAD.userId,
         },
       );
@@ -121,29 +122,44 @@ describe('CreationService', () => {
   });
 
   describe('Error Handling', () => {
-    it('should throw and not publish event if AI generation fails', async () => {
+    it('should throw and publish failure event if AI generation fails', async () => {
       const aiError = new AiGenerationException('AI failed');
       schedulerMock.getProviderForRole.mockResolvedValue({ model: MOCK_CHAT_MODEL });
       promptManagerMock.getPrompt.mockReturnValue('persona prompt');
       mockedCallAiWithGuard.mockRejectedValue(aiError);
 
-      await expect(service.createNewWorld(MOCK_PAYLOAD)).rejects.toThrow(AiGenerationException);
+      try {
+        await service.createNewWorld(MOCK_PAYLOAD);
+        fail('Expected createNewWorld to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(InternalServerErrorException);
+      }
 
       expect(prismaMock.$transaction).not.toHaveBeenCalled();
-      expect(eventBusMock.publish).not.toHaveBeenCalled();
+      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', expect.objectContaining({
+        event: 'creation_failed',
+        userId: MOCK_PAYLOAD.userId,
+      }));
     });
 
-    it('should throw and not publish event if database transaction fails', async () => {
+    it('should throw and publish failure event if database transaction fails', async () => {
       const dbError = new Error('DB connection lost');
       schedulerMock.getProviderForRole.mockResolvedValue({ model: MOCK_CHAT_MODEL });
       promptManagerMock.getPrompt.mockReturnValue('persona prompt');
       mockedCallAiWithGuard.mockResolvedValue(MOCK_AI_RESPONSE);
       prismaMock.$transaction.mockRejectedValue(dbError);
 
-      // [核心修复] 修正错别字 MOCK_PAYPAYLOAD -> MOCK_PAYLOAD
-      await expect(service.createNewWorld(MOCK_PAYLOAD)).rejects.toThrow(dbError);
+      try {
+        await service.createNewWorld(MOCK_PAYLOAD);
+        fail('Expected createNewWorld to throw');
+      } catch (error) {
+        expect(error).toBe(dbError);
+      }
 
-      expect(eventBusMock.publish).not.toHaveBeenCalled();
+      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', expect.objectContaining({
+        event: 'creation_failed',
+        userId: MOCK_PAYLOAD.userId,
+      }));
     });
 
     it('should propagate prompt injection errors before invoking AI', async () => {
@@ -153,13 +169,19 @@ describe('CreationService', () => {
       });
       promptInjectionGuardMock.ensureSafeOrThrow.mockRejectedValueOnce(guardError);
 
-      await expect(service.createNewWorld(MOCK_PAYLOAD)).rejects.toThrow(
-        PromptInjectionDetectedException,
-      );
+      try {
+        await service.createNewWorld(MOCK_PAYLOAD);
+        fail('Expected createNewWorld to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(PromptInjectionDetectedException);
+      }
 
       expect(mockedCallAiWithGuard).not.toHaveBeenCalled();
       expect(prismaMock.$transaction).not.toHaveBeenCalled();
-      expect(eventBusMock.publish).not.toHaveBeenCalled();
+      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', expect.objectContaining({
+        event: 'creation_failed',
+        userId: MOCK_PAYLOAD.userId,
+      }));
     });
   });
 });

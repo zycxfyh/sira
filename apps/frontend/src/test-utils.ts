@@ -1,5 +1,4 @@
 // 文件路径: apps/frontend/src/test-utils.ts
-// 灵感来源: Testing Library (https://github.com/testing-library/vue-testing-library)
 // 核心理念: 用户中心的测试，优先使用可访问的查询方式
 
 import { render, type RenderOptions } from '@vue/test-utils';

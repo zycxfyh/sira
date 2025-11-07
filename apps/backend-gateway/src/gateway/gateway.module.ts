@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { UpdatesGateway } from './updates.gateway';
-import { GatewayController } from './gateway.controller'; // <-- 引入新成员
+import { GatewayController } from './gateway.controller';
+import { GatewayEventsController } from './gateway.events.controller';
+import { EventBusModule } from '@tuheg/common-backend';
 
 @Module({
-  controllers: [GatewayController], // <-- 注册新成员
+  imports: [EventBusModule],
+  controllers: [GatewayController, GatewayEventsController],
   providers: [UpdatesGateway],
   exports: [UpdatesGateway],
 })

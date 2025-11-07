@@ -1,5 +1,4 @@
 // 文件路径: tools/generators/plopfile.js
-// 灵感来源: Plop (https://github.com/plopjs/plop)
 // 核心理念: 基于模板的代码生成，确保代码风格一致
 
 export default function (plop) {

@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/ai/crew/crew.ts
-// 灵感来源: CrewAI (https://github.com/joaomdmoura/crewAI)
 // 核心理念: 工作流编排，组织智能体和任务，实现复杂的协作流程
 
 import { Injectable, Logger } from '@nestjs/common';

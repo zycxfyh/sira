@@ -3,10 +3,13 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@tuheg/common-backend'; // 你提供的共享 PrismaService
 import { HttpService } from '@nestjs/axios';
-import { lastValueFrom, firstValueFrom } from 'rxjs';
-import { CreateAiSettingsDto } from './dto/create-ai-settings.dto';
-import { UpdateAiSettingsDto, TestAiConnectionDto } from './dto/update-ai-settings.dto';
-import { createAiSettingsSchema } from './dto/create-ai-settings.dto';
+import { lastValueFrom } from 'rxjs';
+import {
+  CreateAiSettingsDto,
+  UpdateAiSettingsDto,
+  TestAiConnectionDto,
+  createAiSettingsSchema,
+} from '@tuheg/common-backend';
 
 @Injectable()
 export class SettingsService {

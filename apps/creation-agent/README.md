@@ -35,12 +35,14 @@ apps/creation-agent/
 #### 1. Creation Service (创世服务)
 
 **功能职责**:
+
 - 接收游戏创建请求
 - 调用AI生成游戏世界设定
 - 在数据库中创建游戏记录
 - 通过网关通知前端创建结果
 
 **核心流程**:
+
 ```typescript
 async createNewWorld(payload: GameCreationPayload): Promise<void> {
   // 1. 调用AI生成初始世界
@@ -62,11 +64,11 @@ async createNewWorld(payload: GameCreationPayload): Promise<void> {
     return game;
   });
 
-  // 3. 通过网关通知前端
-  await this.httpService.post(this.GATEWAY_URL, {
+  // 3. 发布游戏创建完成事件
+  await this.eventBus.publish('GAME_CREATION_COMPLETED', {
     userId: userId,
-    event: 'creation_completed',
-    data: { gameId: newGame.id }
+    gameId: newGame.id,
+    gameData: newGame
   });
 }
 ```
@@ -74,27 +76,33 @@ async createNewWorld(payload: GameCreationPayload): Promise<void> {
 #### 2. AI Architect (建筑师)
 
 **功能职责**:
+
 - 基于用户概念生成完整的游戏设定
 - 创建富有想象力的游戏名称
 - 设计角色卡 (Character Card)
 - 构建世界书 (World Book)
 
 **生成内容结构**:
+
 ```typescript
 interface ArchitectResponse {
-  gameName: string;        // 游戏标题
-  character: {             // 玩家角色
-    name: string;          // 角色名称
-    card: {                // 角色卡
-      coreIdentity: string;    // 核心身份
-      personality: string[];   // 性格关键词
-      appearance: string;      // 外貌描述
+  gameName: string; // 游戏标题
+  character: {
+    // 玩家角色
+    name: string; // 角色名称
+    card: {
+      // 角色卡
+      coreIdentity: string; // 核心身份
+      personality: string[]; // 性格关键词
+      appearance: string; // 外貌描述
     };
   };
-  worldBook: Array<{      // 世界设定
-    key: string;          // 条目关键字
-    content: {            // 条目内容
-      description: string;    // 详细描述
+  worldBook: Array<{
+    // 世界设定
+    key: string; // 条目关键字
+    content: {
+      // 条目内容
+      description: string; // 详细描述
     };
   }>;
 }
@@ -103,11 +111,13 @@ interface ArchitectResponse {
 #### 3. Message Queue Controller (消息队列控制器)
 
 **功能职责**:
+
 - 监听游戏创建请求消息
 - 触发创世流程
 - 处理消息确认和错误记录
 
 **消息处理**:
+
 ```typescript
 @MessagePattern('GAME_CREATION_REQUESTED')
 async handleGameCreation(@Payload() data: GameCreationPayload) {
@@ -139,22 +149,25 @@ const architectResponseSchema = z.object({
       appearance: z.string().describe('角色的外貌描述'),
     }),
   }),
-  worldBook: z.array(z.object({
-    key: z.string().describe('世界书条目的唯一关键字'),
-    content: z.object({
-      description: z.string().describe('该条目的详细描述'),
+  worldBook: z.array(
+    z.object({
+      key: z.string().describe('世界书条目的唯一关键字'),
+      content: z.object({
+        description: z.string().describe('该条目的详细描述'),
+      }),
     }),
-  })),
+  ),
 });
 ```
 
 ### 2. 输入数据结构
 
 **GameCreationPayload**:
+
 ```typescript
 interface GameCreationPayload {
-  userId: string;    // 用户ID
-  concept: string;   // 用户提供的游戏概念描述
+  userId: string; // 用户ID
+  concept: string; // 用户提供的游戏概念描述
 }
 ```
 
@@ -203,7 +216,7 @@ const newGame = await this.prisma.$transaction(async (tx) => {
   // 3. 批量创建世界书条目
   if (initialWorld.worldBook?.length > 0) {
     await tx.worldBookEntry.createMany({
-      data: initialWorld.worldBook.map(entry => ({
+      data: initialWorld.worldBook.map((entry) => ({
         gameId: game.id,
         key: entry.key,
         content: entry.content,
@@ -226,6 +239,7 @@ const newGame = await this.prisma.$transaction(async (tx) => {
 ### 1. AI-GM框架提示词
 
 使用 `00_persona_and_framework.md`，包含：
+
 - AI-GM人格设定和思维框架
 - 创世任务的具体指导原则
 - 角色和世界设计的质量标准
@@ -238,7 +252,7 @@ const prompt = new PromptTemplate({
   template: `{system_prompt}\n# 创世任务指令\n根据以下用户概念，为一次新的游戏人生生成初始设定。\n{format_instructions}\n---\n用户概念: "{concept}"`,
   inputVariables: ['concept', 'system_prompt'],
   partialVariables: {
-    format_instructions: parser.getFormatInstructions()
+    format_instructions: parser.getFormatInstructions(),
   },
 });
 ```
@@ -253,22 +267,22 @@ try {
   const initialWorld = await this.generateInitialWorld(concept, user);
   const newGame = await this.prisma.$transaction(...);
 
-  // 成功通知
-  await this.httpService.post(this.GATEWAY_URL, {
-    userId, event: 'creation_completed', data: {...}
+  // 发布成功事件
+  await this.eventBus.publish('GAME_CREATION_COMPLETED', {
+    userId, gameId: newGame.id, gameData: newGame
   });
 } catch (error) {
   // 详细错误记录
   this.logger.error(`Failed to create world`, error);
 
-  // 尝试发送失败通知
+  // 发布失败事件
   try {
-    await this.httpService.post(this.GATEWAY_URL, {
-      userId, event: 'creation_failed', data: {error: error.message}
+    await this.eventBus.publish('GAME_CREATION_FAILED', {
+      userId, error: error.message, concept
     });
-  } catch (gatewayError) {
-    // 网关通信失败的最后防线
-    this.logger.error('CRITICAL: Failed to send error via gateway', gatewayError);
+  } catch (eventError) {
+    // 事件发布失败的最后防线
+    this.logger.error('CRITICAL: Failed to publish error event', eventError);
   }
 }
 ```
@@ -307,7 +321,7 @@ try {
 ### 2. 消息流
 
 ```
-前端请求 → 网关 → RabbitMQ(GAME_CREATION_REQUESTED) → Creation Agent → 网关推送结果
+前端请求 → Gateway → RabbitMQ(GAME_CREATION_REQUESTED) → Creation Agent → RabbitMQ(GAME_CREATION_COMPLETED/FAILED) → Gateway → WebSocket推送
 ```
 
 ## 依赖关系
@@ -333,9 +347,6 @@ try {
 ```bash
 # RabbitMQ配置
 RABBITMQ_URL=amqp://localhost:5672
-
-# 网关配置
-GATEWAY_URL=http://nexus-engine:3000/gateway/send-to-user
 
 # AI配置
 OPENAI_API_KEY=sk-...
@@ -441,14 +452,14 @@ spec:
   template:
     spec:
       containers:
-      - name: creation-agent
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "200m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
+        - name: creation-agent
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '200m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
 ```
 
 ## 故障排查
@@ -465,10 +476,10 @@ spec:
    - 验证数据约束
    - 查看事务日志
 
-3. **网关通信失败**
-   - 检查GATEWAY_URL配置
-   - 验证网关服务状态
-   - 查看网络连接
+3. **事件发布失败**
+   - 检查RabbitMQ连接配置
+   - 验证消息队列可用性
+   - 查看事件总线连接状态
 
 ## 扩展规划
 
@@ -483,6 +494,7 @@ spec:
 ### 架构演进
 
 当前架构可以演进为：
+
 - **多阶段创建**: 将创建过程分解为多个步骤
 - **世界预览**: 生成世界后提供预览和修改功能
 - **版本控制**: 支持世界设定的版本历史

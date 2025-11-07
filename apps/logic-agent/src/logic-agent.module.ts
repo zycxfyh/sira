@@ -13,6 +13,7 @@ import {
   AiProviderFactory,
   DynamicAiSchedulerService,
   PromptManagerModule, // [核心] 导入我们新建的“图书馆部门”
+  PromptInjectionGuard,
 } from '@tuheg/common-backend';
 
 @Module({
@@ -28,6 +29,7 @@ import {
     RuleEngineService,
     DynamicAiSchedulerService,
     AiProviderFactory,
+    PromptInjectionGuard,
     // [注释] PromptManagerService 现在由导入的 PromptManagerModule 自动提供
   ],
 })

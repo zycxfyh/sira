@@ -1,5 +1,4 @@
 // 文件路径: commitlint.config.js
-// 灵感来源: Commitlint (https://github.com/conventional-changelog/commitlint)
 // 核心理念: 规范化 Git 提交信息，提升代码库可维护性
 
 module.exports = {

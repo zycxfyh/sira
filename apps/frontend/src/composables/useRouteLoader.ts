@@ -1,5 +1,4 @@
 // 文件路径: apps/frontend/src/composables/useRouteLoader.ts
-// 灵感来源: Remix (https://github.com/remix-run/remix)
 // 核心理念: 在 Vue Router 中使用 Loader 模式加载数据
 
 import { ref, type Ref } from 'vue';

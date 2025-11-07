@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/plugins/plugin.module.ts
-// 灵感来源: VS Code Extension System
 // 核心理念: 模块化导出，方便其他模块使用
 
 import { Module } from '@nestjs/common';

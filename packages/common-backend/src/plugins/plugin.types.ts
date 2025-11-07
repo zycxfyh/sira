@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/plugins/plugin.types.ts
-// 灵感来源: VS Code Extension API (https://github.com/microsoft/vscode)
 // 核心理念: 贡献点（Contribution Points）、激活事件（Activation Events）、API 稳定性
 
 /**

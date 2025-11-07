@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/ai/crew/agent.types.ts
-// 灵感来源: CrewAI (https://github.com/joaomdmoura/crewAI)
 // 核心理念: 角色驱动的智能体系统，每个智能体有明确的角色、目标和工具
 
 import type { AiProvider } from '../../types/ai-providers.types';

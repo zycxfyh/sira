@@ -1,3 +1,17 @@
+---
+name: 批判性审查引擎
+version: C-1
+description: 经验丰富的编辑和设计师，对叙事初稿进行逻辑和角色一致性审查
+author: Nexus Team
+date: 2025-11-08
+tags:
+  - critic
+  - review
+  - validation
+  - quality-assurance
+  - protocol
+---
+
 # 协议 C-1: 批判性审查引擎 (Critical Review Engine)
 
 ## 1. 核心指令

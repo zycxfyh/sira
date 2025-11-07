@@ -12,9 +12,6 @@ test.describe('Authentication Flow', () => {
     // 1. 导航到登录页面
     await page.goto('/login');
 
-    // [核心侦察] 在断言之前，打印出页面的HTML内容
-    console.log(await page.content());
-
     // 2. 断言关键元素（登录表单）是否可见
     await expect(page.locator('.auth-form')).toBeVisible();
 

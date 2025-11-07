@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/plugins/plugin.loader.ts
-// 灵感来源: VS Code Extension Loader
 // 核心理念: 动态加载插件，支持按需激活
 
 import { Injectable, Logger } from '@nestjs/common';

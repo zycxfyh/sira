@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/schedule/tasks/cleanup.task.ts
-// 灵感来源: NestJS Schedule
 // 核心理念: 定期清理过期数据
 
 import { Injectable, Logger } from '@nestjs/common';

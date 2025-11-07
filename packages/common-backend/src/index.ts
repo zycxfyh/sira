@@ -59,14 +59,13 @@ export * from './pipes/zod-validation.pipe';
 export * from './dto/submit-action.dto';
 export * from './dto/create-ai-settings.dto';
 export * from './dto/update-ai-settings.dto';
+export * from './dto/create-game.dto';
+export * from './dto/update-character.dto';
 
 // Health exports
 export * from './health/health.module';
 
 // Middleware exports
-export * from './middleware/content-type-validation.middleware';
-export * from './middleware/encoding-validation.middleware';
-export * from './middleware/query-params-validation.middleware';
 
 // Observability exports
 export * from './observability/observability.module';
@@ -99,7 +98,6 @@ export * from './schedule/schedule.module';
 export * from './validation/enhanced-validator';
 
 // Vector exports
-export * from './vector/qdrant.service';
 
 // Vector search exports
 export * from './ai/vector-search.module';

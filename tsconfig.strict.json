@@ -1,5 +1,4 @@
 // 文件路径: tsconfig.strict.json
-// 灵感来源: TypeScript 官方严格模式
 // 核心理念: 最大程度保证类型安全，渐进式启用
 
 {

@@ -34,12 +34,14 @@ Creation Agent (世界创建层)
 ### 1.2 Logic Agent - 逻辑推理引擎
 
 **职责**：
+
 - 解析玩家行动意图
 - 验证行动在游戏规则下的有效性
 - 计算世界状态变更（HP、位置、物品等）
 - 生成结构化的状态变更指令
 
 **核心流程**：
+
 ```typescript
 1. 接收玩家行动 (playerAction)
 2. 加载当前游戏状态 (gameState)
@@ -49,12 +51,14 @@ Creation Agent (世界创建层)
 ```
 
 **关键文件**：
+
 - `apps/logic-agent/src/logic.service.ts`
 - `apps/logic-agent/src/rule-engine.service.ts`
 
 ### 1.3 Narrative Agent - 叙事生成引擎
 
 **职责**：
+
 - 将冰冷的状态变更转换为生动的叙事文本
 - 规划叙事要点（因果、感官、内心、世界反应）
 - 合成流畅的叙事文本
@@ -63,6 +67,7 @@ Creation Agent (世界创建层)
 **两阶段思维过程**：
 
 #### 阶段一：规划 (Planning)
+
 ```markdown
 1. 分析输入
    - 理解 previous_state 和 current_state 的差异
@@ -77,6 +82,7 @@ Creation Agent (世界创建层)
 ```
 
 #### 阶段二：合成 (Synthesis)
+
 ```markdown
 1. 执行渲染计划
    - 将所有要点无缝地、文笔流畅地"缝合"成最终叙事文本
@@ -86,18 +92,21 @@ Creation Agent (世界创建层)
 ```
 
 **关键文件**：
+
 - `apps/narrative-agent/src/narrative.service.ts`
 - `packages/common-backend/src/prompts/assets/02_narrative_engine.md`
 
 ### 1.4 Creation Agent - 世界创建引擎
 
 **职责**：
+
 - 根据用户概念生成游戏世界
 - 创建角色卡（Character Card）
 - 构建世界设定（World Book）
 - 初始化游戏状态
 
 **关键文件**：
+
 - `apps/creation-agent/src/creation.service.ts`
 
 ## 2. 智能模型路由系统
@@ -112,18 +121,21 @@ const provider = await dynamicAiScheduler.getProviderForRole(user, AiRole.LOGIC)
 ```
 
 **路由策略**：
+
 1. 查询用户配置的AI设置（`AiConfiguration`）
 2. 根据任务角色（`AiRole`）匹配配置
 3. 支持多模型配置（不同角色使用不同模型）
 4. 自动降级和容错处理
 
 **支持的AI提供商**：
+
 - OpenAI (GPT-4, GPT-3.5)
 - Anthropic (Claude-3)
 - DeepSeek, Groq, Moonshot
 - 自定义OpenAI兼容API
 
 **关键文件**：
+
 - `packages/common-backend/src/ai/dynamic-ai-scheduler.service.ts`
 - `packages/common-backend/src/ai/ai-provider.factory.ts`
 
@@ -137,6 +149,7 @@ const provider = aiProviderFactory.createProvider(aiConfig);
 ```
 
 **支持的提供商类型**：
+
 - OpenAI兼容：OpenAI, DeepSeek, Groq, Google, Moonshot等
 - 自定义：支持任意OpenAI兼容API
 
@@ -162,6 +175,7 @@ const provider = aiProviderFactory.createProvider(aiConfig);
 ```
 
 **关键服务**：
+
 - `packages/common-backend/src/ai/memory-hierarchy.service.ts`
 - `packages/common-backend/src/ai/context-summarizer.service.ts`
 
@@ -175,6 +189,7 @@ const summary = await contextSummarizer.summarize(longContext);
 ```
 
 **摘要策略**：
+
 1. 保留关键信息（角色状态、重要事件）
 2. 压缩冗余描述
 3. 维护叙事连贯性
@@ -184,11 +199,13 @@ const summary = await contextSummarizer.summarize(longContext);
 ### 4.1 Prompt Manager
 
 统一的提示词管理服务，支持：
+
 - 动态加载提示词模板
 - 变量替换
 - 版本管理
 
 **提示词资产**：
+
 - `00_persona_and_framework.md` - AI-GM人格与思维框架
 - `01_logic_engine.md` - 逻辑引擎协议
 - `02_narrative_engine.md` - 叙事引擎协议
@@ -196,6 +213,7 @@ const summary = await contextSummarizer.summarize(longContext);
 - `04_planner_agent.md` - 规划智能体协议
 
 **关键文件**：
+
 - `packages/common-backend/src/prompts/prompt-manager.service.ts`
 
 ## 5. 错误处理与重试机制
@@ -206,18 +224,20 @@ const summary = await contextSummarizer.summarize(longContext);
 
 ```typescript
 // 自动重试失败的AI调用
-const result = await retryStrategy.executeWithRetry(
-  () => aiProvider.generate(prompt),
-  { maxRetries: 3, backoff: 'exponential' }
-);
+const result = await retryStrategy.executeWithRetry(() => aiProvider.generate(prompt), {
+  maxRetries: 3,
+  backoff: 'exponential',
+});
 ```
 
 **重试策略**：
+
 - 指数退避
 - 最大重试次数限制
 - 错误分类（可重试 vs 不可重试）
 
 **关键文件**：
+
 - `packages/common-backend/src/ai/retry-strategy.ts`
 
 ### 5.2 错误格式化
@@ -230,6 +250,7 @@ const cleaned = jsonCleaner.clean(malformedJson);
 ```
 
 **关键文件**：
+
 - `packages/common-backend/src/ai/json-cleaner.ts`
 - `packages/common-backend/src/ai/schema-error-formatter.ts`
 
@@ -253,12 +274,14 @@ const cleaned = jsonCleaner.clean(malformedJson);
 ### 7.1 多Agent并行处理
 
 当前系统采用串行处理，未来可优化为：
+
 - Logic Agent 和 Narrative Agent 并行处理
 - 使用工作流引擎（如Temporal）编排任务
 
 ### 7.2 向量搜索集成
 
 利用pgvector实现：
+
 - 语义搜索历史对话
 - 相似场景检索
 - 上下文增强
@@ -266,16 +289,17 @@ const cleaned = jsonCleaner.clean(malformedJson);
 ### 7.3 流式响应
 
 支持流式AI响应，提升用户体验：
+
 - 实时显示生成过程
 - 降低感知延迟
 
 ## 8. 总结
 
 创世星环的AI叙事逻辑设计采用了：
+
 - **分层架构**：清晰的职责划分
 - **智能路由**：自动选择最优AI模型
 - **上下文管理**：高效的记忆系统
 - **错误处理**：健壮的重试机制
 
 这些机制共同确保了系统能够生成高质量、连贯的叙事内容，同时保持高性能和可扩展性。
-

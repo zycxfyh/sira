@@ -23,6 +23,7 @@ export class CreationAgentController {
     this.logger.log(`Received game creation request for user: ${data.userId}`);
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
+    const MAX_RETRIES = 2;
 
     try {
       // 将任务交给“大脑”（CreationService）处理
@@ -32,8 +33,33 @@ export class CreationAgentController {
       this.logger.log(`Successfully processed creation task for user: ${data.userId}`);
     } catch (error) {
       this.logger.error(`Failed to process creation task for user ${data.userId}`, error);
-      // [注释] 同样，暂时只确认消息以避免重试循环
-      channel.ack(originalMsg);
+
+      // [核心改造] 实现延迟重试机制
+      const retryCount = (originalMsg.properties.headers['x-death'] || []).length;
+      if (retryCount < MAX_RETRIES) {
+        // 发送到重试队列，实现延迟重试（5秒后重新处理）
+        this.logger.warn(
+          `Creation task for user ${data.userId} failed. Sending to retry queue (${retryCount + 1}/${MAX_RETRIES + 1})...`,
+        );
+        channel.nack(originalMsg, false, false); // 触发死信路由到重试队列
+      } else {
+        // [核心修复] 达到最大重试次数前，确保用户收到失败通知
+        try {
+          await this.creationService.notifyCreationFailure(data.userId, error);
+        } catch (notifyError) {
+          this.logger.error(`Failed to notify user ${data.userId} of creation failure`, notifyError);
+        }
+
+        // 达到最大重试次数，将消息发送到最终死信队列
+        this.logger.error(
+          `Creation task for user ${data.userId} failed after ${MAX_RETRIES + 1} attempts. Sending to DLQ.`,
+        );
+        // 手动发送到死信队列（这里需要重新发布到死信交换）
+        channel.publish('dlx', 'creation_queue_dead', originalMsg.content, {
+          headers: { ...originalMsg.properties.headers, finalFailure: true }
+        });
+        channel.ack(originalMsg);
+      }
     }
   }
 }

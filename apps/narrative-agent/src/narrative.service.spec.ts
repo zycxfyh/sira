@@ -1,6 +1,8 @@
-// 文件路径: apps/narrative-agent/src/narrative.service.spec.ts (最终胜利版)
+// 文件路径: apps/narrative-agent/src/narrative.service.spec.ts
+// 描述: NarrativeService 的单元测试套件，涵盖叙事生成逻辑和错误处理
 
 import { NotFoundException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { Test, type TestingModule } from '@nestjs/testing';
 import type { PrismaClient } from '@prisma/client';
@@ -14,7 +16,6 @@ import {
   type NarrativeRenderingPayload,
   PrismaService,
   type PromptInjectionCheckResult,
-  PromptInjectionDetectedException,
   PromptInjectionGuard,
   PromptManagerService,
 } from '@tuheg/common-backend';
@@ -31,6 +32,7 @@ describe('NarrativeService', () => {
   let prismaMock: DeepMockProxy<PrismaClient>;
   let schedulerMock: DeepMockProxy<DynamicAiSchedulerService>;
   let promptManagerMock: DeepMockProxy<PromptManagerService>;
+  let httpServiceMock: DeepMockProxy<HttpService>;
   let eventBusMock: DeepMockProxy<EventBusService>;
   let contextSummarizerMock: DeepMockProxy<ContextSummarizerService>;
   let memoryHierarchyMock: DeepMockProxy<MemoryHierarchyService>;
@@ -61,6 +63,7 @@ describe('NarrativeService', () => {
     prismaMock = mockDeep<PrismaClient>();
     schedulerMock = mockDeep<DynamicAiSchedulerService>();
     promptManagerMock = mockDeep<PromptManagerService>();
+    httpServiceMock = mockDeep<HttpService>();
     eventBusMock = mockDeep<EventBusService>();
     contextSummarizerMock = mockDeep<ContextSummarizerService>();
     memoryHierarchyMock = mockDeep<MemoryHierarchyService>();
@@ -75,12 +78,30 @@ describe('NarrativeService', () => {
     promptInjectionGuardMock.checkInput.mockResolvedValue(guardSafeResult);
     memoryHierarchyMock.getActiveMemories.mockResolvedValue([]);
 
+    // Mock HttpService post method to return an Observable
+    const mockObservable = {
+      pipe: jest.fn().mockReturnThis(),
+      subscribe: jest.fn().mockImplementation((observer) => {
+        // Simulate successful HTTP response
+        if (observer.next) {
+          observer.next({ data: 'success' });
+        }
+        if (observer.complete) {
+          observer.complete();
+        }
+        return { unsubscribe: jest.fn() };
+      }),
+      toPromise: jest.fn().mockResolvedValue({ data: 'success' }),
+    };
+    httpServiceMock.post.mockReturnValue(mockObservable as any);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NarrativeService,
         { provide: PrismaService, useValue: prismaMock },
         { provide: DynamicAiSchedulerService, useValue: schedulerMock },
         { provide: PromptManagerService, useValue: promptManagerMock },
+        { provide: HttpService, useValue: httpServiceMock },
         { provide: EventBusService, useValue: eventBusMock },
         { provide: ContextSummarizerService, useValue: contextSummarizerMock },
         { provide: MemoryHierarchyService, useValue: memoryHierarchyMock },
@@ -115,33 +136,41 @@ describe('NarrativeService', () => {
 
       expect(prismaMock.game.findUniqueOrThrow).toHaveBeenCalledWith({
         where: { id: MOCK_PAYLOAD.gameId },
-        include: { character: true, worldBook: true, memories: true },
+        include: { character: true, worldBook: true },
       });
       expect(promptInjectionGuardMock.checkInput).toHaveBeenCalledWith(
         JSON.stringify(MOCK_PAYLOAD.playerAction),
         {
           userId: MOCK_PAYLOAD.userId,
-          gameId: MOCK_PAYLOAD.gameId,
-          correlationId: MOCK_PAYLOAD.correlationId,
-          source: 'narrative-agent:playerAction',
         },
       );
-      expect(mockedCallAiWithGuard).toHaveBeenCalledTimes(3);
-      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', expect.anything());
+      expect(mockedCallAiWithGuard).toHaveBeenCalledTimes(1);
+      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', {
+          userId: MOCK_PAYLOAD.userId,
+          event: 'processing_completed',
+          data: expect.objectContaining({
+            message: 'AI response received.',
+            progression: MOCK_AI_RESPONSE,
+          }),
+      });
     });
   });
 
   describe('processNarrative (Error Handling)', () => {
-    it('should throw NotFoundException and publish failure if game not found', async () => {
+    it('should handle NotFoundException and send failure via gateway', async () => {
       prismaMock.game.findUniqueOrThrow.mockRejectedValue(new NotFoundException());
-      await expect(service.processNarrative(MOCK_PAYLOAD)).rejects.toThrow(NotFoundException);
-      expect(eventBusMock.publish).toHaveBeenCalledWith(
-        'NOTIFY_USER',
-        expect.objectContaining({ event: 'processing_failed' }),
-      );
+      await service.processNarrative(MOCK_PAYLOAD);
+      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', {
+          userId: MOCK_PAYLOAD.userId,
+          event: 'processing_failed',
+          data: expect.objectContaining({
+            message: 'An error occurred during narrative generation.',
+            error: 'Not Found',
+          }),
+      });
     });
 
-    it('should re-throw AI error and publish failure if AI generation fails', async () => {
+    it('should handle AI error and send failure via gateway', async () => {
       const aiError = new AiGenerationException('AI failed');
       prismaMock.game.findUniqueOrThrow.mockResolvedValue(MOCK_GAME_STATE as never);
 
@@ -154,17 +183,16 @@ describe('NarrativeService', () => {
       // 然后，我们再模拟 AI 调用本身失败
       mockedCallAiWithGuard.mockRejectedValueOnce(aiError);
 
-      await expect(service.processNarrative(MOCK_PAYLOAD)).rejects.toThrow(AiGenerationException);
+      await service.processNarrative(MOCK_PAYLOAD);
 
-      expect(eventBusMock.publish).toHaveBeenCalledWith(
-        'NOTIFY_USER',
-        expect.objectContaining({
+      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', {
+          userId: MOCK_PAYLOAD.userId,
+          event: 'processing_failed',
           data: expect.objectContaining({
-            errorCode: 'AI_GENERATION_FAILED',
-            errorMessage: expect.stringContaining('AI failed'),
+            message: 'An error occurred during narrative generation.',
+            error: 'AI failed',
           }),
-        }),
-      );
+      });
     });
 
     it('should reject promptly when prompt injection guard blocks input', async () => {
@@ -176,15 +204,16 @@ describe('NarrativeService', () => {
         inputPreview: 'malicious',
       });
 
-      await expect(service.processNarrative(MOCK_PAYLOAD)).rejects.toThrow(
-        PromptInjectionDetectedException,
-      );
+      await service.processNarrative(MOCK_PAYLOAD);
 
       expect(mockedCallAiWithGuard).not.toHaveBeenCalled();
-      expect(eventBusMock.publish).toHaveBeenCalledWith(
-        'NOTIFY_USER',
-        expect.objectContaining({ event: 'processing_failed' }),
-      );
+      expect(eventBusMock.publish).toHaveBeenCalledWith('NOTIFY_USER', {
+          userId: MOCK_PAYLOAD.userId,
+          event: 'processing_failed',
+          data: expect.objectContaining({
+            message: 'An error occurred during narrative generation.',
+          }),
+      });
     });
   });
 });

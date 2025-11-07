@@ -5,15 +5,15 @@ services:
     container_name: tuheg_postgres_db
     restart: always
     environment:
-      - POSTGRES_DB=tuheg_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d tuheg_db"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d tuheg_db" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,7 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -44,10 +44,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/tuheg_db?schema=public
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=your-super-secret-key-change-me
-      - JWT_EXPIRATION_SECONDS=3600
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/tuheg_db?schema=public
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION_SECONDS=${JWT_EXPIRATION_SECONDS}
+      - RABBITMQ_URL=${RABBITMQ_URL}
     volumes:
       - .turbo:/app/.turbo
 
@@ -59,10 +60,10 @@ services:
     container_name: tuheg_creation_agent
     restart: always
     depends_on:
-      - backend-gateway
+      - postgres
     environment:
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/tuheg_db?schema=public
-      - GATEWAY_URL=http://backend-gateway:3000/gateway/send-to-user
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/tuheg_db?schema=public
+      - RABBITMQ_URL=${RABBITMQ_URL}
     volumes:
       - .turbo:/app/.turbo
 
@@ -76,7 +77,7 @@ services:
     depends_on:
       - postgres
     environment:
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/tuheg_db?schema=public
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/tuheg_db?schema=public
     volumes:
       - .turbo:/app/.turbo
 
@@ -90,8 +91,8 @@ services:
     depends_on:
       - postgres
     environment:
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/tuheg_db?schema=public
-      - GATEWAY_URL=http://backend-gateway:3000/gateway/send-to-user
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/tuheg_db?schema=public
+      - RABBITMQ_URL=${RABBITMQ_URL}
     volumes:
       - .turbo:/app/.turbo
 
@@ -110,5 +111,4 @@ services:
       - .turbo:/app/.turbo
 
 volumes:
-  postgres_data:
-  # 注意：.turbo 卷不是在这里声明（它会在宿主创建 .turbo 目录）
+  postgres_data: # 注意：.turbo 卷不是在这里声明（它会在宿主创建 .turbo 目录）

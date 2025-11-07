@@ -1,5 +1,4 @@
 // 文件路径: apps/frontend/vite.config.bundle-analyzer.ts
-// 灵感来源: rollup-plugin-visualizer, webpack-bundle-analyzer
 // 核心理念: 可视化分析打包体积，识别优化机会
 
 import { defineConfig } from 'vite';

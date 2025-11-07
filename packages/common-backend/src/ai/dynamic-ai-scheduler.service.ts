@@ -104,6 +104,7 @@ export class DynamicAiSchedulerService {
     } catch (error) {
       this.logger.error(
         'System fallback AI configuration is missing or invalid. Check your .env file for FALLBACK_... variables.',
+        error,
       );
       throw new Error('System default AI is not configured.');
     }

@@ -11,5 +11,5 @@
       "@/*": ["apps/frontend/src/*"]
     }
   },
-  "include": ["packages/common-backend/src/**/*", "packages/common-backend/src/types/**/*"]
+  "include": ["apps/**/*", "packages/**/*"]
 }

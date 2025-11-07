@@ -1,5 +1,7 @@
 // apps/frontend/src/stores/realtime.store.js
 // 目标：防止重复绑定事件、在 disconnect 时解绑所有 handler、实现简单重连/backoff 逻辑
+// 架构决策：此 store 仅负责 WebSocket 连接管理，不直接处理认证逻辑。
+// 连接/断开由 main.js 根据用户认证状态调用，确保全局一致性。
 // 依赖：realtimeService（需提供 connect(), disconnect(), on(), off(), isConnected() 或 connected flag），
 //        useGameStore, useJobsStore, useUIStore, useToast
 

@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/schedule/schedule.module.ts
-// 灵感来源: NestJS Schedule (https://github.com/nestjs/schedule)
 // 核心理念: 定时任务调度，支持 Cron 表达式
 
 import { Module } from '@nestjs/common';

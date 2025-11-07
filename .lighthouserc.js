@@ -1,5 +1,4 @@
 // 文件路径: .lighthouserc.js
-// 灵感来源: Lighthouse CI (https://github.com/GoogleChrome/lighthouse-ci)
 // 核心理念: 自动化性能审计，确保性能指标达标
 
 module.exports = {

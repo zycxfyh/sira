@@ -11,15 +11,15 @@ import {
   AiProviderFactory,
   DynamicAiSchedulerService,
   PromptManagerModule, // [核心] 导入“图书馆部门”
+  EventBusModule,
 } from '@tuheg/common-backend';
-import { HttpModule } from '@nestjs/axios'; // [核心] 导入HttpModule用于回调网关
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     PromptManagerModule, // [核心] 将“图书馆部门”加入到“工具清单”中
-    HttpModule, // [核心] 添加HttpModule
+    EventBusModule,
   ],
   controllers: [NarrativeAgentController],
   providers: [NarrativeService, DynamicAiSchedulerService, AiProviderFactory],

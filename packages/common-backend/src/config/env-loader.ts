@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/config/env-loader.ts
-// 灵感来源: dotenv-expand (https://github.com/motdotla/dotenv-expand)
 // 核心理念: 支持环境变量扩展和多环境配置
 
 import { config } from 'dotenv';

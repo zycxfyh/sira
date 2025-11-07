@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/observability/sentry.config.ts
-// 灵感来源: Sentry (https://github.com/getsentry/sentry-javascript)
 // 核心理念: 增强的错误追踪和性能监控配置
 
 import * as Sentry from '@sentry/node';

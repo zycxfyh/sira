@@ -13,4 +13,4 @@ declare global {
 }
 
 // 添加一个空的 export 语句，将此文件标记为一个模块，使其能被正确识别
-export {};
+export type _UserType = User;

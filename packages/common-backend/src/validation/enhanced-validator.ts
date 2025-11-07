@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/validation/enhanced-validator.ts
-// 灵感来源: Pydantic (https://github.com/pydantic/pydantic)
 // 核心理念: 类型即文档，运行时验证，友好的错误消息
 
 import { z } from 'zod';

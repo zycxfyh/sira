@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/observability/sentry.module.ts
-// 灵感来源: Sentry (https://github.com/getsentry/sentry-javascript)
 // 核心理念: 模块化导出，方便使用
 
 import { Module } from '@nestjs/common';

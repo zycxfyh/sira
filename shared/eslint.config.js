@@ -9,14 +9,6 @@ module.exports = tseslint.config(
   ...tseslint.configs.recommended,
   security.configs.recommended,
   {
-    languageOptions: {
-      parserOptions: {
-        project: './tsconfig.app.json',
-        tsconfigRootDir: __dirname,
-      },
-    },
-  },
-  {
     files: ['**/*.spec.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',

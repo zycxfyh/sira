@@ -1,7 +1,8 @@
 // 文件路径: apps/nexus-engine/src/auth/auth.controller.ts
 
 import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get, Req } from '@nestjs/common';
-import { Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
+import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
@@ -23,6 +24,7 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 300000 } }) // 5次/5分钟
   @HttpCode(HttpStatus.OK)
   @Post('login')
   public async login(@Body(new ZodValidationPipe(loginSchema)) loginDto: LoginDto) {

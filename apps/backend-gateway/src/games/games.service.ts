@@ -4,11 +4,13 @@ import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/commo
 import { Game, Character, WorldBookEntry } from '@prisma/client';
 
 // [核心修正] 从 @tuheg/common-backend 导入所有需要的共享模块
-import { PrismaService, EventBusService, SubmitActionDto } from '@tuheg/common-backend';
-
-// [注释] 只导入本地需要的DTO
-import type { CreateNarrativeGameDto } from './dto/create-game.dto';
-import type { UpdateCharacterDto } from './dto/update-character.dto';
+import {
+  PrismaService,
+  EventBusService,
+  SubmitActionDto,
+  CreateNarrativeGameDto,
+  UpdateCharacterDto,
+} from '@tuheg/common-backend';
 
 @Injectable()
 export class GamesService {
@@ -55,6 +57,7 @@ export class GamesService {
     }
 
     this.eventBus.publish('PLAYER_ACTION_SUBMITTED', {
+      correlationId: crypto.randomUUID(),
       gameId: gameId,
       userId: userId,
       playerAction: dto,

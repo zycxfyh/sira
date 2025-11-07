@@ -3,7 +3,7 @@
 import { Controller, Logger } from '@nestjs/common';
 import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 import { LogicService } from './logic.service';
-import { GameActionJobData } from '@tuheg/common-backend';
+import type { GameActionJobData } from '@tuheg/common-backend';
 import * as Sentry from '@sentry/node';
 
 @Controller()
@@ -28,21 +28,24 @@ export class LogicAgentController {
       this.logger.error(`Failed to process logic task for game ${data.gameId}`, error);
       Sentry.captureException(error, { extra: { jobData: data } });
 
-      // [核心改造] 实现带重试次数的 NACK 逻辑
+      // [核心改造] 实现延迟重试机制
       const retryCount = (originalMsg.properties.headers['x-death'] || []).length;
       if (retryCount < MAX_RETRIES) {
-        // requeue: true 将消息放回队列头部，等待下次处理
+        // 发送到重试队列，实现延迟重试（5秒后重新处理）
         this.logger.warn(
-          `Task for game ${data.gameId} failed. Retrying (${retryCount + 1}/${MAX_RETRIES + 1})...`,
+          `Logic task for game ${data.gameId} failed. Sending to retry queue (${retryCount + 1}/${MAX_RETRIES + 1})...`,
         );
-        channel.nack(originalMsg, false, true);
+        channel.nack(originalMsg, false, false); // 触发死信路由到重试队列
       } else {
-        // 达到最大重试次数，将消息发送到死信队列
+        // 达到最大重试次数，将消息发送到最终死信队列
         this.logger.error(
-          `Task for game ${data.gameId} failed after ${MAX_RETRIES + 1} attempts. Sending to DLQ.`,
+          `Logic task for game ${data.gameId} failed after ${MAX_RETRIES + 1} attempts. Sending to DLQ.`,
         );
-        // requeue: false 将导致消息被 RabbitMQ 路由到配置的 DLX
-        channel.nack(originalMsg, false, false);
+        // 手动发送到死信队列
+        channel.publish('dlx', 'logic_queue_dead', originalMsg.content, {
+          headers: { ...originalMsg.properties.headers, finalFailure: true }
+        });
+        channel.ack(originalMsg);
       }
     }
   }

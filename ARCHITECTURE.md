@@ -1,22 +1,29 @@
-# 创世星环 (Creation Ring) - 系统架构文档
+# 🏗️ 创世星环 (Creation Ring) - 系统架构文档
 
-## 项目概述
+## 📋 项目概述
 
-创世星环是一个AI驱动的交互式叙事游戏生成系统，采用微服务架构和事件驱动设计。系统通过三个专门的AI代理协同工作，为用户生成沉浸式的游戏体验。
+创世星环是一个**工业级**AI驱动的交互式叙事游戏生成系统，采用微服务架构和事件驱动设计。系统通过三个专门的AI代理协同工作，为用户生成沉浸式的游戏体验。
+
+[![Industrial Ready](https://img.shields.io/badge/industrial-ready-brightgreen.svg)](docs/System-Technical-Specification.md)
+[![Tested](https://img.shields.io/badge/tested-✅-brightgreen.svg)](industrial-test-results/)
+[![Architecture](https://img.shields.io/badge/architecture-microservices-blue.svg)](docs/System-Technical-Specification.md)
 
 ## 核心架构原则
 
 ### 1. 微服务架构
+
 - **松耦合**: 各服务独立部署和扩展
 - **职责分离**: 每个服务专注特定领域
 - **技术多样性**: 允许不同服务使用最适合的技术栈
 
 ### 2. 事件驱动架构
+
 - **异步通信**: 服务间通过事件松耦合
 - **可扩展性**: 新功能可通过订阅事件轻松集成
 - **容错性**: 单个服务失败不影响整个系统
 
 ### 3. AI优先设计
+
 - **智能代理**: 三个专门的AI代理处理不同任务
 - **动态路由**: 根据任务类型智能选择AI模型
 - **质量保证**: 多层护栏确保AI输出质量
@@ -88,12 +95,14 @@
 **技术栈**: Vue 3 + Vite + Pinia + Socket.IO Client
 
 **职责**:
+
 - 用户界面和交互
 - 状态管理和路由
 - 实时通信处理
 - 响应式设计
 
 **关键组件**:
+
 - **视图层**: WelcomeView, NexusHubView, CreationHubView, GameView
 - **状态管理**: auth.store, game.store, realtime.store, settings.store
 - **服务层**: api.service, realtime.service
@@ -103,12 +112,14 @@
 **技术栈**: NestJS + TypeScript + Prisma + Socket.IO
 
 **职责**:
+
 - API请求路由和验证
 - 用户认证和授权
 - WebSocket连接管理
 - 请求限流和安全
 
 **核心模块**:
+
 - **AuthModule**: 用户认证 (JWT, Passport)
 - **GamesModule**: 游戏管理API
 - **SettingsModule**: AI配置管理
@@ -122,11 +133,13 @@
 **职责**: 解析玩家行动，计算游戏状态变更
 
 **核心流程**:
+
 ```
 玩家行动 → AI推理 → 状态变更指令 → 规则引擎执行 → 事件发布
 ```
 
 **关键组件**:
+
 - **LogicService**: 核心推理逻辑
 - **RuleEngineService**: 游戏规则执行
 - **MessageQueueController**: RabbitMQ消息处理
@@ -136,11 +149,13 @@
 **职责**: 将状态变更转换为生动叙事内容
 
 **核心流程**:
+
 ```
 逻辑完成事件 → AI叙事生成 → 推送给前端 → 可选审查优化
 ```
 
 **关键组件**:
+
 - **NarrativeService**: 叙事生成服务
 - **Synthesizer**: 叙事合成器
 - **Critic**: 审查智能体 (预留)
@@ -150,11 +165,13 @@
 **职责**: 从用户概念生成完整的游戏世界
 
 **核心流程**:
+
 ```
 用户概念 → AI架构设计 → 数据库存储 → 通知前端
 ```
 
 **关键组件**:
+
 - **CreationService**: 创世服务
 - **Architect AI**: 建筑师AI代理
 
@@ -165,6 +182,7 @@
 **职责**: 提供所有后端服务共享的基础设施
 
 **核心模块**:
+
 - **AI服务**: DynamicAiScheduler, AiGuard, PromptManager
 - **数据库**: PrismaService, 数据迁移
 - **缓存**: Redis缓存服务
@@ -177,6 +195,7 @@
 **职责**: 提供前后端共享的TypeScript类型定义
 
 **核心类型**:
+
 - **API类型**: ApiResponse, ApiError, PaginatedResponse
 - **业务类型**: Game, User, AiConfiguration
 - **分页类型**: PaginationParams
@@ -314,8 +333,8 @@ spec:
   template:
     spec:
       containers:
-      - name: backend-gateway
-        image: creation-ring/backend-gateway:latest
+        - name: backend-gateway
+          image: creation-ring/backend-gateway:latest
 
 ---
 apiVersion: apps/v1
@@ -328,9 +347,8 @@ spec:
   template:
     spec:
       containers:
-      - name: logic-agent
-        image: creation-ring/logic-agent:latest
-
+        - name: logic-agent
+          image: creation-ring/logic-agent:latest
 # ... 其他服务的部署配置
 ```
 

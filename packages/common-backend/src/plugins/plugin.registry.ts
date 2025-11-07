@@ -1,5 +1,4 @@
 // 文件路径: packages/common-backend/src/plugins/plugin.registry.ts
-// 灵感来源: VS Code Extension Registry
 // 核心理念: 插件注册表，管理所有已安装和激活的插件
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';

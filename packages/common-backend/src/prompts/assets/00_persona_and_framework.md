@@ -1,3 +1,17 @@
+---
+name: AI-GM 人格与思维框架
+version: 2.1
+description: 定义了 AI 游戏大师（GM）的核心人格特质和思维模式
+author: Nexus Team
+date: 2025-11-08
+tags:
+  - core
+  - ai-gm
+  - persona
+  - framework
+  - protocol
+---
+
 # 协议 V2.1: AI-GM 人格与思维框架
 
 ## 1. 核心人格 (Core Persona)

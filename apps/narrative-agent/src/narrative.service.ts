@@ -1,8 +1,6 @@
 // 文件路径: apps/narrative-agent/src/narrative.service.ts (已优化 AI 调用链)
 
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { Injectable, Logger } from '@nestjs/common';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { User } from '@prisma/client';
@@ -15,6 +13,9 @@ import {
   PromptManagerService,
   callAiWithGuard,
   AiGenerationException,
+  PromptInjectionGuard,
+  PromptInjectionDetectedException,
+  EventBusService,
 } from '@tuheg/common-backend';
 
 // --- Zod Schemas for AI I/O ---
@@ -38,14 +39,13 @@ type ProgressionResponse = z.infer<typeof progressionResponseSchema>;
 @Injectable()
 export class NarrativeService {
   private readonly logger = new Logger(NarrativeService.name);
-  private readonly GATEWAY_URL =
-    process.env.GATEWAY_URL || 'http://nexus-engine:3000/gateway/send-to-user';
 
   constructor(
     private readonly scheduler: DynamicAiSchedulerService,
     private readonly prisma: PrismaService,
     private readonly promptManager: PromptManagerService,
-    private readonly httpService: HttpService,
+    private readonly eventBus: EventBusService,
+    private readonly promptInjectionGuard: PromptInjectionGuard,
   ) {}
 
   public async processNarrative(payload: LogicCompletePayload): Promise<void> {
@@ -53,6 +53,22 @@ export class NarrativeService {
     const pseudoUser = { id: payload.userId } as User;
 
     try {
+      // Security check: Validate input against prompt injection
+      const securityCheck = await this.promptInjectionGuard.checkInput(
+        JSON.stringify(payload.playerAction),
+        {
+          userId: payload.userId,
+        },
+      );
+
+      if (!securityCheck.allowed) {
+        throw new PromptInjectionDetectedException('Input failed security validation', {
+          score: securityCheck.score,
+          threshold: securityCheck.threshold,
+          preview: securityCheck.inputPreview,
+        });
+      }
+
       const gameState = await this.prisma.game.findUniqueOrThrow({
         where: { id: payload.gameId },
         include: { character: true, worldBook: true },
@@ -89,17 +105,15 @@ export class NarrativeService {
       // this.logger.log(`[Critic] Reviewed and finalized progression for game ${payload.gameId}.`);
 
       // 发送最终结果的逻辑保持不变
-      await firstValueFrom(
-        this.httpService.post(this.GATEWAY_URL, {
-          userId: payload.userId,
-          event: 'processing_completed',
-          data: {
-            message: 'AI response received.',
-            progression: finalProgression,
-          },
-        }),
-      );
-      this.logger.log(`Successfully sent final narrative to user ${payload.userId} via gateway.`);
+      await this.eventBus.publish('NOTIFY_USER', {
+        userId: payload.userId,
+        event: 'processing_completed',
+        data: {
+          message: 'AI response received.',
+          progression: finalProgression,
+        },
+      });
+      this.logger.log(`Successfully sent final narrative to user ${payload.userId} via event bus.`);
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred in narrative processing';
       if (error instanceof Error) {
@@ -111,22 +125,56 @@ export class NarrativeService {
         error instanceof AiGenerationException ? error.details : undefined,
       );
       try {
-        await firstValueFrom(
-          this.httpService.post(this.GATEWAY_URL, {
-            userId: payload.userId,
-            event: 'processing_failed',
-            data: {
-              message: 'An error occurred during narrative generation.',
-              error: errorMessage,
-            },
-          }),
-        );
-      } catch (gatewayError) {
+        await this.eventBus.publish('NOTIFY_USER', {
+          userId: payload.userId,
+          event: 'processing_failed',
+          data: {
+            message: 'An error occurred during narrative generation.',
+            error: errorMessage,
+          },
+        });
+      } catch (eventBusError) {
         this.logger.error(
-          'CRITICAL: Failed to even send the error message via gateway.',
-          gatewayError,
+          'CRITICAL: Failed to even send the error message via event bus.',
+          eventBusError,
         );
       }
+    }
+  }
+
+  /**
+   * 专门用于在所有重试都失败后的最终失败通知
+   * 这个方法确保即使消息被发送到DLQ，用户也能收到失败通知
+   */
+  public async notifyNarrativeFailure(
+    userId: string,
+    gameId: string,
+    error: unknown,
+  ): Promise<void> {
+    let errorMessage = 'An unknown error occurred during narrative processing';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    try {
+      await this.eventBus.publish('NOTIFY_USER', {
+        userId: userId,
+        event: 'processing_failed',
+        data: {
+          message: 'Failed to process narrative after all retry attempts.',
+          error: errorMessage,
+          gameId: gameId,
+          finalFailure: true, // 标记这是最终失败，不再重试
+        },
+      });
+      this.logger.log(
+        `Sent final narrative failure notification to user ${userId} for game ${gameId}`,
+      );
+    } catch (eventBusError) {
+      this.logger.error(
+        `CRITICAL: Failed to send final narrative failure notification to user ${userId} for game ${gameId}`,
+        eventBusError,
+      );
     }
   }
 
@@ -160,40 +208,6 @@ export class NarrativeService {
       {
         currentState: JSON.stringify(currentState),
         playerAction: JSON.stringify(playerAction),
-        system_prompt: systemPrompt,
-      },
-      progressionResponseSchema as any,
-    );
-  }
-
-  /**
-   * 审查家 (Critic) - [!] 核心改造：此方法被保留，但当前工作流中未被调用
-   * 接收一份初稿，并返回优化后的版本。
-   */
-  private async reviewWithCritic(
-    worldState: object,
-    playerAction: any,
-    draft: ProgressionResponse,
-    user: User,
-  ): Promise<ProgressionResponse> {
-    const provider = await this.scheduler.getProviderForRole(user, 'critic');
-    const parser = StructuredOutputParser.fromZodSchema(progressionResponseSchema);
-    const systemPrompt = this.promptManager.getPrompt('03_critic_agent.md');
-
-    const prompt = new PromptTemplate({
-      template: `{system_prompt}\n# 审查任务\n{format_instructions}\n---\n世界状态:\n\`\`\`json\n{world_state}\n\`\`\`\n---\n玩家行动:\n\`\`\`json\n{player_action}\n\`\`\`\n---\n待审查的初稿:\n\`\`\`json\n{draft}\n\`\`\``,
-      inputVariables: ['world_state', 'player_action', 'draft', 'system_prompt'],
-      partialVariables: { format_instructions: parser.getFormatInstructions() },
-    });
-
-    const chain = prompt.pipe(provider.model).pipe(parser);
-
-    return callAiWithGuard(
-      chain,
-      {
-        world_state: JSON.stringify(worldState),
-        player_action: JSON.stringify(playerAction),
-        draft: JSON.stringify(draft),
         system_prompt: systemPrompt,
       },
       progressionResponseSchema as any,

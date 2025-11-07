@@ -1,9 +1,8 @@
 // 文件路径: packages/common-backend/src/cache/cache.service.ts
-// 灵感来源: NestJS Cache Manager (https://github.com/nestjs/cache-manager)
 // 核心理念: 多级缓存策略，支持内存和 Redis
 
 import { Injectable, Logger } from '@nestjs/common';
-import { Cache } from 'cache-manager';
+import type { Cache } from 'cache-manager';
 import { Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
