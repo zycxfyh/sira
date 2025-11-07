@@ -140,6 +140,9 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 ### 原始项目
 - **[Express Gateway](https://github.com/ExpressGateway/express-gateway)** - 基于Express的API网关框架
 
+### 设计理念借鉴
+- **[VCP Toolbox](https://github.com/vcp-toolbox)** - 开源AI工具生态系统，提供了Agent架构、记忆网络、工作流引擎等核心设计理念
+
 ## 📄 许可证
 
 本项目中的开源组件使用各种许可证，包括但不限于：
@@ -155,6 +158,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **Express.js团队** - 为Node.js生态系统提供了强大的Web框架
 - **Kong团队** - 提供了优秀的API网关解决方案
 - **Docker团队** - 让容器化技术普及化
+- **VCP Toolbox团队** - 提供了先进的Agent架构和AI生态系统设计理念
 - **Prometheus & Grafana团队** - 为监控和可视化提供了标准
 - **所有Node.js模块的作者们** - 丰富了JavaScript生态系统
 
@@ -167,7 +171,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 
 ---
 
-*最后更新: 2025年11月8日 (补充完整开源技术清单)*
+*最后更新: 2025年11月8日 (添加VCP Toolbox致谢)*
 
 ## 🔄 更新日志
 
@@ -180,3 +184,8 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - 补充遗漏的开源技术：SuperAgent扩展、Passport策略、实用工具库
 - 添加完整的开发依赖：ESLint插件、测试工具、构建工具等
 - 完善开源技术清单，总计80+个开源项目
+
+### v2.0.2 (2025-11-08)
+- 添加VCP Toolbox致谢：开源AI工具生态系统设计理念的借鉴者
+- 在设计理念借鉴部分特别标注VCP Toolbox的核心贡献
+- 完善开源项目生态系统的完整性
