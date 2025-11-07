@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { usageAnalytics } = require('../../usage-analytics')
 
 // AI Router Policy
 // Routes AI requests to appropriate providers based on cost, performance, and availability
@@ -80,6 +81,10 @@ module.exports = function (params, config) {
   return function aiRouter (req, res, next) {
     const startTime = Date.now()
 
+    // Extract user ID from headers or generate one
+    const userId = req.headers['x-user-id'] || req.headers['user-id'] || req.ip || 'anonymous'
+    const requestId = req.headers['x-request-id'] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
     // Extract AI model from request body
     let model
     try {
@@ -87,6 +92,16 @@ module.exports = function (params, config) {
       model = body.model
 
       if (!model) {
+        // 记录错误统计
+        usageAnalytics.recordRequest({
+          userId,
+          requestId,
+          statusCode: 400,
+          error: 'MISSING_MODEL',
+          timestamp: new Date(),
+          responseTime: Date.now() - startTime
+        })
+
         return res.status(400).json({
           error: 'Model is required',
           code: 'MISSING_MODEL'
@@ -95,6 +110,16 @@ module.exports = function (params, config) {
 
       // Check if model is supported
       if (!modelProviders[model]) {
+        // 记录错误统计
+        usageAnalytics.recordRequest({
+          userId,
+          requestId,
+          statusCode: 400,
+          error: 'UNSUPPORTED_MODEL',
+          timestamp: new Date(),
+          responseTime: Date.now() - startTime
+        })
+
         return res.status(400).json({
           error: `Unsupported model: ${model}`,
           code: 'UNSUPPORTED_MODEL'
@@ -102,6 +127,17 @@ module.exports = function (params, config) {
       }
     } catch (error) {
       logger.error('Failed to parse request body:', error)
+
+      // 记录错误统计
+      usageAnalytics.recordRequest({
+        userId,
+        requestId,
+        statusCode: 400,
+        error: 'INVALID_REQUEST',
+        timestamp: new Date(),
+        responseTime: Date.now() - startTime
+      })
+
       return res.status(400).json({
         error: 'Invalid request body',
         code: 'INVALID_REQUEST'
@@ -112,6 +148,16 @@ module.exports = function (params, config) {
     const selectedProvider = selectBestProvider(model, req)
 
     if (!selectedProvider) {
+      // 记录错误统计
+      usageAnalytics.recordRequest({
+        userId,
+        requestId,
+        statusCode: 503,
+        error: 'NO_AVAILABLE_PROVIDERS',
+        timestamp: new Date(),
+        responseTime: Date.now() - startTime
+      })
+
       return res.status(503).json({
         error: 'No available providers for model',
         code: 'NO_AVAILABLE_PROVIDERS'
@@ -148,21 +194,47 @@ module.exports = function (params, config) {
         // Transform response if needed
         const transformedResponse = transformResponse(response.data, selectedProvider)
 
+        // Extract token usage from response
+        const tokens = extractTokenUsage(transformedResponse, selectedProvider)
+        const cost = calculateCost(selectedProvider, model, tokens)
+
+        // 记录成功请求统计
+        usageAnalytics.recordRequest({
+          userId,
+          requestId,
+          provider: selectedProvider,
+          model,
+          tokens: tokens.total || 0,
+          cost: cost || 0,
+          responseTime,
+          statusCode: response.status,
+          timestamp: new Date(),
+          ip: req.ip,
+          userAgent: req.headers['user-agent']
+        })
+
         // Add custom headers
         res.set({
           'x-ai-provider': selectedProvider,
           'x-ai-model': model,
-          'x-response-time': responseTime
+          'x-response-time': responseTime,
+          'x-tokens-used': tokens.total || 0,
+          'x-cost': cost || 0,
+          'x-request-id': requestId
         })
 
         // Send response
         res.status(response.status).json(transformedResponse)
 
         logger.info('AI request processed', {
+          requestId,
+          userId,
           model,
           provider: selectedProvider,
           responseTime,
-          statusCode: response.status
+          statusCode: response.status,
+          tokens: tokens.total,
+          cost
         })
       })
       .catch(error => {
@@ -171,7 +243,23 @@ module.exports = function (params, config) {
         // Record provider performance
         recordProviderPerformance(selectedProvider, false, responseTime)
 
+        // 记录失败请求统计
+        usageAnalytics.recordRequest({
+          userId,
+          requestId,
+          provider: selectedProvider,
+          model,
+          statusCode: 502,
+          error: error.code || 'PROVIDER_ERROR',
+          responseTime,
+          timestamp: new Date(),
+          ip: req.ip,
+          userAgent: req.headers['user-agent']
+        })
+
         logger.error('AI provider request failed', {
+          requestId,
+          userId,
           model,
           provider: selectedProvider,
           error: error.message,
@@ -182,6 +270,7 @@ module.exports = function (params, config) {
         res.status(502).json({
           error: 'AI provider error',
           code: 'PROVIDER_ERROR',
+          requestId,
           details: process.env.NODE_ENV === 'development' ? error.message : undefined
         })
       })
@@ -286,6 +375,31 @@ module.exports = function (params, config) {
     }
 
     return data // OpenAI and Azure already return compatible format
+  }
+
+  // Extract token usage from response
+  function extractTokenUsage (response, provider) {
+    if (!response || !response.usage) {
+      return { prompt: 0, completion: 0, total: 0 }
+    }
+
+    const usage = response.usage
+    return {
+      prompt: usage.prompt_tokens || 0,
+      completion: usage.completion_tokens || 0,
+      total: usage.total_tokens || (usage.prompt_tokens || 0) + (usage.completion_tokens || 0)
+    }
+  }
+
+  // Calculate cost based on provider, model and token usage
+  function calculateCost (provider, model, tokens) {
+    const providerConfig = providers[provider]
+    if (!providerConfig || !providerConfig.costPerToken) {
+      return 0
+    }
+
+    const costPerToken = providerConfig.costPerToken[model] || 0
+    return costPerToken * (tokens.total || 0)
   }
 
   // Build target URL

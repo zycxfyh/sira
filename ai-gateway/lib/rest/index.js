@@ -41,6 +41,7 @@ module.exports = function ({ plugins, config } = {}) {
   app.use('/pipelines', require('./routes/pipelines')({ config }))
   app.use('/policies', require('./routes/policies')({ config }))
   app.use('/schemas', require('./routes/schemas')())
+  app.use('/', require('./routes/analytics')())
 
   app.use((err, req, res, next) => {
     logger.debug(err.stack)
