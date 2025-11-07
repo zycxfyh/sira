@@ -50,6 +50,8 @@
 | 📊 **360°可观测性** | Prometheus+Grafana+Jaeger全链路追踪 | 🔍 问题定位时间减少80% |
 | 🧪 **9阶段测试工作流** | 本地验证→生产部署完整测试覆盖 | ✅ 99.9%系统稳定性 |
 | 💰 **实时价格监控** | 集成官方价格文档，智能成本优化 | 📈 实时掌握价格变动 |
+| 🎯 **智能配置向导** | 交互式供应商配置，自动测试连接 | ⚡ 5分钟完成配置 |
+| 🛡️ **错误处理机制** | 自动重试、熔断保护、详细错误诊断 | 🔧 99.9%稳定性保障 |
 
 ---
 
@@ -210,13 +212,34 @@ graph TB
 
 ## 🚀 快速开始
 
-### ⚡ 一键启动 (推荐)
+### 方法1: 交互式配置向导 (推荐新手) 🤖
+
+Sira提供智能的交互式配置向导，一步步引导您完成AI供应商配置：
 
 ```bash
 # 克隆项目
-git clone <repository-url>
+git clone https://github.com/zycxfyh/sira.git
 cd ai-gateway
 
+# 运行交互式配置向导
+./scripts/setup-ai-provider.sh
+
+# 按照提示进行配置：
+# 1. 🎯 选择AI供应商 (20+供应商支持)
+# 2. 🔑 输入API密钥
+# 3. 📥 自动拉取可用模型
+# 4. 🤖 选择要使用的模型
+# 5. 🔗 自动测试连接
+# 6. 📝 生成配置文件
+```
+
+**支持的供应商一览**:
+- 🇺🇸 **国际**: OpenAI, Anthropic, Azure OpenAI, Google Gemini, Cohere, AI21, Stability AI, Midjourney, Replicate
+- 🇨🇳 **国内**: DeepSeek, 通义千问, 文心一言, 智谱GLM, Kimi, 豆包, 腾讯混元, 百度千帆
+
+### 方法2: 手动配置 ⚙️
+
+```bash
 # 配置环境变量
 cp env.template .env
 # 编辑 .env 添加你的API密钥
@@ -228,6 +251,48 @@ docker-compose -f docker-compose-full.yml up -d
 # 验证启动状态
 docker-compose -f docker-compose-full.yml ps
 ```
+
+### 方法3: 测试现有配置 🔍
+
+```bash
+# 测试所有已配置供应商的连接
+./scripts/test-provider-connection.sh --all
+
+# 测试特定供应商
+./scripts/test-provider-connection.sh -p openai deepseek
+
+# 生成测试报告
+./scripts/test-provider-connection.sh --report
+```
+
+### 🛡️ 错误处理和重试机制
+
+Sira内置智能错误处理系统，自动处理各种异常情况：
+
+**自动重试机制**:
+- 网络超时自动重试
+- API限流自动等待重试
+- 服务器错误自动切换供应商
+- 指数退避 + 随机抖动算法
+
+**智能错误诊断**:
+```javascript
+// 错误自动分类和处理
+const errorHandler = require('./lib/error-handler');
+
+await errorHandler.withRetry(async () => {
+    return await callAIProvider(model, prompt);
+}, {
+    maxRetries: 3,
+    context: { provider: 'openai', model: 'gpt-4' }
+});
+```
+
+**常见错误自动处理**:
+- 🔄 **Rate Limit**: 自动等待并重试
+- 🌐 **网络错误**: 指数退避重试
+- 🚫 **API密钥错误**: 详细错误提示
+- 💰 **配额不足**: 自动切换到备用供应商
 
 ### 🛠️ 开发环境搭建
 
