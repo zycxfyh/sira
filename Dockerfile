@@ -1,6 +1,6 @@
 # =========================================
 # ---------- Stage: base ----------
-FROM node:20-slim AS base
+FROM node:25-slim AS base
 
 # 安装pnpm
 RUN npm install -g pnpm@9.6.0
@@ -58,7 +58,7 @@ RUN pnpm exec turbo run build
 # ---------- Stage: production images ----------
 
 # --- backend-gateway ---
-FROM node:20-slim AS backend-gateway-prod
+FROM node:25-slim AS backend-gateway-prod
 
 # 安装pnpm
 RUN npm install -g pnpm@9.6.0
@@ -80,7 +80,7 @@ RUN pnpm install --prod --frozen-lockfile
 CMD ["node", "dist/main.js"]
 
 # --- creation-agent ---
-FROM node:20-slim AS creation-agent-prod
+FROM node:25-slim AS creation-agent-prod
 
 # 安装pnpm
 RUN npm install -g pnpm@9.6.0
@@ -102,7 +102,7 @@ RUN pnpm install --prod --frozen-lockfile
 CMD ["node", "dist/main.js"]
 
 # --- logic-agent ---
-FROM node:20-slim AS logic-agent-prod
+FROM node:25-slim AS logic-agent-prod
 
 # 安装pnpm
 RUN npm install -g pnpm@9.6.0
@@ -124,7 +124,7 @@ RUN pnpm install --prod --frozen-lockfile
 CMD ["node", "dist/main.js"]
 
 # --- narrative-agent ---
-FROM node:20-slim AS narrative-agent-prod
+FROM node:25-slim AS narrative-agent-prod
 
 # 安装pnpm
 RUN npm install -g pnpm@9.6.0
