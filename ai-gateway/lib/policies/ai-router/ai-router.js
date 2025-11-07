@@ -3,6 +3,7 @@ const { usageAnalytics } = require('../../usage-analytics')
 const { parameterManager } = require('../../parameter-manager')
 const { promptTemplateManager } = require('../../prompt-template-manager')
 const { apiKeyManager } = require('../../api-key-manager')
+const { ABTestManager } = require('../../ab-test-manager')
 
 // AI Router Policy
 // Routes AI requests to appropriate providers based on cost, performance, and availability
@@ -234,8 +235,83 @@ module.exports = function (params, config) {
       })
     }
 
-    // Select best provider for the model
-    const selectedProvider = selectBestProvider(model, req)
+    // A/B测试：检查是否有适用于当前请求的测试
+    let abTestAllocation = null
+    let abTestManager = null
+
+    try {
+      // 延迟初始化A/B测试管理器
+      if (!global.abTestManager) {
+        global.abTestManager = new ABTestManager()
+        await global.abTestManager.initialize()
+      }
+      abTestManager = global.abTestManager
+
+      // 查找适用于当前请求的A/B测试
+      const context = {
+        userId,
+        provider: null, // 稍后根据测试目标设置
+        model,
+        taskType,
+        requestId
+      }
+
+      // 首先查找provider相关的测试
+      const providerTests = Array.from(abTestManager.tests.values())
+        .filter(test => test.status === 'running' && test.target === 'provider')
+
+      for (const test of providerTests) {
+        const allocation = abTestManager.allocateVariant(test.id, userId, context)
+        if (allocation) {
+          abTestAllocation = { ...allocation, target: 'provider' }
+          break
+        }
+      }
+
+      // 如果没有provider测试，查找model相关的测试
+      if (!abTestAllocation) {
+        const modelTests = Array.from(abTestManager.tests.values())
+          .filter(test => test.status === 'running' && test.target === 'model')
+
+        for (const test of modelTests) {
+          const allocation = abTestManager.allocateVariant(test.id, userId, context)
+          if (allocation) {
+            abTestAllocation = { ...allocation, target: 'model' }
+            break
+          }
+        }
+      }
+
+      // 如果有A/B测试分配，根据测试变体调整请求参数
+      if (abTestAllocation) {
+        const variant = abTestAllocation.variant
+        logger.info(`A/B测试分配: ${abTestAllocation.testId} -> 变体 ${abTestAllocation.variantId}`, {
+          userId,
+          requestId,
+          variant: variant.name
+        })
+
+        // 根据测试目标应用变体
+        if (abTestAllocation.target === 'provider') {
+          // 强制使用测试指定的provider
+          selectedProvider = variant.id // variant.id 存储provider名称
+        } else if (abTestAllocation.target === 'model') {
+          // 强制使用测试指定的model
+          model = variant.id // variant.id 存储model名称
+        }
+        // 其他测试目标可以在这里扩展
+      }
+    } catch (error) {
+      logger.warn('A/B测试处理失败，继续正常流程', {
+        userId,
+        requestId,
+        error: error.message
+      })
+      // A/B测试失败不影响正常请求处理
+    }
+
+    // Select best provider for the model (如果没有被A/B测试覆盖)
+    let selectedProvider = selectedProvider || selectBestProvider(model, req)
 
     if (!selectedProvider) {
       // 记录错误统计
@@ -379,6 +455,38 @@ module.exports = function (params, config) {
           'x-request-id': requestId
         })
 
+        // A/B测试：记录成功请求的结果
+        if (abTestAllocation && abTestManager) {
+          try {
+            const metrics = {
+              response_time: responseTime,
+              cost: cost || 0,
+              quality_score: calculateQualityScore(transformedResponse, model) // 简单的质量评分
+            }
+
+            await abTestManager.recordResult(
+              abTestAllocation.testId,
+              abTestAllocation.variantId,
+              userId,
+              metrics
+            )
+
+            logger.debug(`A/B测试结果记录成功: ${abTestAllocation.testId}`, {
+              userId,
+              requestId,
+              variantId: abTestAllocation.variantId,
+              metrics
+            })
+          } catch (error) {
+            logger.warn('A/B测试结果记录失败', {
+              userId,
+              requestId,
+              testId: abTestAllocation.testId,
+              error: error.message
+            })
+          }
+        }
+
         // Send response
         res.status(response.status).json(transformedResponse)
 
@@ -398,6 +506,39 @@ module.exports = function (params, config) {
 
         // Record provider performance
         recordProviderPerformance(selectedProvider, false, responseTime)
+
+        // A/B测试：记录失败请求的结果
+        if (abTestAllocation && abTestManager) {
+          try {
+            const metrics = {
+              response_time: responseTime,
+              cost: 0,
+              quality_score: 0, // 失败请求的质量评分
+              error_count: 1 // 错误计数
+            }
+
+            await abTestManager.recordResult(
+              abTestAllocation.testId,
+              abTestAllocation.variantId,
+              userId,
+              metrics
+            )
+
+            logger.debug(`A/B测试错误结果记录成功: ${abTestAllocation.testId}`, {
+              userId,
+              requestId,
+              variantId: abTestAllocation.variantId,
+              error: error.code || 'PROVIDER_ERROR'
+            })
+          } catch (recordError) {
+            logger.warn('A/B测试错误结果记录失败', {
+              userId,
+              requestId,
+              testId: abTestAllocation.testId,
+              error: recordError.message
+            })
+          }
+        }
 
         // 记录失败请求统计
         usageAnalytics.recordRequest({
@@ -727,4 +868,72 @@ function validateConfiguration (params) {
   }
 
   return errors
+}
+
+// 计算AI响应质量评分 (0-100)
+/**
+ * 简单的质量评分算法，基于响应长度、内容丰富度和格式规范性
+ * @param {Object} response - AI API响应
+ * @param {string} model - 使用的模型
+ * @returns {number} 质量评分 (0-100)
+ */
+function calculateQualityScore(response, model) {
+  try {
+    if (!response || typeof response !== 'object') {
+      return 0
+    }
+
+    let score = 50 // 基础分数
+
+    // 检查响应结构
+    if (response.choices && Array.isArray(response.choices) && response.choices.length > 0) {
+      const choice = response.choices[0]
+
+      if (choice.message && choice.message.content) {
+        const content = choice.message.content
+
+        // 内容长度评分 (10分)
+        const length = content.length
+        if (length > 500) score += 10
+        else if (length > 200) score += 5
+        else if (length < 50) score -= 5
+
+        // 内容丰富度评分 (20分)
+        const sentences = content.split(/[.!?]+/).length
+        const words = content.split(/\s+/).length
+        const avgWordsPerSentence = words / Math.max(sentences, 1)
+
+        if (avgWordsPerSentence > 15) score += 10 // 句子结构好
+        else if (avgWordsPerSentence > 10) score += 5
+        else if (avgWordsPerSentence < 5) score -= 5
+
+        // 词汇多样性评分 (10分)
+        const uniqueWords = new Set(content.toLowerCase().split(/\s+/)).size
+        const diversityRatio = uniqueWords / Math.max(words, 1)
+        if (diversityRatio > 0.6) score += 10
+        else if (diversityRatio > 0.4) score += 5
+
+        // 格式规范性评分 (10分)
+        if (content.includes('\n\n')) score += 5 // 有段落分隔
+        if (/^[A-Z]/.test(content)) score += 5 // 首字母大写
+      }
+
+      // 完成状态评分 (10分)
+      if (choice.finish_reason === 'stop') score += 10
+      else if (choice.finish_reason === 'length') score += 5
+    }
+
+    // 模型特定评分调整
+    if (model.includes('gpt-4')) {
+      score += 5 // GPT-4 基础分数更高
+    } else if (model.includes('claude')) {
+      score += 3 // Claude 基础分数较高
+    }
+
+    // 确保分数在0-100范围内
+    return Math.max(0, Math.min(100, Math.round(score)))
+  } catch (error) {
+    console.warn('质量评分计算失败:', error.message)
+    return 50 // 默认中等分数
+  }
 }

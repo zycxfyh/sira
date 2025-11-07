@@ -57,6 +57,12 @@
 | 🎭 **提示词模板库** | 专业模板、变量替换、智能推荐 | 📝 一键生成优质提示 |
 | 📊 **性能基准测试** | 响应时间、成本对比、质量评估 | ⚡ 科学评估AI模型性能 |
 | 🔐 **API密钥管理** | 智能轮换、权限控制、用量限制 | 🛡️ 企业级密钥安全管理 |
+| 🎮 **游戏AI集成** | 多Agent架构、记忆网络、剧情生成 | 🎲 沉浸式游戏体验 |
+| 🎨 **图像生成工具** | DALL-E/Midjourney/Stable Diffusion统一接口 | 🖼️ 多模型图像生成 |
+| 🎤 **语音处理功能** | Whisper/TTS模型，语音转文字、文字转语音 | 🗣️ 多语言语音AI |
+| 📊 **价格监控系统** | 实时价格追踪、成本预测、智能路由优化 | 💰 自动化成本控制 |
+| 💬 **对话历史管理** | Redis式存储、上下文连续、记忆网络 | 🧠 智能对话体验 |
+| 📊 **A/B测试框架** | 多变量测试、流量分配、实时分析和自动化优化 | ⚡ 科学优化AI体验 |
 
 ---
 
@@ -746,6 +752,374 @@ curl -X POST http://localhost:8080/api/v1/ai/chat/completions \
     "messages": [{"role": "user", "content": "写一篇短文"}],
     "async": true,
     "webhook_url": "https://your-app.com/webhook"
+  }'
+```
+
+### 🎮 游戏AI API使用示例
+
+```bash
+# 创建游戏会话
+curl -X POST http://localhost:9876/game/sessions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gameType": "fantasy",
+    "playerName": "艾丽丝",
+    "playerClass": "wizard",
+    "playerLevel": 3,
+    "currentScene": "magic_forest"
+  }'
+
+# 创建NPC角色
+curl -X POST http://localhost:9876/game/characters \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "贤者梅林",
+    "personality": "睿智、神秘、乐于助人",
+    "background": "一位古老的魔法师，掌握强大的法术",
+    "location": "magic_tower"
+  }'
+
+# NPC对话交互
+curl -X POST http://localhost:9876/game/npc-chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "game_session_xxx",
+    "characterId": "character_xxx",
+    "playerInput": "你好，贤者。我需要找到失落的魔法水晶",
+    "sceneDescription": "古老的魔法塔中，空气中弥漫着魔法的气息"
+  }'
+
+# 生成游戏任务
+curl -X POST http://localhost:9876/game/generate-quest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "game_session_xxx",
+    "genre": "奇幻冒险",
+    "difficulty": "中等"
+  }'
+
+# 故事剧情推进
+curl -X POST http://localhost:9876/game/advance-story \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "game_session_xxx",
+    "playerChoice": "进入黑暗的洞穴深处探索",
+    "currentStory": "主角在森林中遇到神秘的洞穴入口"
+  }'
+
+# 快速开始游戏
+curl -X POST http://localhost:9876/game/quick-start \
+  -H "Content-Type: application/json" \
+  -d '{
+    "playerName": "小明",
+    "gameType": "adventure",
+    "playerClass": "warrior"
+  }'
+```
+
+### 🎨 图像生成 API使用示例
+
+```bash
+# 生成图像
+curl -X POST http://localhost:9876/images/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "一只可爱的猫咪在花园里玩耍，阳光明媚",
+    "provider": "openai_dalle",
+    "model": "dall-e-3",
+    "style": "natural",
+    "count": 1,
+    "size": "1024x1024"
+  }'
+
+# 使用艺术风格生成
+curl -X POST http://localhost:9876/images/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "未来城市的天际线，霓虹灯闪烁",
+    "style": "cyberpunk",
+    "provider": "midjourney",
+    "negativePrompt": "黑暗，阴郁"
+  }'
+
+# 使用模板生成图像
+curl -X POST http://localhost:9876/images/generate-from-template \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templateId": "portrait",
+    "customizations": {
+      "prompt": "一位年轻的艺术家，创意无限",
+      "style": "artistic"
+    }
+  }'
+
+# 生成图像变体
+curl -X POST http://localhost:9876/images/variation/{jobId} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "count": 2,
+    "style": "cartoon"
+  }'
+
+# 批量生成图像
+curl -X POST http://localhost:9876/images/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "requests": [
+      {"prompt": "日出时的山脉", "style": "natural"},
+      {"prompt": "太空飞船探索未知星球", "style": "cyberpunk"},
+      {"prompt": "魔法森林中的精灵", "style": "fantasy"}
+    ]
+  }'
+
+# 查看任务状态
+curl http://localhost:9876/images/job/{jobId}
+
+# 查看用户生成历史
+curl http://localhost:9876/images/history/{userId}?limit=5
+
+# 获取支持的提供商
+curl http://localhost:9876/images/providers
+
+# 获取支持的风格
+curl http://localhost:9876/images/styles
+```
+
+### 🎤 语音处理 API使用示例
+
+```bash
+# 语音转文字 - 上传音频文件
+curl -X POST http://localhost:9876/voice/stt/upload \
+  -F "audio=@speech.mp3" \
+  -F "provider=openai_whisper" \
+  -F "model=whisper-1" \
+  -F "language=zh-CN"
+
+# 文字转语音
+curl -X POST http://localhost:9876/voice/tts \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "你好，欢迎使用语音合成功能！",
+    "provider": "openai_tts",
+    "model": "tts-1",
+    "voice": "alloy",
+    "style": "natural",
+    "outputFormat": "mp3"
+  }'
+
+# 使用模板生成语音
+curl -X POST http://localhost:9876/voice/tts/from-template \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templateId": "greeting",
+    "customizations": {
+      "voice": "nova",
+      "style": "cheerful"
+    }
+  }'
+
+# 批量语音转文字
+curl -X POST http://localhost:9876/voice/stt/batch \
+  -F "audio=@file1.mp3" \
+  -F "audio=@file2.wav" \
+  -F "userId=user123"
+
+# 批量文字转语音
+curl -X POST http://localhost:9876/voice/tts/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "texts": ["第一段语音文本", "第二段语音文本"],
+    "voice": "echo"
+  }'
+
+# 查看任务状态
+curl http://localhost:9876/voice/job/{jobId}
+
+# 查看用户语音处理历史
+curl http://localhost:9876/voice/history/{userId}?type=stt&limit=5
+
+# 获取STT提供商
+curl http://localhost:9876/voice/stt/providers
+
+# 获取TTS提供商
+curl http://localhost:9876/voice/tts/providers
+
+# 获取语音风格
+curl http://localhost:9876/voice/styles
+
+# 获取支持的语言
+curl http://localhost:9876/voice/languages
+```
+
+### 📊 价格监控 API使用示例
+
+```bash
+# 获取当前所有价格
+curl http://localhost:9876/prices/current
+
+# 获取特定提供商的价格
+curl http://localhost:9876/prices/current?provider=openai
+
+# 获取价格历史
+curl http://localhost:9876/prices/history/openai/gpt-3.5-turbo?hours=24
+
+# 获取价格趋势分析
+curl http://localhost:9876/prices/trends?hours=24
+
+# 获取价格告警
+curl http://localhost:9876/prices/alerts?hours=24
+
+# 获取最优路由推荐
+curl http://localhost:9876/prices/optimal-route?modelType=gpt
+
+# 获取成本预测
+curl http://localhost:9876/prices/prediction?modelType=gpt&days=30
+
+# 获取成本节约建议
+curl http://localhost:9876/prices/cost-savings
+
+# 获取仪表盘数据
+curl http://localhost:9876/prices/dashboard
+
+# 创建价格告警规则
+curl -X POST http://localhost:9876/prices/alert-rules \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "openai",
+    "model": "gpt-4",
+    "threshold": 10,
+    "type": "increase",
+    "severity": "high"
+  }'
+
+# 手动触发价格更新
+curl -X POST http://localhost:9876/prices/update
+
+# 导出价格数据
+curl http://localhost:9876/prices/export?format=json
+```
+
+### 💬 对话历史管理 API使用示例
+
+```bash
+# 创建新对话会话
+curl -X POST http://localhost:9876/conversations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "title": "AI助手对话",
+    "contextWindow": 20
+  }'
+
+# 获取用户的所有会话
+curl http://localhost:9876/conversations/user123?status=active&limit=10
+
+# 搜索用户会话
+curl "http://localhost:9876/conversations/user123/search?q=机器学习&limit=5"
+
+# 获取会话详情
+curl http://localhost:9876/conversations/session/session-123
+
+# 添加消息到会话
+curl -X POST http://localhost:9876/conversations/session/session-123/messages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "user",
+    "content": "你好，请介绍一下机器学习",
+    "importance": "medium"
+  }'
+
+# 获取会话消息历史
+curl http://localhost:9876/conversations/session/session-123/messages?limit=20
+
+# 获取对话上下文
+curl http://localhost:9876/conversations/session/session-123/context?limit=10
+
+# 更新会话信息
+curl -X PUT http://localhost:9876/conversations/session/session-123 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "机器学习讨论",
+    "status": "active"
+  }'
+
+# 获取用户对话概览
+curl http://localhost:9876/conversations/user123/overview
+
+# 导出会话数据
+curl http://localhost:9876/conversations/session/session-123/export?format=json
+
+# 获取对话统计
+curl http://localhost:9876/conversations/stats
+```
+
+### 📊 A/B测试框架 API使用示例
+
+```bash
+# 获取所有测试概览
+curl http://localhost:9876/ab-tests
+
+# 创建A/B测试
+curl -X POST http://localhost:9876/ab-tests \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "供应商性能对比测试",
+    "description": "对比OpenAI和Anthropic的响应质量",
+    "target": "provider",
+    "variants": [
+      {"id": "openai", "name": "OpenAI GPT-4"},
+      {"id": "anthropic", "name": "Anthropic Claude"}
+    ],
+    "traffic": 50,
+    "metrics": ["response_time", "cost", "quality_score"]
+  }'
+
+# 启动测试
+curl -X POST http://localhost:9876/ab-tests/ab_test_123/start
+
+# 为用户分配测试变体
+curl -X POST http://localhost:9876/ab-tests/ab_test_123/allocate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "context": {
+      "taskType": "chat",
+      "model": "gpt-4"
+    }
+  }'
+
+# 记录测试结果
+curl -X POST http://localhost:9876/ab-tests/ab_test_123/record \
+  -H "Content-Type: application/json" \
+  -d '{
+    "variantId": "openai",
+    "userId": "user123",
+    "metrics": {
+      "response_time": 1200,
+      "cost": 0.02,
+      "quality_score": 85
+    }
+  }'
+
+# 获取测试分析结果
+curl http://localhost:9876/ab-tests/ab_test_123/analysis
+
+# 获取测试原始结果数据
+curl http://localhost:9876/ab-tests/ab_test_123/results?metric=response_time&limit=100
+
+# 暂停测试
+curl -X POST http://localhost:9876/ab-tests/ab_test_123/pause
+
+# 删除测试
+curl -X DELETE http://localhost:9876/ab-tests/ab_test_123
+
+# 批量启动多个测试
+curl -X POST http://localhost:9876/ab-tests/batch/start \
+  -H "Content-Type: application/json" \
+  -d '{
+    "testIds": ["ab_test_123", "ab_test_456"]
   }'
 ```
 
