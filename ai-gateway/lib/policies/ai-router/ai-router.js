@@ -499,7 +499,12 @@ module.exports = function (params, config) {
     // Set up Express Gateway proxy context for the proxy policy
     req.egContext = req.egContext || {}
     req.egContext.proxy = {
-      target: targetUrl,
+      target: {
+        protocol: 'https:',
+        host: selectedProvider === 'azure' ? 'your-resource.openai.azure.com' : 'api.openai.com',
+        port: 443,
+        href: targetUrl
+      },
       headers: headers,
       timeout: params.timeout || 30000,
       changeOrigin: true,

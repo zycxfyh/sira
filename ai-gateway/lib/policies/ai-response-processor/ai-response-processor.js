@@ -1,15 +1,8 @@
 // AI Response Processor Policy
 // 处理AI路由后的响应，统计使用情况、转换响应格式
 
-const axios = require('axios')
-
 module.exports = function (params, config) {
   const logger = config.logger || console
-
-  // 从主应用导入需要的服务
-  const apiKeyManager = global.apiKeyManager
-  const usageAnalytics = global.usageAnalytics
-  const abTestManager = global.abTestManager
 
   // Provider-specific response transformers
   const responseTransformers = {
