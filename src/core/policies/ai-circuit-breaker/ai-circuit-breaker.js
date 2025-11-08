@@ -1,7 +1,138 @@
 // AI Circuit Breaker Policy
 // Implements circuit breaker pattern for AI provider resilience
+// Uses Redis-backed circuit breaker state for cluster compatibility
 
-const CircuitBreaker = require('opossum')
+const db = require('../../db')
+
+// Redis-backed Circuit Breaker implementation
+class RedisCircuitBreaker {
+  constructor (provider, config, logger) {
+    this.provider = provider
+    this.config = config
+    this.logger = logger
+
+    // Redis keys
+    this.stateKey = `circuit:${provider}:state`
+    this.failuresKey = `circuit:${provider}:failures`
+    this.successesKey = `circuit:${provider}:successes`
+    this.lastFailureKey = `circuit:${provider}:last_failure`
+    this.nextAttemptKey = `circuit:${provider}:next_attempt`
+
+    this.states = {
+      CLOSED: 'closed',
+      OPEN: 'open',
+      HALF_OPEN: 'half_open'
+    }
+  }
+
+  async getState () {
+    try {
+      const state = await db.get(this.stateKey)
+      return state || this.states.CLOSED
+    } catch (error) {
+      this.logger.error(`Failed to get circuit state for ${this.provider}:`, error.message)
+      return this.states.CLOSED // Fail closed
+    }
+  }
+
+  async setState (state) {
+    try {
+      await db.set(this.stateKey, state)
+      this.logger.info(`Circuit breaker for ${this.provider} changed to ${state}`)
+    } catch (error) {
+      this.logger.error(`Failed to set circuit state for ${this.provider}:`, error.message)
+    }
+  }
+
+  async recordSuccess () {
+    try {
+      const state = await this.getState()
+      if (state === this.states.HALF_OPEN) {
+        // Successful call in half-open state - close the circuit
+        await this.setState(this.states.CLOSED)
+        await db.del(this.failuresKey)
+        await db.del(this.successesKey)
+      } else if (state === this.states.CLOSED) {
+        // Reset success counter periodically
+        const successes = await db.incr(this.successesKey)
+        if (successes >= 10) { // Reset after 10 successes
+          await db.del(this.successesKey)
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Failed to record success for ${this.provider}:`, error.message)
+    }
+  }
+
+  async recordFailure () {
+    try {
+      const failures = await db.incr(this.failuresKey)
+      const successes = parseInt(await db.get(this.successesKey)) || 0
+
+      // Calculate error rate
+      const totalRequests = failures + successes
+      const errorRate = totalRequests > 0 ? (failures / totalRequests) * 100 : 0
+
+      if (errorRate >= this.config.errorThresholdPercentage) {
+        // Open the circuit
+        await this.setState(this.states.OPEN)
+        await db.setex(this.nextAttemptKey, Math.ceil(this.config.resetTimeout / 1000), Date.now() + this.config.resetTimeout)
+        await db.setex(this.lastFailureKey, Math.ceil(this.config.resetTimeout / 1000), Date.now())
+
+        this.logger.warn(`Circuit breaker OPENED for ${this.provider}`, {
+          errorRate: `${errorRate.toFixed(1)}%`,
+          failures,
+          successes,
+          threshold: `${this.config.errorThresholdPercentage}%`
+        })
+      }
+    } catch (error) {
+      this.logger.error(`Failed to record failure for ${this.provider}:`, error.message)
+    }
+  }
+
+  async shouldAllowRequest () {
+    const state = await this.getState()
+
+    if (state === this.states.CLOSED) {
+      return true
+    }
+
+    if (state === this.states.OPEN) {
+      const nextAttempt = await db.get(this.nextAttemptKey)
+      if (nextAttempt && Date.now() >= parseInt(nextAttempt)) {
+        // Time to try again - go to half-open
+        await this.setState(this.states.HALF_OPEN)
+        return true
+      }
+      return false
+    }
+
+    // HALF_OPEN - allow one request
+    return true
+  }
+
+  async getStats () {
+    try {
+      const [state, failures, successes, lastFailure] = await Promise.all([
+        db.get(this.stateKey),
+        db.get(this.failuresKey),
+        db.get(this.successesKey),
+        db.get(this.lastFailureKey)
+      ])
+
+      return {
+        state: state || this.states.CLOSED,
+        failures: parseInt(failures) || 0,
+        successes: parseInt(successes) || 0,
+        lastFailure: lastFailure ? new Date(parseInt(lastFailure)) : null
+      }
+    } catch (error) {
+      this.logger.error(`Failed to get stats for ${this.provider}:`, error.message)
+      return { state: this.states.CLOSED, failures: 0, successes: 0, lastFailure: null }
+    }
+  }
+}
 
 module.exports = function (params, config) {
   const logger = config.logger || console
@@ -16,7 +147,7 @@ module.exports = function (params, config) {
     name: params.name || 'ai-circuit-breaker'
   }
 
-  // Circuit breakers for each AI provider
+  // Circuit breakers for each AI provider (Redis-backed)
   const circuitBreakers = new Map()
 
   // Fallback responses for different failure types
@@ -38,168 +169,98 @@ module.exports = function (params, config) {
     }
   }
 
-  function aiCircuitBreaker (req, res, next) {
-    // Extract provider information from request
-    const provider = req.headers['x-ai-provider'] ||
-                    req.body?.provider ||
-                    detectProviderFromModel(req.body?.model)
+  async function aiCircuitBreaker (req, res, next) {
+    try {
+      // Extract provider information from request
+      const provider = req.headers['x-ai-provider'] ||
+                      req.body?.provider ||
+                      detectProviderFromModel(req.body?.model)
 
-    if (!provider) {
-      logger.debug('No provider detected for circuit breaker')
-      return next()
-    }
+      if (!provider) {
+        logger.debug('No provider detected for circuit breaker')
+        return next()
+      }
 
-    // Get or create circuit breaker for this provider
-    let breaker = circuitBreakers.get(provider)
-    if (!breaker) {
-      breaker = createCircuitBreaker(provider)
-      circuitBreakers.set(provider, breaker)
-    }
+      // Get or create circuit breaker for this provider
+      let breaker = circuitBreakers.get(provider)
+      if (!breaker) {
+        breaker = new RedisCircuitBreaker(provider, circuitConfig, logger)
+        circuitBreakers.set(provider, breaker)
+      }
 
-    // Check circuit breaker state
-    if (breaker.opened) {
-      return handleCircuitOpen(req, res, next, provider, breaker)
-    }
+      // Check if circuit breaker allows the request
+      const allowed = await breaker.shouldAllowRequest()
+      if (!allowed) {
+        return handleCircuitOpen(req, res, next, provider, await breaker.getStats())
+      }
 
-    // Execute request through circuit breaker
-    breaker.fire(async () => {
-      // This function will be called when the circuit breaker allows the request
-      // We return a promise that resolves when the request is complete
-      return new Promise((resolve, reject) => {
-        // Store original response methods
-        const originalJson = res.json
-        const originalStatus = res.status
-        const originalSend = res.send
+      // Store original response methods to track completion
+      const originalJson = res.json
+      const originalStatus = res.status
+      const originalSend = res.send
+      let requestCompleted = false
+      let isSuccess = false
 
-        let requestCompleted = false
+      // Override response methods to track completion
+      res.json = function (data) {
+        if (!requestCompleted) {
+          requestCompleted = true
+          isSuccess = res.statusCode < 400
+        }
+        return originalJson.call(this, data)
+      }
 
-        // Override response methods to track completion
-        res.json = function (data) {
-          if (!requestCompleted) {
-            requestCompleted = true
-            resolve({ status: res.statusCode, data })
+      res.send = function (data) {
+        if (!requestCompleted) {
+          requestCompleted = true
+          isSuccess = res.statusCode < 400
+        }
+        return originalSend.call(this, data)
+      }
+
+      res.status = function (code) {
+        const result = originalStatus.call(this, code)
+        res.statusCode = code
+        return result
+      }
+
+      // Add response interceptor to record circuit breaker events
+      const originalEnd = res.end
+      res.end = async function (chunk, encoding) {
+        try {
+          if (requestCompleted) {
+            if (isSuccess) {
+              await breaker.recordSuccess()
+              logger.debug(`Circuit breaker success for ${provider}`, {
+                status: res.statusCode,
+                stats: await breaker.getStats()
+              })
+            } else {
+              await breaker.recordFailure()
+              logger.warn(`Circuit breaker recorded failure for ${provider}`, {
+                status: res.statusCode,
+                stats: await breaker.getStats()
+              })
+            }
           }
-          return originalJson.call(this, data)
+        } catch (error) {
+          logger.error(`Failed to record circuit breaker event for ${provider}:`, error.message)
         }
 
-        res.send = function (data) {
-          if (!requestCompleted) {
-            requestCompleted = true
-            resolve({ status: res.statusCode, data })
-          }
-          return originalSend.call(this, data)
-        }
-
-        res.status = function (code) {
-          const result = originalStatus.call(this, code)
-          // Store status code for later use
-          res.statusCode = code
-          return result
-        }
-
-        // Continue to next middleware
-        next()
-      })
-    })
-      .then(result => {
-      // Request succeeded
-        logger.debug(`Circuit breaker success for ${provider}`, {
-          status: result.status,
-          state: breaker.stats
-        })
-      })
-      .catch(error => {
-      // Request failed or circuit breaker is open
-        logger.warn(`Circuit breaker failed for ${provider}`, {
-          error: error.message,
-          state: breaker.stats,
-          opened: breaker.opened
-        })
-
-        handleCircuitFailure(req, res, next, provider, breaker, error)
-      })
-  }
-
-  // Create circuit breaker for a provider
-  function createCircuitBreaker (provider) {
-    const breaker = new CircuitBreaker(async (fn) => {
-      return await fn()
-    }, circuitConfig)
-
-    // Circuit breaker event handlers
-    breaker.on('open', () => {
-      logger.warn(`Circuit breaker OPENED for ${provider}`, {
-        stats: breaker.stats,
-        config: circuitConfig
-      })
-
-      // Emit custom event for monitoring
-      if (config.eventEmitter) {
-        config.eventEmitter.emit('circuit-breaker:open', {
-          provider,
-          stats: breaker.stats,
-          timestamp: new Date()
-        })
+        return originalEnd.call(this, chunk, encoding)
       }
-    })
 
-    breaker.on('close', () => {
-      logger.info(`Circuit breaker CLOSED for ${provider}`, {
-        stats: breaker.stats
-      })
-
-      if (config.eventEmitter) {
-        config.eventEmitter.emit('circuit-breaker:close', {
-          provider,
-          stats: breaker.stats,
-          timestamp: new Date()
-        })
-      }
-    })
-
-    breaker.on('halfOpen', () => {
-      logger.info(`Circuit breaker HALF-OPEN for ${provider}`)
-
-      if (config.eventEmitter) {
-        config.eventEmitter.emit('circuit-breaker:half-open', {
-          provider,
-          timestamp: new Date()
-        })
-      }
-    })
-
-    breaker.on('reject', () => {
-      logger.debug(`Request rejected by circuit breaker for ${provider}`)
-    })
-
-    breaker.on('timeout', () => {
-      logger.warn(`Request timeout in circuit breaker for ${provider}`)
-    })
-
-    breaker.on('success', () => {
-      logger.debug(`Request success in circuit breaker for ${provider}`)
-    })
-
-    breaker.on('failure', (error) => {
-      logger.warn(`Request failure in circuit breaker for ${provider}`, { error: error.message })
-    })
-
-    return breaker
-  }
-
-  // Detect provider from model name
-  function detectProviderFromModel (model) {
-    if (!model) return null
-
-    if (model.startsWith('gpt-')) return 'openai'
-    if (model.startsWith('claude-')) return 'anthropic'
-    if (model.includes('azure') || model.includes('embedding')) return 'azure'
-
-    return 'openai' // Default fallback
+      // Continue to next middleware
+      next()
+    } catch (error) {
+      logger.error('Circuit breaker error:', error.message)
+      // On error, allow request to proceed
+      next()
+    }
   }
 
   // Handle circuit open state
-  function handleCircuitOpen (req, res, next, provider, breaker) {
+  async function handleCircuitOpen (req, res, next, provider, stats) {
     const fallback = fallbacks.open
 
     res.set({
@@ -217,90 +278,47 @@ module.exports = function (params, config) {
         provider,
         retryAfter: fallback.retryAfter,
         stats: {
-          errorRate: breaker.stats.errorRate,
-          totalRequests: breaker.stats.totalRequests,
-          successfulRequests: breaker.stats.successfulRequests,
-          failedRequests: breaker.stats.failedRequests
+          state: stats.state,
+          failures: stats.failures,
+          successes: stats.successes,
+          lastFailure: stats.lastFailure
         }
       }
     })
   }
 
-  // Handle circuit breaker failure
-  function handleCircuitFailure (req, res, next, provider, breaker, error) {
-    let fallback = fallbacks.timeout
+  // Detect provider from model name
+  function detectProviderFromModel (model) {
+    if (!model) return null
 
-    if (breaker.opened) {
-      fallback = fallbacks.open
-    } else if (breaker.halfOpen) {
-      fallback = fallbacks.halfOpen
+    const modelMappings = {
+      'gpt': 'openai',
+      'claude': 'anthropic',
+      'text-davinci': 'openai',
+      'text-curie': 'openai',
+      'text-babbage': 'openai',
+      'text-ada': 'openai',
+      'code': 'openai',
+      'gpt-3': 'openai',
+      'gpt-4': 'openai',
+      'palm': 'google',
+      'gemini': 'google',
+      'bard': 'google',
+      'titan': 'amazon',
+      'amazon-q': 'amazon',
+      'command': 'cohere',
+      'base': 'cohere'
     }
 
-    res.set({
-      'x-circuit-breaker': breaker.opened ? 'open' : (breaker.halfOpen ? 'half-open' : 'closed'),
-      'x-provider': provider,
-      'retry-after': fallback.retryAfter,
-      'cache-control': 'no-cache'
-    })
-
-    res.status(503).json({
-      error: fallback.error,
-      code: fallback.code,
-      message: `${provider} service is currently experiencing issues`,
-      details: {
-        provider,
-        retryAfter: fallback.retryAfter,
-        circuitState: breaker.opened ? 'open' : (breaker.halfOpen ? 'half-open' : 'closed'),
-        stats: {
-          errorRate: breaker.stats.errorRate,
-          totalRequests: breaker.stats.totalRequests,
-          successfulRequests: breaker.stats.successfulRequests,
-          failedRequests: breaker.stats.failedRequests
-        }
-      }
-    })
-
-    // Health check function for monitoring
-    config.circuitBreakerHealth = {
-      getStats: () => {
-        const stats = {}
-        for (const [provider, breaker] of circuitBreakers.entries()) {
-          stats[provider] = {
-            opened: breaker.opened,
-            halfOpen: breaker.halfOpen,
-            warmUp: breaker.warmUp,
-            stats: breaker.stats,
-            config: circuitConfig
-          }
-        }
-        return stats
-      },
-      reset: (provider) => {
-        const breaker = circuitBreakers.get(provider)
-        if (breaker) {
-          breaker.reset()
-          return true
-        }
-        return false
-      },
-      open: (provider) => {
-        const breaker = circuitBreakers.get(provider)
-        if (breaker) {
-          breaker.open()
-          return true
-        }
-        return false
-      },
-      close: (provider) => {
-        const breaker = circuitBreakers.get(provider)
-        if (breaker) {
-          breaker.close()
-          return true
-        }
-        return false
+    const lowerModel = model.toLowerCase()
+    for (const [prefix, provider] of Object.entries(modelMappings)) {
+      if (lowerModel.includes(prefix)) {
+        return provider
       }
     }
 
-    return aiCircuitBreaker
+    return null
   }
+
+  return aiCircuitBreaker
 }

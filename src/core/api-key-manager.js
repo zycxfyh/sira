@@ -29,6 +29,9 @@ class APIKeyManager extends EventEmitter {
     // 轮换计划
     this.rotationSchedule = new Map()
 
+    // 定时器引用，用于清理
+    this.autoRotationTimer = null
+
     // 初始化自动轮换
     if (this.options.enableAutoRotation) {
       this.startAutoRotation()
@@ -561,12 +564,42 @@ class APIKeyManager extends EventEmitter {
      * 启动自动轮换
      */
   startAutoRotation () {
+    // 清理现有定时器
+    if (this.autoRotationTimer) {
+      clearInterval(this.autoRotationTimer)
+    }
+
     // 每小时检查一次需要轮换的密钥
-    setInterval(() => {
+    this.autoRotationTimer = setInterval(() => {
       this.checkAndRotateKeys()
     }, 60 * 60 * 1000) // 1小时
 
     console.log('🔄 自动密钥轮换已启动')
+  }
+
+  /**
+     * 停止自动轮换
+     */
+  stopAutoRotation () {
+    if (this.autoRotationTimer) {
+      clearInterval(this.autoRotationTimer)
+      this.autoRotationTimer = null
+      console.log('⏹️ 自动密钥轮换已停止')
+    }
+  }
+
+  /**
+     * 销毁实例，清理资源
+     */
+  destroy () {
+    this.stopAutoRotation()
+    // 清理其他资源
+    this.keys.clear()
+    this.keyUsage.clear()
+    this.permissions.clear()
+    this.rateLimits.clear()
+    this.rotationSchedule.clear()
+    console.log('🗑️ API密钥管理模块已销毁')
   }
 
   /**

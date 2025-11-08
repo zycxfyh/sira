@@ -1,6 +1,7 @@
 const crypto = require('crypto')
 const fs = require('fs').promises
 const path = require('path')
+const logger = require('./logger').createLoggerWithLabel('[EG:ab-test]')
 
 /**
  * A/B测试框架 - 借鉴Google Optimize和Optimizely设计理念
@@ -31,9 +32,9 @@ class ABTestManager {
       this.initializeTrafficAllocators()
 
       this.initialized = true
-      console.log(`✅ A/B测试管理器已初始化，加载了 ${this.tests.size} 个测试配置`)
+      logger.info(`A/B测试管理器已初始化，加载了 ${this.tests.size} 个测试配置`)
     } catch (error) {
-      console.error('❌ A/B测试管理器初始化失败:', error.message)
+      logger.error('A/B测试管理器初始化失败:', error.message)
       throw error
     }
   }
@@ -76,7 +77,7 @@ class ABTestManager {
     await this.saveTestConfigurations()
     await this.saveTestResults()
 
-    console.log(`✅ 创建A/B测试: ${testId} - ${test.name}`)
+    logger.info(`✅ 创建A/B测试: ${testId} - ${test.name}`)
     return test
   }
 
@@ -101,7 +102,7 @@ class ABTestManager {
     this.initializeTrafficAllocator(test)
 
     await this.saveTestConfigurations()
-    console.log(`🚀 启动A/B测试: ${testId}`)
+    logger.info(`🚀 启动A/B测试: ${testId}`)
   }
 
   /**
@@ -117,7 +118,7 @@ class ABTestManager {
     test.updatedAt = new Date().toISOString()
 
     await this.saveTestConfigurations()
-    console.log(`⏸️ 暂停A/B测试: ${testId}`)
+    logger.info(`⏸️ 暂停A/B测试: ${testId}`)
   }
 
   /**
@@ -134,7 +135,7 @@ class ABTestManager {
     test.updatedAt = new Date().toISOString()
 
     await this.saveTestConfigurations()
-    console.log(`🛑 停止A/B测试: ${testId}`)
+    logger.info(`🛑 停止A/B测试: ${testId}`)
   }
 
   /**
@@ -315,7 +316,7 @@ class ABTestManager {
     await this.saveTestConfigurations()
     await this.saveTestResults()
 
-    console.log(`🗑️ 删除A/B测试: ${testId}`)
+    logger.info(`🗑️ 删除A/B测试: ${testId}`)
   }
 
   // ==================== 私有方法 ====================

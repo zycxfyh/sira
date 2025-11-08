@@ -8,7 +8,13 @@ module.exports = function (params) {
       const val = params.forwardHeaders[key]
       const headerName = params.headersPrefix + key
       log.debug(`Adding ${headerName} header to the request`)
-      req.headers[headerName] = req.egContext.run(val)
+      try {
+        // Use safe evaluation instead of dangerous run method
+        req.headers[headerName] = req.egContext.safeEval(val)
+      } catch (error) {
+        log.warn(`Failed to evaluate header value for ${headerName}:`, error.message)
+        // Skip header if evaluation fails
+      }
     }
     next()
   }

@@ -28,20 +28,35 @@ description = "Database Connection URL"
 regex = '''(?i)(mongodb|postgresql|mysql|redis)://[^:/@]+:[^@]+@[^/]+'''
 keywords = ["mongodb://", "postgresql://", "mysql://", "redis://"]
 
-# 排除文件和路径
+# 排除文件和路径 - 更安全的配置
 [allowlist]
 description = "Allowlisted files and paths"
 files = [
+    # 文档文件 - 通常不包含敏感信息
     '''.*\.md$''',
-    '''.*\.txt$''',
-    '''.*\.json$''',
-    '''.*\.yml$''',
-    '''.*\.yaml$''',
-    '''test.*''',
-    '''mock.*''',
-    '''fixture.*''',
-    '''example.*''',
-    '''sample.*'''
+    '''README.*''',
+
+    # 特定配置文件 - 明确列出安全的文件
+    '''package\.json$''',
+    '''package-lock\.json$''',
+    '''yarn\.lock$''',
+    '''tsconfig\.json$''',
+    '''jest\.config\.js$''',
+
+    # 测试和示例文件 - 明确路径限制
+    '''test/fixtures/.*\.json$''',
+    '''test/mocks/.*\.json$''',
+    '''src/test/.*\.json$''',
+    '''examples/.*\.json$''',
+    '''samples/.*\.json$''',
+
+    # 配置文件 - 只允许根目录的特定文件
+    '''^config\.yml$''',
+    '''^gateway\.config\.yml$''',
+    '''^system\.config\.yml$''',
+
+    # 其他安全文件类型
+    '''.*\.txt$'''
 ]
 paths = [
     '''node_modules''',
@@ -51,7 +66,29 @@ paths = [
     '''test-results''',
     '''\.github/workflows''',
     '''docs''',
-    '''README.*'''
+    '''infrastructure''',
+    '''docker''',
+    '''scripts''',
+    '''tools''',
+
+    # 安全检查：不再排除配置目录，允许扫描所有配置文件
+    # 配置目录现在会被扫描以检测硬编码的秘密
+
+    # 排除测试目录
+    '''test/''',
+    '''tests/''',
+    '''spec/''',
+    '''__tests__/''',
+
+    # 排除示例和演示目录
+    '''examples/''',
+    '''samples/''',
+    '''demo/''',
+
+    # 排除构建产物
+    '''dist/''',
+    '''build/''',
+    '''out/'''
 ]
 
 # 排除熵值较低的内容

@@ -58,6 +58,11 @@ class Config {
     this[configType.pathProperty] = configPath
     this[configType.configProperty] = config
     log.debug(`ConfigPath: ${configPath}`)
+
+    // Security validation for system config
+    if (type === 'system') {
+      this._validateSecuritySettings(config)
+    }
   }
 
   loadGatewayConfig () { this.loadConfig('gateway') }
@@ -105,6 +110,43 @@ class Config {
 
   updateGatewayConfig (modifier) {
     return this._updateConfigFile('gateway', modifier)
+  }
+
+  _validateSecuritySettings (config) {
+    const requiredKeys = {
+      'crypto.cipherKey': 'EG_CRYPTO_CIPHER_KEY',
+      'session.secret': 'EG_SESSION_SECRET'
+    }
+
+    const isProduction = process.env.NODE_ENV === 'production'
+    const errors = []
+
+    // Check for missing required security configurations
+    for (const [key, envVar] of Object.entries(requiredKeys)) {
+      const keys = key.split('.')
+      let current = config
+
+      // Navigate to the nested property
+      for (const k of keys) {
+        current = current?.[k]
+      }
+
+      const currentValue = current
+
+      // Check if value is missing, empty, or insecure
+      if (!currentValue || currentValue.trim() === '' ||
+          ['change-me-in-production', 'keyboard cat', 'sensitiveKey'].includes(currentValue)) {
+        const error = `SECURITY ERROR: ${key} is not properly configured. ` +
+                     `Please set the ${envVar} environment variable with a secure value.`
+        errors.push(error)
+      }
+    }
+
+    if (errors.length > 0) {
+      const errorMessage = errors.join('\n')
+      // Always fail if security settings are not properly configured
+      throw new Error(`Security validation failed:\n${errorMessage}`)
+    }
   }
 
   _updateConfigFile (type, modifier) {

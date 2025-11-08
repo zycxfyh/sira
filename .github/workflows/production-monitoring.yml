@@ -118,10 +118,35 @@ jobs:
           path: production-health-report.md
           retention-days: 7
 
+      - name: Check for automatic rollback conditions
+        id: rollback_check
+        run: |
+          # Only trigger automatic rollback for serious issues
+          # This job runs after health checks and can trigger rollback if needed
+
+          echo "Checking rollback conditions..."
+
+          # Check if this is a scheduled health check (not manual trigger)
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "Scheduled health check - checking for automatic rollback conditions..."
+
+            # Example conditions for automatic rollback:
+            # 1. Service completely down (not just slow)
+            # 2. Multiple consecutive failures
+            # 3. Critical security issues detected
+
+            # For now, we only do manual rollbacks to avoid false positives
+            echo "Automatic rollback conditions not met - manual rollback required if needed"
+            echo "rollback_needed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Manual health check - no automatic rollback"
+            echo "rollback_needed=false" >> $GITHUB_OUTPUT
+          fi
+
   automated-rollback:
     name: Automated Rollback
     runs-on: ubuntu-latest
-    if: github.event.inputs.action == 'rollback' || failure()
+    if: github.event.inputs.action == 'rollback'
 
     steps:
       - name: Checkout code

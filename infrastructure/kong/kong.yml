@@ -121,7 +121,7 @@ consumers:
   - username: ai-gateway-client
     custom_id: ai-gateway-client-001
     keyauth_credentials:
-      - key: test-api-key-123
+      - key: ${KONG_API_KEY:-change-me-in-production}
 
 # Plugins configuration
 plugins:

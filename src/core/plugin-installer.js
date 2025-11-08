@@ -23,8 +23,64 @@ class PluginInstaller {
     return new PluginInstaller(options)
   }
 
+  _isPackageSpecifierSafe (packageSpecifier) {
+    // SECURITY: Disable local plugin installation in production
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('SECURITY: Local plugin installation is disabled in production environment')
+      // Only allow official packages in production
+      return packageSpecifier.startsWith('@express-gateway/') ||
+             packageSpecifier.startsWith('express-gateway-plugin-')
+    }
+
+    // Only allow official @express-gateway scoped packages
+    if (packageSpecifier.startsWith('@express-gateway/')) {
+      return true
+    }
+
+    // Allow express-gateway-plugin-* packages
+    if (packageSpecifier.startsWith('express-gateway-plugin-')) {
+      return true
+    }
+
+    // Allow local file paths for development (restrict to plugins-dev directory only)
+    if (packageSpecifier.startsWith('./') || packageSpecifier.startsWith('../')) {
+      const resolvedPath = require('path').resolve(packageSpecifier)
+      const projectRoot = require('path').resolve(process.cwd())
+      const allowedPluginDir = path.join(projectRoot, 'plugins-dev')
+
+      // Only allow paths within the dedicated plugins-dev directory
+      if (resolvedPath.startsWith(allowedPluginDir + path.sep) || resolvedPath === allowedPluginDir) {
+        // Additional check: ensure the directory exists and contains a valid plugin
+        try {
+          const stats = fs.statSync(resolvedPath)
+          if (stats.isDirectory()) {
+            // Check if there's a package.json file (indicates a valid plugin)
+            const packageJsonPath = path.join(resolvedPath, 'package.json')
+            if (fs.existsSync(packageJsonPath)) {
+              // Additional security: verify package.json contains expected fields
+              const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+              return packageJson.name && packageJson.name.startsWith('express-gateway-plugin-')
+            }
+          }
+        } catch (error) {
+          // Path doesn't exist, can't be accessed, or package.json is invalid
+          return false
+        }
+      }
+    }
+
+    // Block all other package specifiers for security
+    return false
+  }
+
   runNPMInstallation ({ packageSpecifier, cwd, env }) {
     return new Promise((resolve, reject) => {
+      // SECURITY: Validate package specifier before installation
+      if (!this._isPackageSpecifierSafe(packageSpecifier)) {
+        reject(new Error(`Unsafe package specifier: ${packageSpecifier}. Only official @express-gateway scoped packages are allowed.`))
+        return
+      }
+
       // manually spawn npm
       // use --parseable flag to get tab-delimited output
       // forward sterr to process.stderr
@@ -141,6 +197,12 @@ class PluginInstaller {
     // ¯\_(ツ)_/¯
     //
     // https://github.com/mohsen1/yawn-yaml/issues
+
+    // SECURITY: Runtime configuration modification is dangerous in production
+    if (process.env.NODE_ENV === 'production') {
+      return Promise.reject(
+        new Error('Runtime plugin installation and configuration modification is DISABLED in production for security reasons. Use deployment pipelines instead.'))
+    }
 
     if (!this.pluginManifest) {
       return Promise.reject(

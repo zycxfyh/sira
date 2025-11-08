@@ -8,37 +8,10 @@ module.exports = {
   schema: require('./schema'),
   policy: params => {
     return (req, res, next) => {
-      let contentType = 'application/x-www-form-urlencoded'
-
-      if (params.headers) {
-        transformObject(params.headers, req.egContext, req.headers)
-      }
-
-      if (params.body) {
-        jsonParser(req, res, (err) => {
-          if (err) return next(err)
-          if (Object.keys(req.body).length !== 0) contentType = 'application/json'
-
-          urlEncoded(req, res, (err) => {
-            if (err) return next(err)
-            if (Object.keys(req.body).length === 0) contentType = 'application/json'
-
-            const serializeFn = contentType === 'application/json' ? JSON.stringify : formurlencoded
-
-            const bodyData = serializeFn(transformObject(params.body, req.egContext, req.body))
-
-            req.headers['content-length'] = Buffer.byteLength(bodyData)
-            req.headers['content-type'] = contentType
-
-            req.egContext.requestStream = new PassThrough()
-            req.egContext.requestStream.write(bodyData)
-
-            next()
-          })
-        })
-      } else {
-        next()
-      }
+      // SECURITY CRITICAL: Request transformer policy disabled due to RCE vulnerability
+      const error = new Error('Request transformer policy is DISABLED for security reasons. Arbitrary code execution in transformations is not allowed.')
+      error.statusCode = 403
+      next(error)
     }
   }
 }

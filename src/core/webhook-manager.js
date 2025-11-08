@@ -11,7 +11,12 @@ class WebhookManager {
   constructor (options = {}) {
     this.configPath = options.configPath || path.join(__dirname, '../config/webhooks.json')
     this.deliveryLogPath = options.deliveryLogPath || path.join(__dirname, '../data/webhook-deliveries.json')
-    this.secretKey = options.secretKey || process.env.WEBHOOK_SECRET || 'sira-webhook-secret-key'
+
+    // 安全检查：不允许使用默认密钥
+    this.secretKey = options.secretKey || process.env.WEBHOOK_SECRET
+    if (!this.secretKey) {
+      throw new Error('Webhook configuration error: Missing required security credentials. Please check your environment configuration.')
+    }
     this.maxRetries = options.maxRetries || 5
     this.retryDelays = options.retryDelays || [1000, 2000, 5000, 10000, 30000] // 指数退避重试间隔
     this.timeout = options.timeout || 10000 // 10秒超时

@@ -24,7 +24,7 @@ policies:
   - ai-router
   - ai-cache
   - cors
-  - expression
+  # - expression  # DISABLED: Security vulnerability - allows RCE
   - headers
   - jwt
   - key-auth
@@ -33,7 +33,7 @@ policies:
   - oauth2-introspect
   - proxy
   - rate-limit
-  - request-transformer
+  # - request-transformer  # DISABLED: Security vulnerability - allows RCE
   - response-transformer
 
 pipelines:
@@ -41,8 +41,8 @@ pipelines:
     apiEndpoints:
       - health-api
     policies:
-      - request-transformer:
-          rewrite: '/health'  # Rewrite /health to match admin service
+      # - request-transformer:  # DISABLED: Security vulnerability - allows RCE
+      #     rewrite: '/health'  # Rewrite /health to match admin service
       - proxy:
           serviceEndpoint: health-service
 

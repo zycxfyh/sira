@@ -62,22 +62,22 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Run ESLint
         run: |
-          cd ai-gateway
+          
           npm run lint
 
       - name: Check code formatting
         run: |
-          cd ai-gateway
+          
           npm run format:check
 
       - name: Security audit
         run: |
-          cd ai-gateway
+          
           npm audit --audit-level=moderate
 
       - name: Upload ESLint results
@@ -112,12 +112,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Run unit tests
         run: |
-          cd ai-gateway
+          
           npm run test:unit
 
       - name: Upload coverage reports
@@ -166,12 +166,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Start test services
         run: |
-          cd ai-gateway
+          
           # 启动Mock AI服务器
           npm run mock:server &
           MOCK_PID=$!
@@ -182,7 +182,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          cd ai-gateway
+          
           npm run test:integration
 
       - name: Stop test services
@@ -218,17 +218,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Install Playwright browsers
         run: |
-          cd ai-gateway
+          
           npx playwright install --with-deps
 
       - name: Start application
         run: |
-          cd ai-gateway
+          
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -238,7 +238,7 @@ jobs:
 
       - name: Run E2E tests
         run: |
-          cd ai-gateway
+          
           npm run test:e2e
 
       - name: Stop application
@@ -283,12 +283,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Start application
         run: |
-          cd ai-gateway
+          
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -298,7 +298,7 @@ jobs:
 
       - name: Run performance tests
         run: |
-          cd ai-gateway
+          
           node run-industrial-tests.js performance
 
       - name: Stop application
@@ -334,12 +334,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Start application
         run: |
-          cd ai-gateway
+          
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -349,7 +349,7 @@ jobs:
 
       - name: Run load tests
         run: |
-          cd ai-gateway
+          
           node run-industrial-tests.js load --target-rps 100 --duration 120
 
       - name: Stop application
@@ -385,12 +385,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Start application
         run: |
-          cd ai-gateway
+          
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -400,7 +400,7 @@ jobs:
 
       - name: Run stress tests
         run: |
-          cd ai-gateway
+          
           node run-industrial-tests.js stress --intensity medium --scenario memory_stress
 
       - name: Stop application
@@ -436,12 +436,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Start application
         run: |
-          cd ai-gateway
+          
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -451,7 +451,7 @@ jobs:
 
       - name: Run reliability tests
         run: |
-          cd ai-gateway
+          
           timeout 3600 node run-industrial-tests.js comprehensive --include-reliability true --include-e2e false --parallel false
 
       - name: Stop application
@@ -486,12 +486,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Run security audit
         run: |
-          cd ai-gateway
+          
           npm audit --audit-level=moderate --json > security-audit.json || true
 
       - name: Run code security scan
@@ -537,12 +537,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ai-gateway
+          
           npm ci
 
       - name: Generate comprehensive report
         run: |
-          cd ai-gateway
+          
           node run-industrial-tests.js comprehensive --format html
 
       - name: Upload final report

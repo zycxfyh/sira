@@ -1,17 +1,32 @@
+# Use a specific version for reproducible builds
 FROM node:18-alpine
 
-ENV NODE_ENV production
+# Add a non-root user for security
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
 
+ENV NODE_ENV production
 # Enable chokidar polling so hot-reload mechanism can work on docker or network volumes
 ENV CHOKIDAR_USEPOLLING true
 
 WORKDIR /usr/src/app
 
+# Copy package files first for better layer caching
 COPY package.json package-lock.json /usr/src/app/
-RUN npm install
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy source code after dependency installation
+COPY . /usr/src/app
+
+# Change ownership to non-root user
+RUN chown -R appuser:appgroup /usr/src/app
+
+# Switch to non-root user
+USER appuser
 
 EXPOSE 8080 9876
 
-CMD [ "node", "lib", "index.js" ]
-
-COPY . /usr/src/app
+# Use a more robust CMD
+CMD [ "node", "core/index.js" ]

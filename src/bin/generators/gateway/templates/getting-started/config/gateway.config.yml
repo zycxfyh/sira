@@ -13,7 +13,9 @@ serviceEndpoints:
 policies:
   - basic-auth
   - cors
-  - expression
+  # SECURITY WARNING: 'expression' policy is DISABLED due to RCE vulnerability
+  # DO NOT enable this policy in production - it allows arbitrary code execution
+  # - expression
   - key-auth
   - log
   - oauth2

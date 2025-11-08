@@ -2,7 +2,6 @@
 // Asynchronous request processing using NATS for AI requests
 
 const { connect, StringCodec } = require('nats')
-const fetch = require('node-fetch')
 
 module.exports = function (params, config) {
   const logger = config.logger || console

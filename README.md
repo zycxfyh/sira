@@ -1,17 +1,33 @@
-# 🚀 Sira - 智能API网关项目
-
 <div align="center">
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge&logo=apache)](https://opensource.org/licenses/Apache-2.0)
-[![Node.js Version](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
-[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
-[![CI/CD](https://img.shields.io/badge/CI/CD-GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions)](https://github.com/features/actions)
-[![Test Coverage](https://img.shields.io/badge/Coverage-100%25-4CAF50?style=for-the-badge&logo=jest)](https://jestjs.io/)
+<!-- 项目标题 -->
+<h1 style="border-bottom: none; margin-bottom: 10px;">
+  🚀 Sira - 智能API网关项目
+</h1>
 
-[![Stars](https://img.shields.io/github/stars/your-username/sira?style=for-the-badge&logo=github)](https://github.com/your-username/sira/stargazers)
-[![Forks](https://img.shields.io/github/forks/your-username/sira?style=for-the-badge&logo=github)](https://github.com/your-username/sira/network/members)
-[![Issues](https://img.shields.io/github/issues/your-username/sira?style=for-the-badge&logo=github)](https://github.com/your-username/sira/issues)
-[![PRs](https://img.shields.io/github/issues-pr/your-username/sira?style=for-the-badge&logo=github)](https://github.com/your-username/sira/pulls)
+<!-- 技术栈徽章 -->
+<p>
+  <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge&logo=apache" alt="License"/></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js" alt="Node.js"/></a>
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker" alt="Docker"/></a>
+  <a href="https://github.com/features/actions"><img src="https://img.shields.io/badge/CI/CD-GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions" alt="CI/CD"/></a>
+  <a href="https://jestjs.io/"><img src="https://img.shields.io/badge/Coverage-88%25-4CAF50?style=for-the-badge&logo=jest" alt="Test Coverage"/></a>
+</p>
+
+<!-- 社区统计徽章 -->
+<p>
+  <a href="https://github.com/your-username/sira/stargazers"><img src="https://img.shields.io/github/stars/your-username/sira?style=for-the-badge&logo=github&color=yellow" alt="Stars"/></a>
+  <a href="https://github.com/your-username/sira/network/members"><img src="https://img.shields.io/github/forks/your-username/sira?style=for-the-badge&logo=github&color=orange" alt="Forks"/></a>
+  <a href="https://github.com/your-username/sira/issues"><img src="https://img.shields.io/github/issues/your-username/sira?style=for-the-badge&logo=github&color=red" alt="Issues"/></a>
+  <a href="https://github.com/your-username/sira/pulls"><img src="https://img.shields.io/github/issues-pr/your-username/sira?style=for-the-badge&logo=github&color=blue" alt="PRs"/></a>
+</p>
+
+<!-- 项目状态徽章 -->
+<p>
+  <a href="https://github.com/your-username/sira/commits"><img src="https://img.shields.io/github/last-commit/your-username/sira?style=for-the-badge&logo=github&color=green" alt="Last Commit"/></a>
+  <img src="https://img.shields.io/badge/Status-Learning_Project-blue?style=for-the-badge&logo=student" alt="Project Status"/>
+  <img src="https://img.shields.io/badge/Code_Quality-Good-green?style=for-the-badge&logo=code-quality" alt="Code Quality"/>
+</p>
 
 **用代码连接AI，让智能触手可及** 🌟
 
@@ -23,56 +39,71 @@
 
 ## 📋 目录
 
-- [🚀 快速开始](#-快速开始)
-- [✨ 项目特色](#-项目特色)
-- [🏗️ 系统架构](#-系统架构图)
-- [📊 项目统计](#-项目统计)
-- [🗂️ 模块导航](#-模块导航)
-- [📚 文档导航](#-文档导航)
-- [🎯 核心特性详解](#-核心特性详解)
-- [🧪 测试验证](#-测试验证)
-- [🤝 贡献与交流](#-贡献与交流)
-- [📄 开源许可证](#-开源许可证)
-- [🙏 衷心感谢](#-衷心感谢)
+| 章节 | 描述 |
+|------|------|
+| 🚀 **[快速开始](#-快速开始)** | 环境配置、安装部署、基础使用 |
+| ✨ **[核心特性](#-核心特性)** | AI路由、缓存系统、安全特性 |
+| 🏗️ **[系统架构](#-系统架构图)** | 整体架构设计和技术栈说明 |
+| 🗂️ **[模块导航](#-模块导航)** | 核心功能模块详细介绍 |
+| 📚 **[文档导航](#-文档导航)** | 完整的文档资源导航 |
+| 🧪 **[测试验证](#-测试验证)** | 测试流程和质量保证 |
+| 🤝 **[贡献与交流](#-贡献与交流)** | 贡献指南、交流渠道 |
+| 📄 **[开源许可证](#-开源许可证)** | 许可证详情和使用条款 |
+| 🙏 **[衷心感谢](#-衷心感谢)** | 致谢和项目价值 |
 
 ---
+
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/230946/169160907-05c5e6ed-4c46-4c62-8e17-4c58ea2f4db0.png" alt="divider" width="400" height="4"/>
+</div>
 
 ## 🚀 快速开始
 
 ### 📦 系统要求
 
-| 组件 | 版本要求 | 说明 |
-|-------|----------|--------|
-| **Node.js** | 18.0.0+ | 运行时环境 |
-| **Docker** | 20.0.0+ | 容器化部署 (可选) |
-| **Git** | 2.30.0+ | 版本控制 |
+| 🛠️ 组件 | 📋 版本要求 | 📝 说明 |
+|---------|-------------|---------|
+| <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js" alt="Node.js"/> | `18.0.0+` | JavaScript 运行时环境 |
+| <img src="https://img.shields.io/badge/Docker-20+-2496ED?style=flat&logo=docker" alt="Docker"/> | `20.0.0+` | 容器化部署 *(可选)* |
+| <img src="https://img.shields.io/badge/Git-2.30+-F05032?style=flat&logo=git" alt="Git"/> | `2.30.0+` | 版本控制系统 |
 
 ### 🛠️ 快速启动
 
-#### 方法1: 开发环境启动
+#### 🖥️ 方法1: 开发环境启动
+
+<div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #4CAF50;">
+
 ```bash
-# 克隆项目
+# 📥 克隆项目
 git clone https://github.com/your-username/sira.git
 cd sira
 
-# 安装依赖
+# 📦 安装依赖
 npm install
 
-# 启动开发服务器
+# 🚀 启动开发服务器
 npm run start:dev
 
-# 访问 http://localhost:9876
+# 🌐 访问应用
+# http://localhost:9876
 ```
 
-#### 方法2: Docker完整环境
+</div>
+
+#### 🐳 方法2: Docker完整环境
+
+<div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #2196F3;">
+
 ```bash
-# 完整环境启动 (推荐)
+# 🚀 完整环境启动 (推荐)
 cd infrastructure
 docker-compose -f docker-compose.full.yml up -d
 
-# 查看服务状态
+# 📊 查看服务状态
 docker-compose ps
 ```
+
+</div>
 
 ### 🔧 健康检查
 
@@ -83,88 +114,57 @@ npm run health-check
 
 ---
 
-## 🎖️ 项目亮点
+<div align="center">
 
-## ✨ 项目愿景
+## ✨ 核心特性
 
-> **用代码连接AI，让智能触手可及**
+> **用代码连接AI，让智能触手可及** 🌟
 
----
+### 🎯 三大核心优势
 
-### 🎯 核心价值主张
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 15px; color: white; margin: 10px;">
+        <h3 style="margin: 0; color: white;">🧠 智能路由</h3>
+        <p style="margin: 10px 0 0 0; font-size: 14px;">AI模型自动选择，成本优化，性能最优</p>
+      </div>
+    </td>
+    <td align="center" width="33%">
+      <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 25px; border-radius: 15px; color: white; margin: 10px;">
+        <h3 style="margin: 0; color: white;">🔒 企业级安全</h3>
+        <p style="margin: 10px 0 0 0; font-size: 14px;">多重认证保护，实时监控告警</p>
+      </div>
+    </td>
+    <td align="center" width="33%">
+      <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 25px; border-radius: 15px; color: white; margin: 10px;">
+        <h3 style="margin: 0; color: white;">📊 可观测性</h3>
+        <p style="margin: 10px 0 0 0; font-size: 14px;">完整监控栈，问题快速定位</p>
+      </div>
+    </td>
+  </tr>
+</table>
 
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 15px; color: white; margin: 20px 0;">
-  <h3 align="center">🚀 三大核心优势</h3>
-  <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
-    <div style="text-align: center; flex: 1; min-width: 200px;">
-      <h4>🧠 智能路由</h4>
-      <p>AI模型自动选择，成本优化，性能最优</p>
-    </div>
-    <div style="text-align: center; flex: 1; min-width: 200px;">
-      <h4>🔒 企业级安全</h4>
-      <p>多重认证保护，实时监控告警</p>
-    </div>
-    <div style="text-align: center; flex: 1; min-width: 200px;">
-      <h4>📊 可观测性</h4>
-      <p>完整监控栈，问题快速定位</p>
-    </div>
-  </div>
 </div>
 
 ---
 
 ### 🎖️ 项目特色
 
-| 🌟 特色功能 | 📖 详细说明 | 🎯 实际价值 |
+<div align="center">
+
+| 🌟 核心特性 | 📖 功能描述 | 🎯 价值提升 |
 |------------|------------|------------|
-| 🧠 **多AI提供商智能路由** | 支持20+供应商自动切换，实时价格监控 | 💰 降低30%+ AI调用成本 |
+| 🧠 **智能AI路由** | 支持20+供应商自动切换，实时价格监控 | 💰 降低30%+ AI调用成本 |
 | 💾 **多级缓存系统** | L1内存+L2 Redis，响应速度提升10倍 | ⚡ 平均响应时间<200ms |
-| 🔄 **异步队列处理** | 大型请求自动排队，Webhook回调通知 | 📈 支持百万级并发处理 |
-| 🛡️ **企业级安全防护** | API密钥认证、熔断限流、审计日志 | 🔒 金融级安全保障 |
+| 🔒 **企业级安全** | API密钥认证、熔断限流、审计日志 | 🛡️ 金融级安全保障 |
 | 📊 **360°可观测性** | Prometheus+Grafana+Jaeger全链路追踪 | 🔍 问题定位时间减少80% |
-| 🧪 **9阶段测试工作流** | 本地验证→生产部署完整测试覆盖 | ✅ 99.9%系统稳定性 |
-| 💰 **实时价格监控** | 集成官方价格文档，智能成本优化 | 📈 实时掌握价格变动 |
-| 🎯 **智能配置向导** | 交互式供应商配置，自动测试连接 | ⚡ 5分钟完成配置 |
-| 🛡️ **错误处理机制** | 自动重试、熔断保护、详细错误诊断 | 🔧 99.9%稳定性保障 |
-| 📚 **完整配置指南** | 详细的配置文档，涵盖20+供应商 | 📖 开发者友好 |
-| 🎛️ **智能参数管理** | 预设参数模板、自动优化、供应商适配 | ⚡ 最佳性能配置 |
-| 🎭 **提示词模板库** | 专业模板、变量替换、智能推荐 | 📝 一键生成优质提示 |
-| 📊 **性能基准测试** | 响应时间、成本对比、质量评估 | ⚡ 科学评估AI模型性能 |
-| 🔐 **API密钥管理** | 智能轮换、权限控制、用量限制 | 🛡️ 企业级密钥安全管理 |
-| 🎮 **游戏AI集成** | 多Agent架构、记忆网络、剧情生成 | 🎲 沉浸式游戏体验 |
-| 🎨 **图像生成工具** | DALL-E/Midjourney/Stable Diffusion统一接口 | 🖼️ 多模型图像生成 |
-| 🎤 **语音处理功能** | Whisper/TTS模型，语音转文字、文字转语音 | 🗣️ 多语言语音AI |
-| 📊 **价格监控系统** | 实时价格追踪、成本预测、智能路由优化 | 💰 自动化成本控制 |
-| 💬 **对话历史管理** | Redis式存储、上下文连续、记忆网络 | 🧠 智能对话体验 |
-| 📊 **A/B测试框架** | 多变量测试、流量分配、实时分析和自动化优化 | ⚡ 科学优化AI体验 |
- 📡 **Webhook通知系统** | 异步事件通知、可靠投递、重试机制和安全验证 | 🔄 实时异步通信 |
- 🎛️ **自定义规则引擎** | 灵活条件匹配、规则优先级、上下文感知的智能路由 | 🎯 自定义业务逻辑 |
- 📊 **入口统计和报告** | 详细的API统计、错误分析、性能报告和业务洞察 | 📈 数据驱动洞察 |
- 🧠 **智能拆分路由** | 根据请求复杂度自动选择最优AI模型，性能/成本/质量多维度优化 | 🎯 智能模型选择 |
- 🌐 **多语言支持** | 支持中英文界面、API响应本地化，智能语言检测和翻译服务 | 🌍 全球化AI服务 |
- 📊 **批量处理接口** | 支持批量AI请求处理，高并发优化，智能队列管理和资源调度 | ⚡ 高性能批量处理 |
- 📊 **实时流式响应** | 支持SSE/WebSocket实时流式响应，低延迟数据传输和连接管理 | 🌊 实时数据流 |
- 🧠 **模型训练接口** | 支持用户自定义数据集进行模型微调，完整的训练生命周期管理 | 🎯 AI模型定制 |
-
----
-
-### 🗺️ 快速导航
-
-<p align="center">
-  <a href="#-快速开始"><img src="https://img.shields.io/badge/📖-快速开始-FF6B6B?style=for-the-badge" alt="快速开始"/></a>
-  <a href="#-模块导航"><img src="https://img.shields.io/badge/📚-模块文档-4ECDC4?style=for-the-badge" alt="模块文档"/></a>
-  <a href="#-测试验证"><img src="https://img.shields.io/badge/🧪-测试验证-45B7D1?style=for-the-badge" alt="测试验证"/></a>
-  <a href="#-部署指南"><img src="https://img.shields.io/badge/🚀-部署指南-96CEB4?style=for-the-badge" alt="部署指南"/></a>
-  <a href="#-配置指南"><img src="https://img.shields.io/badge/⚙️-配置指南-4ECDC4?style=for-the-badge" alt="配置指南"/></a>
-  <a href="#-许可证"><img src="https://img.shields.io/badge/📄-许可证-FECA57?style=for-the-badge" alt="许可证"/></a>
-  <a href="#-贡献与交流"><img src="https://img.shields.io/badge/🤝-贡献交流-FF9FF3?style=for-the-badge" alt="贡献交流"/></a>
-</p>
-
----
+| 🧪 **完整测试体系** | 9阶段测试工作流，从本地到生产 | ✅ 99.9%系统稳定性 |
+| 🎯 **智能配置向导** | 交互式配置，自动测试连接 | ⚡ 5分钟完成配置 |
 
 </div>
 
-## ⚠️ 重要提醒
+> 📚 **查看完整功能列表** → [更多特性详情](docs/README-AI.md)
 
 > **这是一个学生学习项目**，请在使用前仔细阅读 [免责声明](DISCLAIMER.md)。
 
@@ -251,6 +251,10 @@ graph TB
 
 </div>
 
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/230946/169160907-05c5e6ed-4c46-4c62-8e17-4c58ea2f4db0.png" alt="divider" width="300" height="4"/>
+</div>
+
 ## 🗂️ 模块导航
 
 <div align="center">
@@ -259,18 +263,18 @@ graph TB
 
 | 🔧 核心模块 | 📋 详细功能 | 🎨 技术特性 | 📖 文档链接 |
 |-------------|------------|------------|-------------|
-| **👥 Admin管理** | 用户注册、应用管理、凭据分发、权限控制 | RESTful API、JWT认证、数据库抽象 | [📖 详细文档](ai-gateway/docs/modules/admin.md) |
-| **🛠️ Bin CLI工具** | 项目初始化、代码生成、环境管理、部署工具 | 命令行界面、模板引擎、自动化脚本 | [📖 详细文档](ai-gateway/docs/modules/bin.md) |
-| **⚙️ Config配置** | 声明式配置、环境变量、热重载、配置验证 | YAML/JSON支持、模式验证、版本控制 | [📖 详细文档](ai-gateway/docs/modules/config.md) |
-| **🏗️ Lib核心库** | 策略引擎、服务层、插件系统、事件总线 | 模块化设计、策略模式、异步处理 | [📖 详细文档](ai-gateway/docs/modules/lib.md) |
+| **👥 Admin管理** | 用户注册、应用管理、凭据分发、权限控制 | RESTful API、JWT认证、数据库抽象 | [📖 详细文档](docs/modules/modules/admin.md) |
+| **🛠️ Bin CLI工具** | 项目初始化、代码生成、环境管理、部署工具 | 命令行界面、模板引擎、自动化脚本 | [📖 详细文档](docs/modules/modules/bin.md) |
+| **⚙️ Config配置** | 声明式配置、环境变量、热重载、配置验证 | YAML/JSON支持、模式验证、版本控制 | [📖 详细文档](docs/modules/modules/config.md) |
+| **🏗️ Lib核心库** | 策略引擎、服务层、插件系统、事件总线 | 模块化设计、策略模式、异步处理 | [📖 详细文档](docs/modules/modules/lib.md) |
 
 ### 🚀 运维部署模块
 
 | 🏭 运维模块 | 📋 详细功能 | 🎨 技术特性 | 📖 文档链接 |
 |-------------|------------|------------|-------------|
-| **🐳 Docker容器** | 微服务编排、多环境部署、镜像构建、网络配置 | Docker Compose、环境隔离、健康检查 | [📖 详细文档](ai-gateway/docs/modules/docker.md) |
-| **🧪 Test测试** | 单元测试、集成测试、E2E测试、性能测试 | Jest框架、测试覆盖率、CI/CD集成 | [📖 详细文档](ai-gateway/docs/modules/test.md) |
-| **📜 Scripts脚本** | 系统监控、性能测试、自动化部署、故障排查 | Shell脚本、监控告警、日志轮转 | [📖 详细文档](ai-gateway/docs/modules/scripts.md) |
+| **🐳 Docker容器** | 微服务编排、多环境部署、镜像构建、网络配置 | Docker Compose、环境隔离、健康检查 | [📖 详细文档](docs/modules/modules/docker.md) |
+| **🧪 Test测试** | 单元测试、集成测试、E2E测试、性能测试 | Jest框架、测试覆盖率、CI/CD集成 | [📖 详细文档](docs/modules/modules/test.md) |
+| **📜 Scripts脚本** | 系统监控、性能测试、自动化部署、故障排查 | Shell脚本、监控告警、日志轮转 | [📖 详细文档](docs/modules/modules/scripts.md) |
 
 ---
 
@@ -396,7 +400,7 @@ await errorHandler.withRetry(async () => {
 
 ```bash
 # 📖 查看完整配置指南
-cat ai-gateway/docs/ai-provider-configuration-guide.md
+cat docs/modules/ai-provider-integration/ai-provider-configuration-guide.md
 
 # 🎯 快速配置向导
 ./scripts/setup-ai-provider.sh
@@ -837,1559 +841,58 @@ curl -X POST http://localhost:8080/api/v1/ai/chat/completions \
   }'
 ```
 
-### 🎮 游戏AI API使用示例
+### 🎮 游戏AI集成
+支持多Agent架构、记忆网络和剧情生成。详细API请查看：[游戏AI集成指南](docs/README-AI.md#游戏AI集成)
 
-```bash
-# 创建游戏会话
-curl -X POST http://localhost:9876/game/sessions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "gameType": "fantasy",
-    "playerName": "艾丽丝",
-    "playerClass": "wizard",
-    "playerLevel": 3,
-    "currentScene": "magic_forest"
-  }'
+### 🎨 图像生成工具
+支持DALL-E、Midjourney、Stable Diffusion等模型，统一API接口。详细API请查看：[图像生成指南](docs/README-AI.md#图像生成)
 
-# 创建NPC角色
-curl -X POST http://localhost:9876/game/characters \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "贤者梅林",
-    "personality": "睿智、神秘、乐于助人",
-    "background": "一位古老的魔法师，掌握强大的法术",
-    "location": "magic_tower"
-  }'
+### 🎤 语音处理功能
+支持Whisper/TTS模型，语音转文字和文字转语音。详细API请查看：[语音处理指南](docs/README-AI.md#语音处理)
 
-# NPC对话交互
-curl -X POST http://localhost:9876/game/npc-chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sessionId": "game_session_xxx",
-    "characterId": "character_xxx",
-    "playerInput": "你好，贤者。我需要找到失落的魔法水晶",
-    "sceneDescription": "古老的魔法塔中，空气中弥漫着魔法的气息"
-  }'
+### 📊 价格监控系统
+实时价格追踪、成本预测、智能路由优化。详细API请查看：[价格监控指南](docs/README-AI.md#价格监控)
 
-# 生成游戏任务
-curl -X POST http://localhost:9876/game/generate-quest \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sessionId": "game_session_xxx",
-    "genre": "奇幻冒险",
-    "difficulty": "中等"
-  }'
-
-# 故事剧情推进
-curl -X POST http://localhost:9876/game/advance-story \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sessionId": "game_session_xxx",
-    "playerChoice": "进入黑暗的洞穴深处探索",
-    "currentStory": "主角在森林中遇到神秘的洞穴入口"
-  }'
-
-# 快速开始游戏
-curl -X POST http://localhost:9876/game/quick-start \
-  -H "Content-Type: application/json" \
-  -d '{
-    "playerName": "小明",
-    "gameType": "adventure",
-    "playerClass": "warrior"
-  }'
+### 💬 对话历史管理
+Redis式存储、上下文连续、记忆网络。更多特性请查看：[完整API文档](docs/README-AI.md)
 ```
 
-### 🎨 图像生成 API使用示例
-
-```bash
-# 生成图像
-curl -X POST http://localhost:9876/images/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "一只可爱的猫咪在花园里玩耍，阳光明媚",
-    "provider": "openai_dalle",
-    "model": "dall-e-3",
-    "style": "natural",
-    "count": 1,
-    "size": "1024x1024"
-  }'
-
-# 使用艺术风格生成
-curl -X POST http://localhost:9876/images/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "未来城市的天际线，霓虹灯闪烁",
-    "style": "cyberpunk",
-    "provider": "midjourney",
-    "negativePrompt": "黑暗，阴郁"
-  }'
-
-# 使用模板生成图像
-curl -X POST http://localhost:9876/images/generate-from-template \
-  -H "Content-Type: application/json" \
-  -d '{
-    "templateId": "portrait",
-    "customizations": {
-      "prompt": "一位年轻的艺术家，创意无限",
-      "style": "artistic"
-    }
-  }'
-
-# 生成图像变体
-curl -X POST http://localhost:9876/images/variation/{jobId} \
-  -H "Content-Type: application/json" \
-  -d '{
-    "count": 2,
-    "style": "cartoon"
-  }'
-
-# 批量生成图像
-curl -X POST http://localhost:9876/images/batch \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "user123",
-    "requests": [
-      {"prompt": "日出时的山脉", "style": "natural"},
-      {"prompt": "太空飞船探索未知星球", "style": "cyberpunk"},
-      {"prompt": "魔法森林中的精灵", "style": "fantasy"}
-    ]
-  }'
-
-# 查看任务状态
-curl http://localhost:9876/images/job/{jobId}
-
-# 查看用户生成历史
-curl http://localhost:9876/images/history/{userId}?limit=5
-
-# 获取支持的提供商
-curl http://localhost:9876/images/providers
-
-# 获取支持的风格
-curl http://localhost:9876/images/styles
+### 📊 A/B测试框架
+多变量测试、流量分配、实时分析和自动化优化。更多特性请查看：[完整API文档](docs/README-AI.md)
 ```
 
-### 🎤 语音处理 API使用示例
-
-```bash
-# 语音转文字 - 上传音频文件
-curl -X POST http://localhost:9876/voice/stt/upload \
-  -F "audio=@speech.mp3" \
-  -F "provider=openai_whisper" \
-  -F "model=whisper-1" \
-  -F "language=zh-CN"
-
-# 文字转语音
-curl -X POST http://localhost:9876/voice/tts \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "你好，欢迎使用语音合成功能！",
-    "provider": "openai_tts",
-    "model": "tts-1",
-    "voice": "alloy",
-    "style": "natural",
-    "outputFormat": "mp3"
-  }'
-
-# 使用模板生成语音
-curl -X POST http://localhost:9876/voice/tts/from-template \
-  -H "Content-Type: application/json" \
-  -d '{
-    "templateId": "greeting",
-    "customizations": {
-      "voice": "nova",
-      "style": "cheerful"
-    }
-  }'
-
-# 批量语音转文字
-curl -X POST http://localhost:9876/voice/stt/batch \
-  -F "audio=@file1.mp3" \
-  -F "audio=@file2.wav" \
-  -F "userId=user123"
-
-# 批量文字转语音
-curl -X POST http://localhost:9876/voice/tts/batch \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "user123",
-    "texts": ["第一段语音文本", "第二段语音文本"],
-    "voice": "echo"
-  }'
-
-# 查看任务状态
-curl http://localhost:9876/voice/job/{jobId}
-
-# 查看用户语音处理历史
-curl http://localhost:9876/voice/history/{userId}?type=stt&limit=5
-
-# 获取STT提供商
-curl http://localhost:9876/voice/stt/providers
-
-# 获取TTS提供商
-curl http://localhost:9876/voice/tts/providers
-
-# 获取语音风格
-curl http://localhost:9876/voice/styles
-
-# 获取支持的语言
-curl http://localhost:9876/voice/languages
-```
-
-### 📊 价格监控 API使用示例
-
-```bash
-# 获取当前所有价格
-curl http://localhost:9876/prices/current
-
-# 获取特定提供商的价格
-curl http://localhost:9876/prices/current?provider=openai
-
-# 获取价格历史
-curl http://localhost:9876/prices/history/openai/gpt-3.5-turbo?hours=24
-
-# 获取价格趋势分析
-curl http://localhost:9876/prices/trends?hours=24
-
-# 获取价格告警
-curl http://localhost:9876/prices/alerts?hours=24
-
-# 获取最优路由推荐
-curl http://localhost:9876/prices/optimal-route?modelType=gpt
-
-# 获取成本预测
-curl http://localhost:9876/prices/prediction?modelType=gpt&days=30
-
-# 获取成本节约建议
-curl http://localhost:9876/prices/cost-savings
-
-# 获取仪表盘数据
-curl http://localhost:9876/prices/dashboard
-
-# 创建价格告警规则
-curl -X POST http://localhost:9876/prices/alert-rules \
-  -H "Content-Type: application/json" \
-  -d '{
-    "provider": "openai",
-    "model": "gpt-4",
-    "threshold": 10,
-    "type": "increase",
-    "severity": "high"
-  }'
-
-# 手动触发价格更新
-curl -X POST http://localhost:9876/prices/update
-
-# 导出价格数据
-curl http://localhost:9876/prices/export?format=json
-```
-
-### 💬 对话历史管理 API使用示例
-
-```bash
-# 创建新对话会话
-curl -X POST http://localhost:9876/conversations \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "user123",
-    "title": "AI助手对话",
-    "contextWindow": 20
-  }'
-
-# 获取用户的所有会话
-curl http://localhost:9876/conversations/user123?status=active&limit=10
-
-# 搜索用户会话
-curl "http://localhost:9876/conversations/user123/search?q=机器学习&limit=5"
-
-# 获取会话详情
-curl http://localhost:9876/conversations/session/session-123
-
-# 添加消息到会话
-curl -X POST http://localhost:9876/conversations/session/session-123/messages \
-  -H "Content-Type: application/json" \
-  -d '{
-    "role": "user",
-    "content": "你好，请介绍一下机器学习",
-    "importance": "medium"
-  }'
-
-# 获取会话消息历史
-curl http://localhost:9876/conversations/session/session-123/messages?limit=20
-
-# 获取对话上下文
-curl http://localhost:9876/conversations/session/session-123/context?limit=10
-
-# 更新会话信息
-curl -X PUT http://localhost:9876/conversations/session/session-123 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "机器学习讨论",
-    "status": "active"
-  }'
-
-# 获取用户对话概览
-curl http://localhost:9876/conversations/user123/overview
-
-# 导出会话数据
-curl http://localhost:9876/conversations/session/session-123/export?format=json
-
-# 获取对话统计
-curl http://localhost:9876/conversations/stats
-```
-
-### 📊 A/B测试框架 API使用示例
-
-```bash
-# 获取所有测试概览
-curl http://localhost:9876/ab-tests
-
-# 创建A/B测试
-curl -X POST http://localhost:9876/ab-tests \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "供应商性能对比测试",
-    "description": "对比OpenAI和Anthropic的响应质量",
-    "target": "provider",
-    "variants": [
-      {"id": "openai", "name": "OpenAI GPT-4"},
-      {"id": "anthropic", "name": "Anthropic Claude"}
-    ],
-    "traffic": 50,
-    "metrics": ["response_time", "cost", "quality_score"]
-  }'
-
-# 启动测试
-curl -X POST http://localhost:9876/ab-tests/ab_test_123/start
-
-# 为用户分配测试变体
-curl -X POST http://localhost:9876/ab-tests/ab_test_123/allocate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "user123",
-    "context": {
-      "taskType": "chat",
-      "model": "gpt-4"
-    }
-  }'
-
-# 记录测试结果
-curl -X POST http://localhost:9876/ab-tests/ab_test_123/record \
-  -H "Content-Type: application/json" \
-  -d '{
-    "variantId": "openai",
-    "userId": "user123",
-    "metrics": {
-      "response_time": 1200,
-      "cost": 0.02,
-      "quality_score": 85
-    }
-  }'
-
-# 获取测试分析结果
-curl http://localhost:9876/ab-tests/ab_test_123/analysis
-
-# 获取测试原始结果数据
-curl http://localhost:9876/ab-tests/ab_test_123/results?metric=response_time&limit=100
-
-# 暂停测试
-curl -X POST http://localhost:9876/ab-tests/ab_test_123/pause
-
-# 删除测试
-curl -X DELETE http://localhost:9876/ab-tests/ab_test_123
-
-# 批量启动多个测试
-curl -X POST http://localhost:9876/ab-tests/batch/start \
-  -H "Content-Type: application/json" \
-  -d '{
-    "testIds": ["ab_test_123", "ab_test_456"]
-  }'
-```
-
-### 📡 Webhook通知系统 API使用示例
-
-```bash
-# 获取所有webhooks
-curl http://localhost:9876/webhooks
-
-# 注册新webhook
-curl -X POST http://localhost:9876/webhooks \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://your-app.com/webhook",
-    "events": ["image.completed", "voice.stt.completed"],
-    "description": "图像和语音处理完成通知",
-    "userId": "user123"
-  }'
-
-# 获取webhook详情
-curl http://localhost:9876/webhooks/wh_1234567890
-
-# 更新webhook配置
-curl -X PUT http://localhost:9876/webhooks/wh_1234567890 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": "paused",
-    "events": ["image.completed"]
-  }'
-
-# 测试webhook连接
-curl -X POST http://localhost:9876/webhooks/wh_1234567890/test
-
-# 重试失败的投递
-curl -X POST http://localhost:9876/webhooks/wh_1234567890/retry
-
-# 查看webhook统计
-curl http://localhost:9876/webhooks/stats/wh_1234567890
-
-# 手动触发事件
-curl -X POST http://localhost:9876/webhooks/trigger \
-  -H "Content-Type: application/json" \
-  -d '{
-    "eventType": "image.completed",
-    "eventData": {
-      "jobId": "job_123",
-      "userId": "user123",
-      "result": ["https://example.com/image1.jpg"]
-    }
-  }'
-
-# 删除webhook
-curl -X DELETE http://localhost:9876/webhooks/wh_1234567890
-
-# 批量测试webhooks
-curl -X POST http://localhost:9876/webhooks/batch/test \
-  -H "Content-Type: application/json" \
-  -d '{
-    "webhookIds": ["wh_123", "wh_456"]
-  }'
-```
-
-#### Webhook事件类型
-
-- `image.completed` - 图像生成任务完成
-- `voice.stt.completed` - 语音转文字任务完成
-- `voice.tts.completed` - 文字转语音任务完成
-- `webhook.test` - 测试事件
-
-#### Webhook签名验证
-
-每个webhook请求都包含以下安全头：
+### 📡 Webhook通知系统
+异步事件通知、可靠投递、重试机制和安全验证。更多特性请查看：[完整API文档](docs/README-AI.md)
 
 ```
-X-Sira-Webhook-ID: wh_1234567890
-X-Sira-Event-Type: image.completed
-X-Sira-Signature: sha256=abc123...
-```
 
-验证签名的示例代码：
+### 🎛️ 自定义规则引擎
+灵活条件匹配、规则优先级、上下文感知的智能路由。更多特性请查看：[完整API文档](docs/README-AI.md)
 
-```javascript
-const crypto = require('crypto');
+### 📊 入口统计和报告
+详细的API统计、错误分析、性能报告和业务洞察。更多特性请查看：[完整API文档](docs/README-AI.md)
 
-function verifySignature(payload, signature, secret) {
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(payload, 'utf8')
-    .digest('hex');
+### 🧠 智能拆分路由
+根据请求复杂度自动选择最优AI模型，性能/成本/质量多维度优化。更多特性请查看：[完整API文档](docs/README-AI.md)
 
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(`sha256=${expectedSignature}`)
-  );
-}
-```
+### 🌐 多语言支持
+支持中英文界面、API响应本地化，智能语言检测和翻译服务。更多特性请查看：[完整API文档](docs/README-AI.md)
 
-### 🎛️ 自定义规则引擎 API使用示例
+### 📊 批量处理接口
+支持批量AI请求处理，高并发优化，智能队列管理和资源调度。更多特性请查看：[完整API文档](docs/README-AI.md)
 
-```bash
-# 获取所有规则
-curl http://localhost:9876/rules
+### 🔐 API密钥管理
+智能轮换、权限控制、用量限制。更多特性请查看：[完整API文档](docs/README-AI.md)
 
-# 创建智能路由规则
-curl -X POST http://localhost:9876/rules \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Premium用户智能路由",
-    "description": "Premium用户自动路由到GPT-4",
-    "priority": 10,
-    "conditions": [
-      {
-        "type": "field",
-        "field": "user.tier",
-        "operator": "equals",
-        "value": "premium"
-      }
-    ],
-    "actions": [
-      {
-        "type": "setField",
-        "params": {
-          "field": "routing.provider",
-          "value": "openai"
-        }
-      }
-    ],
-    "tags": ["routing", "premium"]
-  }'
+### 📊 实时流式响应
+支持SSE/WebSocket实时流式响应，低延迟数据传输和连接管理。更多特性请查看：[完整API文档](docs/README-AI.md)
 
-# 获取规则详情
-curl http://localhost:9876/rules/rule_1234567890
+### 🧠 模型训练接口
+支持用户自定义数据集进行模型微调，完整的训练生命周期管理。更多特性请查看：[完整API文档](docs/README-AI.md)
 
-# 更新规则配置
-curl -X PUT http://localhost:9876/rules/rule_1234567890 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "priority": 15,
-    "enabled": true
-  }'
-
-# 测试规则条件
-curl -X POST http://localhost:9876/rules/rule_1234567890/test \
-  -H "Content-Type: application/json" \
-  -d '{
-    "context": {
-      "user": {
-        "tier": "premium",
-        "id": "user123"
-      },
-      "request": {
-        "model": "gpt-4",
-        "estimatedCost": 0.5
-      }
-    }
-  }'
-
-# 执行规则
-curl -X POST http://localhost:9876/rules/execute \
-  -H "Content-Type: application/json" \
-  -d '{
-    "context": {
-      "user": {
-        "tier": "premium",
-        "id": "user123"
-      },
-      "request": {
-        "model": "gpt-4",
-        "estimatedCost": 0.5
-      }
-    },
-    "options": {
-      "maxResults": 5,
-      "dryRun": false
-    }
-  }'
-
-# 查看规则统计
-curl http://localhost:9876/rules/stats/rule_1234567890
-
-# 查看规则引擎统计
-curl http://localhost:9876/rules/engine/stats
-
-# 删除规则
-curl -X DELETE http://localhost:9876/rules/rule_1234567890
-
-# 获取规则模板
-curl http://localhost:9876/rules/templates
-```
-
-#### 规则条件类型
-
-- **field**: 字段比较条件
-  ```json
-  {
-    "type": "field",
-    "field": "user.tier",
-    "operator": "equals",
-    "value": "premium"
-  }
-  ```
-
-- **expression**: 表达式条件
-  ```json
-  {
-    "type": "expression",
-    "field": "user.tier == 'premium' && request.estimatedCost > 1.0"
-  }
-  ```
-
-#### 支持的操作符
-
-- `equals/eq`: 等于
-- `notEquals/ne`: 不等于
-- `greaterThan/gt`: 大于
-- `greaterThanOrEqual/gte`: 大于等于
-- `lessThan/lt`: 小于
-- `lessThanOrEqual/lte`: 小于等于
-- `contains`: 包含
-- `notContains`: 不包含
-- `startsWith`: 以...开始
-- `endsWith`: 以...结束
-- `matches`: 正则匹配
-- `in`: 在数组中
-- `notIn`: 不在数组中
-- `exists`: 字段存在
-- `notExists`: 字段不存在
-
-#### 规则动作类型
-
-- **setField**: 设置字段值
-- **transform**: 转换字段值
-- **log**: 记录日志
-- **webhook**: 触发webhook
-- **modifyRequest**: 修改请求参数
-- **custom**: 自定义动作
-
-### 📊 入口统计和报告 API使用示例
-
-```bash
-# 生成使用情况汇总报告
-curl -X POST http://localhost:9876/reports/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "usage-summary",
-    "timeRange": "24h",
-    "filters": {
-      "userId": "user123"
-    }
-  }'
-
-# 生成性能分析报告
-curl -X POST http://localhost:9876/reports/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "performance-analysis",
-    "timeRange": "7d"
-  }'
-
-# 获取总览仪表板数据
-curl http://localhost:9876/reports/dashboard/overview?timeRange=24h
-
-# 获取性能仪表板数据
-curl http://localhost:9876/reports/dashboard/performance?timeRange=24h
-
-# 导出报告为CSV格式
-curl -X POST http://localhost:9876/reports/export \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "usage-summary",
-    "timeRange": "30d",
-    "format": "csv",
-    "filename": "usage_report_2024"
-  }'
-
-# 创建自定义报告
-curl -X POST http://localhost:9876/reports/custom \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "我的业务仪表板",
-    "description": "自定义的业务指标仪表板",
-    "config": {
-      "widgets": [
-        {
-          "id": "usage_widget",
-          "title": "API使用情况",
-          "type": "usage-summary",
-          "position": {"x": 0, "y": 0},
-          "size": {"width": 6, "height": 4}
-        },
-        {
-          "id": "performance_widget",
-          "title": "性能指标",
-          "type": "performance-analysis",
-          "position": {"x": 6, "y": 0},
-          "size": {"width": 6, "height": 4}
-        }
-      ]
-    }
-  }'
-
-# 生成自定义报告
-curl -X POST http://localhost:9876/reports/custom/report_123/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "timeRange": "7d",
-    "format": "json"
-  }'
-
-# 获取报告类型列表
-curl http://localhost:9876/reports/types
-
-# 获取仪表板类型列表
-curl http://localhost:9876/reports/dashboards
-
-# 查看报告统计信息
-curl http://localhost:9876/reports/stats
-
-# 批量生成多个报告
-curl -X POST http://localhost:9876/reports/batch/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "reports": [
-      {"id": "usage", "type": "usage-summary", "timeRange": "24h"},
-      {"id": "performance", "type": "performance-analysis", "timeRange": "24h"},
-      {"id": "errors", "type": "error-analysis", "timeRange": "24h"}
-    ]
-  }'
-```
-
-#### 支持的报告类型
-
-- `usage-summary` - 使用情况汇总报告
-- `performance-analysis` - 性能分析报告
-- `error-analysis` - 错误分析报告
-- `cost-analysis` - 成本分析报告
-- `user-behavior` - 用户行为分析报告
-- `provider-comparison` - 供应商对比报告
-- `trend-analysis` - 趋势分析报告
-- `custom-dashboard` - 自定义仪表板报告
-
-#### 支持的仪表板类型
-
-- `overview` - 系统总览仪表板
-- `performance` - 性能监控仪表板
-- `usage` - 使用情况仪表板
-- `errors` - 错误分析仪表板
-
-#### 支持的导出格式
-
-- `json` - JSON格式 (默认)
-- `csv` - CSV格式 (表格数据)
-- `html` - HTML格式 (带样式的报告)
-
-#### 时间范围格式
-
-- `24h` - 最近24小时
-- `7d` - 最近7天
-- `30d` - 最近30天
-- `90d` - 最近90天
-- `1w` - 最近1周
-- `1m` - 最近1月
-
-### 🧠 智能拆分路由 API使用示例
-
-```bash
-# 执行智能路由决策
-curl -X POST http://localhost:9876/intelligent-routing/route \
-  -H "Content-Type: application/json" \
-  -d '{
-    "request": "请解释量子计算的基本原理",
-    "context": {
-      "userId": "user123",
-      "maxCost": 0.01,
-      "preferredProvider": "openai"
-    }
-  }'
-
-# 分析请求复杂度（不执行路由）
-curl -X POST http://localhost:9876/intelligent-routing/analyze \
-  -H "Content-Type: application/json" \
-  -d '{
-    "request": "写一个Python函数来实现二分查找算法"
-  }'
-
-# 批量路由决策
-curl -X POST http://localhost:9876/intelligent-routing/route-batch \
-  -H "Content-Type: application/json" \
-  -d '{
-    "requests": [
-      {"id": "req1", "content": "简单问候"},
-      {"id": "req2", "content": "复杂的技术问题需要详细解释"}
-    ],
-    "context": {
-      "userId": "user123",
-      "batchId": "batch_001"
-    }
-  }'
-
-# 获取当前路由策略
-curl http://localhost:9876/intelligent-routing/strategy
-
-# 设置路由策略为性能优先
-curl -X POST http://localhost:9876/intelligent-routing/strategy \
-  -H "Content-Type: application/json" \
-  -d '{"strategy": "performance_first"}'
-
-# 获取所有可用策略
-curl http://localhost:9876/intelligent-routing/strategies
-
-# 获取用户路由偏好
-curl http://localhost:9876/intelligent-routing/preferences/user123
-
-# 设置用户偏好（速度优先）
-curl -X POST http://localhost:9876/intelligent-routing/preferences/user123 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "speedPreference": "fast",
-    "budgetLimit": 0.02
-  }'
-
-# 获取路由统计信息
-curl http://localhost:9876/intelligent-routing/stats
-
-# 获取路由优化建议
-curl http://localhost:9876/intelligent-routing/suggestions
-
-# 获取所有可用模型
-curl http://localhost:9876/intelligent-routing/models
-
-# 获取特定模型详情
-curl http://localhost:9876/intelligent-routing/models/gpt-4
-
-# 获取缓存状态
-curl http://localhost:9876/intelligent-routing/cache
-
-# 清除路由缓存
-curl -X POST http://localhost:9876/intelligent-routing/cache/clear
-
-# 健康检查
-curl http://localhost:9876/intelligent-routing/health
-```
-
-#### 路由策略说明
-
-- **performance_first**: 性能优先 - 选择响应速度最快的模型
-- **cost_first**: 成本优先 - 选择成本最低的模型
-- **quality_first**: 质量优先 - 选择质量最好的模型
-- **balanced**: 均衡策略 - 在性能、成本、质量间取平衡
-- **adaptive**: 自适应策略 - 根据实时数据动态调整权重
-
-#### 复杂度分析维度
-
-智能路由通过以下维度分析请求复杂度：
-
-- **长度复杂度**: 基于内容长度、词数、句子数
-- **技术复杂度**: 检测技术术语数量
-- **推理复杂度**: 分析推理深度和问题复杂度
-- **代码复杂度**: 检测代码片段和编程元素
-- **数学复杂度**: 识别数学表达式和公式
-- **结构复杂度**: 评估内容结构化程度
-- **上下文复杂度**: 考虑对话历史和系统指令
-
-#### 支持的模型能力矩阵
-
-| 模型 | 提供商 | 最大Token | 擅长领域 | 弱点 | 平均响应时间 | 成功率 |
-|------|--------|-----------|----------|------|--------------|--------|
-| gpt-4 | OpenAI | 8192 | 推理、编码、分析 | 速度 | 3000ms | 98% |
-| gpt-3.5-turbo | OpenAI | 4096 | 通用、对话、速度 | 复杂推理 | 1500ms | 99% |
-| claude-2 | Anthropic | 100000 | 推理、创造、长文本 | 编码 | 2500ms | 97% |
-| codellama-34b | Meta | 16384 | 编码、技术 | 创造 | 4000ms | 95% |
-
-### 🌐 多语言支持 API使用示例
-
-```bash
-# 获取支持的语言列表
-curl http://localhost:9876/multilingual/languages
-
-# 检测文本语言
-curl -X POST http://localhost:9876/multilingual/detect \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Hello, how are you today?"
-  }'
-
-# 获取当前请求的语言信息
-curl http://localhost:9876/multilingual/current
-
-# 翻译文本
-curl -X POST http://localhost:9876/multilingual/translate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Hello World",
-    "fromLanguage": "en-US",
-    "toLanguage": "zh-CN"
-  }'
-
-# 批量翻译文本
-curl -X POST http://localhost:9876/multilingual/translate-batch \
-  -H "Content-Type: application/json" \
-  -d '{
-    "texts": ["Hello", "World", "AI Gateway"],
-    "fromLanguage": "en-US",
-    "toLanguage": "zh-CN"
-  }'
-
-# 设置用户语言偏好
-curl -X POST http://localhost:9876/multilingual/preferences/user123 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "language": "zh-CN",
-    "timezone": "Asia/Shanghai"
-  }'
-
-# 获取用户语言偏好
-curl http://localhost:9876/multilingual/preferences/user123
-
-# 添加翻译资源
-curl -X POST http://localhost:9876/multilingual/resources/zh-CN/common \
-  -H "Content-Type: application/json" \
-  -d '{
-    "welcome": "欢迎使用",
-    "loading": "加载中...",
-    "error": "出错了"
-  }'
-
-# 获取翻译资源
-curl http://localhost:9876/multilingual/resources/zh-CN/common
-
-# 获取翻译提供商信息
-curl http://localhost:9876/multilingual/providers
-
-# 切换翻译提供商
-curl -X POST http://localhost:9876/multilingual/providers/openai/switch
-
-# 获取翻译统计信息
-curl http://localhost:9876/multilingual/stats
-
-# 获取缓存状态
-curl http://localhost:9876/multilingual/cache
-
-# 清除翻译缓存
-curl -X POST http://localhost:9876/multilingual/cache/clear
-
-# 健康检查
-curl http://localhost:9876/multilingual/health
-```
-
-#### 支持的语言列表
-
-多语言系统支持15种主要语言：
-
-| 语言代码 | 语言名称 | 原生名称 | 地区 | RTL |
-|----------|----------|----------|------|-----|
-| zh-CN | 中文(简体) | 中文(简体) | 🇨🇳 中国 | 否 |
-| zh-TW | 中文(繁体) | 中文(繁體) | 🇹🇼 台湾 | 否 |
-| en-US | 英语(美国) | English (US) | 🇺🇸 美国 | 否 |
-| en-GB | 英语(英国) | English (UK) | 🇬🇧 英国 | 否 |
-| ja-JP | 日语 | 日本語 | 🇯🇵 日本 | 否 |
-| ko-KR | 韩语 | 한국어 | 🇰🇷 韩国 | 否 |
-| fr-FR | 法语 | Français | 🇫🇷 法国 | 否 |
-| de-DE | 德语 | Deutsch | 🇩🇪 德国 | 否 |
-| es-ES | 西班牙语 | Español | 🇪🇸 西班牙 | 否 |
-| it-IT | 意大利语 | Italiano | 🇮🇹 意大利 | 否 |
-| pt-BR | 葡萄牙语(巴西) | Português (BR) | 🇧🇷 巴西 | 否 |
-| ru-RU | 俄语 | Русский | 🇷🇺 俄罗斯 | 否 |
-| ar-SA | 阿拉伯语 | العربية | 🇸🇦 沙特 | 是 |
-| hi-IN | 印地语 | हिन्दी | 🇮🇳 印度 | 否 |
-
-#### 翻译提供商支持
-
-- **Google Translate**: 支持所有语言，高质量翻译，需API密钥
-- **Azure Translator**: Microsoft Azure翻译服务，企业级支持
-- **OpenAI GPT**: 使用GPT模型进行翻译，适合创意和复杂文本
-
-#### 语言检测机制
-
-系统使用多层语言检测策略：
-
-1. **显式指定**: 检查`lang`查询参数、`x-language`请求头
-2. **用户偏好**: 从用户配置文件获取偏好语言
-3. **Accept-Language**: 解析HTTP Accept-Language头
-4. **地理位置**: 基于IP地址的地理位置检测
-5. **默认语言**: 使用系统默认语言(zh-CN)
-
-#### API响应本地化
-
-所有API响应都会根据用户语言偏好自动本地化：
-
-```json
-// 英文请求
-GET /api/models
-
-// 中文响应 (自动本地化)
-{
-  "success": true,
-  "message": "模型列表获取成功",
-  "data": [...],
-  "_localization": {
-    "language": "zh-CN",
-    "confidence": 0.9,
-    "method": "header"
-  }
-}
-```
-
-#### 翻译缓存策略
-
-- **24小时缓存**: 翻译结果缓存24小时以提高性能
-- **智能缓存键**: 基于文本内容、源语言、目标语言生成缓存键
-- **内存管理**: 自动清理过期缓存，防止内存泄漏
-- **缓存统计**: 提供缓存命中率和性能指标
-
-### 📊 批量处理接口 API使用示例
-
-```bash
-# 提交批量处理任务
-curl -X POST http://localhost:9876/batch-processing/batches \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "文本分类批量任务",
-    "requests": [
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "这是一段正面评价"}],
-        "max_tokens": 100
-      },
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "这是一段负面评价"}],
-        "max_tokens": 100
-      }
-    ],
-    "priority": "normal",
-    "config": {
-      "continueOnError": true,
-      "maxConcurrency": 5,
-      "timeout": 300000
-    }
-  }'
-
-# 获取批量任务列表
-curl http://localhost:9876/batch-processing/batches?userId=user123
-
-# 获取批量任务状态
-curl http://localhost:9876/batch-processing/batches/batch_1234567890/status
-
-# 获取批量任务结果
-curl http://localhost:9876/batch-processing/batches/batch_1234567890/results?limit=10
-
-# 取消批量任务
-curl -X POST http://localhost:9876/batch-processing/batches/batch_1234567890/cancel \
-  -H "Content-Type: application/json" \
-  -d '{"reason": "user_cancelled"}'
-
-# 删除批量任务
-curl -X DELETE http://localhost:9876/batch-processing/batches/batch_1234567890
-
-# 获取队列状态
-curl http://localhost:9876/batch-processing/queue
-
-# 获取批量处理模板
-curl http://localhost:9876/batch-processing/templates
-
-# 获取批量处理统计
-curl http://localhost:9876/batch-processing/stats
-
-# 获取缓存状态
-curl http://localhost:9876/batch-processing/cache
-
-# 清除批量处理缓存
-curl -X POST http://localhost:9876/batch-processing/cache/clear
-
-# 健康检查
-curl http://localhost:9876/batch-processing/health
-```
-
-#### 批量处理特性
-
-- **智能队列管理**: 基于优先级的多级队列调度系统
-- **并发控制**: 信号量机制控制并发请求数量
-- **负载均衡**: 自动分配工作负载到多个处理单元
-- **错误处理**: 支持失败重试和部分失败继续处理
-- **进度跟踪**: 实时监控处理进度和性能指标
-- **结果缓存**: 智能缓存重复请求以提升性能
-
-#### 优先级队列系统
-
-- **high**: 高优先级队列 - 立即处理，适用于紧急任务
-- **normal**: 普通队列 - 标准处理顺序
-- **low**: 低优先级队列 - 延迟处理，适用于非紧急任务
-
-#### 并发控制机制
-
-- **信号量控制**: 限制同时处理的批量任务数量
-- **动态调整**: 根据系统负载自动调整并发度
-- **资源隔离**: 每个批量任务独立控制并发数量
-- **公平调度**: 防止单个任务占用过多资源
-
-#### 批量处理模板
-
-系统提供预定义的批量处理模板：
-
-- **文本分类**: 批量对文本进行情感分析或分类
-- **内容生成**: 批量生成相关内容和文章
-- **数据分析**: 批量进行数据分析和洞察
-- **翻译任务**: 批量翻译多语言内容
-
-#### 性能优化策略
-
-- **请求批处理**: 将多个请求合并处理以减少网络开销
-- **结果缓存**: 缓存相同请求的结果避免重复计算
-- **异步处理**: 非阻塞的批量处理不影响其他请求
-- **智能调度**: 基于任务特性的智能调度算法
-- **资源复用**: 复用连接和计算资源提升效率
-
-### 🔐 API密钥管理 API使用示例
-
-```bash
-# 获取API密钥概览
-curl http://localhost:9876/api-keys
-
-# 获取指定供应商的所有密钥
-curl http://localhost:9876/api-keys/providers/openai
-
-# 添加新的API密钥
-curl -X POST http://localhost:9876/api-keys \
-  -H "Content-Type: application/json" \
-  -d '{
-    "provider": "openai",
-    "key": "sk-your-openai-api-key-here",
-    "name": "OpenAI Production Key",
-    "permissions": ["read", "write"],
-    "limits": {
-        "requestsPerMinute": 60,
-        "requestsPerHour": 1000,
-        "requestsPerDay": 10000,
-        "tokensPerMinute": 10000,
-        "tokensPerHour": 100000,
-        "tokensPerDay": 1000000
-    },
-    "tags": ["production", "gpt-4"],
-    "description": "生产环境GPT-4 API密钥"
-  }'
-
-# 获取特定API密钥的详细信息
-curl http://localhost:9876/api-keys/openai/key_123
-
-# 轮换API密钥
-curl -X POST http://localhost:9876/api-keys/openai/key_123/rotate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "newKey": "sk-new-openai-api-key-here",
-    "reason": "定期轮换"
-  }'
-
-# 删除API密钥
-curl -X DELETE http://localhost:9876/api-keys/openai/key_123
-
-# 获取密钥使用统计
-curl http://localhost:9876/api-keys/openai/key_123/usage
-
-# 设置密钥权限
-curl -X POST http://localhost:9876/api-keys/openai/key_123/permissions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "permissions": ["read"],
-    "userId": "user123"
-  }'
-
-# 批量添加密钥
-curl -X POST http://localhost:9876/api-keys/batch \
-  -H "Content-Type: application/json" \
-  -d '{
-    "keys": [
-      {
-        "provider": "openai",
-        "key": "sk-key1",
-        "name": "Key 1"
-      },
-      {
-        "provider": "anthropic",
-        "key": "sk-ant-key1",
-        "name": "Anthropic Key 1"
-      }
-    ]
-  }'
-
-# 密钥健康检查
-curl http://localhost:9876/api-keys/health
-
-# 获取密钥轮换历史
-curl http://localhost:9876/api-keys/openai/key_123/rotation-history
-
-# 暂停/恢复密钥使用
-curl -X POST http://localhost:9876/api-keys/openai/key_123/status \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": "paused",
-    "reason": "临时维护"
-  }'
-```
-
-#### API密钥管理特性
-
-- **AES-256加密**: 所有API密钥使用AES-256加密存储
-- **智能轮换**: 自动检测和轮换过期或高风险密钥
-- **多级权限**: 细粒度的权限控制（读、写、管理）
-- **用量限制**: 基于请求数和token数的多维度限制
-- **实时监控**: 密钥使用情况实时监控和告警
-- **批量操作**: 支持批量添加和管理密钥
-- **审计日志**: 完整的密钥操作审计记录
-
-#### 密钥轮换策略
-
-| 策略类型 | 触发条件 | 轮换频率 | 说明 |
-|----------|----------|----------|------|
-| 定期轮换 | 时间间隔 | 24-168小时 | 预防性安全措施 |
-| 用量轮换 | 请求/令牌数 | 自定义阈值 | 负载均衡和配额管理 |
-| 错误率轮换 | 失败率阈值 | 动态调整 | 质量保证 |
-| 手动轮换 | 管理员操作 | 按需 | 紧急响应 |
-
-#### 权限控制模型
-
-```json
-{
-  "permissions": {
-    "read": "允许读取和使用密钥",
-    "write": "允许修改密钥配置",
-    "admin": "允许管理所有密钥",
-    "rotate": "允许轮换密钥",
-    "delete": "允许删除密钥"
-  },
-  "scope": {
-    "global": "所有供应商",
-    "provider": "指定供应商",
-    "user": "指定用户"
-  }
-}
-```
-
-#### 用量限制配置
-
-```json
-{
-  "limits": {
-    "requestsPerMinute": 60,
-    "requestsPerHour": 1000,
-    "requestsPerDay": 10000,
-    "tokensPerMinute": 10000,
-    "tokensPerHour": 100000,
-    "tokensPerDay": 1000000,
-    "costPerDay": 100.0,
-    "costPerMonth": 2000.0
-  },
-  "burstAllowance": {
-    "enabled": true,
-    "multiplier": 1.5
-  }
-}
-```
-
-### 📊 实时流式响应 API使用示例
-
-```bash
-# 建立SSE连接 (使用curl监听流式响应)
-curl -N http://localhost:9876/streaming/sse?streamId=stream_123
-
-# 建立WebSocket连接 (需要WebSocket客户端)
-# ws://localhost:9876/ws
-
-# 创建流式会话
-curl -X POST http://localhost:9876/streaming/streams \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "user123",
-    "options": {
-        "maxConnections": 10,
-        "timeout": 300000
-    }
-  }'
-
-# 获取流式会话列表
-curl http://localhost:9876/streaming/streams?userId=user123
-
-# 获取流式会话详情
-curl http://localhost:9876/streaming/streams/stream_123
-
-# 加入流式会话
-curl -X POST http://localhost:9876/streaming/streams/stream_123/join \
-  -H "Content-Type: application/json" \
-  -d '{
-    "connectionId": "conn_456"
-  }'
-
-# 向流发送数据
-curl -X POST http://localhost:9876/streaming/streams/stream_123/send \
-  -H "Content-Type: application/json" \
-  -d '{
-    "data": {
-        "message": "Hello from API",
-        "timestamp": "2024-01-01T12:00:00Z"
-    },
-    "eventType": "chat_message",
-    "metadata": {
-        "source": "api",
-        "priority": "normal"
-    }
-  }'
-
-# 离开流式会话
-curl -X POST http://localhost:9876/streaming/streams/stream_123/leave \
-  -H "Content-Type: application/json" \
-  -d '{
-    "connectionId": "conn_456"
-  }'
-
-# 关闭流式会话
-curl -X DELETE http://localhost:9876/streaming/streams/stream_123 \
-  -H "Content-Type: application/json" \
-  -d '{"reason": "session_complete"}'
-
-# 广播消息到所有连接
-curl -X POST http://localhost:9876/streaming/broadcast \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": {
-        "type": "announcement",
-        "content": "系统维护通知",
-        "level": "info"
-    },
-    "eventType": "system_announcement",
-    "metadata": {
-        "broadcast": true,
-        "priority": "high"
-    }
-  }'
-
-# 广播消息到指定用户
-curl -X POST http://localhost:9876/streaming/broadcast \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": {
-        "type": "notification",
-        "content": "您的任务已完成"
-    },
-    "userId": "user123",
-    "eventType": "user_notification"
-  }'
-
-# 获取流式响应统计
-curl http://localhost:9876/streaming/stats
-
-# 获取连接统计
-curl http://localhost:9876/streaming/connections/stats
-
-# 获取流统计
-curl http://localhost:9876/streaming/streams/stats
-
-# 健康检查
-curl http://localhost:9876/streaming/health
-```
-
-#### SSE (Server-Sent Events) 使用示例
-
-**JavaScript客户端:**
-```javascript
-// 建立SSE连接
-const eventSource = new EventSource('/streaming/sse?streamId=stream_123');
-
-// 监听连接事件
-eventSource.onopen = function(event) {
-    console.log('SSE connection opened');
-};
-
-// 监听自定义事件
-eventSource.addEventListener('chat_message', function(event) {
-    const data = JSON.parse(event.data);
-    console.log('Received chat message:', data);
-});
-
-// 监听数据事件
-eventSource.onmessage = function(event) {
-    const data = JSON.parse(event.data);
-    console.log('Received data:', data);
-};
-
-// 监听错误
-eventSource.onerror = function(event) {
-    console.error('SSE error:', event);
-};
-```
-
-#### WebSocket 使用示例
-
-**JavaScript客户端:**
-```javascript
-// 建立WebSocket连接
-const ws = new WebSocket('ws://localhost:9876/ws');
-
-// 监听连接打开
-ws.onopen = function(event) {
-    console.log('WebSocket connection opened');
-
-    // 发送加入流的消息
-    ws.send(JSON.stringify({
-        type: 'join_stream',
-        streamId: 'stream_123'
-    }));
-
-    // 发送心跳
-    setInterval(() => {
-        ws.send(JSON.stringify({
-            type: 'heartbeat'
-        }));
-    }, 30000);
-};
-
-// 监听消息
-ws.onmessage = function(event) {
-    const message = JSON.parse(event.data);
-
-    switch(message.type) {
-        case 'connection':
-            console.log('Connected:', message.payload);
-            break;
-        case 'data':
-            console.log('Received data:', message.payload);
-            break;
-        case 'pong':
-            console.log('Received pong');
-            break;
-        default:
-            console.log('Unknown message type:', message.type);
-    }
-};
-
-// 监听错误
-ws.onerror = function(error) {
-    console.error('WebSocket error:', error);
-};
-
-// 监听连接关闭
-ws.onclose = function(event) {
-    console.log('WebSocket connection closed:', event.code, event.reason);
-};
-```
-
-#### 流式响应特性
-
-- **低延迟传输**: SSE和WebSocket提供毫秒级延迟的数据传输
-- **双向通信**: WebSocket支持客户端到服务器的双向通信
-- **自动重连**: 内置连接断开检测和自动重连机制
-- **连接池管理**: 智能的连接生命周期管理和资源控制
-- **多租户隔离**: 支持多用户和多应用的流隔离
-- **扩展性设计**: 支持水平扩展和负载均衡部署
-
-#### 连接类型对比
-
-| 特性 | SSE | WebSocket |
-|------|-----|-----------|
-| 方向性 | 单向 (服务器到客户端) | 双向 |
-| 协议 | HTTP | WebSocket |
-| 浏览器支持 | 良好 | 良好 |
-| 代理支持 | 优秀 | 一般 |
-| 复杂性 | 简单 | 中等 |
-| 实时性 | 良好 | 优秀 |
-| 二进制支持 | 否 | 是 |
-| 连接开销 | 低 | 低 |
-
-#### 流式会话管理
-
-- **会话生命周期**: 创建、活跃、关闭的完整生命周期管理
-- **连接绑定**: 支持多个连接加入同一个流式会话
-- **权限控制**: 基于用户ID的流访问权限控制
-- **资源限制**: 防止单个流占用过多系统资源
-- **状态同步**: 实时同步流状态到所有连接的客户端
-
-## 🧪 测试验证
-
-### 🧠 模型训练接口 API使用示例
-
-```bash
-# 上传训练数据集
-curl -X POST http://localhost:9876/model-training/datasets \
-  -F "file=@training_data.jsonl" \
-  -F "name=我的训练数据集" \
-  -F "description=用于客服对话的训练数据" \
-  -F "format=jsonl" \
-  -H "x-user-id: user123"
-
-# 获取数据集列表
-curl http://localhost:9876/model-training/datasets?userId=user123
-
-# 创建训练作业
-curl -X POST http://localhost:9876/model-training/jobs \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "客服机器人微调",
-    "description": "基于GPT-3.5的客服对话微调",
-    "datasetId": "ds_1234567890",
-    "baseModel": "gpt-3.5-turbo",
-    "provider": "openai",
-    "config": {
-        "epochs": 3,
-        "batchSize": 16,
-        "learningRate": 0.0001
-    },
-    "resources": {
-        "gpuType": "auto",
-        "maxHours": 24
-    }
-  }'
-
-# 获取训练作业列表
-curl http://localhost:9876/model-training/jobs?userId=user123
-
-# 启动训练作业
-curl -X POST http://localhost:9876/model-training/jobs/job_1234567890/start
-
-# 查看训练状态
-curl http://localhost:9876/model-training/jobs/job_1234567890/status
-
-# 获取训练日志
-curl http://localhost:9876/model-training/jobs/job_1234567890/logs?limit=20
-
-# 停止训练作业
-curl -X POST http://localhost:9876/model-training/jobs/job_1234567890/stop
-
-# 部署训练完成的模型
-curl -X POST http://localhost:9876/model-training/jobs/job_1234567890/deploy \
-  -H "Content-Type: application/json" \
-  -d '{
-    "endpoint": "https://api.sira.ai/models/custom-model-1",
-    "scaling": "auto",
-    "region": "auto"
-  }'
-
-# 获取用户模型列表
-curl http://localhost:9876/model-training/models
-
-# 获取支持的训练提供商
-curl http://localhost:9876/model-training/providers
-
-# 查看训练系统统计
-curl http://localhost:9876/model-training/stats
-
-# 删除训练作业
-curl -X DELETE http://localhost:9876/model-training/jobs/job_1234567890
-
-# 删除数据集
-curl -X DELETE http://localhost:9876/model-training/datasets/ds_1234567890
-
-# 删除部署的模型
-curl -X DELETE http://localhost:9876/model-training/models/model_1234567890
-```
-
-#### 数据集格式要求
-
-**JSONL格式** (推荐):
-```jsonl
-{"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Hello!"}, {"role": "assistant", "content": "Hi there!"}]}
-{"messages": [{"role": "user", "content": "How are you?"}, {"role": "assistant", "content": "I'm doing well, thank you!"}]}
-```
-
-**JSON格式**:
-```json
-[
-  {
-    "input": "Hello, how can I help you?",
-    "output": "I'm here to assist you with any questions you have."
-  }
-]
-```
-
-#### 支持的训练提供商
-
-- **OpenAI**: GPT-3.5-turbo, GPT-4
-- **Anthropic**: Claude-2
-- **Hugging Face**: BERT, GPT-2, T5等开源模型
-
-#### 训练配置参数
-
-- `epochs`: 训练轮数 (1-100)
-- `batchSize`: 批次大小 (1-256)
-- `learningRate`: 学习率 (0.00001-0.01)
-- `maxTokens`: 最大token数 (1-4096)
-- `validationSplit`: 验证集比例 (0.1-0.5)
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/230946/169160907-05c5e6ed-4c46-4c62-8e17-4c58ea2f4db0.png" alt="divider" width="200" height="4"/>
+</div>
 
 ## 🧪 测试验证
 
@@ -2398,25 +901,25 @@ curl -X DELETE http://localhost:9876/model-training/models/model_1234567890
 <div align="center">
 
 ```mermaid
-graph LR
-    A[1. 本地验证] --> B[2. 自动化测试]
-    B --> C[3. 静态安全检查]
-    C --> D[4. 集成测试]
-    D --> E[5. PR审核流程]
-    E --> F[6. Staging部署]
-    F --> G[7. 回归测试]
-    G --> H[8. 生产部署]
-    H --> I[9. 监控回溯]
+graph TD
+    A[🏠<br/>本地验证] --> B[🤖<br/>自动化测试]
+    B --> C[🔒<br/>安全检查]
+    C --> D[🔗<br/>集成测试]
+    D --> E[👥<br/>PR审核]
+    E --> F[🧪<br/>Staging部署]
+    F --> G[🔄<br/>回归测试]
+    G --> H[🚀<br/>生产部署]
+    H --> I[📊<br/>监控回溯]
 
-    style A fill:#e1f5fe
-    style B fill:#e1f5fe
-    style C fill:#fff3e0
-    style D fill:#e8f5e8
-    style E fill:#f3e5f5
-    style F fill:#fff3e0
-    style G fill:#e8f5e8
-    style H fill:#e1f5fe
-    style I fill:#f3e5f5
+    style A fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style B fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    style C fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style D fill:#e8f5e8,stroke:#388e3c,stroke-width:3px
+    style E fill:#fce4ec,stroke:#c2185b,stroke-width:3px
+    style F fill:#fff8e1,stroke:#fbc02d,stroke-width:3px
+    style G fill:#e0f2f1,stroke:#00695c,stroke-width:3px
+    style H fill:#f9fbe7,stroke:#689f38,stroke-width:3px
+    style I fill:#e8eaf6,stroke:#303f9f,stroke-width:3px
 ```
 
 | 阶段 | 状态 | 说明 | 执行时间 |
@@ -2449,54 +952,38 @@ npm run test:coverage
 open coverage/lcov-report/index.html
 ```
 
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/230946/169160907-05c5e6ed-4c46-4c62-8e17-4c58ea2f4db0.png" alt="divider" width="250" height="4"/>
+</div>
+
 ## 📚 文档导航
 
 <div align="center">
 
 | 文档 | 描述 | 适用场景 |
 |------|------|----------|
-| [📖 Sira使用指南](ai-gateway/README-AI.md) | 详细的API使用说明和配置指南 | 开发者上手 |
-| [🏗️ 高级集成架构](ai-gateway/README-INTEGRATIONS.md) | 技术架构和集成方案详解 | 架构师参考 |
-| [🚀 部署运维指南](ai-gateway/DEPLOYMENT-GUIDE.md) | 生产环境部署和运维指南 | 运维人员 |
+| [📖 Sira使用指南](docs/README-AI.md) | 详细的API使用说明和配置指南 | 开发者上手 |
+| [🏗️ 高级集成架构](docs/README-INTEGRATIONS.md) | 技术架构和集成方案详解 | 架构师参考 |
+| [🚀 部署运维指南](docs/DEPLOYMENT-GUIDE.md) | 生产环境部署和运维指南 | 运维人员 |
 | [🙏 开源技术致谢](ACKNOWLEDGMENTS.md) | 完整开源技术栈和依赖清单 | 贡献者和学习者 |
 | [🔒 安全和免责声明](DISCLAIMER.md) | 项目使用条款和安全说明 | 所有用户 |
-| [🧪 测试验证详解](ai-gateway/README-AI.md#测试) | 完整的测试流程和验证方法 | 测试人员 |
+| [🧪 测试验证详解](docs/README-AI.md#测试验证) | 完整的测试流程和验证方法 | 测试人员 |
 
 </div>
 
-## 🎯 核心特性详解
+## ✨ 核心特性
 
 ### 🧠 智能AI路由
-
-**自动选择最佳AI提供商**:
-- 📊 **成本优化**: 自动选择性价比最高的提供商
-- ⚡ **性能优先**: 基于响应时间的智能路由
-- 🔄 **故障转移**: 提供商故障时自动切换
-- 📈 **负载均衡**: 多实例间的智能负载分布
+支持20+ AI提供商的智能路由，自动选择最佳模型，优化成本与性能。
 
 ### 💾 多级缓存系统
-
-**L1 + L2缓存架构**:
-- 🚀 **L1内存缓存**: < 1ms响应，热数据存储
-- 💿 **L2 Redis缓存**: < 5ms响应，分布式存储
-- 🧠 **智能缓存键**: 基于请求内容生成唯一键
-- 📊 **缓存监控**: 命中率和性能实时监控
+L1内存 + L2 Redis缓存，响应速度提升10倍，降低API调用成本。
 
 ### 🔒 企业级安全
-
-**多层次安全防护**:
-- 🔑 **API密钥认证**: 必需的x-api-key头验证
-- 🚦 **速率限制**: 基于Token消耗的智能限流
-- 🛡️ **熔断机制**: 防止级联故障的电路断路器
-- 📝 **审计日志**: 完整的API访问和操作日志
+API密钥认证、速率限制、熔断保护，确保生产环境安全稳定。
 
 ### 📊 可观测性监控
-
-**360度系统监控**:
-- 📈 **业务指标**: Token消耗、缓存命中率、API调用统计
-- 🔍 **性能监控**: 响应时间、吞吐量、错误率
-- 🐛 **分布式追踪**: 从Kong到AI提供商的完整链路
-- 📋 **日志聚合**: 结构化日志收集和智能分析
+完整的监控栈，支持Prometheus + Grafana，问题快速定位。
 
 ## 🤝 贡献与交流
 
@@ -2845,6 +1332,7 @@ open coverage/lcov-report/index.html
 </div>
 
 </div>
+</div>
 
 ---
 
@@ -2901,9 +1389,9 @@ open coverage/lcov-report/index.html
 
 我们提供多种技术支持渠道：
 
-- **📖 文档中心**: [ai-gateway/README-AI.md](ai-gateway/README-AI.md) - 详细使用指南
+- **📖 文档中心**: [docs/README-AI.md](docs/README-AI.md) - 详细使用指南
 - **🔧 故障排除**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - 常见问题解决方案
-- **🛠️ 部署指南**: [ai-gateway/DEPLOYMENT-GUIDE.md](ai-gateway/DEPLOYMENT-GUIDE.md) - 生产环境部署
+- **🛠️ 部署指南**: [docs/DEPLOYMENT-GUIDE.md](docs/DEPLOYMENT-GUIDE.md) - 生产环境部署
 - **📋 安全政策**: [SECURITY.md](SECURITY.md) - 安全问题报告
 
 #### 💬 交流社区
@@ -3009,7 +1497,7 @@ graph LR
 
 | 📅 创建时间 | 📝 最后更新 | 🎯 当前版本 | 👥 维护团队 |
 |-------------|------------|------------|-------------|
-| 2025年11月1日 | 2025年11月7日 | v1.0.0 | Sira Team |
+| 2025年11月1日 | 2025年11月7日 | v2.0.0 | Sira Team |
 
 ---
 

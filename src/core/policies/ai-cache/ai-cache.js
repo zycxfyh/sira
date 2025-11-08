@@ -1,4 +1,5 @@
 const crypto = require('crypto')
+const db = require('../../db')
 
 // AI Cache Policy
 // Intelligent caching for AI requests based on content and parameters
@@ -13,8 +14,8 @@ module.exports = function (params, config) {
     throw error
   }
 
-  // Cache storage (in production, use Redis or other distributed cache)
-  const cache = new Map()
+  // Use Redis for distributed caching (supports cluster deployments)
+  const redisPrefix = 'ai-cache:'
 
   // Cache configuration with defaults
   const cacheConfig = Object.assign({
@@ -26,36 +27,8 @@ module.exports = function (params, config) {
     cleanupInterval: 60000 // Cleanup every minute
   }, params)
 
-  function aiCache (req, res, next) {
-    // Periodic cleanup of expired entries (run once per request to avoid performance impact)
-    const cleanupInterval = setInterval(() => {
-      let cleaned = 0
-      const now = Date.now()
-      const ttlMs = cacheConfig.ttl * 1000
-
-      for (const [key, value] of cache) {
-        if (now - value.cachedAt > ttlMs) {
-          cache.delete(key)
-          cleaned++
-        }
-      }
-
-      if (cleaned > 0) {
-        logger.debug('Cleaned expired cache entries', { cleaned })
-      }
-    }, cacheConfig.cleanupInterval || 60000) // Clean every minute
-
-    // Cleanup on process exit
-    const cleanup = () => {
-      if (cleanupInterval) {
-        clearInterval(cleanupInterval)
-        logger.debug('Cache cleanup interval cleared')
-      }
-    }
-
-    process.on('exit', cleanup)
-    process.on('SIGINT', cleanup)
-    process.on('SIGTERM', cleanup)
+  async function aiCache (req, res, next) {
+    // Redis handles TTL automatically, no manual cleanup needed
 
     // Only cache GET and POST requests
     if (!['GET', 'POST'].includes(req.method)) {
@@ -65,18 +38,22 @@ module.exports = function (params, config) {
     // Generate cache key
     const cacheKey = generateCacheKey(req)
 
-    // Check cache
-    const cachedResponse = getCachedResponse(cacheKey)
-    if (cachedResponse) {
-      // Return cached response
-      res.set({
-        'x-cache-status': 'HIT',
-        'x-cache-key': cacheKey,
-        'x-cached-at': cachedResponse.cachedAt
-      })
+    try {
+      // Check cache
+      const cachedResponse = await getCachedResponse(cacheKey)
+      if (cachedResponse) {
+        // Return cached response
+        res.set({
+          'x-cache-status': 'HIT',
+          'x-cache-key': cacheKey,
+          'x-cached-at': cachedResponse.cachedAt
+        })
 
-      logger.debug('Cache hit', { cacheKey, age: Date.now() - cachedResponse.cachedAt })
-      return res.status(cachedResponse.statusCode).json(cachedResponse.body)
+        logger.debug('Cache hit', { cacheKey, age: Date.now() - cachedResponse.cachedAt })
+        return res.status(cachedResponse.statusCode).json(cachedResponse.body)
+      }
+    } catch (error) {
+      logger.warn('Cache check failed, proceeding without cache', { error: error.message })
     }
 
     // Cache miss - intercept response
@@ -98,11 +75,14 @@ module.exports = function (params, config) {
     res.json = function (body) {
       // Only cache successful responses
       if (statusCode >= 200 && statusCode < 300) {
+        // Cache asynchronously without blocking response
         setCachedResponse(cacheKey, {
           body,
           statusCode,
           headers: res.getHeaders(),
           cachedAt: Date.now()
+        }).catch(error => {
+          logger.warn('Failed to cache response', { cacheKey, error: error.message })
         })
       }
 
@@ -188,36 +168,45 @@ module.exports = function (params, config) {
     return sorted
   }
 
-  // Get cached response
-  function getCachedResponse (key) {
-    const cached = cache.get(key)
+  // Get cached response from Redis
+  async function getCachedResponse (key) {
+    try {
+      const redisKey = redisPrefix + key
+      const cachedData = await db.get(redisKey)
 
-    if (!cached) {
+      if (!cachedData) {
+        return null
+      }
+
+      const cached = JSON.parse(cachedData)
+      logger.debug('Cache hit', { key, age: Date.now() - cached.cachedAt })
+      return cached
+    } catch (error) {
+      logger.warn('Failed to get cached response from Redis', { key, error: error.message })
       return null
     }
-
-    // Check if cache entry has expired
-    if (Date.now() - cached.cachedAt > cacheConfig.ttl * 1000) {
-      cache.delete(key)
-      logger.debug('Cache entry expired', { key })
-      return null
-    }
-
-    return cached
   }
 
-  // Set cached response
-  function setCachedResponse (key, response) {
-    // Check cache size limit
-    if (cache.size >= cacheConfig.maxSize) {
-      // Remove oldest entries (simple LRU approximation)
-      const keysToDelete = Array.from(cache.keys()).slice(0, Math.floor(cacheConfig.maxSize * 0.1))
-      keysToDelete.forEach(k => cache.delete(k))
-      logger.debug('Cache size limit reached, removed old entries', { removedCount: keysToDelete.length })
-    }
+  // Set cached response in Redis
+  async function setCachedResponse (key, response) {
+    try {
+      const redisKey = redisPrefix + key
+      const serializedResponse = JSON.stringify(response)
 
-    cache.set(key, response)
-    logger.debug('Response cached', { key, size: cache.size })
+      // Set with TTL and check size limit
+      await db.setex(redisKey, cacheConfig.ttl, serializedResponse)
+
+      // Check cache size limit (approximate)
+      const cacheSize = await db.dbsize()
+      if (cacheSize > cacheConfig.maxSize) {
+        // Remove some old entries (Redis LRU will handle this, but we can help)
+        logger.debug('Cache size limit reached, Redis LRU will handle cleanup', { size: cacheSize, maxSize: cacheConfig.maxSize })
+      }
+
+      logger.debug('Response cached in Redis', { key })
+    } catch (error) {
+      logger.warn('Failed to cache response in Redis', { key, error: error.message })
+    }
   }
 
   return aiCache

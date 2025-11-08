@@ -37,17 +37,17 @@ class ComplexityAnalyzer {
       'moreover', 'in conclusion', 'to summarize', 'on the other hand'
     ]
 
-    // 代码模式
+    // 代码模式 - 修复ReDoS漏洞：限制代码块的最大长度，避免灾难性回溯
     this.codePatterns = [
-      /```[\s\S]*?```/g, // 代码块
-      /`[^`]+`/g, // 内联代码
+      /```[\s\S]{0,10000}?```/g, // 代码块 - 限制最大长度为10000字符
+      /`[^`\r\n]{1,1000}`/g, // 内联代码 - 限制长度，避免跨行
       /\b(function|class|def|public|private|protected)\b/g, // 编程关键词
       /\b(import|from|include|require)\b/g, // 导入语句
       /\b(if|else|for|while|do|switch|case)\b/g, // 控制流
       /\b(int|string|bool|float|double|char)\b/g, // 数据类型
       /[{}();[\]]/g, // 编程符号
       /\bSELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER\b/g, // SQL关键词
-      /<\w+[^>]*>[\s\S]*?<\/\w+>/g, // HTML/XML标签
+      /<\w+[^>]{0,1000}>[\s\S]{0,10000}?<\/\w+>/g, // HTML/XML标签 - 限制长度
       /@\w+/g, // 装饰器/注解
       /#[a-fA-F0-9]{3,6}\b/g // 颜色代码
     ]
@@ -103,7 +103,7 @@ class ComplexityAnalyzer {
   /**
    * 分析请求复杂度
    */
-  analyzeComplexity (request) {
+  async analyzeComplexity (request) {
     const analysis = {
       complexity: 'low',
       confidence: 0,
@@ -133,7 +133,7 @@ class ComplexityAnalyzer {
         length: this.analyzeLengthComplexity(content),
         technical: this.analyzeTechnicalComplexity(content),
         reasoning: this.analyzeReasoningComplexity(content),
-        code: this.analyzeCodeComplexity(content),
+        code: await this.analyzeCodeComplexity(content),
         math: this.analyzeMathComplexity(content),
         structure: this.analyzeStructuralComplexity(content),
         context: this.analyzeContextComplexity(request),
@@ -322,15 +322,23 @@ class ComplexityAnalyzer {
   /**
    * 分析代码复杂度
    */
-  analyzeCodeComplexity (content) {
+  async analyzeCodeComplexity (content) {
     let codeScore = 0
     let codeSnippetCount = 0
 
+    // 添加超时保护以防止ReDoS攻击
+    const timeoutMs = 1000 // 1秒超时
     for (const pattern of this.codePatterns) {
-      const matches = content.match(pattern)
-      if (matches) {
-        codeSnippetCount += matches.length
-        codeScore += matches.length
+      try {
+        const matches = await this.safeRegexMatch(content, pattern, timeoutMs)
+        if (matches) {
+          codeSnippetCount += matches.length
+          codeScore += matches.length
+        }
+      } catch (error) {
+        console.warn('Regex timeout in code complexity analysis:', error.message)
+        // 如果正则表达式超时，跳过这个模式
+        continue
       }
     }
 
@@ -677,6 +685,34 @@ class ComplexityAnalyzer {
     }
 
     return reasoning
+  }
+
+  /**
+   * 安全的正则表达式匹配 - 防止ReDoS攻击
+   * @param {string} content - 要搜索的内容
+   * @param {RegExp} pattern - 正则表达式模式
+   * @param {number} timeoutMs - 超时时间（毫秒）
+   * @returns {Array|null} 匹配结果或null
+   */
+  safeRegexMatch (content, pattern, timeoutMs) {
+    return new Promise((resolve, reject) => {
+      // 设置超时
+      const timeout = setTimeout(() => {
+        reject(new Error(`Regex timeout after ${timeoutMs}ms for pattern: ${pattern.source}`))
+      }, timeoutMs)
+
+      try {
+        // 在下一个tick中执行匹配，避免阻塞
+        process.nextTick(() => {
+          clearTimeout(timeout)
+          const matches = content.match(pattern)
+          resolve(matches)
+        })
+      } catch (error) {
+        clearTimeout(timeout)
+        reject(error)
+      }
+    })
   }
 
   /**

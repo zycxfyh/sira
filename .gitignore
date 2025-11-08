@@ -154,6 +154,14 @@ out/
 coverage/
 *.lcov
 
+# Compiled JavaScript files (if TypeScript is used)
+*.js
+*.js.map
+!*.config.js    # Allow config files like jest.config.js
+!jest.config.js
+!**/jest.config.js
+!**/eslint.config.js
+
 # Lock files (uncomment if using specific package manager)
 # package-lock.json
 # yarn.lock

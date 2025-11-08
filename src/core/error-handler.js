@@ -36,36 +36,56 @@ class AIErrorHandler extends EventEmitter {
      * @returns {boolean} 是否可以重试
      */
   isRetryableError (error, response) {
-    // 检查HTTP状态码
+    // 检查HTTP状态码 - 更精确的重试逻辑
     if (response && response.status) {
       const status = response.status
-      if (status === 429) return true // Rate limit
-      if (status >= 500 && status < 600) return true // Server errors
-      if (status === 408) return true // Request timeout
-      if (status === 502 || status === 503 || status === 504) return true // Gateway errors
+
+      // 明确的重试状态码
+      if (status === 429) return true // Rate limit - 应该重试
+      if (status === 408) return true // Request timeout - 应该重试
+      if (status === 503) return true // Service unavailable - 临时问题，应该重试
+      if (status === 502) return true // Bad gateway - 网关问题，应该重试
+      if (status === 504) return true // Gateway timeout - 应该重试
+
+      // 谨慎对待5xx错误 - 有些永远不会成功
+      if (status >= 500 && status < 600) {
+        // 不重试的服务器错误
+        if (status === 501) return false // Not implemented - 永久错误
+        if (status === 505) return false // HTTP version not supported - 永久错误
+        if (status === 507) return false // Insufficient storage - 通常是永久问题
+
+        // 其他5xx错误可以重试，但要小心
+        return true
+      }
+
+      // 客户端错误通常不应该重试
+      if (status >= 400 && status < 500) {
+        return false
+      }
     }
 
-    // 检查错误码
+    // 检查错误码 - 使用预定义的重试错误集合
     if (error && error.code) {
       if (this.retryableErrors.has(error.code)) return true
     }
 
-    // 检查错误消息
-    if (error && error.message) {
-      const message = error.message.toLowerCase()
-      if (message.includes('timeout')) return true
-      if (message.includes('rate limit')) return true
-      if (message.includes('quota exceeded')) return true
-      if (message.includes('temporary')) return true
-      if (message.includes('server error')) return true
+    // 检查网络相关错误 - 减少对消息文本的依赖
+    if (error && error.code) {
+      const networkErrors = ['ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN']
+      if (networkErrors.includes(error.code)) return true
     }
 
-    // 检查API特定的错误
+    // 检查API特定的错误类型 - 更结构化的方法
     if (response && response.error) {
       const errorType = response.error.type || response.error.code
       if (errorType && this.retryableErrors.has(errorType)) return true
+
+      // 检查特定的错误类型
+      const retryableTypes = ['rate_limit_error', 'timeout_error', 'server_overloaded', 'temporary_failure']
+      if (errorType && retryableTypes.includes(errorType.toLowerCase())) return true
     }
 
+    // 对于未知错误，默认不重试 - 更保守的方法
     return false
   }
 
