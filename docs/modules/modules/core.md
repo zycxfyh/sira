@@ -1,34 +1,70 @@
-# 🏗️ Lib 核心库模块
+# 🧠 Core 核心模块
 
 ## 📋 概述
 
-Lib模块是AI网关的核心功能实现层，包含所有业务逻辑、策略、插件、服务和工具类。该模块采用模块化设计，支持插件扩展和策略定制，提供了完整的网关运行时环境。
+Core模块是AI网关的核心功能实现层，包含所有业务逻辑、策略引擎、插件系统、服务层和管理器。该模块采用高度模块化设计，支持插件扩展、策略定制和动态配置，提供了完整的AI网关运行时环境和企业级功能支持。
 
 ## 🏗️ 架构组成
 
 ```
-lib/
-├── index.js                    # 核心库入口
+core/
+├── index.js                    # 核心模块入口
 ├── db.js                       # 数据库连接管理
 ├── eventBus.js                 # 事件总线系统
 ├── logger.js                   # 日志管理
+├── error-handler.js            # 全局错误处理
 ├── plugin-installer.js         # 插件安装器
 ├── plugins.js                  # 插件管理系统
 ├── conditions/                 # 条件判断引擎
 │   ├── index.js
 │   ├── json-schema.js
 │   └── predefined.js
-├── config/                     # 配置管理 (见config模块)
+├── config/                     # 配置管理子模块
 ├── gateway/                    # 网关运行时
 │   ├── index.js
 │   ├── server.js
 │   ├── pipelines.js
 │   ├── context.js
 │   └── actionParams.js
-├── policies/                   # 策略引擎 (25个策略)
+├── middleware/                 # 中间件层
+│   ├── localization.js
+│   └── websocket.js
+├── policies/                   # 策略引擎 (25+策略)
 ├── rest/                       # REST API层
+│   ├── index.js
+│   ├── routes/                 # API路由
+│   └── utils/                  # API工具
 ├── schemas/                    # 数据模式验证
-└── services/                   # 业务服务层
+├── services/                   # 业务服务层
+├── ab-test-manager.js          # A/B测试管理器
+├── api-key-manager.js          # API密钥管理器
+├── batch-processing-manager.js # 批处理管理器
+├── benchmark-test-cases.js     # 基准测试用例
+├── complexity-analyzer.js      # 复杂度分析器
+├── conversation-manager.js     # 会话管理器
+├── e2e-testing.js              # 端到端测试
+├── game-ai-manager.js          # 游戏AI管理器
+├── image-generator-manager.js  # 图像生成管理器
+├── industrial-testing-framework.js # 工业测试框架
+├── intelligent-routing-manager.js # 智能路由管理器
+├── load-testing.js             # 负载测试
+├── model-training-manager.js   # 模型训练管理器
+├── multilingual-manager.js     # 多语言管理器
+├── parameter-manager.js        # 参数管理器
+├── performance-benchmark-manager.js # 性能基准管理器
+├── performance-testing.js      # 性能测试
+├── price-monitor-manager.js    # 价格监控管理器
+├── prompt-template-manager.js  # 提示词模板管理器
+├── reliability-testing.js      # 可靠性测试
+├── report-generator.js         # 报告生成器
+├── routing-decision-engine.js  # 路由决策引擎
+├── rules-engine.js             # 规则引擎
+├── streaming-manager.js        # 流式管理器
+├── stress-testing.js           # 压力测试
+├── test-report-generator.js    # 测试报告生成器
+├── usage-analytics.js          # 使用分析
+├── voice-processor-manager.js  # 语音处理管理器
+└── webhook-manager.js          # Webhook管理器
 ```
 
 ## 🚀 核心组件
@@ -324,12 +360,17 @@ eventBus.emit('request.complete', {
 
 | 组件 | 文件数 | 代码行数 | 功能描述 |
 |------|--------|----------|----------|
-| 策略引擎 | 25个目录 | ~12,000行 | 请求处理策略 |
-| 服务层 | 15个文件 | ~8,500行 | 业务逻辑服务 |
-| 网关运行时 | 5个文件 | ~3,200行 | 核心运行环境 |
-| 条件引擎 | 3个文件 | ~800行 | 条件判断逻辑 |
-| 插件系统 | 2个文件 | ~600行 | 插件管理框架 |
-| **总计** | **50+文件** | **~25,000行** | **完整核心库** |
+| 策略引擎 | 25+个策略目录 | ~15,000行 | AI专用和通用策略 |
+| 服务层 | 20+个文件 | ~12,000行 | 业务逻辑和数据访问 |
+| 管理器组件 | 30+个文件 | ~25,000行 | 各种功能管理器 |
+| 网关运行时 | 5个文件 | ~3,500行 | 核心运行环境 |
+| REST API层 | 25+个路由文件 | ~8,000行 | API端点和控制器 |
+| 中间件层 | 2个文件 | ~1,200行 | 请求处理中间件 |
+| 条件引擎 | 3个文件 | ~900行 | 条件判断逻辑 |
+| 插件系统 | 2个文件 | ~800行 | 插件管理框架 |
+| 配置系统 | 10+个文件 | ~2,500行 | 配置管理和验证 |
+| 测试框架 | 5个文件 | ~4,000行 | 各种测试框架 |
+| **总计** | **120+文件** | **~72,900行** | **完整核心模块** |
 
 ## 🧪 测试验证
 
@@ -379,7 +420,7 @@ describe('AI Router Policy', () => {
 
 ### 1. 添加新策略
 ```javascript
-// lib/policies/custom-policy/index.js
+// core/policies/custom-policy/index.js
 module.exports = function(params, config) {
   return function customPolicy(req, res, next) {
     // 实现策略逻辑
@@ -387,7 +428,7 @@ module.exports = function(params, config) {
   };
 };
 
-// lib/policies/custom-policy/schema.json
+// core/policies/custom-policy/schema.json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
@@ -400,7 +441,7 @@ module.exports = function(params, config) {
 
 ### 2. 扩展服务
 ```javascript
-// lib/services/custom/custom.service.js
+// core/services/custom/custom.service.js
 class CustomService {
   async create(data) {
     // 业务逻辑
@@ -416,7 +457,7 @@ module.exports = new CustomService();
 
 ### 3. 自定义条件
 ```javascript
-// lib/conditions/custom.js
+// core/conditions/custom.js
 module.exports = function customCondition(condition, context) {
   // 条件判断逻辑
   return true;
@@ -425,4 +466,4 @@ module.exports = function customCondition(condition, context) {
 
 ---
 
-*最后更新: 2025年11月7日* | 🔙 [返回模块列表](../README.md#模块导航)
+*最后更新: 2025年11月8日* | 🔙 [返回模块列表](../README.md#模块导航)

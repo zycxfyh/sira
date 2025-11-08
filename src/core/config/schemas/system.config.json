@@ -31,8 +31,7 @@
       "type": "object",
       "properties": {
         "cipherKey": {
-          "type": "string",
-          "default": "sensitiveKey"
+          "type": "string"
         },
         "algorithm": {
           "type": "string",

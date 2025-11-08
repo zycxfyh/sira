@@ -4,12 +4,14 @@ db:
     port: 6379
     emulate: true
     namespace: EG-TEST
+# WARNING: This is a test configuration with insecure defaults
+# DO NOT use these values in production!
 crypto:
-  cipherKey: sensitiveKey
-  algorithm: aes256
+  cipherKey: ${EG_CRYPTO_CIPHER_KEY:-test-cipher-key-for-testing-only}
+  algorithm: aes-256-cbc
   saltRounds: 10
 session:
-  secret: keyboard cat
+  secret: ${EG_SESSION_SECRET:-test-session-secret-for-testing-only}
   resave: false
   saveUninitialized: false
 accessTokens:

@@ -6,13 +6,12 @@ db:
     db: 0
 
 crypto:
-  cipherKey: ${EG_CRYPTO_CIPHER_KEY:-change-me-in-production}
-  algorithm: 'aes256'
-  keyEncoding: 'utf8'
-  ivEncoding: 'hex'
+  cipherKey: ${EG_CRYPTO_CIPHER_KEY}
+  algorithm: aes-256-cbc
+  saltRounds: 10
 
 session:
-  secret: ${EG_SESSION_SECRET:-change-me-in-production}
+  secret: ${EG_SESSION_SECRET}
   resave: false
   saveUninitialized: false
 
