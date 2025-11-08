@@ -1,21 +1,21 @@
-const path = require('path')
-const should = require('should')
+const path = require('path');
+const should = require('should');
 
-const pluginsLoader = require('../../lib/plugins')
+const pluginsLoader = require('../../../src/core/plugins');
 
 // Caching fixture plugin, but redefining its properties for testing plugin load.
-const pluginName = 'express-gateway-plugin-test'
-const pluginDirectory = path.join(__dirname, '../fixtures', pluginName)
-const testPlugin = require(pluginDirectory)
+const pluginName = 'express-gateway-plugin-test';
+const pluginDirectory = path.join(__dirname, '../fixtures', pluginName);
+const testPlugin = require(pluginDirectory);
 
 testPlugin.schema = {
   $id: `http://express-gateway.io/schemas/plugin/${pluginName}.json`,
-  required: ['schema-test-param']
-}
+  required: ['schema-test-param'],
+};
 
-testPlugin.init = (pluginContext) => {
-  pluginContext.registerPolicy('schema-test-policy')
-}
+testPlugin.init = pluginContext => {
+  pluginContext.registerPolicy('schema-test-policy');
+};
 
 describe('Plugin schema validation on load', () => {
   it('fails loading when parameter undefined', () => {
@@ -24,16 +24,16 @@ describe('Plugin schema validation on load', () => {
         systemConfig: {
           plugins: {
             test: {
-              package: pluginDirectory
-            }
-          }
-        }
-      }
-    }
+              package: pluginDirectory,
+            },
+          },
+        },
+      },
+    };
 
-    const loadedPlugins = pluginsLoader.load(missingParameterConfig)
-    should(loadedPlugins).have.property('policies').empty()
-  })
+    const loadedPlugins = pluginsLoader.load(missingParameterConfig);
+    should(loadedPlugins).have.property('policies').empty();
+  });
 
   it('loads plugin and registers policy successfully', () => {
     const config = {
@@ -42,14 +42,14 @@ describe('Plugin schema validation on load', () => {
           plugins: {
             test: {
               package: pluginDirectory,
-              'schema-test-param': 'defined'
-            }
-          }
-        }
-      }
-    }
+              'schema-test-param': 'defined',
+            },
+          },
+        },
+      },
+    };
 
-    const loadedPlugins = pluginsLoader.load(config)
-    should(loadedPlugins).have.property('policies', ['schema-test-policy'])
-  })
-})
+    const loadedPlugins = pluginsLoader.load(config);
+    should(loadedPlugins).have.property('policies', ['schema-test-policy']);
+  });
+});

@@ -1,147 +1,147 @@
-const should = require('should')
-const services = require('../../../lib/services')
-const credentialService = services.credential
-const db = require('../../../lib/db')
+const should = require('should');
+const services = require('../../../src/core/services');
+const credentialService = services.credential;
+const db = require('../../../src/core/db');
 
-describe('Scope tests', function () {
-  before(() => db.flushdb())
+describe('Scope tests', () => {
+  before(() => db.flushdb());
 
-  it('should insert a scope', function (done) {
+  it('should insert a scope', done => {
     credentialService
       .insertScopes(['someScope'])
-      .then(function (res) {
-        should.exist(res)
-        res.should.eql(true)
-        done()
+      .then(res => {
+        should.exist(res);
+        res.should.eql(true);
+        done();
       })
-      .catch(function (err) {
-        should.not.exist(err)
-        done()
-      })
-  })
+      .catch(err => {
+        should.not.exist(err);
+        done();
+      });
+  });
 
-  it('should insert multiple scopes', function (done) {
+  it('should insert multiple scopes', done => {
     credentialService
       .insertScopes(['someScope1', 'someScope2'])
-      .then(function (res) {
-        should.exist(res)
-        res.should.eql(true)
-        done()
+      .then(res => {
+        should.exist(res);
+        res.should.eql(true);
+        done();
       })
-      .catch(function (err) {
-        should.not.exist(err)
-        done()
-      })
-  })
+      .catch(err => {
+        should.not.exist(err);
+        done();
+      });
+  });
 
-  it('should not insert scope that already exists', function (done) {
+  it('should not insert scope that already exists', done => {
     credentialService
       .insertScopes(['someScope1'])
-      .then(function (res) {
-        should.not.exist(res)
-        done()
+      .then(res => {
+        should.not.exist(res);
+        done();
       })
-      .catch(function (err) {
-        should.exist(err)
-        done()
-      })
-  })
+      .catch(err => {
+        should.exist(err);
+        done();
+      });
+  });
 
-  it('should not insert a scope which is not a string', function (done) {
+  it('should not insert a scope which is not a string', done => {
     credentialService
       .insertScopes([{}])
-      .then(function (res) {
-        should.not.exist(res)
-        done()
+      .then(res => {
+        should.not.exist(res);
+        done();
       })
-      .catch(function (err) {
-        should.exist(err)
-        done()
-      })
-  })
+      .catch(err => {
+        should.exist(err);
+        done();
+      });
+  });
 
-  it('should not insert a scope which is null', function (done) {
+  it('should not insert a scope which is null', done => {
     credentialService
       .insertScopes([null])
-      .then(function (res) {
-        should.not.exist(res)
-        done()
+      .then(res => {
+        should.not.exist(res);
+        done();
       })
-      .catch(function (err) {
-        should.exist(err)
-        done()
-      })
-  })
+      .catch(err => {
+        should.exist(err);
+        done();
+      });
+  });
 
-  it('should check if scope exists and reply with positive if it does', function (done) {
+  it('should check if scope exists and reply with positive if it does', done => {
     credentialService
       .existsScope('someScope')
-      .then(function (res) {
-        should.exist(res)
-        res.should.eql(true)
-        done()
+      .then(res => {
+        should.exist(res);
+        res.should.eql(true);
+        done();
       })
-      .catch(function (err) {
-        should.not.exist(err)
-        done()
-      })
-  })
+      .catch(err => {
+        should.not.exist(err);
+        done();
+      });
+  });
 
-  it('should check if scope exists and reply with negative if it does not', function (done) {
+  it('should check if scope exists and reply with negative if it does not', done => {
     credentialService
       .existsScope('someInvalidScope')
-      .then(function (res) {
-        should.exist(res)
-        res.should.eql(false)
-        done()
+      .then(res => {
+        should.exist(res);
+        res.should.eql(false);
+        done();
       })
-      .catch(function (err) {
-        should.not.exist(err)
-        done()
-      })
-  })
+      .catch(err => {
+        should.not.exist(err);
+        done();
+      });
+  });
 
-  it('should get all scopes', function (done) {
+  it('should get all scopes', done => {
     credentialService
       .getAllScopes()
-      .then(function (res) {
-        should.exist(res)
-        res.should.containEql('someScope')
-        res.should.containEql('someScope1')
-        res.should.containEql('someScope2')
-        done()
+      .then(res => {
+        should.exist(res);
+        res.should.containEql('someScope');
+        res.should.containEql('someScope1');
+        res.should.containEql('someScope2');
+        done();
       })
-      .catch(function (err) {
-        should.not.exist(err)
-        done()
-      })
-  })
+      .catch(err => {
+        should.not.exist(err);
+        done();
+      });
+  });
 
-  it('should remove a scope', function (done) {
+  it('should remove a scope', done => {
     credentialService
       .removeScopes('someScope')
-      .then(function (res) {
-        should.exist(res)
-        res.should.eql(true)
-        done()
+      .then(res => {
+        should.exist(res);
+        res.should.eql(true);
+        done();
       })
-      .catch(function (err) {
-        should.not.exist(err)
-        done()
-      })
-  })
+      .catch(err => {
+        should.not.exist(err);
+        done();
+      });
+  });
 
-  it('removed scope should no longer exist', function (done) {
+  it('removed scope should no longer exist', done => {
     credentialService
       .existsScope('someScope')
-      .then(function (res) {
-        should.exist(res)
-        res.should.eql(false)
-        done()
+      .then(res => {
+        should.exist(res);
+        res.should.eql(false);
+        done();
       })
-      .catch(function (err) {
-        should.not.exist(err)
-        done()
-      })
-  })
-})
+      .catch(err => {
+        should.not.exist(err);
+        done();
+      });
+  });
+});

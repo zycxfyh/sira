@@ -1,251 +1,264 @@
-const assert = require('assert')
-const PassThrough = require('stream').PassThrough
-const helpers = require('yeoman-test')
-const adminHelper = require('../../common/admin-helper')()
-const idGen = require('uuid62')
-const environment = require('../../fixtures/cli/environment')
-const namespace = 'express-gateway:credentials:create'
+const assert = require('assert');
+const { PassThrough } = require('stream');
+const helpers = require('yeoman-test');
+const adminHelper = require('../../common/admin-helper')();
+const idGen = require('uuid62');
+const environment = require('../../fixtures/cli/environment');
+const namespace = 'express-gateway:credentials:create';
 
 describe('eg credentials create', () => {
-  let program, env, user
+  let program, env, user;
 
   before(() => {
-    ({ program, env } = environment.bootstrap())
-    return adminHelper.start()
-  })
-  after(() => adminHelper.stop())
+    ({ program, env } = environment.bootstrap());
+    return adminHelper.start();
+  });
+  after(() => adminHelper.stop());
 
   beforeEach(() => {
-    env.prepareHijack()
-    return adminHelper.admin.users.create({
-      username: idGen.v4(),
-      firstname: 'La',
-      lastname: 'Deeda'
-    })
-      .then(createdUser => {
-        user = createdUser
+    env.prepareHijack();
+    return adminHelper.admin.users
+      .create({
+        username: idGen.v4(),
+        firstname: 'La',
+        lastname: 'Deeda',
       })
-  })
+      .then(createdUser => {
+        user = createdUser;
+      });
+  });
 
   afterEach(() => {
-    return env.resetHijack()
-  })
+    return env.resetHijack();
+  });
 
   it('creates a credential from prompts', done => {
     env.hijack(namespace, generator => {
-      let output = null
-      let text = null
+      let output = null;
+      let text = null;
 
       generator.once('run', () => {
         generator.log.error = message => {
-          done(new Error(message))
-        }
+          done(new Error(message));
+        };
         generator.log.ok = message => {
-          text = message
-        }
+          text = message;
+        };
         generator.stdout = message => {
-          output = message
-        }
+          output = message;
+        };
 
-        helpers.mockPrompt(generator, {})
-      })
+        helpers.mockPrompt(generator, {});
+      });
 
       generator.once('end', () => {
-        const loggedCred = JSON.parse(output)
-        assert.strictEqual(text, 'Created ' + loggedCred.keyId)
+        const loggedCred = JSON.parse(output);
+        assert.strictEqual(text, 'Created ' + loggedCred.keyId);
 
-        return adminHelper.admin.credentials.info(loggedCred.keyId, 'key-auth')
+        return adminHelper.admin.credentials
+          .info(loggedCred.keyId, 'key-auth')
           .then(cred => {
-            assert.ok(cred.keyId)
-            assert.ok(cred.keySecret)
-            assert.ok(cred.isActive)
-            assert.strictEqual(cred.consumerId, user.id)
-            done()
-          }).catch(done)
-      })
-    })
+            assert.ok(cred.keyId);
+            assert.ok(cred.keySecret);
+            assert.ok(cred.isActive);
+            assert.strictEqual(cred.consumerId, user.id);
+            done();
+          })
+          .catch(done);
+      });
+    });
 
-    env.argv = program.parse('credentials create -t key-auth -c ' + user.username)
-  })
+    env.argv = program.parse('credentials create -t key-auth -c ' + user.username);
+  });
 
   it('creates a credential from prompts and allows keyId and keySectet to be set', done => {
     env.hijack(namespace, generator => {
-      let output = null
-      let text = null
+      let output = null;
+      let text = null;
 
       generator.once('run', () => {
         generator.log.error = message => {
-          done(new Error(message))
-        }
+          done(new Error(message));
+        };
         generator.log.ok = message => {
-          text = message
-        }
+          text = message;
+        };
         generator.stdout = message => {
-          output = message
-        }
+          output = message;
+        };
 
-        helpers.mockPrompt(generator, {})
-      })
+        helpers.mockPrompt(generator, {});
+      });
 
       generator.once('end', () => {
-        const loggedCred = JSON.parse(output)
-        assert.strictEqual(text, 'Created ' + loggedCred.keyId)
+        const loggedCred = JSON.parse(output);
+        assert.strictEqual(text, 'Created ' + loggedCred.keyId);
 
-        return adminHelper.admin.credentials.info(loggedCred.keyId, 'key-auth')
+        return adminHelper.admin.credentials
+          .info(loggedCred.keyId, 'key-auth')
           .then(cred => {
-            assert.strictEqual(cred.keyId, '888')
-            assert.strictEqual(cred.keySecret, '999')
-            assert.ok(cred.isActive)
-            assert.strictEqual(cred.consumerId, user.id)
-            done()
-          }).catch(done)
-      })
-    })
+            assert.strictEqual(cred.keyId, '888');
+            assert.strictEqual(cred.keySecret, '999');
+            assert.ok(cred.isActive);
+            assert.strictEqual(cred.consumerId, user.id);
+            done();
+          })
+          .catch(done);
+      });
+    });
 
-    env.argv = program.parse('credentials create -p "keyId=888" -p "keySecret=999" -t key-auth -c ' + user.username)
-  })
+    env.argv = program.parse(
+      'credentials create -p "keyId=888" -p "keySecret=999" -t key-auth -c ' + user.username
+    );
+  });
 
   it('creates a credential for user from stdin', done => {
-    const cmd = { consumer: user.username, type: 'key-auth', keyId: '777', keySecret: '666' }
+    const cmd = { consumer: user.username, type: 'key-auth', keyId: '777', keySecret: '666' };
 
     env.hijack(namespace, generator => {
-      let output = null
-      let text = null
+      let output = null;
+      let text = null;
       generator.once('run', () => {
         generator.log.error = message => {
-          done(new Error(message))
-        }
+          done(new Error(message));
+        };
         generator.stdout = message => {
-          output = message
-        }
+          output = message;
+        };
 
         generator.log.ok = message => {
-          text = message
-        }
+          text = message;
+        };
 
-        generator.stdin = new PassThrough()
-        generator.stdin.write(JSON.stringify(cmd), 'utf8')
-        generator.stdin.end()
-      })
+        generator.stdin = new PassThrough();
+        generator.stdin.write(JSON.stringify(cmd), 'utf8');
+        generator.stdin.end();
+      });
 
       generator.once('end', () => {
-        const loggedCred = JSON.parse(output)
-        assert.strictEqual(text, 'Created ' + loggedCred.keyId)
-        return adminHelper.admin.credentials.info(loggedCred.keyId, 'key-auth')
+        const loggedCred = JSON.parse(output);
+        assert.strictEqual(text, 'Created ' + loggedCred.keyId);
+        return adminHelper.admin.credentials
+          .info(loggedCred.keyId, 'key-auth')
           .then(cred => {
-            assert.strictEqual(cred.keyId, cmd.keyId)
-            assert.strictEqual(cred.keySecret, cmd.keySecret)
-            assert.ok(cred.isActive)
-            assert.strictEqual(cred.consumerId, user.id)
-            done()
-          }).catch(done)
-      })
-    })
+            assert.strictEqual(cred.keyId, cmd.keyId);
+            assert.strictEqual(cred.keySecret, cmd.keySecret);
+            assert.ok(cred.isActive);
+            assert.strictEqual(cred.consumerId, user.id);
+            done();
+          })
+          .catch(done);
+      });
+    });
 
-    env.argv = program.parse('credentials create --stdin')
-  })
+    env.argv = program.parse('credentials create --stdin');
+  });
 
   it('creates a credential for user from stdin and allows set keyId and keySecret', done => {
-    const cmd = { consumer: user.username, type: 'key-auth' }
+    const cmd = { consumer: user.username, type: 'key-auth' };
 
     env.hijack(namespace, generator => {
-      let output = null
-      let text = null
+      let output = null;
+      let text = null;
       generator.once('run', () => {
         generator.log.error = message => {
-          done(new Error(message))
-        }
+          done(new Error(message));
+        };
         generator.stdout = message => {
-          output = message
-        }
+          output = message;
+        };
 
         generator.log.ok = message => {
-          text = message
-        }
+          text = message;
+        };
 
-        generator.stdin = new PassThrough()
-        generator.stdin.write(JSON.stringify(cmd), 'utf8')
-        generator.stdin.end()
-      })
+        generator.stdin = new PassThrough();
+        generator.stdin.write(JSON.stringify(cmd), 'utf8');
+        generator.stdin.end();
+      });
 
       generator.once('end', () => {
-        const loggedCred = JSON.parse(output)
-        assert.strictEqual(text, 'Created ' + loggedCred.keyId)
-        return adminHelper.admin.credentials.info(loggedCred.keyId, 'key-auth')
+        const loggedCred = JSON.parse(output);
+        assert.strictEqual(text, 'Created ' + loggedCred.keyId);
+        return adminHelper.admin.credentials
+          .info(loggedCred.keyId, 'key-auth')
           .then(cred => {
-            assert.ok(cred.keyId)
-            assert.ok(cred.keySecret)
-            assert.ok(cred.isActive)
-            assert.strictEqual(cred.consumerId, user.id)
-            done()
-          }).catch(done)
-      })
-    })
+            assert.ok(cred.keyId);
+            assert.ok(cred.keySecret);
+            assert.ok(cred.isActive);
+            assert.strictEqual(cred.consumerId, user.id);
+            done();
+          })
+          .catch(done);
+      });
+    });
 
-    env.argv = program.parse('credentials create --stdin')
-  })
+    env.argv = program.parse('credentials create --stdin');
+  });
 
   it('prints only the API key id when using the --quiet flag', done => {
     env.hijack(namespace, generator => {
-      let output = null
+      let output = null;
 
       generator.once('run', () => {
         generator.log.error = message => {
-          done(new Error(message))
-        }
+          done(new Error(message));
+        };
         generator.stdout = message => {
-          output = message
-        }
-      })
+          output = message;
+        };
+      });
 
       generator.once('end', () => {
-        const loggedCred = output.split(':')[0]
-        return adminHelper.admin.credentials.info(loggedCred, 'key-auth')
+        const loggedCred = output.split(':')[0];
+        return adminHelper.admin.credentials
+          .info(loggedCred, 'key-auth')
           .then(cred => {
-            assert.ok(cred.keyId)
-            assert.ok(cred.keySecret)
-            assert.ok(cred.isActive)
-            assert.strictEqual(cred.consumerId, user.id)
-            assert.strictEqual(output, cred.keyId + ':' + cred.keySecret)
+            assert.ok(cred.keyId);
+            assert.ok(cred.keySecret);
+            assert.ok(cred.isActive);
+            assert.strictEqual(cred.consumerId, user.id);
+            assert.strictEqual(output, cred.keyId + ':' + cred.keySecret);
 
-            done()
-          }).catch(done)
-      })
-    })
+            done();
+          })
+          .catch(done);
+      });
+    });
 
-    env.argv = program.parse('credentials create -t key-auth -c ' + user.username + ' -q')
-  })
+    env.argv = program.parse('credentials create -t key-auth -c ' + user.username + ' -q');
+  });
 
   it('prints error on invalid username from stdin', done => {
-    const credential = {}
+    const credential = {};
 
     env.hijack(namespace, generator => {
-      let output = null
-      let error = null
+      let output = null;
+      let error = null;
 
       generator.once('run', () => {
         generator.log = message => {
-          output = message
-        }
+          output = message;
+        };
         generator.log.error = message => {
-          error = message
-        }
+          error = message;
+        };
         generator.log.ok = message => {
-          output = message
-        }
+          output = message;
+        };
 
-        generator.stdin = new PassThrough()
-        generator.stdin.write(JSON.stringify(credential), 'utf8')
-        generator.stdin.end()
-      })
+        generator.stdin = new PassThrough();
+        generator.stdin.write(JSON.stringify(credential), 'utf8');
+        generator.stdin.end();
+      });
 
       generator.once('end', () => {
-        assert.strictEqual(error, 'invalid username')
-        assert.strictEqual(output, null)
-        done()
-      })
-    })
+        assert.strictEqual(error, 'invalid username');
+        assert.strictEqual(output, null);
+        done();
+      });
+    });
 
-    env.argv = program.parse('credentials create --stdin')
-  })
-})
+    env.argv = program.parse('credentials create --stdin');
+  });
+});

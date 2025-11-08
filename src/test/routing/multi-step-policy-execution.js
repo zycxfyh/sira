@@ -1,36 +1,43 @@
-const testHelper = require('../common/routing.helper')
-const sinon = require('sinon')
-const assert = require('assert')
-const Config = require('../../lib/config/config')
-const config = new Config()
+const testHelper = require('../common/routing.helper');
+const sinon = require('sinon');
+const assert = require('assert');
+const Config = require('../../../src/core/config/config');
+const config = new Config();
 
 // there are several configuration ways to listen to all hosts
 describe('default config with multi step (multi action) policy', () => {
-  const helper = testHelper()
-  const spy = sinon.spy()
-  const handler = (params) => (req, res, next) => {
-    spy(params)
-    next()
-  }
+  const helper = testHelper();
+  const spy = sinon.spy();
+  const handler = params => (req, res, next) => {
+    spy(params);
+    next();
+  };
 
   before('setup', () => {
     const plugins = {
       policies: [
         {
-          name: 'test', policy: handler
-        }, {
+          name: 'test',
+          policy: handler,
+        },
+        {
           name: 'test-return',
           policy: () => (req, res) => {
-            res.json({ result: 'test', hostname: req.hostname, url: req.url, apiEndpoint: req.egContext.apiEndpoint })
-          }
-        }
-      ]
-    }
+            res.json({
+              result: 'test',
+              hostname: req.hostname,
+              url: req.url,
+              apiEndpoint: req.egContext.apiEndpoint,
+            });
+          },
+        },
+      ],
+    };
 
     config.gatewayConfig = {
       http: { port: 0 },
       apiEndpoints: {
-        test_default: {}
+        test_default: {},
       },
       policies: ['test', 'test-return'],
       pipelines: {
@@ -38,26 +45,30 @@ describe('default config with multi step (multi action) policy', () => {
           apiEndpoints: ['test_default'],
           policies: [
             {
-              test: [{
-                action: { param: 1 }
-              }, {
-                action: { param: 2 }
-              }, {
-                action: { param: 3 }
-              }]
+              test: [
+                {
+                  action: { param: 1 },
+                },
+                {
+                  action: { param: 2 },
+                },
+                {
+                  action: { param: 3 },
+                },
+              ],
             },
-            { 'test-return': null }
-          ]
-        }
-      }
-    }
-    return helper.setup({ config, plugins })
-  })
+            { 'test-return': null },
+          ],
+        },
+      },
+    };
+    return helper.setup({ config, plugins });
+  });
 
-  after('cleanup', helper.cleanup)
+  after('cleanup', helper.cleanup);
 
   beforeEach('reset', () => {
-    spy.resetHistory()
+    spy.resetHistory();
   });
 
   ['/random/17/3', '/', '/admin'].forEach(url => {
@@ -65,20 +76,20 @@ describe('default config with multi step (multi action) policy', () => {
       helper.validateSuccess({
         setup: {
           host: 'zu.io',
-          url
+          url,
         },
         test: {
           host: 'zu.io',
           url,
-          result: 'test'
-        }
-      })((err) => {
-        assert(spy.calledThrice)
-        assert.strictEqual(spy.getCall(0).args[0].param, 1)
-        assert.strictEqual(spy.getCall(1).args[0].param, 2)
-        assert.strictEqual(spy.getCall(2).args[0].param, 3)
-        done(err)
-      })
-    })
-  })
-})
+          result: 'test',
+        },
+      })(err => {
+        assert(spy.calledThrice);
+        assert.strictEqual(spy.getCall(0).args[0].param, 1);
+        assert.strictEqual(spy.getCall(1).args[0].param, 2);
+        assert.strictEqual(spy.getCall(2).args[0].param, 3);
+        done(err);
+      });
+    });
+  });
+});

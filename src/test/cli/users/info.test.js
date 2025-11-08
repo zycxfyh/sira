@@ -1,88 +1,89 @@
-const assert = require('assert')
-const adminHelper = require('../../common/admin-helper')()
-const environment = require('../../fixtures/cli/environment')
-const namespace = 'express-gateway:users:info'
-const idGen = require('uuid62')
+const assert = require('assert');
+const adminHelper = require('../../common/admin-helper')();
+const environment = require('../../fixtures/cli/environment');
+const namespace = 'express-gateway:users:info';
+const idGen = require('uuid62');
 
 describe('eg users info', () => {
-  let program, env, userId, username
+  let program, env, userId, username;
 
   before(() => {
-    ({ program, env } = environment.bootstrap())
-    return adminHelper.start()
-  })
-  after(() => adminHelper.stop())
+    ({ program, env } = environment.bootstrap());
+    return adminHelper.start();
+  });
+  after(() => adminHelper.stop());
 
   beforeEach(() => {
-    env.prepareHijack()
-    username = idGen.v4()
+    env.prepareHijack();
+    username = idGen.v4();
 
-    return adminHelper.admin.users.create({
-      username: username,
-      firstname: 'La',
-      lastname: 'Deeda'
-    })
-      .then(user => {
-        userId = user.id
+    return adminHelper.admin.users
+      .create({
+        username,
+        firstname: 'La',
+        lastname: 'Deeda',
       })
-  })
+      .then(user => {
+        userId = user.id;
+      });
+  });
 
   afterEach(() => {
-    env.resetHijack()
-  })
+    env.resetHijack();
+  });
 
   it('returns user info', done => {
     env.hijack(namespace, generator => {
-      let output = null
-      let error = null
+      let output = null;
+      let error = null;
 
       generator.once('run', () => {
         generator.log.error = message => {
-          error = message
-        }
+          error = message;
+        };
         generator.stdout = message => {
-          output = message
-        }
-      })
+          output = message;
+        };
+      });
 
       generator.once('end', () => {
-        const user = JSON.parse(output)
+        const user = JSON.parse(output);
 
-        assert.strictEqual(user.firstname, 'La')
-        assert.strictEqual(user.lastname, 'Deeda')
-        assert(user.isActive)
+        assert.strictEqual(user.firstname, 'La');
+        assert.strictEqual(user.lastname, 'Deeda');
+        assert(user.isActive);
 
-        assert.strictEqual(error, null)
+        assert.strictEqual(error, null);
 
-        done()
-      })
-    })
+        done();
+      });
+    });
 
-    env.argv = program.parse('users info ' + username)
-  })
+    env.argv = program.parse('users info ' + username);
+  });
 
   it('prints only the user id when using the --quiet flag', done => {
     env.hijack(namespace, generator => {
-      let output = null
-      let error = null
+      let output = null;
+      let error = null;
 
       generator.once('run', () => {
         generator.log.error = message => {
-          error = message
-        }
+          error = message;
+        };
         generator.stdout = message => {
-          output = message
-        }
-      })
+          output = message;
+        };
+      });
 
       generator.once('end', () => {
-        assert.strictEqual(output, userId)
-        assert.strictEqual(error, null)
+        assert.strictEqual(output, userId);
+        assert.strictEqual(error, null);
 
-        done()
-      })
-    })
+        done();
+      });
+    });
 
-    env.argv = program.parse('users info ' + username + ' -q')
-  })
-})
+    env.argv = program.parse('users info ' + username + ' -q');
+  });
+});

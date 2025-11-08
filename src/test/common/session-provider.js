@@ -1,21 +1,20 @@
-let data
+let data;
 class Provider {
-  constructor (options) {
-    data = options
+  constructor(options) {
+    data = options;
   }
 
-  ;
-  on () {}
+  on() {}
 }
 
 module.exports = function (session) {
-  return Provider
-}
+  return Provider;
+};
 
 module.exports.getOptions = () => {
-  return data
-}
+  return data;
+};
 
 module.exports.reset = () => {
-  data = null
-}
+  data = null;
+};

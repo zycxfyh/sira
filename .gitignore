@@ -89,10 +89,11 @@ ehthumbs.db
 Thumbs.db
 
 # Test reports and output
-reports/
+benchmark-results/
 test-results/
 playwright-report/
 test-output/
+reports/
 
 # Temporary files
 *.tmp
@@ -138,6 +139,9 @@ example/keys/*.pem
 # Docker volumes
 docker-volumes/
 
+# Temporary analytics data
+data/analytics/
+
 # Temporary test files
 test-results/
 playwright-report/
@@ -176,3 +180,9 @@ coverage/
 ehthumbs.db
 Thumbs.db
 Desktop.ini
+
+
+.nx/cache
+.nx/workspace-data
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md

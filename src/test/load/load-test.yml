@@ -1,0 +1,58 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    # 预热阶段
+    - duration: 60
+      arrivalRate: 5
+      name: 'Warm up'
+    # 正常负载
+    - duration: 120
+      arrivalRate: 10
+      name: 'Normal load'
+    # 高负载测试
+    - duration: 60
+      arrivalRate: 20
+      name: 'High load'
+    # 峰值测试
+    - duration: 30
+      arrivalRate: 50
+      name: 'Peak load'
+
+  defaults:
+    headers:
+      x-api-key: 'test-key'
+
+scenarios:
+  - name: 'Health Check'
+    weight: 20
+    requests:
+      - get:
+          url: '/health'
+
+  - name: 'AI Chat Completion'
+    weight: 60
+    requests:
+      - post:
+          url: '/api/v1/ai/chat/completions'
+          headers:
+            Content-Type: 'application/json'
+          json:
+            model: 'gpt-3.5-turbo'
+            messages:
+              - role: 'user'
+                content: 'Hello, this is a load test'
+            max_tokens: 50
+
+  - name: 'AI Models List'
+    weight: 20
+    requests:
+      - get:
+          url: '/api/v1/ai/models'
+
+  - name: 'Admin API'
+    weight: 10
+    requests:
+      - get:
+          url: '/admin'
+          headers:
+            Authorization: 'Bearer test-token'

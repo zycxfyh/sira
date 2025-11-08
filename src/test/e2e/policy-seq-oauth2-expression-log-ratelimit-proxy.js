@@ -1,43 +1,43 @@
-const session = require('supertest-session')
-const should = require('should')
-const qs = require('querystring')
-const url = require('url')
-const express = require('express')
-const sinon = require('sinon')
-const assert = require('assert')
+const session = require('supertest-session');
+const should = require('should');
+const qs = require('querystring');
+const url = require('url');
+const express = require('express');
+const sinon = require('sinon');
+const assert = require('assert');
 
-const logger = require('../../lib/policies/log/instance')
-const services = require('../../lib/services')
-const credentialService = services.credential
-const userService = services.user
-const applicationService = services.application
-const db = require('../../lib/db')
+const logger = require('../../../src/core/policies/log/instance');
+const services = require('../../../src/core/services');
+const credentialService = services.credential;
+const userService = services.user;
+const applicationService = services.application;
+const db = require('../../../src/core/db');
 
-const testHelper = require('../common/routing.helper')
-const config = require('../../lib/config')
-const originalGatewayConfig = config.gatewayConfig
+const testHelper = require('../common/routing.helper');
+const config = require('../../../src/core/config');
+const originalGatewayConfig = config.gatewayConfig;
 
 describe('E2E: oauth2, proxy, log, expression, rate-limit policies', () => {
-  const helper = testHelper()
-  const spy = sinon.spy()
-  let user, application, token, app, backendServer
+  const helper = testHelper();
+  const spy = sinon.spy();
+  let user, application, token, app, backendServer;
 
-  before('setup', (done) => {
-    sinon.spy(logger, 'info')
+  before('setup', done => {
+    sinon.spy(logger, 'info');
 
     config.gatewayConfig = {
       http: { port: 0 },
       serviceEndpoints: {
         backend: {
-          url: 'http://localhost:7777'
-        }
+          url: 'http://localhost:7777',
+        },
       },
       apiEndpoints: {
         authorizedEndpoint: {
           host: '*',
           paths: ['/authorizedPath'],
-          scopes: ['authorizedScope']
-        }
+          scopes: ['authorizedScope'],
+        },
       },
       policies: ['oauth2', 'proxy', 'log', 'expression', 'rate-limit'],
       pipelines: {
@@ -48,98 +48,105 @@ describe('E2E: oauth2, proxy, log, expression, rate-limit policies', () => {
             {
               expression: {
                 action: {
-                  jscode: 'req.url = req.url + "/67"'
-                }
-              }
+                  jscode: 'req.url = req.url + "/67"',
+                },
+              },
             },
             {
               log: [
                 {
                   action: {
                     // eslint-disable-next-line no-template-curly-in-string
-                    message: '${req.url} ${egContext.req.method}'
-                  }
+                    message: '${req.url} ${egContext.req.method}',
+                  },
                 },
                 {
                   condition: {
-                    name: 'never'
+                    name: 'never',
                   },
                   action: {
                     // eslint-disable-next-line no-template-curly-in-string
-                    message: '${req.url} ${egContext.req.method}'
-                  }
-                }
-              ]
+                    message: '${req.url} ${egContext.req.method}',
+                  },
+                },
+              ],
             },
             {
               'rate-limit': {
                 action: {
                   max: 1,
                   // eslint-disable-next-line no-template-curly-in-string
-                  rateLimitBy: '${req.host}'
-                }
-              }
+                  rateLimitBy: '${req.host}',
+                },
+              },
             },
             {
               proxy: {
-                action: { serviceEndpoint: 'backend' }
-              }
-            }
-          ]
-        }
-      }
-    }
+                action: { serviceEndpoint: 'backend' },
+              },
+            },
+          ],
+        },
+      },
+    };
 
-    db
-      .flushdb()
-      .then(function () {
+    db.flushdb()
+      .then(() => {
         const user1 = {
           username: 'irfanbaqui',
           firstname: 'irfan',
           lastname: 'baqui',
-          email: 'irfan@eg.com'
-        }
+          email: 'irfan@eg.com',
+        };
 
-        return userService.insert(user1)
+        return userService.insert(user1);
       })
       .then(_user => {
-        should.exist(_user)
-        user = _user
+        should.exist(_user);
+        user = _user;
 
         const app1 = {
           name: 'irfan_app',
-          redirectUri: 'https://some.host.com/some/route'
-        }
+          redirectUri: 'https://some.host.com/some/route',
+        };
 
-        return applicationService.insert(app1, user.id)
+        return applicationService.insert(app1, user.id);
       })
       .then(_app => {
-        should.exist(_app)
-        application = _app
+        should.exist(_app);
+        application = _app;
 
-        return credentialService.insertScopes(['authorizedScope'])
+        return credentialService.insertScopes(['authorizedScope']);
       })
       .then(() =>
-        Promise.all([credentialService.insertCredential(application.id, 'oauth2', { secret: 'app-secret', scopes: ['authorizedScope'] }),
-          credentialService.insertCredential(user.id, 'basic-auth', { password: 'password', scopes: ['authorizedScope'] })])
+        Promise.all([
+          credentialService.insertCredential(application.id, 'oauth2', {
+            secret: 'app-secret',
+            scopes: ['authorizedScope'],
+          }),
+          credentialService.insertCredential(user.id, 'basic-auth', {
+            password: 'password',
+            scopes: ['authorizedScope'],
+          }),
+        ])
       )
       .then(res => {
-        should.exist(res)
-        return helper.setup()
+        should.exist(res);
+        return helper.setup();
       })
       .then(apps => {
-        app = apps.app
-        const request = session(app)
+        app = apps.app;
+        const request = session(app);
 
         request
           .post('/login')
           .query({
             username: user.username,
-            password: 'password'
+            password: 'password',
           })
           .expect(302)
-          .end(function (err, res) {
-            should.not.exist(err)
+          .end((err, res) => {
+            should.not.exist(err);
 
             request
               .get('/oauth2/authorize')
@@ -147,74 +154,74 @@ describe('E2E: oauth2, proxy, log, expression, rate-limit policies', () => {
                 redirect_uri: application.redirectUri,
                 response_type: 'token',
                 client_id: application.id,
-                scope: 'authorizedScope'
+                scope: 'authorizedScope',
               })
               .expect(200)
-              .end(function (err, res) {
-                should.not.exist(err)
+              .end((err, res) => {
+                should.not.exist(err);
 
                 request
                   .post('/oauth2/authorize/decision')
                   .query({ transaction_id: res.headers.transaction_id })
                   .expect(302)
-                  .end(function (err, res) {
-                    should.not.exist(err)
-                    const parsedUrl = new URL(res.headers.location)
-                    const params = qs.parse(parsedUrl.hash.slice(1))
-                    token = params.access_token
+                  .end((err, res) => {
+                    should.not.exist(err);
+                    const parsedUrl = new URL(res.headers.location);
+                    const params = qs.parse(parsedUrl.hash.slice(1));
+                    token = params.access_token;
 
-                    const backendApp = express()
+                    const backendApp = express();
                     backendApp.all('*', (req, res) => {
-                      spy(req.headers)
-                      res.send()
-                    })
+                      spy(req.headers);
+                      res.send();
+                    });
 
                     const runningBackendApp = backendApp.listen(7777, () => {
-                      backendServer = runningBackendApp
-                      done()
-                    })
-                  })
-              })
-          })
+                      backendServer = runningBackendApp;
+                      done();
+                    });
+                  });
+              });
+          });
       })
-      .catch(done)
-  })
+      .catch(done);
+  });
 
   after('cleanup', () => {
-    config.gatewayConfig = originalGatewayConfig
-    logger.info.restore()
-    backendServer.close()
-    return helper.cleanup()
-  })
+    config.gatewayConfig = originalGatewayConfig;
+    logger.info.restore();
+    backendServer.close();
+    return helper.cleanup();
+  });
 
-  it('should execute oauth2, proxy, log, expression, rate-limit policies and return 200', function (done) {
-    const request = session(app)
+  it('should execute oauth2, proxy, log, expression, rate-limit policies and return 200', done => {
+    const request = session(app);
 
     request
       .get('/authorizedPath')
       .set('Authorization', 'bearer ' + token)
       .expect(200)
-      .end(function (err) {
-        should.not.exist(err)
-        assert(spy.calledOnce)
-        assert.strictEqual(logger.info.getCall(0).args[0], '/authorizedPath/67 GET')
-        should.not.exist(logger.info.getCall(1))
-        done()
-      })
-  })
+      .end(err => {
+        should.not.exist(err);
+        assert(spy.calledOnce);
+        assert.strictEqual(logger.info.getCall(0).args[0], '/authorizedPath/67 GET');
+        should.not.exist(logger.info.getCall(1));
+        done();
+      });
+  });
 
-  it('should execute oauth2, proxy, log, expression, rate-limit policies and return 429 as rate limit is reached', function (done) {
-    const request = session(app)
+  it('should execute oauth2, proxy, log, expression, rate-limit policies and return 429 as rate limit is reached', done => {
+    const request = session(app);
 
     request
       .get('/authorizedPath')
       .set('Authorization', 'bearer ' + token)
       .expect(429)
-      .end(function (err) {
-        should.not.exist(err)
-        assert(spy.calledOnce)
-        assert.strictEqual(logger.info.getCall(1).args[0], '/authorizedPath/67 GET')
-        done()
-      })
-  })
-})
+      .end(err => {
+        should.not.exist(err);
+        assert(spy.calledOnce);
+        assert.strictEqual(logger.info.getCall(1).args[0], '/authorizedPath/67 GET');
+        done();
+      });
+  });
+});

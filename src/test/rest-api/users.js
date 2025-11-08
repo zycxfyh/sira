@@ -1,5 +1,5 @@
-const should = require('should')
-const adminHelper = require('../common/admin-helper')()
+const should = require('should');
+const adminHelper = require('../common/admin-helper')();
 
 describe('REST: Users', () => {
   before(() =>
@@ -7,26 +7,42 @@ describe('REST: Users', () => {
       config: {
         gatewayConfig: {
           admin: { port: 0 },
-          pipelines: null
-        }
-      }
-    }))
+          pipelines: null,
+        },
+      },
+    })
+  );
 
-  after(() => adminHelper.stop())
+  after(() => adminHelper.stop());
 
   describe('Pagination features', () => {
-    before(() => Promise.all(Array(100).fill().map((e, index) => adminHelper.admin.users.create({ username: index, firstname: 'Clark', lastname: 'Kent' }))))
+    before(() =>
+      Promise.all(
+        Array(100)
+          .fill()
+          .map((e, index) =>
+            adminHelper.admin.users.create({
+              username: index,
+              firstname: 'Clark',
+              lastname: 'Kent',
+            })
+          )
+      )
+    );
 
     it('should return a numeric value for nextKey', () =>
-      adminHelper.admin.users.list().then((data) => should(data).have.property('nextKey').Number().not.eql(0))
-    )
+      adminHelper.admin.users
+        .list()
+        .then(data => should(data).have.property('nextKey').Number().not.eql(0)));
 
     it('should respect the start parameter', () =>
-      adminHelper.admin.users.list({ start: 20 }).then((data) => should(data.users[0].username).not.eql('1'))
-    )
+      adminHelper.admin.users
+        .list({ start: 20 })
+        .then(data => should(data.users[0].username).not.eql('1')));
 
     it('should respect a count parameter', () =>
-      adminHelper.admin.users.list({ count: 40 }).then((data) => should(data.users.length).lessThanOrEqual(40))
-    )
-  })
-})
+      adminHelper.admin.users
+        .list({ count: 40 })
+        .then(data => should(data.users.length).lessThanOrEqual(40)));
+  });
+});

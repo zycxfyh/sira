@@ -1,62 +1,73 @@
-const testHelper = require('../common/routing.helper')
-const config = require('../../lib/config')
+const testHelper = require('../common/routing.helper');
+const config = require('../../../src/core/config');
 
 // there are several configuration ways to listen to all hosts
 describe('When uses defaults (capture all hosts and paths)', () => {
-  const helper = testHelper()
+  const helper = testHelper();
   helper.addPolicy('test', () => (req, res) => {
-    res.json({ result: 'test', hostname: req.hostname, url: req.url, apiEndpoint: req.egContext.apiEndpoint })
-  })
-  let originalGatewayConfig
+    res.json({
+      result: 'test',
+      hostname: req.hostname,
+      url: req.url,
+      apiEndpoint: req.egContext.apiEndpoint,
+    });
+  });
+  let originalGatewayConfig;
 
   before('setup', () => {
-    originalGatewayConfig = config.gatewayConfig
+    originalGatewayConfig = config.gatewayConfig;
 
     config.gatewayConfig = {
       http: { port: 9081 },
       apiEndpoints: {
-        test_default: {}
+        test_default: {},
       },
       policies: ['test'],
       pipelines: {
         pipeline1: {
           apiEndpoints: ['test_default'],
-          policies: { test: [] }
-        }
-      }
-    }
+          policies: { test: [] },
+        },
+      },
+    };
 
-    return helper.setup()
-  })
+    return helper.setup();
+  });
 
   after('cleanup', () => {
-    config.gatewayConfig = originalGatewayConfig
-    return helper.cleanup()
+    config.gatewayConfig = originalGatewayConfig;
+    return helper.cleanup();
   });
 
   ['/random/17/3', '/', '/admin'].forEach(url => {
-    it('should serve for random host and random path: ' + url, helper.validateSuccess({
-      setup: {
-        host: 'zu.io',
-        url
-      },
-      test: {
-        host: 'zu.io',
-        url,
-        result: 'test'
-      }
-    }))
+    it(
+      'should serve for random host and random path: ' + url,
+      helper.validateSuccess({
+        setup: {
+          host: 'zu.io',
+          url,
+        },
+        test: {
+          host: 'zu.io',
+          url,
+          result: 'test',
+        },
+      })
+    );
 
-    it('should serve for default host and path ' + url, helper.validateSuccess({
-      setup: {
-        host: undefined,
-        url
-      },
-      test: {
-        host: '127.0.0.1',
-        url,
-        result: 'test'
-      }
-    }))
-  })
-})
+    it(
+      'should serve for default host and path ' + url,
+      helper.validateSuccess({
+        setup: {
+          host: undefined,
+          url,
+        },
+        test: {
+          host: '127.0.0.1',
+          url,
+          result: 'test',
+        },
+      })
+    );
+  });
+});

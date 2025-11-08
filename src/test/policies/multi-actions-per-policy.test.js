@@ -1,95 +1,103 @@
-const serverHelper = require('../common/server-helper')
-const should = require('should')
-const config = require('../../lib/config')
-const request = require('supertest')
-const port1 = 5998
-const port2 = 5999
-let app1, app2, appTarget
+const serverHelper = require('../common/server-helper');
+const should = require('should');
+const config = require('../../../src/core/config');
+const request = require('supertest');
+const port1 = 5998;
+const port2 = 5999;
+let app1, app2, appTarget;
 
-const gateway = require('../../lib/gateway')
+const gateway = require('../../../src/core/gateway');
 
 describe('multi step policy ', () => {
-  let originalGatewayConfig
+  let originalGatewayConfig;
 
-  before('start servers', (done) => {
-    originalGatewayConfig = config.gatewayConfig
+  before('start servers', done => {
+    originalGatewayConfig = config.gatewayConfig;
 
     config.gatewayConfig = {
       http: { port: 9091 },
       apiEndpoints: {
-        test: {}
+        test: {},
       },
       serviceEndpoints: {
         admin: {
-          url: 'http://localhost:' + port1
+          url: 'http://localhost:' + port1,
         },
         staff: {
-          url: 'http://localhost:' + port2
-        }
+          url: 'http://localhost:' + port2,
+        },
       },
       policies: ['proxy'],
       pipelines: {
         pipeline1: {
           apiEndpoints: ['test'],
-          policies: [{
-            proxy: [{
-              condition: { name: 'pathExact', path: '/admin' },
-              action: { serviceEndpoint: 'admin' }
-            }, {
-              condition: { name: 'pathExact', path: '/staff' },
-              action: { serviceEndpoint: 'staff' }
-            }]
-          }]
-        }
-      }
-    }
+          policies: [
+            {
+              proxy: [
+                {
+                  condition: { name: 'pathExact', path: '/admin' },
+                  action: { serviceEndpoint: 'admin' },
+                },
+                {
+                  condition: { name: 'pathExact', path: '/staff' },
+                  action: { serviceEndpoint: 'staff' },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
 
-    serverHelper.generateBackendServer(port1)
+    serverHelper
+      .generateBackendServer(port1)
       .then(apps => {
-        app1 = apps.app
-        return serverHelper.generateBackendServer(port2)
+        app1 = apps.app;
+        return serverHelper.generateBackendServer(port2);
       })
       .then(apps => {
-        app2 = apps.app
-        return gateway()
+        app2 = apps.app;
+        return gateway();
       })
       .then(apps => {
-        appTarget = apps.app
-        done()
-      })
-  })
+        appTarget = apps.app;
+        done();
+      });
+  });
 
-  it('should proxy to server on ' + port1, (done) => {
-    request(appTarget).get('/admin')
+  it('should proxy to server on ' + port1, done => {
+    request(appTarget)
+      .get('/admin')
       .expect(200)
       .expect('Content-Type', /text/)
-      .end(function (error, res) {
+      .end((error, res) => {
         if (error) {
-          done(error)
+          done(error);
         }
-        should(res.text.indexOf(port1)).be.greaterThanOrEqual(0)
-        done()
-      })
-  })
+        should(res.text.indexOf(port1)).be.greaterThanOrEqual(0);
+        done();
+      });
+  });
 
-  it('should proxy to server on ' + port2, (done) => {
-    request(appTarget).get('/staff')
+  it('should proxy to server on ' + port2, done => {
+    request(appTarget)
+      .get('/staff')
       .expect(200)
       .expect('Content-Type', /text/)
-      .end(function (err, res) {
+      .end((err, res) => {
         if (err) {
-          done(err)
+          done(err);
         }
-        should(res.text.indexOf(port2)).be.greaterThanOrEqual(0)
-        done()
-      })
-  })
+        should(res.text.indexOf(port2)).be.greaterThanOrEqual(0);
+        done();
+      });
+  });
 
   after(() => {
-    config.gatewayConfig = originalGatewayConfig
+    config.gatewayConfig = originalGatewayConfig;
 
-    app1.close()
-    app2.close()
-    appTarget.close()
-  })
-})
+    app1.close();
+    app2.close();
+    appTarget.close();
+  });
+});

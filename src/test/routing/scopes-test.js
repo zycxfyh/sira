@@ -1,50 +1,56 @@
-const testHelper = require('../common/routing.helper')
-const config = require('../../lib/config')
+const testHelper = require('../common/routing.helper');
+const config = require('../../../src/core/config');
 
 describe('When scopes defined for apiEndpoint', () => {
-  const helper = testHelper()
+  const helper = testHelper();
 
   before('setup', () => {
     const scopes = [
       { scope: 'admin', verbs: 'GET' },
-      { scope: 'profile', verbs: ['GET', 'POST'] }
-    ]
+      { scope: 'profile', verbs: ['GET', 'POST'] },
+    ];
     config.gatewayConfig = {
       http: { port: 0 },
       apiEndpoints: {
         test_default: {
-          scopes
-        }
+          scopes,
+        },
       },
       policies: ['scopeTest'],
       pipelines: {
         pipeline1: {
           apiEndpoints: ['test_default'],
-          policies: { scopeTest: {} }
-        }
-      }
-    }
+          policies: { scopeTest: {} },
+        },
+      },
+    };
     const plugins = {
-      policies: [{
-        name: 'scopeTest',
-        policy: () => (req, res) => res.json({ url: req.url, scopes, apiEndpoint: req.egContext.apiEndpoint })
-      }]
-    }
-    return helper.setup({ config, plugins })
-  })
+      policies: [
+        {
+          name: 'scopeTest',
+          policy: () => (req, res) =>
+            res.json({ url: req.url, scopes, apiEndpoint: req.egContext.apiEndpoint }),
+        },
+      ],
+    };
+    return helper.setup({ config, plugins });
+  });
 
-  after('cleanup', helper.cleanup)
+  after('cleanup', helper.cleanup);
 
-  it('should set scopes to egContext', helper.validateSuccess({
-    setup: {
-      url: '/'
-    },
-    test: {
-      url: '/',
-      scopes: [
-        { scope: 'admin', verbs: 'GET' },
-        { scope: 'profile', verbs: ['GET', 'POST'] }
-      ]
-    }
-  }))
-})
+  it(
+    'should set scopes to egContext',
+    helper.validateSuccess({
+      setup: {
+        url: '/',
+      },
+      test: {
+        url: '/',
+        scopes: [
+          { scope: 'admin', verbs: 'GET' },
+          { scope: 'profile', verbs: ['GET', 'POST'] },
+        ],
+      },
+    })
+  );
+});

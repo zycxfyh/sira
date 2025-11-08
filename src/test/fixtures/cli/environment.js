@@ -1,55 +1,55 @@
-const { TestAdapter } = require('yeoman-test/lib/adapter')
-const environment = require('../../../bin/environment')
+// const { TestAdapter } = require('yeoman-te../../src/core/adapter');
+// const environment = require('../../../bin/environment');
 
 const defaultEg = {
-  exit () {},
-  get config () {
-    return require('../../../lib/config')
+  exit() {},
+  get config() {
+    return require('../../../src/core/config');
   },
-  get services () {
-    return require('../../../lib/services')
-  }
-}
+  get services() {
+    return require('../../../src/core/services');
+  },
+};
 
 exports.bootstrap = (eg, adapter) => {
-  eg = eg || defaultEg
-  adapter = adapter || new TestAdapter()
+  eg = eg || defaultEg;
+  adapter = adapter || new TestAdapter();
 
-  const { program, env } = environment.bootstrap(eg, adapter)
+  const { program, env } = environment.bootstrap(eg, adapter);
 
   if (!Object.prototype.hasOwnProperty.call(env, '_originalCreate')) {
-    env._originalCreate = env.create
+    env._originalCreate = env.create;
   }
 
   env.resetHijack = () => {
-    env.create = env._originalCreate.bind(env)
-    env._hijackers = {}
-    env._isHijacked = false
-  }
+    env.create = env._originalCreate.bind(env);
+    env._hijackers = {};
+    env._isHijacked = false;
+  };
 
   env.prepareHijack = () => {
     if (env._isHijacked) {
-      return
+      return;
     }
 
     env.create = (namespace, options) => {
-      const generator = env._originalCreate.bind(env)(namespace, options)
+      const generator = env._originalCreate.bind(env)(namespace, options);
 
-      const namespaces = Object.keys(env._hijackers)
+      const namespaces = Object.keys(env._hijackers);
       if (namespaces.indexOf(namespace) !== -1) {
-        const hijacker = env._hijackers[namespace]
-        hijacker(generator)
+        const hijacker = env._hijackers[namespace];
+        hijacker(generator);
       }
 
-      return generator
-    }
-    env._isHijacked = true
-  }
+      return generator;
+    };
+    env._isHijacked = true;
+  };
 
-  env._hijackers = {}
+  env._hijackers = {};
   env.hijack = (namespace, hijacker) => {
-    env._hijackers[namespace] = hijacker
-  }
+    env._hijackers[namespace] = hijacker;
+  };
 
-  return { program, env }
-}
+  return { program, env };
+};

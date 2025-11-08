@@ -3,12 +3,12 @@
  * 提供生成各种测试数据的工具函数
  */
 
-const { faker } = require('@faker-js/faker')
-const { v4: uuidv4 } = require('uuid')
+const { faker } = require('@faker-js/faker');
+const { v4: uuidv4 } = require('uuid');
 
 class TestDataFactory {
   constructor() {
-    this.createdEntities = new Map()
+    this.createdEntities = new Map();
   }
 
   /**
@@ -25,18 +25,18 @@ class TestDataFactory {
       status: 'active',
       createdAt: faker.date.past(),
       updatedAt: faker.date.recent(),
-      ...overrides
-    }
+      ...overrides,
+    };
 
-    this.createdEntities.set(`user-${user.id}`, user)
-    return user
+    this.createdEntities.set(`user-${user.id}`, user);
+    return user;
   }
 
   /**
    * 生成测试应用
    */
   createApplication(overrides = {}) {
-    const owner = overrides.owner || this.createUser()
+    const owner = overrides.owner || this.createUser();
     const app = {
       id: uuidv4(),
       name: faker.company.name(),
@@ -46,11 +46,11 @@ class TestDataFactory {
       apiKey: this.createApiKey({ applicationId: null }),
       createdAt: faker.date.past(),
       updatedAt: faker.date.recent(),
-      ...overrides
-    }
+      ...overrides,
+    };
 
-    this.createdEntities.set(`app-${app.id}`, app)
-    return app
+    this.createdEntities.set(`app-${app.id}`, app);
+    return app;
   }
 
   /**
@@ -66,11 +66,11 @@ class TestDataFactory {
       expiresAt: faker.date.future(),
       createdAt: faker.date.past(),
       updatedAt: faker.date.recent(),
-      ...overrides
-    }
+      ...overrides,
+    };
 
-    this.createdEntities.set(`key-${key.id}`, key)
-    return key
+    this.createdEntities.set(`key-${key.id}`, key);
+    return key;
   }
 
   /**
@@ -78,10 +78,14 @@ class TestDataFactory {
    */
   createAIRequest(overrides = {}) {
     const models = [
-      'gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo',
-      'claude-3-opus', 'claude-3-sonnet',
-      'gpt-4-azure', 'claude-2'
-    ]
+      'gpt-3.5-turbo',
+      'gpt-4',
+      'gpt-4-turbo',
+      'claude-3-opus',
+      'claude-3-sonnet',
+      'gpt-4-azure',
+      'claude-2',
+    ];
 
     const request = {
       id: uuidv4(),
@@ -89,19 +93,19 @@ class TestDataFactory {
       messages: [
         {
           role: 'user',
-          content: faker.lorem.sentences(2)
-        }
+          content: faker.lorem.sentences(2),
+        },
       ],
       temperature: faker.number.float({ min: 0, max: 2, precision: 0.1 }),
       max_tokens: faker.number.int({ min: 1, max: 4096 }),
       stream: faker.datatype.boolean(),
       user: faker.internet.userName(),
       createdAt: faker.date.recent(),
-      ...overrides
-    }
+      ...overrides,
+    };
 
-    this.createdEntities.set(`request-${request.id}`, request)
-    return request
+    this.createdEntities.set(`request-${request.id}`, request);
+    return request;
   }
 
   /**
@@ -113,24 +117,26 @@ class TestDataFactory {
       object: 'chat.completion',
       created: Math.floor(Date.now() / 1000),
       model: request.model,
-      choices: [{
-        index: 0,
-        message: {
-          role: 'assistant',
-          content: faker.lorem.paragraphs(2)
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: 'assistant',
+            content: faker.lorem.paragraphs(2),
+          },
+          finish_reason: 'stop',
         },
-        finish_reason: 'stop'
-      }],
+      ],
       usage: {
         prompt_tokens: faker.number.int({ min: 10, max: 1000 }),
         completion_tokens: faker.number.int({ min: 10, max: 2000 }),
-        total_tokens: faker.number.int({ min: 20, max: 3000 })
+        total_tokens: faker.number.int({ min: 20, max: 3000 }),
       },
       requestId: request.id,
-      ...overrides
-    }
+      ...overrides,
+    };
 
-    return response
+    return response;
   }
 
   /**
@@ -145,24 +151,27 @@ class TestDataFactory {
       success: faker.datatype.boolean({ probability: 0.95 }),
       errorType: null,
       timestamp: faker.date.recent(),
-      ...overrides
-    }
+      ...overrides,
+    };
 
     // 如果不成功，添加错误类型
     if (!metrics.success) {
       metrics.errorType = faker.helpers.arrayElement([
-        'timeout', 'rate_limit', 'server_error', 'network_error'
-      ])
+        'timeout',
+        'rate_limit',
+        'server_error',
+        'network_error',
+      ]);
     }
 
-    return metrics
+    return metrics;
   }
 
   /**
    * 生成测试批次数据
    */
   createBatch(size = 10, factoryFunction, ...args) {
-    return Array.from({ length: size }, () => factoryFunction.apply(this, args))
+    return Array.from({ length: size }, () => factoryFunction.apply(this, args));
   }
 
   /**
@@ -174,14 +183,14 @@ class TestDataFactory {
       applications: () => this.createBatch(size, this.createApplication.bind(this)),
       apiKeys: () => this.createBatch(size, this.createApiKey.bind(this)),
       aiRequests: () => this.createBatch(size, this.createAIRequest.bind(this)),
-      performance: () => this.createBatch(size, this.createPerformanceMetrics.bind(this))
-    }
+      performance: () => this.createBatch(size, this.createPerformanceMetrics.bind(this)),
+    };
 
     if (!datasets[name]) {
-      throw new Error(`Unknown dataset type: ${name}`)
+      throw new Error(`Unknown dataset type: ${name}`);
     }
 
-    return datasets[name]()
+    return datasets[name]();
   }
 
   /**
@@ -192,15 +201,15 @@ class TestDataFactory {
       basicUser: () => ({
         user: this.createUser(),
         app: this.createApplication(),
-        apiKey: this.createApiKey()
+        apiKey: this.createApiKey(),
       }),
 
       aiInteraction: () => {
-        const user = this.createUser()
-        const app = this.createApplication({ owner: user })
-        const apiKey = this.createApiKey({ applicationId: app.id })
-        const request = this.createAIRequest()
-        const response = this.createAIResponse(request)
+        const user = this.createUser();
+        const app = this.createApplication({ owner: user });
+        const apiKey = this.createApiKey({ applicationId: app.id });
+        const request = this.createAIRequest();
+        const response = this.createAIResponse(request);
 
         return {
           user,
@@ -210,70 +219,70 @@ class TestDataFactory {
           response,
           metrics: this.createPerformanceMetrics({
             requestId: request.id,
-            responseTime: faker.number.int({ min: 500, max: 3000 })
-          })
-        }
+            responseTime: faker.number.int({ min: 500, max: 3000 }),
+          }),
+        };
       },
 
       loadTest: () => ({
         users: this.createBatch(50, this.createUser.bind(this)),
         apps: this.createBatch(20, this.createApplication.bind(this)),
         requests: this.createBatch(1000, this.createAIRequest.bind(this)),
-        metrics: this.createBatch(1000, this.createPerformanceMetrics.bind(this))
-      })
-    }
+        metrics: this.createBatch(1000, this.createPerformanceMetrics.bind(this)),
+      }),
+    };
 
     if (!scenarios[name]) {
-      throw new Error(`Unknown scenario: ${name}`)
+      throw new Error(`Unknown scenario: ${name}`);
     }
 
-    return scenarios[name]()
+    return scenarios[name]();
   }
 
   /**
    * 清理创建的实体
    */
   cleanup() {
-    this.createdEntities.clear()
+    this.createdEntities.clear();
   }
 
   /**
    * 获取创建的实体统计
    */
   getStats() {
-    const stats = {}
+    const stats = {};
     for (const [key] of this.createdEntities) {
-      const type = key.split('-')[0]
-      stats[type] = (stats[type] || 0) + 1
+      const type = key.split('-')[0];
+      stats[type] = (stats[type] || 0) + 1;
     }
-    return stats
+    return stats;
   }
 
   /**
    * 查找实体
    */
   findEntity(type, id) {
-    return this.createdEntities.get(`${type}-${id}`)
+    return this.createdEntities.get(`${type}-${id}`);
   }
 
   /**
    * 获取所有实体
    */
   getAllEntities(type) {
-    const entities = []
+    const entities = [];
     for (const [key, entity] of this.createdEntities) {
       if (key.startsWith(`${type}-`)) {
-        entities.push(entity)
+        entities.push(entity);
       }
     }
-    return entities
+    return entities;
   }
 }
 
 // 创建单例实例
-const testDataFactory = new TestDataFactory()
+const testDataFactory = new TestDataFactory();
 
 module.exports = {
   TestDataFactory,
-  testDataFactory
-}
+  testDataFactory,
+};

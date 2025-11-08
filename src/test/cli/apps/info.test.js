@@ -1,76 +1,80 @@
-const assert = require('assert')
-const environment = require('../../fixtures/cli/environment')
-const adminHelper = require('../../common/admin-helper')()
-const namespace = 'express-gateway:apps:info'
-const idGen = require('uuid62')
+const assert = require('assert');
+const environment = require('../../fixtures/cli/environment');
+const adminHelper = require('../../common/admin-helper')();
+const namespace = 'express-gateway:apps:info';
+const idGen = require('uuid62');
 
 describe('eg apps info', () => {
-  let program, env, user, app
+  let program, env, user, app;
 
-  before(() => adminHelper.start())
+  before(() => adminHelper.start());
 
-  after(() => adminHelper.stop())
+  after(() => adminHelper.stop());
 
   before(() => {
-    return adminHelper.admin.users.create({
-      username: idGen.v4(),
-      firstname: 'La',
-      lastname: 'Deeda'
-    })
+    return adminHelper.admin.users
+      .create({
+        username: idGen.v4(),
+        firstname: 'La',
+        lastname: 'Deeda',
+      })
       .then(createdUser => {
-        user = createdUser
+        user = createdUser;
 
         return adminHelper.admin.apps.create(user.id, {
           name: 'appy',
-          redirectUri: 'http://localhost:3000/cb'
-        })
+          redirectUri: 'http://localhost:3000/cb',
+        });
       })
       .then(createdApp => {
-        app = createdApp
-        return app
-      })
-  })
+        app = createdApp;
+        return app;
+      });
+  });
 
   beforeEach(() => {
-    ({ program, env } = environment.bootstrap())
-    env.prepareHijack()
-  })
+    ({ program, env } = environment.bootstrap());
+    env.prepareHijack();
+  });
 
   afterEach(() => env.resetHijack());
 
-  [{
-    testCase: 'returns app info',
-    listCommand: () => app.id
-  }, {
-    testCase: 'returns app info by name',
-    listCommand: () => app.name
-  }].forEach(({ testCase, listCommand }) => {
+  [
+    {
+      testCase: 'returns app info',
+      listCommand: () => app.id,
+    },
+    {
+      testCase: 'returns app info by name',
+      listCommand: () => app.name,
+    },
+  ].forEach(({ testCase, listCommand }) => {
     it(testCase, done => {
       env.hijack(namespace, generator => {
-        let output = null
+        let output = null;
 
         generator.once('run', () => {
           generator.stdout = message => {
-            output = message
-          }
+            output = message;
+          };
           generator.log.error = message => {
-            done(new Error(message))
-          }
-        })
+            done(new Error(message));
+          };
+        });
 
         generator.once('end', () => {
-          const app = JSON.parse(output)
-          assert.strictEqual(app.id, app.id)
-          assert.strictEqual(app.name, 'appy')
-          assert.strictEqual(app.redirectUri, 'http://localhost:3000/cb')
-          assert.strictEqual(app.isActive, true)
-          assert.strictEqual(app.userId, user.id)
+          const app = JSON.parse(output);
+          assert.strictEqual(app.id, app.id);
+          assert.strictEqual(app.name, 'appy');
+          assert.strictEqual(app.redirectUri, 'http://localhost:3000/cb');
+          assert.strictEqual(app.isActive, true);
+          assert.strictEqual(app.userId, user.id);
 
-          done()
-        })
-      })
+          done();
+        });
+      });
 
-      env.argv = program.parse(`apps info ${listCommand()}`)
-    })
-  })
-})
+      env.argv = program.parse(`apps info ${listCommand()}`);
+    });
+  });
+});

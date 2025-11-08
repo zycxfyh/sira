@@ -1,8 +1,28 @@
-const { exec, spawn } = require('child_process');
+const { exec, spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
 const MONITOR_SCRIPT = path.join(__dirname, '../../scripts/monitor-system.sh');
+const isWindows = process.platform === 'win32';
+
+const hasBash = (() => {
+  if (isWindows) {
+    return false;
+  }
+  try {
+    const result = spawnSync('bash', ['--version'], { stdio: 'ignore' });
+    return result.status === 0;
+  } catch (error) {
+    return false;
+  }
+})();
+
+const describeIfBash = hasBash ? describe : describe.skip;
+
+if (!hasBash) {
+  // eslint-disable-next-line no-console
+  console.warn('Skipping monitor-system script tests: "bash" command not available in this environment.');
+}
 
 // Helper function to run shell commands
 function runCommand(command, args = [], options = {}) {
@@ -10,31 +30,31 @@ function runCommand(command, args = [], options = {}) {
     const child = spawn(command, args, {
       cwd: path.dirname(MONITOR_SCRIPT),
       env: { ...process.env, ...options.env },
-      ...options
+      ...options,
     });
 
     let stdout = '';
     let stderr = '';
 
-    child.stdout.on('data', (data) => {
+    child.stdout.on('data', data => {
       stdout += data.toString();
     });
 
-    child.stderr.on('data', (data) => {
+    child.stderr.on('data', data => {
       stderr += data.toString();
     });
 
-    child.on('close', (code) => {
+    child.on('close', code => {
       resolve({ code, stdout, stderr });
     });
 
-    child.on('error', (error) => {
+    child.on('error', error => {
       reject(error);
     });
   });
 }
 
-describe('Monitor System Script Tests', () => {
+describeIfBash('Monitor System Script Tests', () => {
   const testLogFile = '/tmp/test-monitor.log';
   const testMetricsFile = '/tmp/test-metrics.json';
 
@@ -74,8 +94,8 @@ describe('Monitor System Script Tests', () => {
         METRICS_FILE: testMetricsFile,
         GATEWAY_URL: 'http://invalid-url-that-should-fail',
         PROMETHEUS_URL: 'http://invalid-url-that-should-fail',
-        GRAFANA_URL: 'http://invalid-url-that-should-fail'
-      }
+        GRAFANA_URL: 'http://invalid-url-that-should-fail',
+      },
     });
 
     expect(code).toBe(0);
@@ -89,8 +109,8 @@ describe('Monitor System Script Tests', () => {
       env: {
         MONITOR_INTERVAL: 'invalid',
         LOG_FILE: testLogFile,
-        METRICS_FILE: testMetricsFile
-      }
+        METRICS_FILE: testMetricsFile,
+      },
     });
 
     expect(code1).toBe(0); // Should not exit with error due to validation
@@ -100,8 +120,8 @@ describe('Monitor System Script Tests', () => {
       env: {
         ALERT_THRESHOLD: '150', // Above max 100
         LOG_FILE: testLogFile,
-        METRICS_FILE: testMetricsFile
-      }
+        METRICS_FILE: testMetricsFile,
+      },
     });
 
     expect(code2).toBe(0); // Should not exit with error due to validation
@@ -113,8 +133,8 @@ describe('Monitor System Script Tests', () => {
     const { code } = await runCommand('bash', [MONITOR_SCRIPT, 'report'], {
       env: {
         LOG_FILE: testLogFile,
-        METRICS_FILE: testMetricsFile
-      }
+        METRICS_FILE: testMetricsFile,
+      },
     });
 
     expect(code).toBe(0);
@@ -135,8 +155,8 @@ describe('Monitor System Script Tests', () => {
     const { code } = await runCommand('bash', [MONITOR_SCRIPT, 'invalid-command'], {
       env: {
         LOG_FILE: testLogFile,
-        METRICS_FILE: testMetricsFile
-      }
+        METRICS_FILE: testMetricsFile,
+      },
     });
 
     // Should start main monitoring loop (which will be terminated by timeout)
@@ -158,16 +178,16 @@ describe('Monitor System Script Tests', () => {
 
     return new Promise((resolve, reject) => {
       const child = spawn('bash', ['-c', testScript], {
-        cwd: path.dirname(MONITOR_SCRIPT)
+        cwd: path.dirname(MONITOR_SCRIPT),
       });
 
       let output = '';
 
-      child.stdout.on('data', (data) => {
+      child.stdout.on('data', data => {
         output += data.toString();
       });
 
-      child.on('close', (code) => {
+      child.on('close', code => {
         expect(code).toBe(0);
         expect(output).toContain('System metrics functions executed successfully');
         resolve();

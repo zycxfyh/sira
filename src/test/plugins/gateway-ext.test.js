@@ -1,44 +1,46 @@
-const assert = require('assert')
-const gateway = require('../../lib/gateway')
-const eventBus = require('../../lib/eventBus')
-const Config = require('../../lib/config/config')
-const request = require('supertest')
+const assert = require('assert');
+const gateway = require('../../../src/core/gateway');
+const eventBus = require('../../../src/core/eventBus');
+const Config = require('../../../src/core/config/config');
+const request = require('supertest');
 
-const config = new Config()
-config.loadGatewayConfig()
+const config = new Config();
+config.loadGatewayConfig();
 
 describe('gateway routing with plugins', () => {
-  let gatewaySrv, httpSrvFromEvent
-  before('fires up a new gateway instance', function () {
+  let gatewaySrv, httpSrvFromEvent;
+  before('fires up a new gateway instance', () => {
     eventBus.on('http-ready', ({ httpServer }) => {
-      httpSrvFromEvent = httpServer
-    })
+      httpSrvFromEvent = httpServer;
+    });
     return gateway({
       plugins: {
-        gatewayRoutes: [function (gatewayExpressInstance) {
-          gatewayExpressInstance.all('/test', (req, res) => res.json({ enabled: true }))
-        }]
+        gatewayRoutes: [
+          function (gatewayExpressInstance) {
+            gatewayExpressInstance.all('/test', (req, res) => res.json({ enabled: true }));
+          },
+        ],
       },
-      config
+      config,
     }).then(srv => {
-      gatewaySrv = srv.app
-      return srv
-    })
-  })
+      gatewaySrv = srv.app;
+      return srv;
+    });
+  });
 
   it('should add custom route', () => {
     return request(gatewaySrv)
       .get('/test')
       .then(res => {
-        assert.ok(res.body.enabled)
-      })
-  })
+        assert.ok(res.body.enabled);
+      });
+  });
   it('should fire http-ready event', () => {
-    assert.ok(httpSrvFromEvent)
-    assert.strictEqual(httpSrvFromEvent, gatewaySrv)
-  })
+    assert.ok(httpSrvFromEvent);
+    assert.strictEqual(httpSrvFromEvent, gatewaySrv);
+  });
 
   after('close gateway srv', () => {
-    gatewaySrv.close()
-  })
-})
+    gatewaySrv.close();
+  });
+});

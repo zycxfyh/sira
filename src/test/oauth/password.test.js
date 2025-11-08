@@ -1,20 +1,25 @@
-const session = require('supertest-session')
-const should = require('should')
+const session = require('supertest-session');
+const should = require('should');
 
-const app = require('./bootstrap')
-const services = require('../../lib/services')
-const { checkTokenResponse, createOAuthScenario } = require('./testUtils')
+const app = require('./bootstrap');
+const services = require('../../../src/core/services');
+const { checkTokenResponse, createOAuthScenario } = require('./testUtils');
 
-const tokenService = services.token
+const tokenService = services.token;
 
-describe('Functional Test Client Password grant', function () {
-  let fromDbApp, fromDbUser, refreshToken
+describe('Functional Test Client Password grant', () => {
+  let fromDbApp, fromDbUser, refreshToken;
 
-  before(() => createOAuthScenario().then(([user, app]) => { fromDbUser = user; fromDbApp = app }))
+  before(() =>
+    createOAuthScenario().then(([user, app]) => {
+      fromDbUser = user;
+      fromDbApp = app;
+    })
+  );
 
-  it('should grant access token when no scopes are specified', function (done) {
-    const request = session(app)
-    const credentials = Buffer.from(fromDbApp.id.concat(':app-secret')).toString('base64')
+  it('should grant access token when no scopes are specified', done => {
+    const request = session(app);
+    const credentials = Buffer.from(fromDbApp.id.concat(':app-secret')).toString('base64');
 
     request
       .post('/oauth2/token')
@@ -24,19 +29,19 @@ describe('Functional Test Client Password grant', function () {
       .send({
         grant_type: 'password',
         username: fromDbUser.username,
-        password: 'user-secret'
+        password: 'user-secret',
       })
       .expect(200)
-      .end(function (err, res) {
-        if (err) return done(err)
-        checkTokenResponse(res.body)
-        done()
-      })
-  })
+      .end((err, res) => {
+        if (err) return done(err);
+        checkTokenResponse(res.body);
+        done();
+      });
+  });
 
-  it('should grant access token with authorized scopes', function (done) {
-    const request = session(app)
-    const credentials = Buffer.from(fromDbApp.id.concat(':app-secret')).toString('base64')
+  it('should grant access token with authorized scopes', done => {
+    const request = session(app);
+    const credentials = Buffer.from(fromDbApp.id.concat(':app-secret')).toString('base64');
 
     request
       .post('/oauth2/token')
@@ -47,26 +52,25 @@ describe('Functional Test Client Password grant', function () {
         grant_type: 'password',
         username: fromDbUser.username,
         password: 'user-secret',
-        scope: 'someScope'
+        scope: 'someScope',
       })
       .expect(200)
-      .end(function (err, res) {
-        if (err) return done(err)
-        checkTokenResponse(res.body, ['refresh_token'])
-        refreshToken = res.body.refresh_token
+      .end((err, res) => {
+        if (err) return done(err);
+        checkTokenResponse(res.body, ['refresh_token']);
+        refreshToken = res.body.refresh_token;
 
-        tokenService.get(res.body.access_token)
-          .then(fromDbToken => {
-            should.exist(fromDbToken)
-            fromDbToken.scopes.should.eql(['someScope']);
-            [fromDbToken.id, fromDbToken.tokenDecrypted].should.eql(res.body.access_token.split('|'))
-            done()
-          })
-      })
-  })
+        tokenService.get(res.body.access_token).then(fromDbToken => {
+          should.exist(fromDbToken);
+          fromDbToken.scopes.should.eql(['someScope']);
+          [fromDbToken.id, fromDbToken.tokenDecrypted].should.eql(res.body.access_token.split('|'));
+          done();
+        });
+      });
+  });
 
-  it('should grant access token in exchange of refresh token', function (done) {
-    const request = session(app)
+  it('should grant access token in exchange of refresh token', done => {
+    const request = session(app);
 
     request
       .post('/oauth2/token')
@@ -75,25 +79,24 @@ describe('Functional Test Client Password grant', function () {
         grant_type: 'refresh_token',
         client_id: fromDbApp.id,
         client_secret: 'app-secret',
-        refresh_token: refreshToken
+        refresh_token: refreshToken,
       })
       .expect(200)
       .end((err, res) => {
-        if (done) return done(err)
-        checkTokenResponse(res.body)
-        tokenService.get(res.body.access_token)
-          .then(token => {
-            should.exist(token)
-            token.scopes.should.eql(['someScope']);
-            [token.id, token.tokenDecrypted].should.eql(res.body.access_token.split('|'))
-            done()
-          })
-      })
-  })
+        if (done) return done(err);
+        checkTokenResponse(res.body);
+        tokenService.get(res.body.access_token).then(token => {
+          should.exist(token);
+          token.scopes.should.eql(['someScope']);
+          [token.id, token.tokenDecrypted].should.eql(res.body.access_token.split('|'));
+          done();
+        });
+      });
+  });
 
-  it('should not grant access token with unauthorized scopes', function (done) {
-    const request = session(app)
-    const credentials = Buffer.from(fromDbApp.id.concat(':app-secret')).toString('base64')
+  it('should not grant access token with unauthorized scopes', done => {
+    const request = session(app);
+    const credentials = Buffer.from(fromDbApp.id.concat(':app-secret')).toString('base64');
 
     request
       .post('/oauth2/token')
@@ -104,9 +107,9 @@ describe('Functional Test Client Password grant', function () {
         grant_type: 'password',
         username: fromDbUser.username,
         password: 'user-secret',
-        scope: 'someScope unauthorizedScope'
+        scope: 'someScope unauthorizedScope',
       })
       .expect(401)
-      .end(done)
-  })
-})
+      .end(done);
+  });
+});
