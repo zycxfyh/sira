@@ -83,7 +83,7 @@ module.exports = function (params, config) {
     })
   })
 
-  return function aiRouter (req, res, next) {
+  return async function aiRouter (req, res, next) {
     const startTime = Date.now()
 
     // Extract user ID from headers or generate one

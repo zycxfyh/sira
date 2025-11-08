@@ -167,7 +167,7 @@ class PriceCollector {
       } catch (error) {
         lastError = error
         this.collectErrors++
-        log_warn(`价格收集失败 ${this.provider} (尝试 ${attempt}/${this.maxRetries}): ${error.message}`)
+        logWarn(`价格收集失败 ${this.provider} (尝试 ${attempt}/${this.maxRetries}): ${error.message}`)
 
         if (attempt < this.maxRetries) {
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt)) // 递增延迟
@@ -483,7 +483,7 @@ class PriceMonitorManager extends EventEmitter {
     // 启动监控循环
     this.startMonitoring()
 
-    log_info('价格监控管理器初始化完成')
+    logInfo('价格监控管理器初始化完成')
   }
 
   // 初始化价格收集器
@@ -535,7 +535,7 @@ class PriceMonitorManager extends EventEmitter {
 
   // 更新所有价格
   async updatePrices () {
-    log_info('开始更新价格数据...')
+    logInfo('开始更新价格数据...')
 
     const updatePromises = []
     for (const [providerName, collector] of this.collectors) {
@@ -544,12 +544,12 @@ class PriceMonitorManager extends EventEmitter {
 
     try {
       await Promise.allSettled(updatePromises)
-      log_info('价格数据更新完成')
+      logInfo('价格数据更新完成')
 
       // 检查是否需要重新优化路由
       this.checkRouteOptimization()
     } catch (error) {
-      log_error(`价格更新过程中出现错误: ${error.message}`)
+      logError(`价格更新过程中出现错误: ${error.message}`)
     }
   }
 
@@ -586,7 +586,7 @@ class PriceMonitorManager extends EventEmitter {
         }
       }
     } catch (error) {
-      log_error(`更新 ${providerName} 价格失败: ${error.message}`)
+      logError(`更新 ${providerName} 价格失败: ${error.message}`)
       this.emit('priceUpdateError', {
         provider: providerName,
         error: error.message,
@@ -768,7 +768,7 @@ class PriceMonitorManager extends EventEmitter {
       priceData.alerts = priceData.alerts.filter(a => a.timestamp >= cutoff)
     }
 
-    log_info('价格监控数据清理完成')
+    logInfo('价格监控数据清理完成')
   }
 }
 

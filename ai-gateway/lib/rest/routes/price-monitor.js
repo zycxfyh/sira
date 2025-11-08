@@ -470,7 +470,7 @@ router.get('/charts/:chartType', (req, res) => {
   let chartData = {}
 
   switch (chartType) {
-    case 'price-comparison':
+    case 'price-comparison': {
       // 价格对比图
       const stats = priceMonitorManager.getPriceStats()
       chartData = {
@@ -484,8 +484,9 @@ router.get('/charts/:chartType', (req, res) => {
         }]
       }
       break
+    }
 
-    case 'price-history':
+    case 'price-history': {
       // 价格历史图
       const historyData = []
       const providers = ['openai', 'anthropic', 'google']
@@ -509,8 +510,9 @@ router.get('/charts/:chartType', (req, res) => {
         datasets: historyData
       }
       break
+    }
 
-    case 'alert-timeline':
+    case 'alert-timeline': {
       // 告警时间线
       const alerts = priceMonitorManager.getPriceAlerts(parseInt(hours))
       chartData = {
@@ -524,6 +526,7 @@ router.get('/charts/:chartType', (req, res) => {
         }]
       }
       break
+    }
 
     default:
       return res.status(400).json({

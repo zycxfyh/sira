@@ -338,7 +338,7 @@ class VoiceProcessorManager extends EventEmitter {
     // 启动队列处理器
     this.startQueueProcessor()
 
-    log_info('语音处理管理器初始化完成')
+    logInfo('语音处理管理器初始化完成')
   }
 
   // 语音转文字 (STT)
@@ -396,7 +396,7 @@ class VoiceProcessorManager extends EventEmitter {
 
     this.emit('jobCreated', job)
 
-    log_info(`创建语音转文字任务: ${job.id} - ${provider}/${model}`)
+    logInfo(`创建语音转文字任务: ${job.id} - ${provider}/${model}`)
 
     return job.id
   }
@@ -453,7 +453,7 @@ class VoiceProcessorManager extends EventEmitter {
 
     this.emit('jobCreated', job)
 
-    log_info(`创建文字转语音任务: ${job.id} - ${provider}/${model}`)
+    logInfo(`创建文字转语音任务: ${job.id} - ${provider}/${model}`)
 
     return job.id
   }
@@ -588,7 +588,7 @@ class VoiceProcessorManager extends EventEmitter {
   // 处理任务 (这里应该调用实际的语音处理API)
   async processJob (job) {
     try {
-      log_info(`开始处理语音任务: ${job.id} (${job.type})`)
+      logInfo(`开始处理语音任务: ${job.id} (${job.type})`)
 
       // 这里应该调用实际的语音处理API
       // 暂时模拟处理过程
@@ -615,9 +615,9 @@ class VoiceProcessorManager extends EventEmitter {
         completedAt: job.completedAt
       })
 
-      log_info(`语音任务完成: ${job.id}`)
+      logInfo(`语音任务完成: ${job.id}`)
     } catch (error) {
-      log_error(`语音任务失败: ${job.id} - ${error.message}`)
+      logError(`语音任务失败: ${job.id} - ${error.message}`)
       this.queue.fail(job.id, error)
       this.emit('jobFailed', job)
     }
@@ -632,9 +632,9 @@ class VoiceProcessorManager extends EventEmitter {
         await global.webhookManager.initialize()
       }
       this.webhookManager = global.webhookManager
-      log_info('Webhook管理器集成成功')
+      logInfo('Webhook管理器集成成功')
     } catch (error) {
-      log_error(`Webhook管理器初始化失败: ${error.message}`)
+      logError(`Webhook管理器初始化失败: ${error.message}`)
       // 不影响主要功能
     }
   }
@@ -651,7 +651,7 @@ class VoiceProcessorManager extends EventEmitter {
         userId: eventData.userId
       })
     } catch (error) {
-      log_error(`触发Webhook事件失败: ${error.message}`)
+      logError(`触发Webhook事件失败: ${error.message}`)
     }
   }
 
