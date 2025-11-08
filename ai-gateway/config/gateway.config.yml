@@ -5,6 +5,9 @@ apiEndpoints:
   ai-api:
     host: localhost
     paths: ['/api/v1/ai/*']
+  health-api:
+    host: localhost
+    paths: ['/health']
   admin-api:
     host: localhost
     paths: ['/admin/*']
@@ -12,6 +15,8 @@ apiEndpoints:
 serviceEndpoints:
   ai-router:
     url: 'http://localhost:3000' # Placeholder, will be overridden by AI router policy
+  health-service:
+    url: 'http://localhost:9876/health' # Redirect health checks to admin service
   admin-service:
     url: 'http://localhost:9876'
 
@@ -32,6 +37,13 @@ policies:
   - response-transformer
 
 pipelines:
+  health-pipeline:
+    apiEndpoints:
+      - health-api
+    policies:
+      - proxy:
+          serviceEndpoint: health-service
+
   ai-pipeline:
     apiEndpoints:
       - ai-api
