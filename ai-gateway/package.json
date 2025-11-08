@@ -124,7 +124,7 @@
     "winston": "3.2.1",
     "yargs": "^14.0.0",
     "yawn-yaml": "1.4.0",
-    "yeoman-environment": "^2.4.0",
+    "yeoman-environment": "^5.0.0",
     "yeoman-generator": "^7.5.1"
   },
   "devDependencies": {
