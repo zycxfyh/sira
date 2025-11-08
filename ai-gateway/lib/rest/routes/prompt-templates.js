@@ -1,3 +1,4 @@
+const express = require('express')
 const { promptTemplateManager } = require('../../prompt-template-manager')
 
 /**
@@ -5,7 +6,8 @@ const { promptTemplateManager } = require('../../prompt-template-manager')
  * 提供提示词模板管理和使用的API接口
  */
 
-module.exports = function (router, { logger }) {
+module.exports = function ({ logger }) {
+  const router = express.Router()
   /**
    * GET /prompt-templates
    * 获取所有提示词模板
@@ -532,4 +534,5 @@ module.exports = function (router, { logger }) {
   })
 
   logger.info('Prompt Templates API routes loaded')
+  return router
 }

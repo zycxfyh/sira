@@ -1,3 +1,4 @@
+const express = require('express')
 const { parameterManager } = require('../../parameter-manager')
 
 /**
@@ -5,7 +6,8 @@ const { parameterManager } = require('../../parameter-manager')
  * 提供参数管理和查询相关的API接口
  */
 
-module.exports = function (router, { logger }) {
+module.exports = function ({ logger }) {
+  const router = express.Router()
   /**
    * GET /parameters
    * 获取所有参数信息
@@ -406,6 +408,7 @@ module.exports = function (router, { logger }) {
   })
 
   logger.info('Parameters API routes loaded')
+  return router
 }
 
 /**

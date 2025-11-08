@@ -1,3 +1,4 @@
+const express = require('express')
 const { apiKeyManager } = require('../../api-key-manager')
 
 /**
@@ -5,7 +6,8 @@ const { apiKeyManager } = require('../../api-key-manager')
  * 提供API密钥管理相关的REST API接口
  */
 
-module.exports = function (router, { logger }) {
+module.exports = function ({ logger }) {
+  const router = express.Router()
   /**
    * GET /api-keys
    * 获取API密钥概览
@@ -586,4 +588,5 @@ module.exports = function (router, { logger }) {
   })
 
   logger.info('API Keys Management API routes loaded')
+  return router
 }

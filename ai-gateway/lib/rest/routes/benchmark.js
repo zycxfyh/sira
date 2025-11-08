@@ -1,3 +1,4 @@
+const express = require('express')
 const { performanceBenchmarkManager } = require('../../performance-benchmark-manager')
 const { testCases, testSuites, getTestCase, getTestSuite } = require('../../benchmark-test-cases')
 
@@ -6,7 +7,8 @@ const { testCases, testSuites, getTestCase, getTestSuite } = require('../../benc
  * 提供性能基准测试相关的API接口
  */
 
-module.exports = function (router, { logger }) {
+module.exports = function ({ logger }) {
+  const router = express.Router()
   /**
    * GET /benchmark/test-cases
    * 获取所有测试用例
@@ -539,4 +541,5 @@ module.exports = function (router, { logger }) {
   })
 
   logger.info('Performance Benchmark API routes loaded')
+  return router
 }

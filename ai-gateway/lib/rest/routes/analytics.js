@@ -1,3 +1,4 @@
+const express = require('express')
 const { usageAnalytics } = require('../../usage-analytics')
 
 /**
@@ -5,7 +6,8 @@ const { usageAnalytics } = require('../../usage-analytics')
  * 提供用量统计和分析相关的API接口
  */
 
-module.exports = function (router, { logger }) {
+module.exports = function ({ logger }) {
+  const router = express.Router()
   /**
    * GET /analytics/stats
    * 获取全局统计数据
@@ -346,4 +348,5 @@ module.exports = function (router, { logger }) {
   })
 
   logger.info('Analytics API routes loaded')
+  return router
 }
