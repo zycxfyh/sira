@@ -523,9 +523,9 @@ docker-compose -f docker-compose-full.yml exec ai-gateway curl -H "Authorization
 
 ## 🚀 部署最佳实践
 
-### 1. 环境准备
+### 1. 生产环境准备
 
-#### 系统要求
+#### 生产环境要求
 ```bash
 # 最低系统要求
 - CPU: 2核心
@@ -609,7 +609,7 @@ find $BACKUP_DIR -name "*.tar.gz" -mtime +7 -delete
 
 ### 5. 监控告警
 
-#### 关键指标监控
+#### 告警规则配置
 ```yaml
 # Prometheus告警规则
 groups:

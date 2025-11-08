@@ -16,15 +16,15 @@
 
 <!-- 社区统计徽章 -->
 <p>
-  <a href="https://github.com/your-username/sira/stargazers"><img src="https://img.shields.io/github/stars/your-username/sira?style=for-the-badge&logo=github&color=yellow" alt="Stars"/></a>
-  <a href="https://github.com/your-username/sira/network/members"><img src="https://img.shields.io/github/forks/your-username/sira?style=for-the-badge&logo=github&color=orange" alt="Forks"/></a>
-  <a href="https://github.com/your-username/sira/issues"><img src="https://img.shields.io/github/issues/your-username/sira?style=for-the-badge&logo=github&color=red" alt="Issues"/></a>
-  <a href="https://github.com/your-username/sira/pulls"><img src="https://img.shields.io/github/issues-pr/your-username/sira?style=for-the-badge&logo=github&color=blue" alt="PRs"/></a>
+  <a href="https://github.com/zycxfyh/sira/stargazers"><img src="https://img.shields.io/github/stars/zycxfyh/sira?style=for-the-badge&logo=github&color=yellow" alt="Stars"/></a>
+  <a href="https://github.com/zycxfyh/sira/network/members"><img src="https://img.shields.io/github/forks/zycxfyh/sira?style=for-the-badge&logo=github&color=orange" alt="Forks"/></a>
+  <a href="https://github.com/zycxfyh/sira/issues"><img src="https://img.shields.io/github/issues/zycxfyh/sira?style=for-the-badge&logo=github&color=red" alt="Issues"/></a>
+  <a href="https://github.com/zycxfyh/sira/pulls"><img src="https://img.shields.io/github/issues-pr/zycxfyh/sira?style=for-the-badge&logo=github&color=blue" alt="PRs"/></a>
 </p>
 
 <!-- 项目状态徽章 -->
 <p>
-  <a href="https://github.com/your-username/sira/commits"><img src="https://img.shields.io/github/last-commit/your-username/sira?style=for-the-badge&logo=github&color=green" alt="Last Commit"/></a>
+  <a href="https://github.com/zycxfyh/sira/commits"><img src="https://img.shields.io/github/last-commit/zycxfyh/sira?style=for-the-badge&logo=github&color=green" alt="Last Commit"/></a>
   <img src="https://img.shields.io/badge/Status-Learning_Project-blue?style=for-the-badge&logo=student" alt="Project Status"/>
   <img src="https://img.shields.io/badge/Code_Quality-Good-green?style=for-the-badge&logo=code-quality" alt="Code Quality"/>
 </p>
@@ -75,7 +75,7 @@
 
 ```bash
 # 📥 克隆项目
-git clone https://github.com/your-username/sira.git
+git clone https://github.com/zycxfyh/sira.git
 cd sira
 
 # 📦 安装依赖
@@ -96,8 +96,8 @@ npm run start:dev
 
 ```bash
 # 🚀 完整环境启动 (推荐)
-cd infrastructure
-docker-compose -f docker-compose.full.yml up -d
+cd docker/production
+docker-compose -f docker-compose-full.yml up -d
 
 # 📊 查看服务状态
 docker-compose ps
@@ -266,7 +266,7 @@ graph TB
 | **👥 Admin管理** | 用户注册、应用管理、凭据分发、权限控制 | RESTful API、JWT认证、数据库抽象 | [📖 详细文档](docs/modules/modules/admin.md) |
 | **🛠️ Bin CLI工具** | 项目初始化、代码生成、环境管理、部署工具 | 命令行界面、模板引擎、自动化脚本 | [📖 详细文档](docs/modules/modules/bin.md) |
 | **⚙️ Config配置** | 声明式配置、环境变量、热重载、配置验证 | YAML/JSON支持、模式验证、版本控制 | [📖 详细文档](docs/modules/modules/config.md) |
-| **🏗️ Lib核心库** | 策略引擎、服务层、插件系统、事件总线 | 模块化设计、策略模式、异步处理 | [📖 详细文档](docs/modules/modules/lib.md) |
+| **🏗️ Lib核心库** | 策略引擎、服务层、插件系统、事件总线 | 模块化设计、策略模式、异步处理 | [📖 详细文档](docs/modules/modules/core.md) |
 
 ### 🚀 运维部署模块
 
@@ -308,7 +308,7 @@ graph TB
 | `ai-tracing` | 📊 分布式追踪 | ✅ 完成 |
 | `ai-queue` | 📋 异步请求处理 | ✅ 完成 |
 
-## 🚀 快速开始
+## 🚀 完整快速开始
 
 ### 方法1: 交互式配置向导 (推荐新手) 🤖
 
@@ -855,16 +855,12 @@ curl -X POST http://localhost:8080/api/v1/ai/chat/completions \
 
 ### 💬 对话历史管理
 Redis式存储、上下文连续、记忆网络。更多特性请查看：[完整API文档](docs/README-AI.md)
-```
 
 ### 📊 A/B测试框架
 多变量测试、流量分配、实时分析和自动化优化。更多特性请查看：[完整API文档](docs/README-AI.md)
-```
 
 ### 📡 Webhook通知系统
 异步事件通知、可靠投递、重试机制和安全验证。更多特性请查看：[完整API文档](docs/README-AI.md)
-
-```
 
 ### 🎛️ 自定义规则引擎
 灵活条件匹配、规则优先级、上下文感知的智能路由。更多特性请查看：[完整API文档](docs/README-AI.md)
@@ -994,7 +990,7 @@ API密钥认证、速率限制、熔断保护，确保生产环境安全稳定�
 | 渠道 | 联系方式 | 响应时间 |
 |------|----------|----------|
 | 📧 **邮箱** | 1666384464@qq.com | 1-2个工作日 |
-| 💬 **Issues** | [GitHub Issues](https://github.com/your-repo/issues) | 及时响应 |
+| 💬 **Issues** | [GitHub Issues](https://github.com/zycxfyh/sira/issues) | 及时响应 |
 | 📱 **电话** | 17855398215 | 紧急情况 |
 
 ### 🤗 欢迎贡献
@@ -1136,7 +1132,7 @@ API密钥认证、速率限制、熔断保护，确保生产环境安全稳定�
 **我们非常欢迎建设性的反馈和建议！**
 
 - 📧 **技术讨论**: 1666384464@qq.com
-- 🐛 **问题反馈**: [GitHub Issues](https://github.com/your-repo/issues)
+- 🐛 **问题反馈**: [GitHub Issues](https://github.com/zycxfyh/sira/issues)
 - 💡 **功能建议**: 欢迎提出改进意见
 - 🤝 **代码贡献**: 欢迎提交Pull Request
 
@@ -1257,7 +1253,7 @@ API密钥认证、速率限制、熔断保护，确保生产环境安全稳定�
 
 | 📧 邮箱 | 💬 Issues | 📱 电话 |
 |---------|----------|---------|
-| 1666384464@qq.com | [GitHub Issues](https://github.com/your-repo/issues) | 17855398215 |
+| 1666384464@qq.com | [GitHub Issues](https://github.com/zycxfyh/sira/issues) | 17855398215 |
 
 ---
 

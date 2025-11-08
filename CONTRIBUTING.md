@@ -6,8 +6,8 @@
 
 **我们欢迎所有热爱学习和开源技术的同学参与贡献！** 🎉
 
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge&logo=github)](https://github.com/your-username/sira/pulls)
-[![Good First Issue](https://img.shields.io/badge/good%20first%20issue-welcome-blue.svg?style=for-the-badge&logo=github)](https://github.com/your-username/sira/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge&logo=github)](https://github.com/zycxfyh/sira/pulls)
+[![Good First Issue](https://img.shields.io/badge/good%20first%20issue-welcome-blue.svg?style=for-the-badge&logo=github)](https://github.com/zycxfyh/sira/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ---
 

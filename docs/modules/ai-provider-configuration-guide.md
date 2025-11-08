@@ -475,6 +475,7 @@ class RetryHandler {
         ];
 
         return retryableCodes.includes(error.code) ||
+|--------|--------|--------|
                error.message.includes('timeout') ||
                error.status >= 500;
     }
@@ -564,7 +565,9 @@ const metrics = {
 #
 # 测试结果汇总
 # | 供应商 | 状态 | 响应时间 | 最后测试时间 |
+|--------|--------|--------|--------|--------|--------|
 # |--------|------|----------|--------------|
+|--------|--------|--------|--------|--------|--------|
 # | DeepSeek | ✅ 成功 | 450ms | 2025-11-07T22:00:00Z |
 # | OpenAI | ✅ 成功 | 320ms | 2025-11-07T21:59:45Z |
 ```
@@ -1003,7 +1006,7 @@ const costControl = {
 
 ### 联系方式
 
-- **📧 邮箱**: sira-support@example.com
+- **📧 邮箱**: 1666384464@qq.com
 - **💬 Discord**: https://discord.gg/sira-ai
 - **📖 文档**: https://docs.sira.ai
 - **🐛 问题反馈**: https://github.com/zycxfyh/sira/issues

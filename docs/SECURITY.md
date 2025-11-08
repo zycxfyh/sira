@@ -6,8 +6,8 @@
 
 **我们致力于维护项目的安全性和可靠性**
 
-[![Security](https://img.shields.io/badge/Security-First-red?style=for-the-badge&logo=security)](https://github.com/your-username/sira/security)
-[![Vulnerabilities](https://img.shields.io/badge/Vulnerabilities-None-green?style=for-the-badge&logo=github)](https://github.com/your-username/sira/security/advisories)
+[![Security](https://img.shields.io/badge/Security-First-red?style=for-the-badge&logo=security)](https://github.com/zycxfyh/sira/security)
+[![Vulnerabilities](https://img.shields.io/badge/Vulnerabilities-None-green?style=for-the-badge&logo=github)](https://github.com/zycxfyh/sira/security/advisories)
 
 ---
 

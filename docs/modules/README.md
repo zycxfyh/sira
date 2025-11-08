@@ -16,25 +16,25 @@
 
 | 模块 | 文档 | 描述 | 状态 |
 |------|------|------|------|
-| **🏢 Admin** | [管理模块](modules/admin.md) | 用户管理、应用管理、权限控制 | ✅ 完成 |
-| **🛠️ Bin** | [CLI工具](modules/bin.md) | 命令行工具、代码生成器 | ✅ 完成 |
-| **⚙️ Config** | [配置系统](modules/config.md) | 配置文件、环境变量、热重载 | ✅ 完成 |
-| **🌐 Locales** | [国际化](modules/locales.md) | 多语言支持、API本地化 | ✅ 完成 |
-| **🧠 Core** | [核心引擎](modules/core.md) | 业务逻辑、策略引擎、插件系统 | ✅ 完成 |
-| **🐳 Docker** | [容器化](modules/docker.md) | Docker配置、容器编排 | ✅ 完成 |
-| **📄 Templates** | [模板系统](modules/templates.md) | 报告模板、提示词模板 | ✅ 完成 |
-| **🧪 Test** | [测试系统](modules/test.md) | 测试框架、覆盖率报告 | ✅ 完成 |
-| **📜 Scripts** | [脚本工具](modules/scripts.md) | 自动化脚本、部署工具 | ✅ 完成 |
+| **🏢 Admin** | [管理模块](modules/modules/admin.md) | 用户管理、应用管理、权限控制 | ✅ 完成 |
+| **🛠️ Bin** | [CLI工具](modules/modules/bin.md) | 命令行工具、代码生成器 | ✅ 完成 |
+| **⚙️ Config** | [配置系统](modules/modules/config.md) | 配置文件、环境变量、热重载 | ✅ 完成 |
+| **🌐 Locales** | [国际化](modules/modules/locales.md) | 多语言支持、API本地化 | ✅ 完成 |
+| **🧠 Core** | [核心引擎](modules/modules/core.md) | 业务逻辑、策略引擎、插件系统 | ✅ 完成 |
+| **🐳 Docker** | [容器化](modules/modules/docker.md) | Docker配置、容器编排 | ✅ 完成 |
+| **📄 Templates** | [模板系统](modules/modules/templates.md) | 报告模板、提示词模板 | ✅ 完成 |
+| **🧪 Test** | [测试系统](modules/modules/test.md) | 测试框架、覆盖率报告 | ✅ 完成 |
+| **📜 Scripts** | [脚本工具](modules/modules/scripts.md) | 自动化脚本、部署工具 | ✅ 完成 |
 
 ### 📖 专项指南
 
 | 指南类型 | 文档 | 适用场景 | 难度 |
 |----------|------|----------|------|
-| **🤖 AI集成** | [AI提供商配置](ai-provider-configuration-guide.md) | 配置AI服务商集成 | ⭐⭐⭐ |
-| **🔗 API集成** | [API集成指南](api-integration-guide.md) | 第三方API集成 | ⭐⭐⭐⭐ |
-| **🚀 CI/CD** | [持续集成](ci-cd-guide.md) | 自动化构建部署 | ⭐⭐⭐⭐ |
-| **🧪 工业测试** | [工业级测试](industrial-testing-guide.md) | 生产环境测试策略 | ⭐⭐⭐⭐⭐ |
-| **🔄 供应商对比** | [供应商对比](provider-comparison.md) | 选择合适的AI供应商 | ⭐⭐⭐ |
+| **🤖 AI集成** | [AI提供商配置](modules/ai-provider-configuration-guide.md) | 配置AI服务商集成 | ⭐⭐⭐ |
+| **🔗 API集成** | [API集成指南](modules/api-integration-guide.md) | 第三方API集成 | ⭐⭐⭐⭐ |
+| **🚀 CI/CD** | [持续集成](modules/ci-cd-guide.md) | 自动化构建部署 | ⭐⭐⭐⭐ |
+| **🧪 工业测试** | [工业级测试](modules/industrial-testing-guide.md) | 生产环境测试策略 | ⭐⭐⭐⭐⭐ |
+| **🔄 供应商对比** | [供应商对比](modules/provider-comparison.md) | 选择合适的AI供应商 | ⭐⭐⭐ |
 
 ---
 
@@ -103,7 +103,7 @@ node --version  # 应显示 v18.x.x
 docker --version
 
 # 克隆项目
-git clone https://github.com/your-username/sira.git
+git clone https://github.com/zycxfyh/sira.git
 cd sira
 ```
 
@@ -211,18 +211,18 @@ npm run monitor:production
 ### 配置问题
 
 **Q: AI供应商连接失败？**
-A: 检查API密钥配置和网络连接。参考 [AI配置指南](ai-provider-configuration-guide.md)
+A: 检查API密钥配置和网络连接。参考 [AI配置指南](modules/ai-provider-configuration-guide.md)
 
 **Q: Docker容器无法启动？**
-A: 确保Docker版本 >= 20.0，检查端口占用。参考 [Docker配置](modules/docker.md)
+A: 确保Docker版本 >= 20.0，检查端口占用。参考 [Docker配置](modules/modules/docker.md)
 
 ### 性能问题
 
 **Q: 响应速度慢？**
-A: 检查缓存配置和网络延迟。参考 [性能优化指南](performance-tuning.md)
+A: 检查缓存配置和网络延迟。参考 [核心引擎文档](modules/modules/core.md)
 
 **Q: 内存使用过高？**
-A: 调整缓存大小和连接池配置。参考 [内存管理](memory-management.md)
+A: 调整缓存大小和连接池配置。参考 [配置系统文档](modules/modules/config.md)
 
 ### 安全问题
 
@@ -235,16 +235,16 @@ A: 立即轮换密钥，检查访问日志。参考 [安全指南](../SECURITY.m
 
 | 问题类型 | 联系方式 | 响应时间 |
 |----------|----------|----------|
-| **🐛 Bug报告** | [GitHub Issues](https://github.com/your-username/sira/issues) | < 24小时 |
+| **🐛 Bug报告** | [GitHub Issues](https://github.com/zycxfyh/sira/issues) | < 24小时 |
 | **💡 功能建议** | [功能请求模板](../.github/ISSUE_TEMPLATES/feature-request.md) | < 48小时 |
-| **📖 文档问题** | [文档Issue](https://github.com/your-username/sira/labels/documentation) | < 12小时 |
+| **📖 文档问题** | [文档Issue](https://github.com/zycxfyh/sira/labels/documentation) | < 12小时 |
 | **🆘 紧急安全** | [安全邮箱](../SECURITY.md) | < 4小时 |
 
 ---
 
 ## 🎯 下一步
 
-1. **📖 阅读具体模块文档** - 从[核心引擎](modules/core.md)开始
+1. **📖 阅读具体模块文档** - 从[核心引擎](modules/modules/core.md)开始
 2. **🔧 尝试快速开始** - 运行 `npm run health-check`
 3. **🤝 加入社区** - 查看[贡献指南](../CONTRIBUTING.md)
 4. **🚀 部署生产** - 参考[部署指南](../DEPLOYMENT-GUIDE.md)

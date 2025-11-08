@@ -119,7 +119,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[Mocha LCOV Reporter](https://github.com/StevenLooman/mocha-lcov-reporter)** - Mocha LCOV报告器
 - **[Istanbul](https://github.com/gotwarlost/istanbul)** - JavaScript代码覆盖率工具
 
-### 构建 & 部署工具
+### 开发工具
 - **[CPR](https://github.com/davglass/cpr)** - 文件和目录复制工具
 - **[Find Free Port](https://github.com/tapjs/find-free-port)** - 查找可用网络端口
 - **[Husky](https://github.com/typicode/husky)** - Git钩子管理工具
