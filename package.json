@@ -169,7 +169,7 @@
   "dependencies": {
     "@opentelemetry/api": "^1.4.1",
     "ajv": "^6.10.2",
-    "ajv-keywords": "^3.4.1",
+    "ajv-keywords": "^5.1.0",
     "bcryptjs": "^2.4.3",
     "chalk": "^2.4.2",
     "chokidar": "^3.0.2",
