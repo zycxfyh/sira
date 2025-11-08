@@ -1,0 +1,66 @@
+# Gitleaks Configuration for Advanced Secret Detection
+# This configuration provides comprehensive secret scanning rules
+
+title = "Sira Gateway Secret Detection"
+
+# 全局配置
+[extend]
+useDefault = true
+
+# 自定义规则
+[[rules]]
+id = "custom-api-key"
+description = "Custom API Key Pattern"
+regex = '''(?i)(api[_-]?key|apikey|api_key)\s*[:=]\s*['"]?([a-zA-Z0-9_-]{20,})['"]?'''
+secretGroup = 2
+entropy = 3.5
+keywords = ["api_key", "apikey", "api-key"]
+
+[[rules]]
+id = "custom-jwt-token"
+description = "JWT Token Pattern"
+regex = '''eyJ[A-Za-z0-9-_]+\.eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+=]+'''
+keywords = ["jwt", "token", "bearer"]
+
+[[rules]]
+id = "custom-database-url"
+description = "Database Connection URL"
+regex = '''(?i)(mongodb|postgresql|mysql|redis)://[^:/@]+:[^@]+@[^/]+'''
+keywords = ["mongodb://", "postgresql://", "mysql://", "redis://"]
+
+# 排除文件和路径
+[allowlist]
+description = "Allowlisted files and paths"
+files = [
+    '''.*\.md$''',
+    '''.*\.txt$''',
+    '''.*\.json$''',
+    '''.*\.yml$''',
+    '''.*\.yaml$''',
+    '''test.*''',
+    '''mock.*''',
+    '''fixture.*''',
+    '''example.*''',
+    '''sample.*'''
+]
+paths = [
+    '''node_modules''',
+    '''\.git''',
+    '''reports''',
+    '''coverage''',
+    '''test-results''',
+    '''\.github/workflows''',
+    '''docs''',
+    '''README.*'''
+]
+
+# 排除熵值较低的内容
+[[allowlist.regexes]]
+description = "Allow short strings and common patterns"
+regexes = [
+    '''^[a-zA-Z0-9_-]{1,10}$''',
+    '''^test[_-]?key$''',
+    '''^example[_-]?key$''',
+    '''^dummy[_-]?key$''',
+    '''^placeholder[_-]?key$'''
+]

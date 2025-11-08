@@ -1,0 +1,21 @@
+{
+  "summary": {
+    "totalRequests": 0,
+    "totalTokens": 0,
+    "totalCost": 0,
+    "totalErrors": 0,
+    "uniqueUsers": 0
+  },
+  "topUsers": [],
+  "topProviders": [],
+  "topModels": [],
+  "errorRate": "0%",
+  "avgResponseTime": 0,
+  "costPerToken": 0,
+  "metadata": {
+    "generatedAt": "2025-11-08T08:11:40.370Z",
+    "type": "summary",
+    "dateRange": {},
+    "version": "1.0.0"
+  }
+}

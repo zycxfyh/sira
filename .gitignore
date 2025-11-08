@@ -1,34 +1,33 @@
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
 # Dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.*.local
 
 # Logs
-logs/
 *.log
-log-*
+app.log
+startup.log
+logs/
+*.log.*
 
 # Runtime data
-pids/
+pids
 *.pid
 *.seed
 *.pid.lock
 
 # Coverage directory used by tools like istanbul
 coverage/
-*.lcov
+.nyc_output
+coverage.lcov
 
 # nyc test coverage
-.nyc_output/
+.nyc_output
 
 # Dependency directories
 jspm_packages/
@@ -36,8 +35,8 @@ jspm_packages/
 # Optional npm cache directory
 .npm
 
-# Optional REPL history
-.node_repl_history
+# Optional eslint cache
+.eslintcache
 
 # Output of 'npm pack'
 *.tgz
@@ -47,6 +46,10 @@ jspm_packages/
 
 # dotenv environment variables file
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -85,60 +88,83 @@ jspm_packages/
 ehthumbs.db
 Thumbs.db
 
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Test reports and output
+reports/
+test-results/
+playwright-report/
+test-output/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Build artifacts
+dist/
+build/
+out/
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+example/keys/*.pem
 
 # Database files
 *.db
 *.sqlite
 *.sqlite3
 
-# Temporary files
-tmp/
-temp/
-.tmp/
-
-# Build directories
-dist/
-build/
-
-# Docker volumes
-data/
-
-# API keys and secrets (double protection)
-secrets/
-keys/
-*.key
-*.pem
-*.crt
-*.cer
-
-# Test reports
-test-results/
-junit.xml
-jest-junit.xml
-
-# Performance reports
-clinic/
-.clinic/
-
-# Monitoring data
-prometheus_data/
-grafana_data/
-grafana.db
-
 # Backup files
 *.bak
 *.backup
-*.old
 
-# Package manager lock files (consider committing these)
+# Modern JavaScript/Node.js
+.pnpm-debug.log*
+.yarn-error.log
+.npm-debug.log*
+
+# Runtime data
+.nyc_output
+.vscode/settings.json
+.idea/workspace.xml
+
+# Local development
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker volumes
+docker-volumes/
+
+# Temporary test files
+test-results/
+playwright-report/
+test-output/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Lock files (uncomment if using specific package manager)
 # package-lock.json
 # yarn.lock
+# pnpm-lock.yaml
 
-# Local development overrides
-.env.override
+# OS generated files (additional)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini

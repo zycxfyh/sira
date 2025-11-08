@@ -2,18 +2,92 @@
 
 <div align="center">
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge&logo=apache)](https://opensource.org/licenses/Apache-2.0)
+[![Node.js Version](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+[![CI/CD](https://img.shields.io/badge/CI/CD-GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions)](https://github.com/features/actions)
+[![Test Coverage](https://img.shields.io/badge/Coverage-100%25-4CAF50?style=for-the-badge&logo=jest)](https://jestjs.io/)
+
+[![Stars](https://img.shields.io/github/stars/your-username/sira?style=for-the-badge&logo=github)](https://github.com/your-username/sira/stargazers)
+[![Forks](https://img.shields.io/github/forks/your-username/sira?style=for-the-badge&logo=github)](https://github.com/your-username/sira/network/members)
+[![Issues](https://img.shields.io/github/issues/your-username/sira?style=for-the-badge&logo=github)](https://github.com/your-username/sira/issues)
+[![PRs](https://img.shields.io/github/issues-pr/your-username/sira?style=for-the-badge&logo=github)](https://github.com/your-username/sira/pulls)
+
+**用代码连接AI，让智能触手可及** 🌟
+
+[🚀 快速开始](#-快速开始) • [📚 文档](#-文档导航) • [🤝 贡献](#-贡献与交流) • [📄 许可证](#-开源许可证)
+
 ---
+
+</div>
+
+## 📋 目录
+
+- [🚀 快速开始](#-快速开始)
+- [✨ 项目特色](#-项目特色)
+- [🏗️ 系统架构](#-系统架构图)
+- [📊 项目统计](#-项目统计)
+- [🗂️ 模块导航](#-模块导航)
+- [📚 文档导航](#-文档导航)
+- [🎯 核心特性详解](#-核心特性详解)
+- [🧪 测试验证](#-测试验证)
+- [🤝 贡献与交流](#-贡献与交流)
+- [📄 开源许可证](#-开源许可证)
+- [🙏 衷心感谢](#-衷心感谢)
+
+---
+
+## 🚀 快速开始
+
+### 📦 系统要求
+
+| 组件 | 版本要求 | 说明 |
+|-------|----------|--------|
+| **Node.js** | 18.0.0+ | 运行时环境 |
+| **Docker** | 20.0.0+ | 容器化部署 (可选) |
+| **Git** | 2.30.0+ | 版本控制 |
+
+### 🛠️ 快速启动
+
+#### 方法1: 开发环境启动
+```bash
+# 克隆项目
+git clone https://github.com/your-username/sira.git
+cd sira
+
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run start:dev
+
+# 访问 http://localhost:9876
+```
+
+#### 方法2: Docker完整环境
+```bash
+# 完整环境启动 (推荐)
+cd infrastructure
+docker-compose -f docker-compose.full.yml up -d
+
+# 查看服务状态
+docker-compose ps
+```
+
+### 🔧 健康检查
+
+```bash
+# 运行项目健康检查
+npm run health-check
+```
+
+---
+
+## 🎖️ 项目亮点
 
 ## ✨ 项目愿景
 
 > **用代码连接AI，让智能触手可及**
-
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge&logo=apache)](https://opensource.org/licenses/Apache-2.0)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
-[![Test Coverage](https://img.shields.io/badge/Coverage-100%25-4CAF50?style=for-the-badge&logo=jest)](https://jestjs.io/)
-[![Build Status](https://img.shields.io/badge/Build-Passing-4CAF50?style=for-the-badge&logo=github-actions)](https://github.com/)
-[![Stars](https://img.shields.io/badge/Stars-Welcome-FFD700?style=for-the-badge&logo=github)](https://github.com/)
 
 ---
 

@@ -1,0 +1,45 @@
+# Configuration for GitHub repository settings
+
+# Branch protection rules (configured via GitHub UI)
+# - Require pull request reviews before merging
+# - Require status checks to pass before merging
+# - Include administrators in branch protection rules
+
+# Repository settings
+repository:
+  # Enable issues
+  has_issues: true
+  # Enable projects
+  has_projects: true
+  # Enable wiki
+  has_wiki: false
+  # Enable discussions
+  has_discussions: false
+  # Enable downloads
+  has_downloads: false
+  # Default branch
+  default_branch: main
+
+# Labels configuration
+labels:
+  - name: bug
+    color: d73a49
+    description: Something isn't working
+  - name: enhancement
+    color: a2eeef
+    description: New feature or request
+  - name: documentation
+    color: 0075ca
+    description: Improvements or additions to documentation
+  - name: question
+    color: d876e3
+    description: Further information is requested
+  - name: invalid
+    color: e4e669
+    description: This doesn't seem right
+  - name: wontfix
+    color: ffffff
+    description: This will not be worked on
+  - name: duplicate
+    color: cfd3d7
+    description: This issue or pull request already exists

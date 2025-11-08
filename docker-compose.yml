@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # Sira AI Gateway 主服务
+  sira-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  # 主端口
+      - "9876:9876"  # 管理端口
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=info
+      - EG_CONFIG_DIR=/app/src/config
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sira-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis 缓存服务
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sira-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL 数据库 (可选)
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=sira_db
+      - POSTGRES_USER=sira_user
+      - POSTGRES_PASSWORD=sira_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sira-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sira_user -d sira_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus 监控 (可选)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - sira-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Grafana 可视化 (可选)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - sira-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+
+volumes:
+  redis_data:
+  postgres_data:
+  grafana_data:
+
+networks:
+  sira-network:
+    driver: bridge

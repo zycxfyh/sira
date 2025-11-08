@@ -1,0 +1,22 @@
+# This file defines the code owners for this repository
+# When a pull request is opened, the users listed here will be automatically
+# requested for review
+
+# Global owners (apply to all files)
+* @1666384464
+
+# Core source code
+/src/ @1666384464
+
+# Documentation
+/docs/ @1666384464
+
+# Infrastructure and configuration
+/infrastructure/ @1666384464
+/.github/ @1666384464
+
+# CI/CD workflows
+/.github/workflows/ @1666384464
+
+# Scripts
+/scripts/ @1666384464
