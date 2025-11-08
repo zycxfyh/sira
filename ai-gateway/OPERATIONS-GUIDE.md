@@ -288,6 +288,40 @@ resource "aws_ecs_service" "sira_gateway" {
   lifecycle {
     ignore_changes = [desired_count]
   }
+
+  # 自动扩缩容
+  ordered_placement_strategy {
+    type  = "spread"
+    field = "attribute:ecs.availability-zone"
+  }
+
+  deployment_controller {
+    type = "ECS"
+  }
+
+  # 服务发现
+  service_registries {
+    registry_arn = aws_service_discovery_service.sira.arn
+  }
+
+  tags = {
+    Environment = "production"
+    Project     = "sira-gateway"
+  }
+}
+
+# CloudWatch 告警
+resource "aws_cloudwatch_metric_alarm" "cpu_utilization" {
+  alarm_name          = "sira-gateway-cpu-utilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = "70"
+
+  alarm_actions = [aws_sns_topic.alerts.arn]
 }
 ```
 
@@ -300,22 +334,89 @@ replicaCount: 3
 image:
   repository: sira/ai-gateway
   tag: latest
+  pullPolicy: IfNotPresent
 
 service:
   type: LoadBalancer
   port: 80
   targetPort: 8080
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: "myResourceGroup"
 
 env:
   - name: EG_HTTP_PORT
     value: "8080"
   - name: REDIS_URL
     value: "redis://redis:6379"
+  - name: DATABASE_URL
+    valueFrom:
+      secretKeyRef:
+        name: sira-secrets
+        key: database-url
 
 ingress:
   enabled: true
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: api.sira-ai.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: sira-tls
+      hosts:
+        - api.sira-ai.com
+
+# 资源限制
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+# 健康检查
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+
+# HPA 配置
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# 节点选择器
+nodeSelector:
+  kubernetes.io/os: linux
+  workload: ai-gateway
+
+# 容忍度
+tolerations:
+  - key: "workload"
+    operator: "Equal"
+    value: "ai-gateway"
+    effect: "NoSchedule"
 ```
 
 ---
@@ -377,6 +478,175 @@ curl -X PUT http://localhost:9876/config \
 
 # 重新加载配置
 curl -X POST http://localhost:9876/config/reload
+
+# 更新AI提供商配置
+curl -X PUT http://localhost:9876/config/ai-providers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "openai": {
+      "timeout": 60000,
+      "retryAttempts": 3,
+      "rateLimit": {
+        "requests": 100,
+        "windowMs": 60000
+      }
+    }
+  }'
+
+# 查看当前配置
+curl http://localhost:9876/config | jq .
+```
+
+### CI/CD 集成
+
+#### GitHub Actions
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy Sira Gateway
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:industrial:quick
+
+      - name: Build Docker image
+        run: docker build -t sira/ai-gateway:${{ github.sha }} .
+
+  deploy-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to staging
+        run: |
+          kubectl set image deployment/sira-gateway \
+            sira-gateway=sira/ai-gateway:${{ github.sha }}
+          kubectl rollout status deployment/sira-gateway
+
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Deploy to production
+        run: |
+          kubectl set image deployment/sira-gateway-prod \
+            sira-gateway=sira/ai-gateway:${{ github.sha }}
+          kubectl rollout status deployment/sira-gateway-prod
+```
+
+#### ArgoCD 配置
+
+```yaml
+# argocd/application.yml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sira-gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-org/sira-ai-gateway
+    targetRevision: HEAD
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sira
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+```
+
+### 版本升级指南
+
+#### 滚动升级策略
+
+```bash
+# Kubernetes 滚动升级
+kubectl set image deployment/sira-gateway \
+  sira-gateway=sira/ai-gateway:v2.1.0
+
+# 监控升级进度
+kubectl rollout status deployment/sira-gateway
+
+# 如果升级失败，回滚
+kubectl rollout undo deployment/sira-gateway
+
+# 检查pod状态
+kubectl get pods -l app=sira-gateway
+```
+
+#### 蓝绿部署升级
+
+```bash
+# 创建新版本部署
+kubectl create deployment sira-gateway-v2 \
+  --image=sira/ai-gateway:v2.1.0 \
+  --replicas=3 \
+  --port=8080
+
+# 切换服务流量
+kubectl patch service sira-gateway \
+  -p '{"spec":{"selector":{"version":"v2.1.0"}}}'
+
+# 验证新版本
+curl http://gateway.example.com/health
+curl http://gateway.example.com/api/v1/ai/test
+
+# 删除旧版本
+kubectl delete deployment sira-gateway-v1
+```
+
+#### 数据库迁移
+
+```bash
+# 创建迁移脚本
+# migrations/001_add_new_table.sql
+CREATE TABLE ai_model_metrics (
+  id SERIAL PRIMARY KEY,
+  model_name VARCHAR(255) NOT NULL,
+  provider VARCHAR(100) NOT NULL,
+  response_time INTEGER,
+  success_rate DECIMAL(5,4),
+  cost_per_token DECIMAL(10,8),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+# 执行迁移
+psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f migrations/001_add_new_table.sql
+
+# 验证迁移
+psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT COUNT(*) FROM ai_model_metrics;"
 ```
 
 ---
@@ -473,20 +743,175 @@ increase(ai_provider_switches_total[1h])
 
 #### 核心仪表板配置
 
-1. **AI服务概览**
-   - 请求量趋势图
-   - 各提供商使用分布
-   - 错误率和响应时间
+##### 1. AI服务概览面板
 
-2. **系统性能**
-   - CPU/内存使用率
-   - 网络I/O监控
-   - 队列积压情况
+```json
+{
+  "dashboard": {
+    "title": "Sira AI Gateway Overview",
+    "tags": ["sira", "ai-gateway"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "AI Requests per Minute",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ai_requests_total[5m])",
+            "legendFormat": "Requests/min"
+          }
+        ]
+      },
+      {
+        "title": "Provider Usage Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum(rate(ai_requests_total{provider=~\".+\"}[1h])) by (provider)",
+            "legendFormat": "{{provider}}"
+          }
+        ]
+      },
+      {
+        "title": "Response Time Percentiles",
+        "type": "heatmap",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(ai_request_duration_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(ai_request_duration_bucket[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
-3. **业务指标**
-   - 用户活跃度
-   - API调用模式
-   - 成本分析图表
+##### 2. 系统性能面板
+
+```json
+{
+  "title": "System Performance",
+  "type": "row",
+  "panels": [
+    {
+      "title": "CPU Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "CPU Usage %"
+        }
+      ]
+    },
+    {
+      "title": "Memory Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100",
+          "legendFormat": "Memory Usage %"
+        }
+      ]
+    },
+    {
+      "title": "Network I/O",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(node_network_receive_bytes_total[5m])",
+          "legendFormat": "RX bytes/sec"
+        },
+        {
+          "expr": "rate(node_network_transmit_bytes_total[5m])",
+          "legendFormat": "TX bytes/sec"
+        }
+      ]
+    }
+  ]
+}
+```
+
+##### 3. 业务指标面板
+
+```json
+{
+  "title": "Business Metrics",
+  "type": "row",
+  "panels": [
+    {
+      "title": "Active Users",
+      "type": "singlestat",
+      "targets": [
+        {
+          "expr": "count(count by (user_id) (ai_requests_total[1h]))",
+          "legendFormat": "Active Users"
+        }
+      ]
+    },
+    {
+      "title": "API Cost Trend",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(ai_cost_total[5m]))",
+          "legendFormat": "Cost per minute"
+        }
+      ]
+    },
+    {
+      "title": "Error Rate by Endpoint",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "rate(ai_requests_total{status=\"error\"}[5m]) / rate(ai_requests_total[5m]) * 100",
+          "legendFormat": "{{endpoint}}"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Grafana 告警配置
+
+```yaml
+# grafana/alerting.yml
+apiVersion: 1
+groups:
+  - name: Sira Gateway Alerts
+    rules:
+      - alert: HighErrorRate
+        expr: rate(ai_requests_total{status="error"}[5m]) / rate(ai_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AI请求错误率过高 ({{ $value }}%)"
+          description: "错误率超过5%，请检查AI提供商连接"
+
+      - alert: SlowResponseTime
+        expr: histogram_quantile(0.95, rate(ai_request_duration_bucket[5m])) > 10
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI响应时间过慢 ({{ $value }}s)"
+          description: "95分位响应时间超过10秒"
+
+      - alert: HighMemoryUsage
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "内存使用率过高 ({{ $value }}%)"
+          description: "系统内存使用率超过85%"
+```
 
 ### 告警配置
 
@@ -882,6 +1307,166 @@ az storage blob upload-batch --destination backup --source /backup/daily/
 
 # 云备份 (1份)
 gcloud storage cp /backup/daily/* gs://sira-backup/daily/
+```
+
+#### 自动化备份脚本
+
+```bash
+#!/bin/bash
+# backup.sh - Sira Gateway 自动化备份脚本
+
+set -e
+
+# 配置
+BACKUP_DIR="/opt/sira-gateway/backups"
+RETENTION_DAYS=30
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# 创建备份目录
+mkdir -p $BACKUP_DIR/{daily,weekly,monthly}
+
+# 数据库备份
+echo "开始数据库备份..."
+pg_dump -h $DB_HOST -U $DB_USER -d $DB_NAME \
+  --format=custom --compress=9 \
+  --file=$BACKUP_DIR/daily/db_$TIMESTAMP.backup
+
+# Redis 数据备份
+echo "开始Redis备份..."
+redis-cli -h $REDIS_HOST -p $REDIS_PORT --rdb $BACKUP_DIR/daily/redis_$TIMESTAMP.rdb
+
+# 配置文件备份
+echo "开始配置文件备份..."
+tar -czf $BACKUP_DIR/daily/config_$TIMESTAMP.tar.gz \
+  -C /opt/sira-gateway config/
+
+# 验证备份完整性
+echo "验证备份完整性..."
+if [ -f "$BACKUP_DIR/daily/db_$TIMESTAMP.backup" ]; then
+  echo "✅ 数据库备份成功"
+else
+  echo "❌ 数据库备份失败"
+  exit 1
+fi
+
+# 清理过期备份
+echo "清理过期备份..."
+find $BACKUP_DIR/daily -name "*.backup" -mtime +$RETENTION_DAYS -delete
+find $BACKUP_DIR/daily -name "*.rdb" -mtime +$RETENTION_DAYS -delete
+find $BACKUP_DIR/daily -name "*.tar.gz" -mtime +$RETENTION_DAYS -delete
+
+# 上传到云存储
+echo "上传到云存储..."
+aws s3 cp $BACKUP_DIR/daily/ s3://sira-backup/daily/ --recursive
+
+echo "✅ 备份完成: $TIMESTAMP"
+```
+
+#### 备份恢复指南
+
+##### 数据库恢复
+
+```bash
+# 1. 停止应用服务
+kubectl scale deployment sira-gateway --replicas=0
+
+# 2. 从备份恢复数据库
+pg_restore -h $DB_HOST -U $DB_USER -d $DB_NAME \
+  --clean --if-exists \
+  /backup/db_20241108_143000.backup
+
+# 3. 验证数据完整性
+psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "
+  SELECT COUNT(*) as total_requests FROM ai_requests;
+  SELECT COUNT(*) as total_users FROM users;
+  SELECT COUNT(*) as total_api_keys FROM api_keys;
+"
+
+# 4. 重启应用服务
+kubectl scale deployment sira-gateway --replicas=3
+
+# 5. 验证应用功能
+curl http://gateway.example.com/health
+curl http://gateway.example.com/api/v1/ai/test
+```
+
+##### Redis 缓存恢复
+
+```bash
+# 1. 停止Redis服务
+systemctl stop redis
+
+# 2. 恢复RDB文件
+cp /backup/redis_20241108_143000.rdb /var/lib/redis/dump.rdb
+
+# 3. 启动Redis服务
+systemctl start redis
+
+# 4. 验证缓存数据
+redis-cli -h $REDIS_HOST -p $REDIS_PORT KEYS "sira:*" | wc -l
+redis-cli -h $REDIS_HOST -p $REDIS_PORT PING
+```
+
+##### 配置文件恢复
+
+```bash
+# 1. 备份当前配置
+cp -r /opt/sira-gateway/config /opt/sira-gateway/config.backup
+
+# 2. 恢复配置文件
+tar -xzf /backup/config_20241108_143000.tar.gz -C /opt/sira-gateway/
+
+# 3. 验证配置文件
+node -c config/gateway.config.yml
+node -c config/system.config.yml
+
+# 4. 重启服务应用新配置
+kubectl rollout restart deployment/sira-gateway
+```
+
+##### 完整系统恢复
+
+```bash
+#!/bin/bash
+# disaster-recovery.sh - 灾难恢复脚本
+
+echo "🆘 开始灾难恢复..."
+
+# 1. 停止所有服务
+kubectl scale deployment sira-gateway --replicas=0
+systemctl stop redis postgresql
+
+# 2. 恢复数据库
+echo "恢复数据库..."
+pg_restore -h $DB_HOST -U $DB_USER -d $DB_NAME \
+  --clean --if-exists /backup/latest/db.backup
+
+# 3. 恢复Redis
+echo "恢复Redis缓存..."
+systemctl start redis
+redis-cli FLUSHALL
+redis-cli < /backup/latest/redis.backup
+
+# 4. 恢复配置文件
+echo "恢复配置文件..."
+tar -xzf /backup/latest/config.tar.gz -C /opt/sira-gateway/
+
+# 5. 启动应用服务
+echo "启动应用服务..."
+kubectl scale deployment sira-gateway --replicas=3
+
+# 6. 等待服务就绪
+echo "等待服务就绪..."
+kubectl wait --for=condition=available --timeout=300s deployment/sira-gateway
+
+# 7. 执行健康检查
+echo "执行健康检查..."
+if curl -f http://gateway.example.com/health; then
+  echo "✅ 灾难恢复成功"
+else
+  echo "❌ 灾难恢复失败"
+  exit 1
+fi
 ```
 
 ---
