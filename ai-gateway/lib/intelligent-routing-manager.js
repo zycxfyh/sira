@@ -454,9 +454,11 @@ class IntelligentRoutingManager extends EventEmitter {
     })
 
     // 监听复杂度分析事件
-    this.complexityAnalyzer.on('analysisCompleted', (analysis) => {
-      this.emit('analysisCompleted', analysis)
-    })
+    if (this.complexityAnalyzer && typeof this.complexityAnalyzer.on === 'function') {
+      this.complexityAnalyzer.on('analysisCompleted', (analysis) => {
+        this.emit('analysisCompleted', analysis)
+      })
+    }
   }
 
   /**

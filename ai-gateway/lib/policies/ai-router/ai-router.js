@@ -91,20 +91,19 @@ module.exports = function (params, config) {
     const requestId = req.headers['x-request-id'] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
     // Initialize rules engine for custom routing rules asynchronously
-    const initializeRulesEngine = () => {
+    const initializeRulesEngine = async () => {
       if (global.rulesEngine) {
-        return Promise.resolve(global.rulesEngine)
+        return global.rulesEngine
       }
-      return new Promise((resolve, reject) => {
+      try {
         const rulesEngine = new RulesEngine()
-        rulesEngine.initialize().then(() => {
-          global.rulesEngine = rulesEngine
-          resolve(rulesEngine)
-        }).catch(error => {
-          logger.warn('Rules engine initialization failed, continuing without custom rules:', error.message)
-          resolve(null)
-        })
-      })
+        await rulesEngine.initialize()
+        global.rulesEngine = rulesEngine
+        return rulesEngine
+      } catch (error) {
+        logger.warn('Rules engine initialization failed, continuing without custom rules:', error.message)
+        return null
+      }
     }
 
     // Extract AI model from request body

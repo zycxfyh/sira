@@ -129,7 +129,8 @@ describe('Request @headers @proxy downstream @auth @key-auth', () => {
           .expect(302)
       })
       .then((res) => {
-        const params = qs.parse(url.parse(res.headers.location).hash.slice(1))
+        const parsedUrl = new URL(res.headers.location)
+        const params = qs.parse(parsedUrl.hash.slice(1))
         token = params.access_token
 
         const backendApp = express()

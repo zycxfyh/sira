@@ -4,7 +4,7 @@ http:
 #   port: 9999
 #   tls: {}
 admin: # remove this section to disable admin API
-  port: 9876
+  port: 9877
   host: localhost # use 0.0.0.0 to listen on all IPv4 interfaces
 apiEndpoints:
   api:

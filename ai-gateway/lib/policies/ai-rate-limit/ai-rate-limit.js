@@ -4,6 +4,26 @@
 // Rate limit store (in production, use Redis)
 const rateLimitStore = new Map()
 
+// Default rate limit handler
+function defaultHandler(req, res) {
+  res.status(429).json({
+    error: 'Too Many Requests',
+    message: 'Rate limit exceeded. Please try again later.',
+    retryAfter: Math.ceil(rateConfig.windowMs / 1000)
+  })
+}
+
+// Default limit reached handler
+function defaultOnLimitReached(key, req) {
+  const logger = req.logger || console
+  logger.warn(`Rate limit exceeded for key: ${key}`, {
+    ip: req.ip,
+    userId: req.user?.id,
+    userAgent: req.get('User-Agent'),
+    url: req.url
+  })
+}
+
 module.exports = function (params, config) {
   const logger = config.logger || console
 

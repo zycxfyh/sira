@@ -122,7 +122,7 @@ function abTestsRoutes () {
       // 不允许更新运行中的测试的关键配置
       if (test.status === 'running') {
         const restrictedFields = ['variants', 'allocation', 'target', 'conditions']
-        const hasRestrictedUpdate = restrictedFields.some(field => updates.hasOwnProperty(field))
+        const hasRestrictedUpdate = restrictedFields.some(field => Object.prototype.hasOwnProperty.call(updates, field))
 
         if (hasRestrictedUpdate) {
           return res.status(400).json({

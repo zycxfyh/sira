@@ -1,6 +1,7 @@
 const crypto = require('crypto')
 const fs = require('fs').promises
 const path = require('path')
+const vm = require('vm')
 
 /**
  * 自定义规则引擎 - 借鉴Drools和Node Rules的设计理念
@@ -490,15 +491,19 @@ class RulesEngine {
           ...options.globals
         }
 
-        // 执行脚本 (在生产环境中应该使用更安全的沙箱)
-        const func = new Function('sandbox', `
-          with (sandbox) {
-            ${script}
-          }
-          return result;
-        `)
+        // 执行脚本 (使用vm沙箱环境，提高安全性)
+        const context = vm.createContext({
+          ...sandbox,
+          console,
+          require: () => { throw new Error('require() not allowed in sandbox') }
+        })
 
-        return func(sandbox)
+        try {
+          const result = vm.runInContext(script, context)
+          return result
+        } catch (error) {
+          throw new Error(`脚本执行错误: ${error.message}`)
+        }
       } catch (error) {
         console.warn(`脚本执行失败: ${error.message}`)
         return false
@@ -671,8 +676,14 @@ class RulesEngine {
     })
 
     try {
-      const func = new Function('context', `return ${sanitizedExpression}`)
-      return func(context)
+      // 使用vm运行表达式，提高安全性
+      const context = vm.createContext({
+        ...context,
+        console,
+        require: () => { throw new Error('require() not allowed in expression') }
+      })
+
+      return vm.runInContext(`(${sanitizedExpression})`, context)
     } catch (error) {
       throw new Error(`表达式语法错误: ${error.message}`)
     }

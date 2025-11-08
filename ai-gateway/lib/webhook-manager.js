@@ -100,7 +100,7 @@ class WebhookManager {
     // 不允许更新关键字段
     const restrictedFields = ['id', 'createdAt', 'successCount', 'failureCount']
     restrictedFields.forEach(field => {
-      if (updates.hasOwnProperty(field)) {
+      if (Object.prototype.hasOwnProperty.call(updates, field)) {
         delete updates[field]
       }
     })

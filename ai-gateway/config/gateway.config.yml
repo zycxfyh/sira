@@ -1,5 +1,5 @@
 http:
-  port: 8080
+  port: ${EG_HTTP_PORT:-8080}
   hostname: localhost
 apiEndpoints:
   ai-api:
@@ -56,3 +56,7 @@ pipelines:
   #         max: 100
   #     - proxy:
   #         serviceEndpoint: admin-service
+
+admin:
+  port: 9877
+  host: localhost

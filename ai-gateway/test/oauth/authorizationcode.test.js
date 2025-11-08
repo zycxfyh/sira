@@ -60,7 +60,8 @@ describe('Functional Test Authorization Code grant', function () {
                     should.not.exist(err)
                     should.exist(res.headers.location)
                     res.headers.location.should.containEql(fromDbApp.redirectUri)
-                    const params = qs.parse(url.parse(res.headers.location).search.slice(1))
+                    const parsedUrl = new URL(res.headers.location)
+                    const params = qs.parse(parsedUrl.search.slice(1))
                     should.exist(params.code)
                     request
                       .post('/oauth2/token')
@@ -130,7 +131,8 @@ describe('Functional Test Authorization Code grant', function () {
                     should.not.exist(err)
                     should.exist(res.headers.location)
                     res.headers.location.should.containEql(fromDbApp.redirectUri)
-                    const params = qs.parse(url.parse(res.headers.location).search.slice(1))
+                    const parsedUrl = new URL(res.headers.location)
+                    const params = qs.parse(parsedUrl.search.slice(1))
                     should.exist(params.code)
                     request
                       .post('/oauth2/token')
@@ -274,7 +276,8 @@ describe('Functional Test Authorization Code grant', function () {
                     should.not.exist(err)
                     should.exist(res.headers.location)
                     res.headers.location.should.containEql(fromDbApp.redirectUri)
-                    const params = qs.parse(url.parse(res.headers.location).search.slice(1))
+                    const parsedUrl = new URL(res.headers.location)
+                    const params = qs.parse(parsedUrl.search.slice(1))
                     should.exist(params.code)
                     request
                       .post('/oauth2/token')

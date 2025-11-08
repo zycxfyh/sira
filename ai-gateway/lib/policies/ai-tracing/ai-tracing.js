@@ -67,27 +67,31 @@ module.exports = function (params, config) {
     // Configure exporter
     let exporter
     switch (tracingConfig.exporter) {
-      case 'jaeger':
+      case 'jaeger': {
         const { JaegerExporter } = require('@opentelemetry/exporter-jaeger')
         exporter = new JaegerExporter({
           endpoint: tracingConfig.jaegerEndpoint
         })
         break
-      case 'zipkin':
+      }
+      case 'zipkin': {
         const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin')
         exporter = new ZipkinExporter({
           url: tracingConfig.zipkinEndpoint
         })
         break
-      case 'otlp':
+      }
+      case 'otlp': {
         const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-proto')
         exporter = new OTLPTraceExporter({
           url: tracingConfig.otlpEndpoint
         })
         break
-      default:
+      }
+      default: {
         const { ConsoleSpanExporter } = require('@opentelemetry/sdk-trace-base')
         exporter = new ConsoleSpanExporter()
+      }
     }
 
     provider.addSpanProcessor(new BatchSpanProcessor(exporter))
@@ -108,6 +112,21 @@ module.exports = function (params, config) {
   // Get tracer if OpenTelemetry is available
   if (opentelemetry) {
     tracer = opentelemetry.trace.getTracer(tracingConfig.serviceName)
+  }
+
+  // Health check for tracing
+  config.tracingHealth = {
+    getStats: () => ({
+      tracer: tracer ? 'active' : 'inactive',
+      config: tracingConfig
+    }),
+    flush: async () => {
+      // Force flush any pending spans
+      const provider = opentelemetry.trace.getTracerProvider()
+      if (provider && typeof provider.forceFlush === 'function') {
+        await provider.forceFlush()
+      }
+    }
   }
 
   return function aiTracing (req, res, next) {
@@ -271,20 +290,5 @@ module.exports = function (params, config) {
   // Generate request ID
   function generateRequestId () {
     return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  }
-
-  // Health check for tracing
-  config.tracingHealth = {
-    getStats: () => ({
-      tracer: tracer ? 'active' : 'inactive',
-      config: tracingConfig
-    }),
-    flush: async () => {
-      // Force flush any pending spans
-      const provider = opentelemetry.trace.getTracerProvider()
-      if (provider && typeof provider.forceFlush === 'function') {
-        await provider.forceFlush()
-      }
-    }
   }
 }

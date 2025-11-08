@@ -168,8 +168,9 @@ describe('oauth2 authorization code grant type', () => {
       .then(([browser, page]) => Promise.all([browser, page, page.click('#allow')]))
       .then(([browser, page]) => Promise.all([page.url(), browser.close()]))
       .then(([pageUrl]) => {
-        const parsedPageUrl = url.parse(pageUrl, true)
-        const { code } = parsedPageUrl.query
+        const parsedPageUrl = new URL(pageUrl)
+        const urlParams = new URLSearchParams(parsedPageUrl.search)
+        const code = urlParams.get('code')
 
         const params = {
           grant_type: 'authorization_code',

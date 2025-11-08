@@ -3,7 +3,7 @@ const sinon = require('sinon')
 const aiCache = require('../../lib/policies/ai-cache')
 
 describe('AI Cache Policy', function () {
-  let req, res, next, config
+  let req, res, next, config, cache
 
   beforeEach(function () {
     req = {
