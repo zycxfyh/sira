@@ -290,7 +290,8 @@ module.exports = function (params, config) {
     }
 
     // 执行自定义路由规则
-    initializeRulesEngine().then(async (rulesEngine) => {
+    try {
+      const rulesEngine = await initializeRulesEngine()
       if (rulesEngine) {
         try {
           const ruleResult = await rulesEngine.executeRules(routingContext, {
@@ -299,37 +300,38 @@ module.exports = function (params, config) {
             dryRun: false
           })
 
-        if (ruleResult.matched && ruleResult.results.length > 0) {
-          logger.info(`Applied ${ruleResult.results.length} custom routing rules`, {
-            userId,
-            requestId,
-            rulesApplied: ruleResult.results.map(r => r.ruleName)
-          })
+          if (ruleResult.matched && ruleResult.results.length > 0) {
+            logger.info(`Applied ${ruleResult.results.length} custom routing rules`, {
+              userId,
+              requestId,
+              rulesApplied: ruleResult.results.map(r => r.ruleName)
+            })
 
-          // 应用规则执行结果
-          for (const result of ruleResult.results) {
-            // 规则执行结果已经通过actions应用到了routingContext中
-            if (routingContext.routing.provider) {
-              selectedProvider = routingContext.routing.provider
-            }
-            if (routingContext.routing.model) {
-              model = routingContext.routing.model
-            }
-            if (routingContext.routing.parameters) {
-              parameters = { ...parameters, ...routingContext.routing.parameters }
+            // 应用规则执行结果
+            for (const result of ruleResult.results) {
+              // 规则执行结果已经通过actions应用到了routingContext中
+              if (routingContext.routing.provider) {
+                selectedProvider = routingContext.routing.provider
+              }
+              if (routingContext.routing.model) {
+                model = routingContext.routing.model
+              }
+              if (routingContext.routing.parameters) {
+                parameters = { ...parameters, ...routingContext.routing.parameters }
+              }
             }
           }
+        } catch (error) {
+          logger.warn('Custom routing rules execution failed, continuing with default routing:', {
+            userId,
+            requestId,
+            error: error.message
+          })
         }
-      } catch (error) {
-        logger.warn('Custom routing rules execution failed, continuing with default routing:', {
-          userId,
-          requestId,
-          error: error.message
-        })
       }
-    }).catch(error => {
+    } catch (error) {
       logger.warn('Rules engine execution failed:', error.message)
-    })
+    }
 
     // A/B测试：检查是否有适用于当前请求的测试
     let abTestAllocation = null
