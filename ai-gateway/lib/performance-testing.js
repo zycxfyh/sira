@@ -489,7 +489,7 @@ class PerformanceTestingTool extends EventEmitter {
       const scenarioConfig = this.testScenarios.get(scenario)
       const clientIndex = Math.floor(Math.random() * this.httpClients.length)
 
-      while (Date.now() < endTime) {
+      const executeRequest = async () => {
         try {
           await this.httpClients[clientIndex].request({
             url: scenarioConfig.endpoint,
@@ -497,16 +497,24 @@ class PerformanceTestingTool extends EventEmitter {
             data: scenarioConfig.payload,
             headers: scenarioConfig.headers
           })
-
           // 结果会被拦截器记录
         } catch (error) {
           // 错误会被拦截器记录
         }
-
-        await this.sleep(interval)
       }
 
-      resolve()
+      const runLoop = () => {
+        if (Date.now() >= endTime) {
+          resolve()
+          return
+        }
+
+        executeRequest().then(() => {
+          setTimeout(runLoop, interval)
+        })
+      }
+
+      runLoop()
     })
   }
 
@@ -517,7 +525,7 @@ class PerformanceTestingTool extends EventEmitter {
     return new Promise((resolve) => {
       const clientIndex = workerId % this.httpClients.length
 
-      while (Date.now() < endTime) {
+      const executeRequest = async () => {
         try {
           await this.httpClients[clientIndex].request({
             url: scenarioConfig.endpoint,
@@ -528,11 +536,20 @@ class PerformanceTestingTool extends EventEmitter {
         } catch (error) {
           // 错误处理
         }
-
-        await this.sleep(interval)
       }
 
-      resolve()
+      const runLoop = () => {
+        if (Date.now() >= endTime) {
+          resolve()
+          return
+        }
+
+        executeRequest().then(() => {
+          setTimeout(runLoop, interval)
+        })
+      }
+
+      runLoop()
     })
   }
 
@@ -543,7 +560,7 @@ class PerformanceTestingTool extends EventEmitter {
     return new Promise((resolve) => {
       const clientIndex = Math.floor(Math.random() * this.httpClients.length)
 
-      while (Date.now() < endTime) {
+      const executeRequest = async () => {
         try {
           await this.httpClients[clientIndex].request({
             url: scenarioConfig.endpoint,
@@ -554,11 +571,20 @@ class PerformanceTestingTool extends EventEmitter {
         } catch (error) {
           // 错误处理
         }
-
-        await this.sleep(interval)
       }
 
-      resolve()
+      const runLoop = () => {
+        if (Date.now() >= endTime) {
+          resolve()
+          return
+        }
+
+        executeRequest().then(() => {
+          setTimeout(runLoop, interval)
+        })
+      }
+
+      runLoop()
     })
   }
 
