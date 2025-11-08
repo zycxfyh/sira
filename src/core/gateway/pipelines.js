@@ -1,275 +1,303 @@
-const express = require('express')
-const flatMap = require('lodash.flatmap')
-const vhost = require('vhost')
-const chalk = require('chalk')
-const log = require('../logger').gateway
-const policies = require('../policies')
-const EgContextBase = require('./context')
-const ActionParams = require('./actionParams')
-const { conditions } = require('../conditions')
-const conditionDefinitions = require('../conditions/predefined')
+const express = require('express');
+const flatMap = require('lodash.flatmap');
+const vhost = require('vhost');
+const chalk = require('chalk');
+const log = require('../logger').gateway;
+const policies = require('../policies');
+const EgContextBase = require('./context');
+const ActionParams = require('./actionParams');
+const { conditions } = require('../conditions');
+const conditionDefinitions = require('../conditions/predefined');
 
 module.exports.bootstrap = async function ({ app, config }) {
   if (!normalizeGatewayConfig(config)) {
-    return app
+    return app;
   }
 
-  const apiEndpointToPipelineMap = {}
+  const apiEndpointToPipelineMap = {};
 
   for (const name in config.gatewayConfig.pipelines) {
-    log.verbose(`processing pipeline ${name}`)
+    log.verbose(`processing pipeline ${name}`);
 
-    const pipeline = config.gatewayConfig.pipelines[name]
-    const configuredPipeline = configurePipeline(pipeline.policies || [], config)
+    const pipeline = config.gatewayConfig.pipelines[name];
+    const configuredPipeline = configurePipeline(pipeline.policies || [], config);
 
-    const router = configuredPipeline instanceof Promise ? await configuredPipeline : configuredPipeline
+    const router =
+      configuredPipeline instanceof Promise ? await configuredPipeline : configuredPipeline;
 
     for (const apiName of pipeline.apiEndpoints) {
-      apiEndpointToPipelineMap[apiName] = router
+      apiEndpointToPipelineMap[apiName] = router;
     }
   }
 
-  const apiEndpoints = processApiEndpoints(config.gatewayConfig.apiEndpoints)
+  const apiEndpoints = processApiEndpoints(config.gatewayConfig.apiEndpoints);
 
   for (const el in apiEndpoints) {
-    const host = el
-    const hostConfig = apiEndpoints[el]
-    const router = express.Router()
-    log.debug('processing vhost %s %j', host, hostConfig.routes)
+    const host = el;
+    const hostConfig = apiEndpoints[el];
+    const router = express.Router();
+    log.debug('processing vhost %s %j', host, hostConfig.routes);
     for (const route of hostConfig.routes) {
-      let mountPaths = []
-      route.paths = route.paths || route.path
+      let mountPaths = [];
+      route.paths = route.paths || route.path;
       if (route.pathRegex) {
-        mountPaths.push(RegExp(route.pathRegex))
+        mountPaths.push(RegExp(route.pathRegex));
       } else if (route.paths && route.paths.length) {
-        mountPaths = mountPaths.concat(route.paths)
+        mountPaths = mountPaths.concat(route.paths);
       } else {
-        mountPaths.push('*')
+        mountPaths.push('*');
       }
       for (const path of mountPaths) {
-        log.debug('mounting routes for apiEndpointName %s, mount %s', route.apiEndpointName, path)
+        log.debug('mounting routes for apiEndpointName %s, mount %s', route.apiEndpointName, path);
 
-        const handler = generatePipelineHandler({ path, pipeline: apiEndpointToPipelineMap[route.apiEndpointName], route })
+        const handler = generatePipelineHandler({
+          path,
+          pipeline: apiEndpointToPipelineMap[route.apiEndpointName],
+          route,
+        });
 
         if (route.methods && route.methods !== '*') {
-          log.debug('methods specified, registering for each method individually')
+          log.debug('methods specified, registering for each method individually');
 
-          const methods = Array.isArray(route.methods) ? route.methods : route.methods.split(',')
+          const methods = Array.isArray(route.methods) ? route.methods : route.methods.split(',');
 
           for (const method of methods) {
-            const m = method.trim().toLowerCase()
+            const m = method.trim().toLowerCase();
 
             if (m) {
-              router[m](path, handler)
+              router[m](path, handler);
             }
           }
         } else {
-          log.debug('no methods specified. handle all mode.')
-          router.all(path, handler)
+          log.debug('no methods specified. handle all mode.');
+          router.all(path, handler);
         }
       }
     }
 
     if (!host || host === '*') {
-      app.use(router)
+      app.use(router);
     } else {
-      const virtualHost = hostConfig.isRegex ? new RegExp(host) : host
-      app.use(vhost(virtualHost, router))
+      const virtualHost = hostConfig.isRegex ? new RegExp(host) : host;
+      app.use(vhost(virtualHost, router));
     }
   }
 
   if (process.env.LOG_LEVEL === 'debug') {
     app.use((req, res, next) => {
       if (!req.route) {
-        log.debug('No pipeline matched, returning 404.')
+        log.debug('No pipeline matched, returning 404.');
       }
 
-      next()
-    })
+      next();
+    });
   }
 
-  return app
-}
+  return app;
+};
 
-const processApiEndpoints = (apiEndpoints) => {
-  const cfg = {}
-  log.debug('loading apiEndpoints %j', apiEndpoints)
+const processApiEndpoints = apiEndpoints => {
+  const cfg = {};
+  log.debug('loading apiEndpoints %j', apiEndpoints);
   for (const el in apiEndpoints) {
-    const apiEndpointName = el
-    let endpointConfigs = apiEndpoints[el]
+    const apiEndpointName = el;
+    let endpointConfigs = apiEndpoints[el];
     // apiEndpoint can be array or object {host, paths, methods, ...}
-    endpointConfigs = Array.isArray(endpointConfigs) ? endpointConfigs : [endpointConfigs]
+    endpointConfigs = Array.isArray(endpointConfigs) ? endpointConfigs : [endpointConfigs];
 
     endpointConfigs.forEach(endpointConfig => {
-      let host = endpointConfig.hostRegex
-      let isRegex = true
+      let host = endpointConfig.hostRegex;
+      let isRegex = true;
       if (!host) {
-        host = endpointConfig.host || '*'
-        isRegex = false
+        host = endpointConfig.host || '*';
+        isRegex = false;
       }
 
-      cfg[host] = cfg[host] || { isRegex, routes: [] }
-      log.debug('processing host: %s, isRegex: %s', host, cfg[host].isRegex)
-      const route = Object.assign({ apiEndpointName }, endpointConfig)
-      log.debug('adding route to host: %s, %j', host, route)
-      cfg[host].routes.push(route)
-    })
+      cfg[host] = cfg[host] || { isRegex, routes: [] };
+      log.debug('processing host: %s, isRegex: %s', host, cfg[host].isRegex);
+      const route = Object.assign({ apiEndpointName }, endpointConfig);
+      log.debug('adding route to host: %s, %j', host, route);
+      cfg[host].routes.push(route);
+    });
   }
-  return cfg
-}
+  return cfg;
+};
 
-function configurePipeline (pipelinePoliciesConfig, config) {
-  const router = express.Router({ mergeParams: true })
+function configurePipeline(pipelinePoliciesConfig, config) {
+  const router = express.Router({ mergeParams: true });
 
   if (!Array.isArray(pipelinePoliciesConfig)) {
-    pipelinePoliciesConfig = [pipelinePoliciesConfig]
+    pipelinePoliciesConfig = [pipelinePoliciesConfig];
   }
 
-  validatePipelinePolicies(pipelinePoliciesConfig, config.gatewayConfig.policies || [])
+  validatePipelinePolicies(pipelinePoliciesConfig, config.gatewayConfig.policies || []);
 
   pipelinePoliciesConfig.forEach(policyConfig => {
-    const policyName = Object.keys(policyConfig)[0]
-    let policySteps = policyConfig[policyName]
+    const policyName = Object.keys(policyConfig)[0];
+    let policySteps = policyConfig[policyName];
 
     if (!policySteps) {
-      policySteps = []
+      policySteps = [];
     } else if (!Array.isArray(policySteps)) {
-      policySteps = [policySteps]
+      policySteps = [policySteps];
     }
 
-    const policy = policies.resolve(policyName).policy
+    const { policy } = policies.resolve(policyName);
 
     if (policySteps.length === 0) {
-      policySteps.push({})
+      policySteps.push({});
     }
 
     const middlewares = flatMap(policySteps, policyStep => {
-      const conditionConfig = policyStep.condition
+      const conditionConfig = policyStep.condition;
 
-      let condition
-      let middlewares
+      let condition;
+      let middlewares;
 
       if (conditionConfig) {
-        condition = conditions[conditionConfig.name](conditionConfig)
-        const cd = conditionDefinitions.find(cd => cd.name === conditionConfig.name)
+        condition = conditions[conditionConfig.name](conditionConfig);
+        const cd = conditionDefinitions.find(cd => cd.name === conditionConfig.name);
         if (cd) {
-          middlewares = cd.middlewares
+          middlewares = cd.middlewares;
         }
       }
 
-      const action = Object.assign({}, policyStep.action, ActionParams.prototype)
-      const policyMiddleware = policy(action, config)
+      const action = Object.assign({}, policyStep.action, ActionParams.prototype);
+      const policyMiddleware = policy(action, config);
 
       if (condition instanceof Promise) {
         return condition.then(condFn =>
-          createConditionAndActionMiddleware(conditionConfig, condFn, policyName, policyMiddleware, middlewares))
+          createConditionAndActionMiddleware(
+            conditionConfig,
+            condFn,
+            policyName,
+            policyMiddleware,
+            middlewares
+          )
+        );
       }
 
-      return createConditionAndActionMiddleware(conditionConfig, condition, policyName, policyMiddleware, middlewares)
-    })
+      return createConditionAndActionMiddleware(
+        conditionConfig,
+        condition,
+        policyName,
+        policyMiddleware,
+        middlewares
+      );
+    });
 
-    return Promise.all(middlewares).then(resolvedMiddlewares => router.use(resolvedMiddlewares))
-  })
+    return Promise.all(middlewares).then(resolvedMiddlewares => router.use(resolvedMiddlewares));
+  });
 
-  return router
+  return router;
 }
 
-function normalizeGatewayConfig (config) {
+function normalizeGatewayConfig(config) {
   if (!config || !config.gatewayConfig) {
-    throw new Error('No config provided')
+    throw new Error('No config provided');
   }
 
-  const gatewayConfig = config.gatewayConfig
+  const { gatewayConfig } = config;
 
   if (!gatewayConfig.pipelines) {
     if (gatewayConfig.pipeline) {
-      gatewayConfig.pipelines = Array.isArray(gatewayConfig.pipeline) ? gatewayConfig.pipeline : [gatewayConfig.pipeline]
+      gatewayConfig.pipelines = Array.isArray(gatewayConfig.pipeline)
+        ? gatewayConfig.pipeline
+        : [gatewayConfig.pipeline];
     } else {
-      return false
+      return false;
     }
   }
   if (!gatewayConfig.apiEndpoints) {
     if (gatewayConfig.apiEndpoint) {
-      gatewayConfig.apiEndpoints = Array.isArray(gatewayConfig.apiEndpoint) ? gatewayConfig.apiEndpoint : [gatewayConfig.apiEndpoint]
+      gatewayConfig.apiEndpoints = Array.isArray(gatewayConfig.apiEndpoint)
+        ? gatewayConfig.apiEndpoint
+        : [gatewayConfig.apiEndpoint];
     } else {
-      return false
+      return false;
     }
   }
 
   for (const name in gatewayConfig.pipelines) {
-    const pipeline = gatewayConfig.pipelines[name]
+    const pipeline = gatewayConfig.pipelines[name];
 
     if (!pipeline.apiEndpoints) {
-      pipeline.apiEndpoints = pipeline.apiEndpoint
+      pipeline.apiEndpoints = pipeline.apiEndpoint;
     }
 
     if (!Array.isArray(pipeline.apiEndpoints)) {
-      pipeline.apiEndpoints = [pipeline.apiEndpoints]
+      pipeline.apiEndpoints = [pipeline.apiEndpoints];
     }
 
     if (!pipeline.policies) {
-      pipeline.policies = pipeline.policy
+      pipeline.policies = pipeline.policy;
     }
 
     if (!Array.isArray(pipeline.policies)) {
-      pipeline.policies = [pipeline.policies]
+      pipeline.policies = [pipeline.policies];
     }
   }
 
-  return true
+  return true;
 }
 
 const validatePipelinePolicies = (policies, avaiablePolicies) => {
   policies.forEach(policyObj => {
-    const policyNames = Object.keys(policyObj)
+    const policyNames = Object.keys(policyObj);
 
     if (avaiablePolicies.indexOf(policyNames[0]) === -1) {
-      log.error(`${policyNames[0]} policy not declared in the 'policies' gateway.config section`)
-      throw new Error('POLICY_NOT_DECLARED')
+      log.error(`${policyNames[0]} policy not declared in the 'policies' gateway.config section`);
+      throw new Error('POLICY_NOT_DECLARED');
     }
-  })
-}
+  });
+};
 
 const generatePipelineHandler = ({ path, pipeline, route }) => {
   if (!pipeline) {
-    log.debug(`No suitable pipeline found for ${route.apiEndpointName}`)
-    return (req, res, next) => res.sendStatus(404)
+    log.debug(`No suitable pipeline found for ${route.apiEndpointName}`);
+    return (req, res, next) => res.sendStatus(404);
   }
 
-  log.debug('executing pipeline for api %s, mounted at %s', route.apiEndpointName, path)
+  log.debug('executing pipeline for api %s, mounted at %s', route.apiEndpointName, path);
 
   if (!route.scopes) {
-    route.scopes = []
+    route.scopes = [];
   } else if (!Array.isArray(route.scopes)) {
-    route.scopes = [route.scopes]
+    route.scopes = [route.scopes];
   }
 
   return (req, res, next) => {
-    req.egContext = Object.create(new EgContextBase())
-    req.egContext.req = req
-    req.egContext.res = res
-    req.egContext.apiEndpoint = route
-    return pipeline(req, res, next)
-  }
-}
+    req.egContext = Object.create(new EgContextBase());
+    req.egContext.req = req;
+    req.egContext.res = res;
+    req.egContext.apiEndpoint = route;
+    return pipeline(req, res, next);
+  };
+};
 
-function createConditionAndActionMiddleware (conditionConfig, conditionFunction, policyName, policyMiddleware, middlewares) {
+function createConditionAndActionMiddleware(
+  conditionConfig,
+  conditionFunction,
+  policyName,
+  policyMiddleware,
+  middlewares
+) {
   const fn = (req, res, next) => {
     if (conditionConfig) {
       if (conditionFunction(req)) {
-        log.debug(`request matched condition in ${chalk.green(policyName)} policy `)
-        return policyMiddleware(req, res, next)
+        log.debug(`request matched condition in ${chalk.green(policyName)} policy `);
+        return policyMiddleware(req, res, next);
       } else {
-        log.debug(`request did not match condition in ${chalk.green(policyName)} policy`)
-        return next()
+        log.debug(`request did not match condition in ${chalk.green(policyName)} policy`);
+        return next();
       }
     }
-    return policyMiddleware(req, res, next)
-  }
+    return policyMiddleware(req, res, next);
+  };
 
   if (middlewares) {
-    return [...middlewares, fn]
+    return [...middlewares, fn];
   }
 
-  return fn
+  return fn;
 }

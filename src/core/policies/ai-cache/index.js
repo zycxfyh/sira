@@ -1,4 +1,4 @@
 module.exports = {
   policy: require('./ai-cache'),
-  schema: require('./schema.json')
-}
+  schema: require('./schema.json'),
+};

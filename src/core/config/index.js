@@ -1,18 +1,18 @@
-const Config = require('./config')
-const log = require('../logger').config
+const Config = require('./config');
+const log = require('../logger').config;
 
 if (!process.env.EG_CONFIG_DIR) {
-  process.env.EG_CONFIG_DIR = __dirname
+  process.env.EG_CONFIG_DIR = __dirname;
 }
 
-const config = new Config()
+const config = new Config();
 
 try {
   config.loadModels();
-  ['system', 'gateway'].forEach(type => config.loadConfig(type))
+  ['system', 'gateway'].forEach(type => config.loadConfig(type));
 } catch (err) {
-  log.error(err)
-  throw err
+  log.error(err);
+  throw err;
 }
 
-module.exports = config
+module.exports = config;

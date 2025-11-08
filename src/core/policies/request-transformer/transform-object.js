@@ -3,16 +3,18 @@ module.exports = (transformSpecs, egContext, obj) => {
     Object.keys(transformSpecs.add).forEach(addParam => {
       try {
         // Use safe evaluation instead of dangerous run method
-        obj[addParam] = egContext.safeEval(transformSpecs.add[addParam])
+        obj[addParam] = egContext.safeEval(transformSpecs.add[addParam]);
       } catch (error) {
-        console.warn(`Failed to evaluate transformation for ${addParam}:`, error.message)
+        console.warn(`Failed to evaluate transformation for ${addParam}:`, error.message);
         // Skip transformation if evaluation fails
       }
-    })
+    });
   }
   if (transformSpecs.remove) {
-    transformSpecs.remove.forEach(removeParam => { delete obj[removeParam] })
+    transformSpecs.remove.forEach(removeParam => {
+      delete obj[removeParam];
+    });
   }
 
-  return obj
-}
+  return obj;
+};

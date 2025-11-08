@@ -3,21 +3,21 @@
  * 提供预设提示词模板，支持变量替换和智能提示
  */
 
-const fs = require('fs').promises
-const path = require('path')
+const fs = require('fs').promises;
+const path = require('path');
 
 class PromptTemplateManager {
-  constructor (options = {}) {
+  constructor(options = {}) {
     this.options = {
       templatesDir: options.templatesDir || path.join(process.cwd(), 'templates', 'prompts'),
       enableCaching: options.enableCaching !== false,
       maxCacheSize: options.maxCacheSize || 100,
-      ...options
-    }
+      ...options,
+    };
 
     // 模板缓存
-    this.templateCache = new Map()
-    this.cacheTimestamps = new Map()
+    this.templateCache = new Map();
+    this.cacheTimestamps = new Map();
 
     // 模板分类
     this.templates = {
@@ -27,8 +27,8 @@ class PromptTemplateManager {
       education: {}, // 教育学习
       communication: {}, // 沟通交流
       analysis: {}, // 数据分析
-      custom: {} // 用户自定义
-    }
+      custom: {}, // 用户自定义
+    };
 
     // 变量处理器
     this.variableProcessors = {
@@ -36,16 +36,16 @@ class PromptTemplateManager {
       time: () => new Date().toLocaleTimeString('zh-CN'),
       datetime: () => new Date().toLocaleString('zh-CN'),
       random: (min = 1, max = 100) => Math.floor(Math.random() * (max - min + 1)) + min,
-      uuid: () => require('crypto').randomUUID()
-    }
+      uuid: () => require('crypto').randomUUID(),
+    };
 
-    this.initializeTemplates()
+    this.initializeTemplates();
   }
 
   /**
-     * 初始化内置模板
-     */
-  async initializeTemplates () {
+   * 初始化内置模板
+   */
+  async initializeTemplates() {
     // 创意写作模板
     this.templates.creative = {
       story_writer: {
@@ -74,9 +74,9 @@ class PromptTemplateManager {
           characters: '年轻的魔法师、神秘的导师、邪恶的反派',
           setting: '中世纪魔法王国',
           plot_points: '发现隐藏的秘密、面临艰难选择、最终的救赎',
-          word_count: '2000'
+          word_count: '2000',
         },
-        tags: ['小说', '故事', '创意写作', '文学创作']
+        tags: ['小说', '故事', '创意写作', '文学创作'],
       },
 
       poem_writer: {
@@ -103,9 +103,9 @@ class PromptTemplateManager {
           form: '自由诗',
           tone: ' melancholic',
           keywords: '落叶、思念、时光、季节',
-          length: '20'
+          length: '20',
         },
-        tags: ['诗歌', '文学', '创意写作', '艺术']
+        tags: ['诗歌', '文学', '创意写作', '艺术'],
       },
 
       script_writer: {
@@ -134,11 +134,11 @@ class PromptTemplateManager {
           characters: 'Alex（男，28岁，程序员），Sarah（女，26岁，设计师）',
           plot: '两个陌生人在咖啡馆相遇，分享彼此的故事',
           dialogue_style: '自然、现代、富有情感',
-          duration: '5'
+          duration: '5',
         },
-        tags: ['剧本', '对话', '影视', '表演']
-      }
-    }
+        tags: ['剧本', '对话', '影视', '表演'],
+      },
+    };
 
     // 编程开发模板
     this.templates.coding = {
@@ -169,9 +169,9 @@ class PromptTemplateManager {
           language: 'JavaScript',
           function: '用户数据验证',
           code: 'function validateUser(user) { return user.name && user.email; }',
-          audience: '初级'
+          audience: '初级',
         },
-        tags: ['代码解释', '编程', '技术文档', '学习']
+        tags: ['代码解释', '编程', '技术文档', '学习'],
       },
 
       bug_fixer: {
@@ -211,9 +211,9 @@ class PromptTemplateManager {
           language: 'JavaScript',
           problem: '函数返回undefined',
           error_message: 'TypeError: Cannot read property of undefined',
-          code: 'function getUserName(user) { return user.name; }'
+          code: 'function getUserName(user) { return user.name; }',
         },
-        tags: ['Bug修复', '调试', '代码质量', '问题解决']
+        tags: ['Bug修复', '调试', '代码质量', '问题解决'],
       },
 
       code_generator: {
@@ -236,17 +236,23 @@ class PromptTemplateManager {
 6. **测试覆盖**：包含单元测试示例
 
 请生成完整的、可直接运行的代码，并附上使用说明。`,
-        variables: ['project_type', 'language', 'requirements', 'tech_stack', 'quality_requirements'],
+        variables: [
+          'project_type',
+          'language',
+          'requirements',
+          'tech_stack',
+          'quality_requirements',
+        ],
         defaultValues: {
           project_type: 'Web应用',
           language: 'JavaScript',
           requirements: '用户注册和登录功能',
           tech_stack: 'Node.js, Express, MongoDB',
-          quality_requirements: '生产级别，可扩展，高性能'
+          quality_requirements: '生产级别，可扩展，高性能',
         },
-        tags: ['代码生成', '软件开发', '架构设计', '最佳实践']
-      }
-    }
+        tags: ['代码生成', '软件开发', '架构设计', '最佳实践'],
+      },
+    };
 
     // 商业应用模板
     this.templates.business = {
@@ -274,7 +280,17 @@ class PromptTemplateManager {
 3. 详细的正文内容
 4. 明确的行动呼吁
 5. 专业的结束语`,
-        variables: ['email_type', 'recipient', 'sender', 'subject', 'purpose', 'key_points', 'tone', 'language_style', 'length'],
+        variables: [
+          'email_type',
+          'recipient',
+          'sender',
+          'subject',
+          'purpose',
+          'key_points',
+          'tone',
+          'language_style',
+          'length',
+        ],
         defaultValues: {
           email_type: '商务合作',
           recipient: '尊敬的客户',
@@ -284,9 +300,9 @@ class PromptTemplateManager {
           key_points: '项目介绍、合作优势、后续行动',
           tone: '专业、友好、积极',
           language_style: '正式、简洁、有说服力',
-          length: '适中（200-300字）'
+          length: '适中（200-300字）',
         },
-        tags: ['商务邮件', '沟通', '专业写作', '客户服务']
+        tags: ['商务邮件', '沟通', '专业写作', '客户服务'],
       },
 
       report_writer: {
@@ -323,11 +339,11 @@ class PromptTemplateManager {
           subject: '2024年AI市场发展趋势',
           audience: '公司管理层',
           purpose: '为公司战略决策提供参考',
-          data_points: '市场规模数据、增长趋势、技术发展、竞争格局、投资机会'
+          data_points: '市场规模数据、增长趋势、技术发展、竞争格局、投资机会',
         },
-        tags: ['商务报告', '市场分析', '战略规划', '数据分析']
-      }
-    }
+        tags: ['商务报告', '市场分析', '战略规划', '数据分析'],
+      },
+    };
 
     // 教育学习模板
     this.templates.education = {
@@ -359,16 +375,23 @@ class PromptTemplateManager {
 8. **时间安排**：详细的课程时间分配
 
 请确保课程设计符合教育教学原则，适合目标学生群体。`,
-        variables: ['subject', 'grade_level', 'duration', 'learning_objectives', 'student_characteristics', 'available_resources'],
+        variables: [
+          'subject',
+          'grade_level',
+          'duration',
+          'learning_objectives',
+          'student_characteristics',
+          'available_resources',
+        ],
         defaultValues: {
           subject: '人工智能基础',
           grade_level: '高中生',
           duration: '45分钟',
           learning_objectives: '理解AI基本概念，认识AI应用场景',
           student_characteristics: '对技术感兴趣，基础数学知识良好',
-          available_resources: '电脑、多媒体设备、互联网接入'
+          available_resources: '电脑、多媒体设备、互联网接入',
         },
-        tags: ['课程设计', '教学计划', '教育', '学习活动']
+        tags: ['课程设计', '教学计划', '教育', '学习活动'],
       },
 
       quiz_generator: {
@@ -400,18 +423,25 @@ class PromptTemplateManager {
 - 分值建议
 
 确保测验题具有良好的区分度和信度。`,
-        variables: ['subject', 'difficulty', 'question_types', 'question_count', 'target_students', 'knowledge_points'],
+        variables: [
+          'subject',
+          'difficulty',
+          'question_types',
+          'question_count',
+          'target_students',
+          'knowledge_points',
+        ],
         defaultValues: {
           subject: '计算机网络基础',
           difficulty: '中级',
           question_types: '选择题、判断题、简答题',
           question_count: '20',
           target_students: '大学本科生',
-          knowledge_points: 'TCP/IP协议、HTTP/HTTPS、网络安全、路由算法'
+          knowledge_points: 'TCP/IP协议、HTTP/HTTPS、网络安全、路由算法',
         },
-        tags: ['测验题', '教育评估', '学习测试', '教学辅助']
-      }
-    }
+        tags: ['测验题', '教育评估', '学习测试', '教学辅助'],
+      },
+    };
 
     // 沟通交流模板
     this.templates.communication = {
@@ -457,9 +487,10 @@ class PromptTemplateManager {
           meeting_time: '{{date}} 下午2:00-4:00',
           attendees: '项目经理、开发团队、产品经理、测试团队',
           facilitator: '项目经理',
-          meeting_notes: '项目进度85%，遇到技术难题，需要额外资源；客户需求变更，需要调整计划；建议增加自动化测试覆盖率'
+          meeting_notes:
+            '项目进度85%，遇到技术难题，需要额外资源；客户需求变更，需要调整计划；建议增加自动化测试覆盖率',
         },
-        tags: ['会议纪要', '行政管理', '项目管理', '沟通记录']
+        tags: ['会议纪要', '行政管理', '项目管理', '沟通记录'],
       },
 
       feedback_analyzer: {
@@ -490,11 +521,11 @@ class PromptTemplateManager {
         defaultValues: {
           product_name: 'AI聊天助手',
           feedback_source: '用户调查问卷',
-          feedback_content: '响应速度太慢，有时回答不准确，希望能支持更多语言，界面设计比较简陋'
+          feedback_content: '响应速度太慢，有时回答不准确，希望能支持更多语言，界面设计比较简陋',
         },
-        tags: ['用户反馈', '体验分析', '改进建议', '用户研究']
-      }
-    }
+        tags: ['用户反馈', '体验分析', '改进建议', '用户研究'],
+      },
+    };
 
     // 数据分析模板
     this.templates.analysis = {
@@ -533,9 +564,9 @@ class PromptTemplateManager {
           analysis_goal: '用户行为分析和转化率优化',
           data_description: '过去30天的网站访问数据，包括PV、UV、停留时间、跳出率等',
           data_content: 'PV: 15000, UV: 8000, 平均停留时间: 3.5分钟, 跳出率: 45%, 转化率: 2.8%',
-          audience: '产品经理和技术团队'
+          audience: '产品经理和技术团队',
         },
-        tags: ['数据分析', '商业智能', '趋势分析', '洞察发现']
+        tags: ['数据分析', '商业智能', '趋势分析', '洞察发现'],
       },
 
       research_summarizer: {
@@ -574,7 +605,15 @@ class PromptTemplateManager {
 - 突出重点，抓住核心
 
 请用学术性的语言撰写摘要。`,
-        variables: ['research_field', 'paper_title', 'institution', 'publication_date', 'abstract', 'methodology', 'findings'],
+        variables: [
+          'research_field',
+          'paper_title',
+          'institution',
+          'publication_date',
+          'abstract',
+          'methodology',
+          'findings',
+        ],
         defaultValues: {
           research_field: '人工智能',
           paper_title: '基于深度学习的图像识别新方法',
@@ -582,39 +621,43 @@ class PromptTemplateManager {
           publication_date: '2024年3月',
           abstract: '提出了一种新的深度学习方法用于图像识别任务',
           methodology: '使用CNN和Transformer的混合架构',
-          findings: '在标准数据集上取得了92.5%的准确率，超过了现有方法'
+          findings: '在标准数据集上取得了92.5%的准确率，超过了现有方法',
         },
-        tags: ['研究摘要', '学术写作', '文献综述', '科研辅助']
-      }
-    }
+        tags: ['研究摘要', '学术写作', '文献综述', '科研辅助'],
+      },
+    };
 
-    console.log('✅ 提示词模板库初始化完成，包含', Object.values(this.templates).reduce((sum, cat) => sum + Object.keys(cat).length, 0), '个模板')
+    console.log(
+      '✅ 提示词模板库初始化完成，包含',
+      Object.values(this.templates).reduce((sum, cat) => sum + Object.keys(cat).length, 0),
+      '个模板'
+    );
   }
 
   /**
-     * 获取模板
-     */
-  getTemplate (category, templateId) {
+   * 获取模板
+   */
+  getTemplate(category, templateId) {
     if (!this.templates[category]) {
-      throw new Error(`模板分类不存在: ${category}`)
+      throw new Error(`模板分类不存在: ${category}`);
     }
 
-    const template = this.templates[category][templateId]
+    const template = this.templates[category][templateId];
     if (!template) {
-      throw new Error(`模板不存在: ${category}.${templateId}`)
+      throw new Error(`模板不存在: ${category}.${templateId}`);
     }
 
-    return template
+    return template;
   }
 
   /**
-     * 获取所有模板
-     */
-  getAllTemplates () {
-    const result = {}
+   * 获取所有模板
+   */
+  getAllTemplates() {
+    const result = {};
 
     for (const [category, templates] of Object.entries(this.templates)) {
-      result[category] = {}
+      result[category] = {};
 
       for (const [templateId, template] of Object.entries(templates)) {
         result[category][templateId] = {
@@ -622,42 +665,42 @@ class PromptTemplateManager {
           name: template.name,
           description: template.description,
           variables: template.variables,
-          tags: template.tags
-        }
+          tags: template.tags,
+        };
       }
     }
 
-    return result
+    return result;
   }
 
   /**
-     * 获取模板分类
-     */
-  getCategories () {
-    return Object.keys(this.templates)
+   * 获取模板分类
+   */
+  getCategories() {
+    return Object.keys(this.templates);
   }
 
   /**
-     * 获取分类下的模板
-     */
-  getTemplatesByCategory (category) {
+   * 获取分类下的模板
+   */
+  getTemplatesByCategory(category) {
     if (!this.templates[category]) {
-      return {}
+      return {};
     }
 
     return Object.keys(this.templates[category]).map(templateId => ({
       id: templateId,
       name: this.templates[category][templateId].name,
       description: this.templates[category][templateId].description,
-      tags: this.templates[category][templateId].tags
-    }))
+      tags: this.templates[category][templateId].tags,
+    }));
   }
 
   /**
-     * 根据标签搜索模板
-     */
-  searchTemplatesByTag (tag) {
-    const results = []
+   * 根据标签搜索模板
+   */
+  searchTemplatesByTag(tag) {
+    const results = [];
 
     for (const [category, templates] of Object.entries(this.templates)) {
       for (const [templateId, template] of Object.entries(templates)) {
@@ -667,101 +710,101 @@ class PromptTemplateManager {
             id: templateId,
             name: template.name,
             description: template.description,
-            tags: template.tags
-          })
+            tags: template.tags,
+          });
         }
       }
     }
 
-    return results
+    return results;
   }
 
   /**
-     * 渲染模板
-     */
-  renderTemplate (category, templateId, variables = {}) {
-    const template = this.getTemplate(category, templateId)
+   * 渲染模板
+   */
+  renderTemplate(category, templateId, variables = {}) {
+    const template = this.getTemplate(category, templateId);
 
     // 合并默认值和用户提供的值
-    const finalVariables = { ...template.defaultValues, ...variables }
+    const finalVariables = { ...template.defaultValues, ...variables };
 
-    let rendered = template.template
+    let rendered = template.template;
 
     // 替换变量
     for (const [key, value] of Object.entries(finalVariables)) {
-      const placeholder = `{{${key}}}`
-      rendered = rendered.replace(new RegExp(placeholder, 'g'), value)
+      const placeholder = `{{${key}}}`;
+      rendered = rendered.replace(new RegExp(placeholder, 'g'), value);
     }
 
     // 处理特殊变量
-    rendered = this.processSpecialVariables(rendered)
+    rendered = this.processSpecialVariables(rendered);
 
     return {
-      template: template,
-      rendered: rendered,
+      template,
+      rendered,
       variables: finalVariables,
-      category: category,
-      templateId: templateId
-    }
+      category,
+      templateId,
+    };
   }
 
   /**
-     * 处理特殊变量
-     */
-  processSpecialVariables (text) {
-    let processed = text
+   * 处理特殊变量
+   */
+  processSpecialVariables(text) {
+    let processed = text;
 
     // 处理函数调用变量，如 {{date()}}, {{random(1,10)}}
-    const functionRegex = /\{\{(\w+)\(([^}]*)\)\}\}/g
+    const functionRegex = /\{\{(\w+)\(([^}]*)\)\}\}/g;
     processed = processed.replace(functionRegex, (match, funcName, args) => {
       if (this.variableProcessors[funcName]) {
         try {
-          const argList = args ? args.split(',').map(arg => arg.trim()) : []
-          return this.variableProcessors[funcName](...argList)
+          const argList = args ? args.split(',').map(arg => arg.trim()) : [];
+          return this.variableProcessors[funcName](...argList);
         } catch (error) {
-          console.warn(`变量函数处理失败: ${funcName}`, error)
-          return match
+          console.warn(`变量函数处理失败: ${funcName}`, error);
+          return match;
         }
       }
-      return match
-    })
+      return match;
+    });
 
     // 处理简单变量，如 {{date}}
-    const simpleRegex = /\{\{(\w+)\}\}/g
+    const simpleRegex = /\{\{(\w+)\}\}/g;
     processed = processed.replace(simpleRegex, (match, varName) => {
       if (this.variableProcessors[varName]) {
         try {
-          return this.variableProcessors[varName]()
+          return this.variableProcessors[varName]();
         } catch (error) {
-          console.warn(`简单变量处理失败: ${varName}`, error)
-          return match
+          console.warn(`简单变量处理失败: ${varName}`, error);
+          return match;
         }
       }
-      return match
-    })
+      return match;
+    });
 
-    return processed
+    return processed;
   }
 
   /**
-     * 验证模板变量
-     */
-  validateTemplateVariables (category, templateId, variables = {}) {
-    const template = this.getTemplate(category, templateId)
-    const missing = []
-    const invalid = []
+   * 验证模板变量
+   */
+  validateTemplateVariables(category, templateId, variables = {}) {
+    const template = this.getTemplate(category, templateId);
+    const missing = [];
+    const invalid = [];
 
     // 检查必需变量
     for (const variable of template.variables) {
       if (!variables[variable] && !template.defaultValues[variable]) {
-        missing.push(variable)
+        missing.push(variable);
       }
     }
 
     // 检查变量值有效性
     for (const [key, value] of Object.entries(variables)) {
       if (typeof value !== 'string' && typeof value !== 'number') {
-        invalid.push(`${key}: 必须是字符串或数字`)
+        invalid.push(`${key}: 必须是字符串或数字`);
       }
     }
 
@@ -769,79 +812,79 @@ class PromptTemplateManager {
       valid: missing.length === 0 && invalid.length === 0,
       missing,
       invalid,
-      template: template
-    }
+      template,
+    };
   }
 
   /**
-     * 添加自定义模板
-     */
-  addCustomTemplate (category, templateId, templateData) {
+   * 添加自定义模板
+   */
+  addCustomTemplate(category, templateId, templateData) {
     if (!this.templates[category]) {
-      this.templates[category] = {}
+      this.templates[category] = {};
     }
 
     // 验证模板数据
-    const requiredFields = ['name', 'description', 'template', 'variables']
+    const requiredFields = ['name', 'description', 'template', 'variables'];
     for (const field of requiredFields) {
       if (!templateData[field]) {
-        throw new Error(`模板缺少必需字段: ${field}`)
+        throw new Error(`模板缺少必需字段: ${field}`);
       }
     }
 
     this.templates[category][templateId] = {
       ...templateData,
       tags: templateData.tags || ['自定义'],
-      defaultValues: templateData.defaultValues || {}
-    }
+      defaultValues: templateData.defaultValues || {},
+    };
 
-    console.log(`✅ 已添加自定义模板: ${category}.${templateId}`)
-    return true
+    console.log(`✅ 已添加自定义模板: ${category}.${templateId}`);
+    return true;
   }
 
   /**
-     * 删除自定义模板
-     */
-  removeCustomTemplate (category, templateId) {
+   * 删除自定义模板
+   */
+  removeCustomTemplate(category, templateId) {
     if (!this.templates[category] || !this.templates[category][templateId]) {
-      throw new Error(`模板不存在: ${category}.${templateId}`)
+      throw new Error(`模板不存在: ${category}.${templateId}`);
     }
 
     // 不允许删除内置模板
-    const template = this.templates[category][templateId]
+    const template = this.templates[category][templateId];
     if (!template.tags || !template.tags.includes('自定义')) {
-      throw new Error('不能删除内置模板')
+      throw new Error('不能删除内置模板');
     }
 
-    delete this.templates[category][templateId]
-    console.log(`✅ 已删除自定义模板: ${category}.${templateId}`)
-    return true
+    delete this.templates[category][templateId];
+    console.log(`✅ 已删除自定义模板: ${category}.${templateId}`);
+    return true;
   }
 
   /**
-     * 获取模板使用统计
-     */
-  getUsageStats () {
+   * 获取模板使用统计
+   */
+  getUsageStats() {
     const stats = {
       totalCategories: Object.keys(this.templates).length,
       totalTemplates: 0,
       categoryStats: {},
-      popularTags: new Map()
-    }
+      popularTags: new Map(),
+    };
 
     for (const [category, templates] of Object.entries(this.templates)) {
       stats.categoryStats[category] = {
         count: Object.keys(templates).length,
-        templates: Object.keys(templates)
-      }
-      stats.totalTemplates += Object.keys(templates).length
+        templates: Object.keys(templates),
+      };
+      stats.totalTemplates += Object.keys(templates).length;
 
       // 统计标签
       for (const template of Object.values(templates)) {
         if (template.tags) {
           template.tags.forEach(tag => {
-            stats.popularTags.set(tag, (stats.popularTags.get(tag) || 0) + 1)
-          })
+            stats.popularTags.set(tag, (stats.popularTags.get(tag) || 0) + 1);
+          });
         }
       }
     }
@@ -850,63 +893,67 @@ class PromptTemplateManager {
       Array.from(stats.popularTags.entries())
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10)
-    )
+    );
 
-    return stats
+    return stats;
   }
 
   /**
-     * 导出模板配置
-     */
-  exportTemplates () {
+   * 导出模板配置
+   */
+  exportTemplates() {
     return {
       templates: this.templates,
       metadata: {
         version: '1.0.0',
         exportTime: new Date().toISOString(),
         totalCategories: Object.keys(this.templates).length,
-        totalTemplates: Object.values(this.templates).reduce((sum, cat) => sum + Object.keys(cat).length, 0)
-      }
-    }
+        totalTemplates: Object.values(this.templates).reduce(
+          (sum, cat) => sum + Object.keys(cat).length,
+          0
+        ),
+      },
+    };
   }
 
   /**
-     * 导入模板配置
-     */
-  importTemplates (data) {
+   * 导入模板配置
+   */
+  importTemplates(data) {
     if (data.templates) {
       // 只导入自定义模板，避免覆盖内置模板
       for (const [category, templates] of Object.entries(data.templates)) {
         if (!this.templates[category]) {
-          this.templates[category] = {}
+          this.templates[category] = {};
         }
 
         for (const [templateId, template] of Object.entries(templates)) {
           if (template.tags && template.tags.includes('自定义')) {
-            this.templates[category][templateId] = template
+            this.templates[category][templateId] = template;
           }
         }
       }
     }
 
-    console.log('✅ 模板配置导入完成')
+    console.log('✅ 模板配置导入完成');
   }
 
   /**
-     * 获取推荐模板
-     */
-  getRecommendedTemplates (taskDescription, limit = 5) {
-    const recommendations = []
-    const description = taskDescription.toLowerCase()
+   * 获取推荐模板
+   */
+  getRecommendedTemplates(taskDescription, limit = 5) {
+    const recommendations = [];
+    const description = taskDescription.toLowerCase();
 
     for (const [category, templates] of Object.entries(this.templates)) {
       for (const [templateId, template] of Object.entries(templates)) {
-        let score = 0
+        let score = 0;
 
         // 基于描述匹配度评分
-        if (template.description.toLowerCase().includes(description)) score += 3
-        if (template.name.toLowerCase().includes(description)) score += 2
-        if (template.tags && template.tags.some(tag => description.includes(tag.toLowerCase()))) score += 2
+        if (template.description.toLowerCase().includes(description)) score += 3;
+        if (template.name.toLowerCase().includes(description)) score += 2;
+        if (template.tags && template.tags.some(tag => description.includes(tag.toLowerCase())))
+          score += 2;
 
         // 基于标签相关性评分
         const relevantTags = {
@@ -916,13 +963,16 @@ class PromptTemplateManager {
           报告: ['报告', '分析', '总结'],
           会议: ['会议', '纪要', '讨论'],
           教学: ['教学', '课程', '教育'],
-          数据: ['数据', '分析', '统计']
-        }
+          数据: ['数据', '分析', '统计'],
+        };
 
         for (const [keyword, tags] of Object.entries(relevantTags)) {
-          if (description.includes(keyword) && template.tags &&
-                        template.tags.some(tag => tags.includes(tag))) {
-            score += 1
+          if (
+            description.includes(keyword) &&
+            template.tags &&
+            template.tags.some(tag => tags.includes(tag))
+          ) {
+            score += 1;
           }
         }
 
@@ -933,24 +983,33 @@ class PromptTemplateManager {
             name: template.name,
             description: template.description,
             tags: template.tags,
-            score
-          })
+            score,
+          });
         }
       }
     }
 
     // 按评分排序并限制数量
-    return recommendations
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit)
+    return recommendations.sort((a, b) => b.score - a.score).slice(0, limit);
+  }
+
+  /**
+   * 清理资源（用于测试）
+   */
+  cleanup() {
+    // 清理事件监听器
+    this.removeAllListeners();
+
+    // 清理缓存
+    this.cache.clear();
   }
 }
 
 // 创建全局实例
-const promptTemplateManager = new PromptTemplateManager()
+const promptTemplateManager = new PromptTemplateManager();
 
 // 导出类和实例
 module.exports = {
   PromptTemplateManager,
-  promptTemplateManager
-}
+  promptTemplateManager,
+};

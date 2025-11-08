@@ -1,4 +1,4 @@
 module.exports = {
   policy: require('./ai-queue'),
-  schema: require('./schema.json')
-}
+  schema: require('./schema.json'),
+};

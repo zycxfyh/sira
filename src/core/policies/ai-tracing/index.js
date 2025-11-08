@@ -1,4 +1,4 @@
 module.exports = {
   policy: require('./ai-tracing'),
-  schema: require('./schema.json')
-}
+  schema: require('./schema.json'),
+};

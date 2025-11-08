@@ -1,15 +1,15 @@
-const superagent = require('superagent')
-const logger = require('../../logger').policy
+const superagent = require('superagent');
+const logger = require('../../logger').policy;
 
-module.exports = (options) => {
+module.exports = options => {
   return (token, tokenTypeHint) => {
-    const data = { token }
+    const data = { token };
 
     if (tokenTypeHint) {
-      data.token_type_hint = tokenTypeHint
+      data.token_type_hint = tokenTypeHint;
     }
 
-    logger.info(`token-introspector : ${options.endpoint}`)
+    logger.info(`token-introspector : ${options.endpoint}`);
 
     return superagent
       .post(options.endpoint)
@@ -19,12 +19,12 @@ module.exports = (options) => {
       .timeout({ response: options.timeout })
       .then(res => {
         if (res.body.active === true) {
-          logger.debug('token-introspector : Token is active')
-          return res.body
+          logger.debug('token-introspector : Token is active');
+          return res.body;
         }
-        logger.debug('token-introspector : Token is not active')
+        logger.debug('token-introspector : Token is not active');
 
-        throw new Error('Token not active')
-      })
-  }
-}
+        throw new Error('Token not active');
+      });
+  };
+};

@@ -9,8 +9,8 @@ cli:
   url: http://localhost:9876
 
 #plugins:
-  # express-gateway-plugin-example:
-  #   param1: 'param from system.config'
+# express-gateway-plugin-example:
+#   param1: 'param from system.config'
 
 crypto:
   cipherKey: ${EG_CRYPTO_CIPHER_KEY}

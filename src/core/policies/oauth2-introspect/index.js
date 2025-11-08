@@ -11,26 +11,29 @@ module.exports = {
             type: 'string',
             format: 'uri',
             description: 'Endpoint that will be used to validate the provided token',
-            examples: ['https://authorization.server/oauth2-introspect']
+            examples: ['https://authorization.server/oauth2-introspect'],
           },
           authorization_value: {
             type: 'string',
-            description: 'Value put as Authorization header that\'ll be sent as part of the HTTP request to the specified endpoint'
+            description:
+              "Value put as Authorization header that'll be sent as part of the HTTP request to the specified endpoint",
           },
           timeout: {
             type: 'integer',
-            description: 'Time in milliseconds to wait before the first byte arrive from the specified endpoint',
-            default: 10000
+            description:
+              'Time in milliseconds to wait before the first byte arrive from the specified endpoint',
+            default: 10000,
           },
           ttl: {
             title: 'TTL',
             type: 'integer',
             default: 60,
-            description: 'Time, in seconds, in which the current token, if validated before, will be consider as valid without making a new request to the authorization endpoint'
-          }
+            description:
+              'Time, in seconds, in which the current token, if validated before, will be consider as valid without making a new request to the authorization endpoint',
+          },
         },
-        required: ['endpoint', 'ttl']
-      }
-    ]
-  }
-}
+        required: ['endpoint', 'ttl'],
+      },
+    ],
+  },
+};

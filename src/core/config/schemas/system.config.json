@@ -17,15 +17,10 @@
               "default": "EG"
             }
           },
-          "required": [
-            "emulate",
-            "namespace"
-          ]
+          "required": ["emulate", "namespace"]
         }
       },
-      "required": [
-        "redis"
-      ]
+      "required": ["redis"]
     },
     "crypto": {
       "type": "object",
@@ -42,11 +37,7 @@
           "default": 10
         }
       },
-      "required": [
-        "cipherKey",
-        "algorithm",
-        "saltRounds"
-      ],
+      "required": ["cipherKey", "algorithm", "saltRounds"],
       "default": {}
     },
     "session": {
@@ -58,10 +49,7 @@
       "properties": {
         "tokenType": {
           "type": "string",
-          "enum": [
-            "jwt",
-            "opaque"
-          ],
+          "enum": ["jwt", "opaque"],
           "default": "opaque"
         },
         "timeToExpiry": {
@@ -72,10 +60,7 @@
           "type": "string"
         },
         "audience": {
-          "type": [
-            "string",
-            "array"
-          ],
+          "type": ["string", "array"],
           "items": {
             "type": "string"
           }
@@ -88,10 +73,7 @@
           "default": "HS256"
         }
       },
-      "required": [
-        "tokenType",
-        "timeToExpiry"
-      ],
+      "required": ["tokenType", "timeToExpiry"],
       "default": {}
     },
     "refreshTokens": {
@@ -102,9 +84,7 @@
           "default": 720000
         }
       },
-      "required": [
-        "timeToExpiry"
-      ],
+      "required": ["timeToExpiry"],
       "default": {}
     },
     "authorizationCodes": {
@@ -115,21 +95,12 @@
           "default": 300000
         }
       },
-      "required": [
-        "timeToExpiry"
-      ],
+      "required": ["timeToExpiry"],
       "default": {}
     },
     "plugins": {
       "type": "object"
     }
   },
-  "required": [
-    "db",
-    "crypto",
-    "session",
-    "accessTokens",
-    "refreshTokens",
-    "authorizationCodes"
-  ]
+  "required": ["db", "crypto", "session", "accessTokens", "refreshTokens", "authorizationCodes"]
 }

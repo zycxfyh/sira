@@ -7,9 +7,9 @@ module.exports = {
       jscode: {
         type: 'string',
         description: 'Javascript code to execute against the current egContext',
-        examples: ['req.testValue = 10']
-      }
+        examples: ['req.testValue = 10'],
+      },
     },
-    required: ['jscode']
-  }
-}
+    required: ['jscode'],
+  },
+};

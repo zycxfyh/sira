@@ -1,4 +1,4 @@
-const extractors = require('./extractors')
+const extractors = require('./extractors');
 
 module.exports = {
   policy: require('./jwt'),
@@ -8,44 +8,46 @@ module.exports = {
     properties: {
       secretOrPublicKey: {
         type: 'string',
-        description: 'The secret (symmetric) or PEM-encoded public key (asymmetric) for verifying the token\'s signature.',
-        examples: ['secretString', 'PEMCertificate']
+        description:
+          "The secret (symmetric) or PEM-encoded public key (asymmetric) for verifying the token's signature.",
+        examples: ['secretString', 'PEMCertificate'],
       },
       secretOrPublicKeyFile: {
         type: 'string',
-        description: 'The secret (symmetric) or PEM-encoded public key (asymmetric) file for verifying the token\'s signature.',
-        examples: ['./path/to/cert.pem']
+        description:
+          "The secret (symmetric) or PEM-encoded public key (asymmetric) file for verifying the token's signature.",
+        examples: ['./path/to/cert.pem'],
       },
       jwtExtractor: {
         type: 'string',
         enum: Object.keys(extractors),
         default: 'authBearer',
-        description: 'The method to use to extract the JWT from the current HTTP Request'
+        description: 'The method to use to extract the JWT from the current HTTP Request',
       },
       jwtExtractorField: {
         type: 'string',
-        description: 'An optional argument for the selected extractor'
+        description: 'An optional argument for the selected extractor',
       },
       audience: {
         type: 'string',
-        description: 'If defined, the token audience (aud) will be verified against this value.'
+        description: 'If defined, the token audience (aud) will be verified against this value.',
       },
       issuer: {
         type: 'string',
-        description: 'If defined the token issuer (iss) will be verified against this value'
+        description: 'If defined the token issuer (iss) will be verified against this value',
       },
       checkCredentialExistence: {
         type: 'boolean',
         default: true,
-        description: 'Value istructing the gateway whether verify the sub against the internal SOC'
+        description: 'Value istructing the gateway whether verify the sub against the internal SOC',
       },
       algorithms: {
         type: 'array',
         items: { type: 'string', enum: ['HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512'] },
-        description: 'If defined, limits valid jwts to specified algorithms'
-      }
+        description: 'If defined, limits valid jwts to specified algorithms',
+      },
     },
     required: ['jwtExtractor', 'checkCredentialExistence'],
-    oneOf: [{ required: ['secretOrPublicKey'] }, { required: ['secretOrPublicKeyFile'] }]
-  }
-}
+    oneOf: [{ required: ['secretOrPublicKey'] }, { required: ['secretOrPublicKeyFile'] }],
+  },
+};

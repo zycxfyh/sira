@@ -8,23 +8,23 @@ module.exports = {
         add: {
           type: 'object',
           additionalProperties: {
-            type: ['string', 'number']
+            type: ['string', 'number'],
           },
-          minProperties: 1
+          minProperties: 1,
         },
         remove: {
           type: ['array'],
           items: {
-            type: 'string'
-          }
-        }
+            type: 'string',
+          },
+        },
       },
-      anyOf: [{ required: ['add'] }, { required: ['remove'] }]
-    }
+      anyOf: [{ required: ['add'] }, { required: ['remove'] }],
+    },
   },
   properties: {
     headers: { $ref: '#/definitions/addRemove' },
-    body: { $ref: '#/definitions/addRemove' }
+    body: { $ref: '#/definitions/addRemove' },
   },
-  anyOf: [{ required: ['headers'] }, { required: ['body'] }]
-}
+  anyOf: [{ required: ['headers'] }, { required: ['body'] }],
+};

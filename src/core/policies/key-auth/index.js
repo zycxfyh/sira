@@ -10,35 +10,35 @@ module.exports = {
           apiKeyHeader: {
             type: 'string',
             default: 'Authorization',
-            description: 'HTTP Header to look for the apiScheme + apiKey string'
+            description: 'HTTP Header to look for the apiScheme + apiKey string',
           },
           apiKeyHeaderScheme: {
             type: 'string',
             default: 'apiKey',
-            description: 'HTTP Authorization Scheme to verify before extracting the API Key'
+            description: 'HTTP Authorization Scheme to verify before extracting the API Key',
           },
           apiKeyField: {
             type: 'string',
             default: 'apiKey',
-            description: 'Query String parameter name to look for to extract the apiKey'
+            description: 'Query String parameter name to look for to extract the apiKey',
           },
           disableHeaders: {
             type: 'boolean',
             default: false,
-            description: 'Entirely disable lookup API Key from the header'
+            description: 'Entirely disable lookup API Key from the header',
           },
           disableHeadersScheme: {
             type: 'boolean',
             default: false,
-            description: 'Enable or disable apiScheme check'
+            description: 'Enable or disable apiScheme check',
           },
           disableQueryParam: {
             type: 'boolean',
             default: false,
-            description: 'Entirely disable lookup API Key from the query string'
-          }
-        }
-      }
-    ]
-  }
-}
+            description: 'Entirely disable lookup API Key from the query string',
+          },
+        },
+      },
+    ],
+  },
+};

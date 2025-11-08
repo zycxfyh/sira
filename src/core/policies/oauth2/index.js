@@ -1,7 +1,7 @@
-const schemas = require('../../schemas')
-const jwtSchema = require('../jwt').schema
+const schemas = require('../../schemas');
+const jwtSchema = require('../jwt').schema;
 
-schemas.register('policy', 'jwt', jwtSchema)
+schemas.register('policy', 'jwt', jwtSchema);
 
 module.exports = {
   policy: require('./oauth2'),
@@ -13,8 +13,9 @@ module.exports = {
       {
         type: 'object',
         properties: {
-          jwt: { $ref: 'jwt.json' }
-        }
-      }]
-  }
-}
+          jwt: { $ref: 'jwt.json' },
+        },
+      },
+    ],
+  },
+};

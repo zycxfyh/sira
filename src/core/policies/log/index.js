@@ -7,9 +7,9 @@ module.exports = {
       message: {
         type: 'string',
         description: 'A template expression to print out on the log stream',
-        examples: ['This is a log message']
-      }
+        examples: ['This is a log message'],
+      },
     },
-    required: ['message']
-  }
-}
+    required: ['message'],
+  },
+};

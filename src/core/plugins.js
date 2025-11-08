@@ -1,52 +1,55 @@
-const logger = require('./logger').plugins
-const eventBus = require('./eventBus')
-const schemas = require('./schemas')
-const parentRequire = require('parent-require')
-const engineVersion = '1.2.0'
-const semver = require('semver')
-const prefix = 'express-gateway-plugin-' // TODO make configurable
+const logger = require('./logger').plugins;
+const eventBus = require('./eventBus');
+const schemas = require('./schemas');
+const parentRequire = require('parent-require');
+const engineVersion = '1.2.0';
+const semver = require('semver');
+const prefix = 'express-gateway-plugin-'; // TODO make configurable
 module.exports.load = function ({ config }) {
-  config = config || require('./config')
-  const pluginsSettings = config.systemConfig.plugins || {}
+  config = config || require('./config');
+  const pluginsSettings = config.systemConfig.plugins || {};
 
-  const loadedPlugins = []
-  logger.debug(`Loading plugins. Plugin engine version: ${engineVersion}`)
+  const loadedPlugins = [];
+  logger.debug(`Loading plugins. Plugin engine version: ${engineVersion}`);
   for (const pluginName in pluginsSettings) {
-    const settings = pluginsSettings[pluginName] || {}
-    let requireName = pluginName
+    const settings = pluginsSettings[pluginName] || {};
+    let requireName = pluginName;
     if (settings.package) {
-      requireName = settings.package
+      requireName = settings.package;
     } else if (pluginName.indexOf(prefix) !== 0) {
-      requireName = prefix + pluginName
+      requireName = prefix + pluginName;
     }
 
     try {
-      logger.debug(`Loading plugin ${requireName}`)
-      let plugin
+      logger.debug(`Loading plugin ${requireName}`);
+      let plugin;
       try {
-        plugin = require(requireName) // EG loaded as main module
+        plugin = require(requireName); // EG loaded as main module
       } catch (err) {
-        plugin = parentRequire(requireName) // EG loaded as library (after eg gateway create)
+        plugin = parentRequire(requireName); // EG loaded as library (after eg gateway create)
       }
-      if (semver.lt(engineVersion, plugin.version)) { // TODO: versioning of plugins
-        logger.warn(`${plugin.version} is higher than engine version: ${engineVersion}; trying to load`)
+      if (semver.lt(engineVersion, plugin.version)) {
+        // TODO: versioning of plugins
+        logger.warn(
+          `${plugin.version} is higher than engine version: ${engineVersion}; trying to load`
+        );
       }
 
       // register schema and validate settings
-      const validate = schemas.register('plugin', pluginName, plugin.schema)
-      const { isValid, error } = validate(settings)
+      const validate = schemas.register('plugin', pluginName, plugin.schema);
+      const { isValid, error } = validate(settings);
       if (!isValid) {
         // Stop loading plugin.
-        throw new Error(`Failed to validate settings: ${error}`)
+        throw new Error(`Failed to validate settings: ${error}`);
       }
 
-      const services = require('./services')
-      const context = new PluginContext({ settings, config, services })
-      plugin.init(context)
-      loadedPlugins.push(context)
-      logger.info(`Loaded plugin ${pluginName} from package ${requireName}`)
+      const services = require('./services');
+      const context = new PluginContext({ settings, config, services });
+      plugin.init(context);
+      loadedPlugins.push(context);
+      logger.info(`Loaded plugin ${pluginName} from package ${requireName}`);
     } catch (err) {
-      logger.error(`Failed to load plugin ${requireName}: ${err}`)
+      logger.error(`Failed to load plugin ${requireName}: ${err}`);
     }
   }
 
@@ -57,47 +60,47 @@ module.exports.load = function ({ config }) {
     conditions: extract(loadedPlugins, 'conditions'),
     gatewayRoutes: extract(loadedPlugins, 'gatewayRoutes'),
     adminRoutes: extract(loadedPlugins, 'adminRoutes'),
-    cliExtensions: extract(loadedPlugins, 'cliExtensions')
-  }
-}
+    cliExtensions: extract(loadedPlugins, 'cliExtensions'),
+  };
+};
 
 class PluginContext {
-  constructor ({ settings, config, services }) {
-    this.logger = logger
-    this.services = services
-    this.settings = settings || {}
-    this.config = config
-    this.policies = []
-    this.conditions = []
-    this.gatewayRoutes = []
-    this.adminRoutes = []
-    this.cliExtensions = []
-    this.eventBus = eventBus
+  constructor({ settings, config, services }) {
+    this.logger = logger;
+    this.services = services;
+    this.settings = settings || {};
+    this.config = config;
+    this.policies = [];
+    this.conditions = [];
+    this.gatewayRoutes = [];
+    this.adminRoutes = [];
+    this.cliExtensions = [];
+    this.eventBus = eventBus;
   }
 
-  registerPolicy (policy) {
-    this.policies.push(policy)
+  registerPolicy(policy) {
+    this.policies.push(policy);
   }
 
-  registerCondition (condition) {
-    this.conditions.push(condition)
+  registerCondition(condition) {
+    this.conditions.push(condition);
   }
 
-  registerGatewayRoute (gatewayRoutesDeclaration) {
-    this.gatewayRoutes.push(gatewayRoutesDeclaration)
+  registerGatewayRoute(gatewayRoutesDeclaration) {
+    this.gatewayRoutes.push(gatewayRoutesDeclaration);
   }
 
-  registerAdminRoute (adminRoutesDeclaration) {
-    this.adminRoutes.push(adminRoutesDeclaration)
+  registerAdminRoute(adminRoutesDeclaration) {
+    this.adminRoutes.push(adminRoutesDeclaration);
   }
 
-  registerCLIExtension (cliExtension) {
-    this.cliExtensions.push(cliExtension)
+  registerCLIExtension(cliExtension) {
+    this.cliExtensions.push(cliExtension);
   }
 }
 
-function extract (loadedPlugins, propName) {
+function extract(loadedPlugins, propName) {
   return loadedPlugins.reduce((result, current) => {
-    return result.concat(current[propName] || [])
-  }, [])
-};
+    return result.concat(current[propName] || []);
+  }, []);
+}
