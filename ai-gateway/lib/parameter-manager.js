@@ -459,8 +459,7 @@ class ParameterManager extends EventEmitter {
       // 如果参数名相同，直接使用
       if (providerParam === commonParam) {
         transformed[commonParam] = value
-      } // 否则使用映射的参数名
-      else if (providerParam) {
+      } else if (providerParam) { // 否则使用映射的参数名
         transformed[providerParam] = value
       }
     }

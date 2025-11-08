@@ -528,15 +528,11 @@ class MultilingualManager extends EventEmitter {
     // 如果是显式指定的，置信度最高
     if (request.query?.lang || request.headers['x-language']) {
       confidence = 1.0
-    }
-    // 如果是用户偏好，置信度较高
-    else if (context.userId) {
+    } else if (context.userId) { // 如果是用户偏好，置信度较高
       confidence = 0.9
-    } // 如果是从Accept-Language解析的，置信度中等
-    else if (request.headers['accept-language']) {
+    } else if (request.headers['accept-language']) { // 如果是从Accept-Language解析的，置信度中等
       confidence = 0.7
-    } // 如果是默认值，置信度最低
-    else {
+    } else { // 如果是默认值，置信度最低
       confidence = 0.3
     }
 
