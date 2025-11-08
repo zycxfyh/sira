@@ -2,9 +2,9 @@ name: Industrial Testing Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   schedule:
     # 每周日凌晨2点运行完整测试
     - cron: '0 2 * * 0'
@@ -62,22 +62,22 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Run ESLint
         run: |
-          
+
           npm run lint
 
       - name: Check code formatting
         run: |
-          
+
           npm run format:check
 
       - name: Security audit
         run: |
-          
+
           npm audit --audit-level=moderate
 
       - name: Upload ESLint results
@@ -112,12 +112,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Run unit tests
         run: |
-          
+
           npm run test:unit
 
       - name: Upload coverage reports
@@ -166,12 +166,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Start test services
         run: |
-          
+
           # 启动Mock AI服务器
           npm run mock:server &
           MOCK_PID=$!
@@ -182,7 +182,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          
+
           npm run test:integration
 
       - name: Stop test services
@@ -218,17 +218,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Install Playwright browsers
         run: |
-          
+
           npx playwright install --with-deps
 
       - name: Start application
         run: |
-          
+
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -238,7 +238,7 @@ jobs:
 
       - name: Run E2E tests
         run: |
-          
+
           npm run test:e2e
 
       - name: Stop application
@@ -283,12 +283,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Start application
         run: |
-          
+
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -298,7 +298,7 @@ jobs:
 
       - name: Run performance tests
         run: |
-          
+
           node run-industrial-tests.js performance
 
       - name: Stop application
@@ -334,12 +334,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Start application
         run: |
-          
+
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -349,7 +349,7 @@ jobs:
 
       - name: Run load tests
         run: |
-          
+
           node run-industrial-tests.js load --target-rps 100 --duration 120
 
       - name: Stop application
@@ -385,12 +385,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Start application
         run: |
-          
+
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -400,7 +400,7 @@ jobs:
 
       - name: Run stress tests
         run: |
-          
+
           node run-industrial-tests.js stress --intensity medium --scenario memory_stress
 
       - name: Stop application
@@ -436,12 +436,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Start application
         run: |
-          
+
           npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
@@ -451,7 +451,7 @@ jobs:
 
       - name: Run reliability tests
         run: |
-          
+
           timeout 3600 node run-industrial-tests.js comprehensive --include-reliability true --include-e2e false --parallel false
 
       - name: Stop application
@@ -486,12 +486,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Run security audit
         run: |
-          
+
           npm audit --audit-level=moderate --json > security-audit.json || true
 
       - name: Run code security scan
@@ -516,7 +516,16 @@ jobs:
     name: Generate Final Report
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [unit-tests, integration-tests, e2e-tests, performance-tests, load-tests, stress-tests, security-tests]
+    needs:
+      [
+        unit-tests,
+        integration-tests,
+        e2e-tests,
+        performance-tests,
+        load-tests,
+        stress-tests,
+        security-tests,
+      ]
     if: always()
 
     steps:
@@ -537,12 +546,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          
+
           npm ci
 
       - name: Generate comprehensive report
         run: |
-          
+
           node run-industrial-tests.js comprehensive --format html
 
       - name: Upload final report
@@ -557,7 +566,16 @@ jobs:
     name: Quality Gate Check
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [unit-tests, integration-tests, e2e-tests, performance-tests, load-tests, stress-tests, security-tests]
+    needs:
+      [
+        unit-tests,
+        integration-tests,
+        e2e-tests,
+        performance-tests,
+        load-tests,
+        stress-tests,
+        security-tests,
+      ]
     if: always()
 
     steps:

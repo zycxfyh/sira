@@ -1,0 +1,83 @@
+name: ❓ Question / Help
+description: Ask a question or request help
+title: '[Question] '
+labels: ['question', 'help wanted']
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ❓ Question / Help
+
+        Need help or have a question? We're here to help!
+
+        **Before asking:**
+        - Check the [documentation](https://github.com/zycxfyh/sira/tree/main/docs)
+        - Search existing [issues](https://github.com/zycxfyh/sira/issues) and [discussions](https://github.com/zycxfyh/sira/discussions)
+        - Check the [troubleshooting guide](docs/TROUBLESHOOTING.md)
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know or what help do you need?
+      placeholder: Please describe your question clearly and provide as much context as possible.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What category does your question fall into?
+      options:
+        - Setup/Installation
+        - Configuration
+        - Usage/API
+        - Development
+        - Testing
+        - Deployment
+        - Performance
+        - Security
+        - Troubleshooting
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide context about what you're trying to do.
+      placeholder: What are you trying to accomplish? What have you tried so far?
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: If applicable, provide environment information.
+      placeholder: |
+        - OS: e.g., Windows 11, macOS 13.2, Ubuntu 22.04
+        - Node.js version: e.g., 18.17.0
+        - Project version: e.g., v2.0.0
+        - Configuration: any relevant config details
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: Error Logs/Screenshots
+      description: If you have error messages, logs, or screenshots, paste them here.
+      placeholder: Please paste error messages, logs, or attach screenshots.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please check all that apply.
+      options:
+        - label: I have checked the documentation and couldn't find an answer
+          required: true
+        - label: I have searched existing issues and discussions
+          required: true
+        - label: This is not a bug report (use the bug report template instead)

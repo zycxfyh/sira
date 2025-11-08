@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [closed]
   workflow_run:
-    workflows: ["PR Review & Quality Gates"]
+    workflows: ['PR Review & Quality Gates']
     types: [completed]
 
 jobs:

@@ -7,16 +7,19 @@ Sira AI网关是一个统一的AI API网关，支持20+主流AI服务商的智�
 ## 🎯 核心特性
 
 ### 🚀 智能路由
+
 - **自动选择最优供应商**: 基于成本、性能、可用性智能选择
 - **故障自动切换**: 当某个供应商故障时自动切换到备用供应商
 - **地理位置优化**: 根据用户位置选择最近的数据中心
 
 ### 💾 多级缓存
+
 - **L1内存缓存**: <10ms响应
 - **L2 Redis缓存**: 分布式缓存支持
 - **智能缓存策略**: 基于内容和参数的缓存键生成
 
 ### 🔒 企业级安全
+
 - **API密钥管理**: 支持多租户API密钥
 - **请求限流**: 基于Token的精确限流控制
 - **审计日志**: 完整的请求响应审计
@@ -25,25 +28,25 @@ Sira AI网关是一个统一的AI API网关，支持20+主流AI服务商的智�
 
 ### 📊 供应商概览
 
-| 供应商 | Base URL | 支持模型 | 定价等级 | 区域 |
-|--------|----------|----------|----------|------|
-| **OpenAI** | `https://api.openai.com/v1` | GPT-4, GPT-3.5 | 高级 | 全球 |
-| **Anthropic** | `https://api.anthropic.com` | Claude-3系列 | 高级 | 美西 |
-| **Azure OpenAI** | `https://{resource}.openai.azure.com` | GPT-4, GPT-3.5 | 企业 | 多区域 |
-| **Google Gemini** | `https://generativelanguage.googleapis.com/v1beta` | Gemini-1.5 | 标准 | 多区域 |
-| **DeepSeek** | `https://api.deepseek.com/v1` | DeepSeek Chat/Coder | 经济 | 中国 |
-| **通义千问** | `https://dashscope.aliyuncs.com/api/v1` | Qwen系列 | 标准 | 中国 |
-| **文心一言** | `https://aip.baidubce.com/rpc/2.0/ai_custom/v1` | ERNIE-4.0 | 标准 | 中国 |
-| **智谱GLM** | `https://open.bigmodel.cn/api/paas/v4` | GLM-4系列 | 标准 | 中国 |
-| **Kimi** | `https://api.moonshot.cn/v1` | Moonshot-v1 | 经济 | 中国 |
-| **豆包** | `https://ark.cn-beijing.volces.com/api/v3` | Doubao系列 | 标准 | 中国 |
-| **腾讯混元** | `https://api.hunyuan.cloud.tencent.com/v1` | Hunyuan系列 | 标准 | 中国 |
-| **百度千帆** | `https://qianfan.baidubce.com/v2` | ERNIE系列 | 标准 | 中国 |
-| **Cohere** | `https://api.cohere.ai/v1` | Command系列 | 标准 | 美东 |
-| **AI21 Labs** | `https://api.ai21.com/studio/v1` | Jurassic-2 | 标准 | 美东 |
-| **Stability AI** | `https://api.stability.ai/v1` | Stable Diffusion | 标准 | 美西 |
-| **Midjourney** | `https://api.midjourney.com/v1` | Midjourney | 高级 | 美东 |
-| **Replicate** | `https://api.replicate.com/v1` | 开源模型集合 | 标准 | 美西 |
+| 供应商            | Base URL                                           | 支持模型            | 定价等级 | 区域   |
+| ----------------- | -------------------------------------------------- | ------------------- | -------- | ------ |
+| **OpenAI**        | `https://api.openai.com/v1`                        | GPT-4, GPT-3.5      | 高级     | 全球   |
+| **Anthropic**     | `https://api.anthropic.com`                        | Claude-3系列        | 高级     | 美西   |
+| **Azure OpenAI**  | `https://{resource}.openai.azure.com`              | GPT-4, GPT-3.5      | 企业     | 多区域 |
+| **Google Gemini** | `https://generativelanguage.googleapis.com/v1beta` | Gemini-1.5          | 标准     | 多区域 |
+| **DeepSeek**      | `https://api.deepseek.com/v1`                      | DeepSeek Chat/Coder | 经济     | 中国   |
+| **通义千问**      | `https://dashscope.aliyuncs.com/api/v1`            | Qwen系列            | 标准     | 中国   |
+| **文心一言**      | `https://aip.baidubce.com/rpc/2.0/ai_custom/v1`    | ERNIE-4.0           | 标准     | 中国   |
+| **智谱GLM**       | `https://open.bigmodel.cn/api/paas/v4`             | GLM-4系列           | 标准     | 中国   |
+| **Kimi**          | `https://api.moonshot.cn/v1`                       | Moonshot-v1         | 经济     | 中国   |
+| **豆包**          | `https://ark.cn-beijing.volces.com/api/v3`         | Doubao系列          | 标准     | 中国   |
+| **腾讯混元**      | `https://api.hunyuan.cloud.tencent.com/v1`         | Hunyuan系列         | 标准     | 中国   |
+| **百度千帆**      | `https://qianfan.baidubce.com/v2`                  | ERNIE系列           | 标准     | 中国   |
+| **Cohere**        | `https://api.cohere.ai/v1`                         | Command系列         | 标准     | 美东   |
+| **AI21 Labs**     | `https://api.ai21.com/studio/v1`                   | Jurassic-2          | 标准     | 美东   |
+| **Stability AI**  | `https://api.stability.ai/v1`                      | Stable Diffusion    | 标准     | 美西   |
+| **Midjourney**    | `https://api.midjourney.com/v1`                    | Midjourney          | 高级     | 美东   |
+| **Replicate**     | `https://api.replicate.com/v1`                     | 开源模型集合        | 标准     | 美西   |
 
 ## 🚀 快速开始
 
@@ -175,7 +178,7 @@ curl http://localhost:8080/api/v1/requests/{request-id}/result \
 ```yaml
 # 路由优先级 (从便宜到贵)
 priority_order:
-  - deepseek      # 最便宜
+  - deepseek # 最便宜
   - kimi
   - glm
   - ernie
@@ -186,7 +189,7 @@ priority_order:
   - google_gemini
   - cohere
   - ai21
-  - anthropic     # 最贵
+  - anthropic # 最贵
   - openai
   - azure_openai
 ```
@@ -196,7 +199,7 @@ priority_order:
 ```yaml
 # 性能优先 (响应速度)
 priority_order:
-  - openai        # 最快
+  - openai # 最快
   - azure_openai
   - anthropic
   - google_gemini
@@ -217,7 +220,7 @@ priority_order:
 ```yaml
 # 企业级供应商优先
 priority_order:
-  - azure_openai  # 最可靠
+  - azure_openai # 最可靠
   - openai
   - anthropic
   - google_gemini
@@ -241,7 +244,7 @@ priority_order:
 # config/gateway.config.yml
 serviceEndpoints:
   openai:
-    url: "https://api.openai.com/v1"
+    url: 'https://api.openai.com/v1'
 
 pipelines:
   ai-pipeline:
@@ -249,8 +252,8 @@ pipelines:
       - ai-router:
           providers:
             openai:
-              api_key: "${OPENAI_API_KEY}"
-              models: ["gpt-4", "gpt-3.5-turbo"]
+              api_key: '${OPENAI_API_KEY}'
+              models: ['gpt-4', 'gpt-3.5-turbo']
               priority: 10
 ```
 
@@ -259,7 +262,7 @@ pipelines:
 ```yaml
 serviceEndpoints:
   azure-openai:
-    url: "https://{your-resource}.openai.azure.com/openai/deployments/{deployment}"
+    url: 'https://{your-resource}.openai.azure.com/openai/deployments/{deployment}'
 
 pipelines:
   ai-pipeline:
@@ -267,9 +270,9 @@ pipelines:
       - ai-router:
           providers:
             azure_openai:
-              api_key: "${AZURE_OPENAI_API_KEY}"
-              endpoint: "${AZURE_OPENAI_ENDPOINT}"
-              deployment: "gpt-4"
+              api_key: '${AZURE_OPENAI_API_KEY}'
+              endpoint: '${AZURE_OPENAI_ENDPOINT}'
+              deployment: 'gpt-4'
               priority: 9
 ```
 
@@ -278,11 +281,11 @@ pipelines:
 ```yaml
 serviceEndpoints:
   deepseek:
-    url: "https://api.deepseek.com/v1"
+    url: 'https://api.deepseek.com/v1'
   qwen:
-    url: "https://dashscope.aliyuncs.com/api/v1"
+    url: 'https://dashscope.aliyuncs.com/api/v1'
   ernie:
-    url: "https://aip.baidubce.com/rpc/2.0/ai_custom/v1"
+    url: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1'
 
 pipelines:
   ai-pipeline:
@@ -290,13 +293,13 @@ pipelines:
       - ai-router:
           providers:
             deepseek:
-              api_key: "${DEEPSEEK_API_KEY}"
-              priority: 1  # 成本优先
+              api_key: '${DEEPSEEK_API_KEY}'
+              priority: 1 # 成本优先
             qwen:
-              api_key: "${QIANFAN_API_KEY}"
+              api_key: '${QIANFAN_API_KEY}'
               priority: 3
             ernie:
-              api_key: "${ERNIE_API_KEY}"
+              api_key: '${ERNIE_API_KEY}'
               priority: 4
 ```
 
@@ -307,8 +310,8 @@ pipelines:
 ```yaml
 policies:
   - ai-cache:
-      ttl: 300          # 缓存5分钟
-      maxSize: 10000    # 最大缓存条目
+      ttl: 300 # 缓存5分钟
+      maxSize: 10000 # 最大缓存条目
       compressionEnabled: true
 ```
 
@@ -317,9 +320,9 @@ policies:
 ```yaml
 policies:
   - ai-rate-limit:
-      windowMs: 60000   # 1分钟窗口
+      windowMs: 60000 # 1分钟窗口
       maxTokens: 100000 # 每分钟最多10万个token
-      strategy: "user"  # 按用户限流
+      strategy: 'user' # 按用户限流
 ```
 
 ### 熔断配置
@@ -327,8 +330,8 @@ policies:
 ```yaml
 policies:
   - ai-circuit-breaker:
-      failureThreshold: 5     # 失败5次后熔断
-      recoveryTimeout: 60000  # 熔断60秒后重试
+      failureThreshold: 5 # 失败5次后熔断
+      recoveryTimeout: 60000 # 熔断60秒后重试
       monitoring: true
 ```
 
@@ -337,10 +340,10 @@ policies:
 ```yaml
 policies:
   - ai-queue:
-      maxConcurrent: 10       # 最大并发数
-      maxQueueSize: 1000      # 队列最大长度
-      timeout: 300000         # 超时时间
-      priorityLevels: 3       # 优先级数量
+      maxConcurrent: 10 # 最大并发数
+      maxQueueSize: 1000 # 队列最大长度
+      timeout: 300000 # 超时时间
+      priorityLevels: 3 # 优先级数量
 ```
 
 ## 📈 监控和指标
@@ -375,14 +378,14 @@ alerting:
       labels:
         severity: warning
       annotations:
-        summary: "高错误率警告"
+        summary: '高错误率警告'
 
     - alert: CircuitBreakerOpen
       expr: circuit_breaker_state{state="open"} > 0
       labels:
         severity: critical
       annotations:
-        summary: "服务熔断器已开启"
+        summary: '服务熔断器已开启'
 ```
 
 ## 🔒 安全配置
@@ -391,15 +394,15 @@ alerting:
 
 ```yaml
 credentials:
-  - id: "user-key-1"
-    consumerId: "user-1"
-    type: "key-auth"
-    key: "sk-user-key-123"
+  - id: 'user-key-1'
+    consumerId: 'user-1'
+    type: 'key-auth'
+    key: 'sk-user-key-123'
 
-  - id: "service-key-1"
-    consumerId: "service-1"
-    type: "key-auth"
-    key: "sk-service-key-456"
+  - id: 'service-key-1'
+    consumerId: 'service-1'
+    type: 'key-auth'
+    key: 'sk-service-key-456'
 ```
 
 ### 请求过滤
@@ -409,14 +412,14 @@ policies:
   - request-transformer:
       add:
         headers:
-          x-request-id: "$(uuid)"
-          x-client-ip: "$(req.ip)"
+          x-request-id: '$(uuid)'
+          x-client-ip: '$(req.ip)'
 
   - response-transformer:
       add:
         headers:
-          x-processed-by: "sira-gateway"
-          x-response-time: "$(res.responseTime)"
+          x-processed-by: 'sira-gateway'
+          x-response-time: '$(res.responseTime)'
 ```
 
 ## 🚀 性能优化
@@ -426,8 +429,8 @@ policies:
 ```yaml
 # 基于内容的缓存
 ai-cache:
-  keyGenerator: "content-based"
-  varyByHeaders: ["authorization", "x-api-key"]
+  keyGenerator: 'content-based'
+  varyByHeaders: ['authorization', 'x-api-key']
   compression: true
 ```
 
@@ -437,7 +440,7 @@ ai-cache:
 ai-router:
   loadBalancing:
     enabled: true
-    strategy: "weighted-round-robin"
+    strategy: 'weighted-round-robin'
     weights:
       openai: 30
       anthropic: 25
@@ -451,7 +454,7 @@ ai-router:
 ```yaml
 serviceEndpoints:
   openai:
-    url: "https://api.openai.com/v1"
+    url: 'https://api.openai.com/v1'
     timeout: 30000
     retries: 3
     connectionPool:

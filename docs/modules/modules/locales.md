@@ -15,10 +15,12 @@ locales/
 ### 🔗 相关组件
 
 **多语言管理器 (MultilingualManager)**:
+
 - 位于: `src/core/multilingual-manager.js`
 - 功能: 语言检测、翻译、本地化管理
 
 **本地化中间件 (LocalizationMiddleware)**:
+
 - 位于: `src/core/middleware/localization.js`
 - 功能: 自动检测用户语言并本地化API响应
 
@@ -27,6 +29,7 @@ locales/
 ### 1. 语言包管理
 
 **结构化翻译文件**:
+
 ```json
 {
   "common": {
@@ -48,6 +51,7 @@ locales/
 ```
 
 **支持的语言**:
+
 - ✅ **中文(简体)** `zh-CN` - 完整翻译
 - ✅ **英语(美国)** `en-US` - 默认语言
 - 🔄 **计划支持**: 日语、法语、德语、西班牙语等
@@ -55,6 +59,7 @@ locales/
 ### 2. 自动语言检测
 
 **检测策略** (按优先级):
+
 1. **用户明确指定** - 请求头/查询参数
 2. **用户偏好设置** - 数据库存储的语言设置
 3. **浏览器Accept-Language** - 浏览器语言偏好
@@ -66,7 +71,7 @@ locales/
 const languageDetection = multilingualManager.detectLanguage(req, {
   userId: req.headers['x-user-id'],
   ip: req.ip,
-  sessionId: req.headers['x-session-id']
+  sessionId: req.headers['x-session-id'],
 });
 
 console.log(languageDetection);
@@ -80,6 +85,7 @@ console.log(languageDetection);
 ### 3. API响应本地化
 
 **自动本地化**:
+
 ```javascript
 // 中间件会自动本地化JSON响应
 app.use(localizationMiddleware({
@@ -102,6 +108,7 @@ app.use(localizationMiddleware({
 ```
 
 **手动本地化**:
+
 ```javascript
 // 在路由处理器中使用
 app.get('/api/user', async (req, res) => {
@@ -111,7 +118,7 @@ app.get('/api/user', async (req, res) => {
   res.json({
     success: true,
     message: message,
-    error: errorMsg
+    error: errorMsg,
   });
 });
 ```
@@ -119,6 +126,7 @@ app.get('/api/user', async (req, res) => {
 ### 4. 翻译管理
 
 **实时翻译**:
+
 ```javascript
 const multilingualManager = new MultilingualManager();
 
@@ -138,6 +146,7 @@ const localizedValue = await multilingualManager.getLocalizedResource(
 ```
 
 **批量翻译**:
+
 ```javascript
 // 批量翻译整个对象
 const originalData = {
@@ -145,8 +154,8 @@ const originalData = {
   description: 'This is a welcome message',
   buttons: {
     ok: 'OK',
-    cancel: 'Cancel'
-  }
+    cancel: 'Cancel',
+  },
 };
 
 const localizedData = await multilingualManager.localizeResponse(
@@ -162,38 +171,40 @@ const localizedData = await multilingualManager.localizeResponse(
 
 ```javascript
 const multilingualManager = new MultilingualManager({
-  configPath: './config/multilingual.json',    // 配置文件路径
-  localesPath: './src/locales',               // 语言包路径
-  cachePath: './cache/translations',           // 翻译缓存路径
+  configPath: './config/multilingual.json', // 配置文件路径
+  localesPath: './src/locales', // 语言包路径
+  cachePath: './cache/translations', // 翻译缓存路径
 
   // 翻译服务配置
   translationService: {
-    provider: 'google-translate',              // 翻译服务提供商
-    apiKey: process.env.GOOGLE_TRANSLATE_KEY,  // API密钥
-    cacheEnabled: true,                        // 启用缓存
-    cacheTTL: 86400000                         // 缓存时间(24小时)
+    provider: 'google-translate', // 翻译服务提供商
+    apiKey: process.env.GOOGLE_TRANSLATE_KEY, // API密钥
+    cacheEnabled: true, // 启用缓存
+    cacheTTL: 86400000, // 缓存时间(24小时)
   },
 
   // 语言检测配置
   languageDetection: {
     methods: ['header', 'query', 'cookie', 'browser', 'geoip'],
     defaultLanguage: 'en-US',
-    fallbackLanguage: 'en-US'
-  }
+    fallbackLanguage: 'en-US',
+  },
 });
 ```
 
 ### 中间件配置
 
 ```javascript
-app.use(localizationMiddleware({
-  includeMetadata: true,         // 在响应中包含本地化元数据
-  autoDetect: true,             // 自动检测语言
-  forceLocalization: false,     // 强制本地化所有响应
-  cacheTranslations: true,      // 缓存翻译结果
-  supportedLanguages: ['en-US', 'zh-CN', 'ja-JP'], // 支持的语言列表
-  defaultNamespace: 'common'    // 默认命名空间
-}));
+app.use(
+  localizationMiddleware({
+    includeMetadata: true, // 在响应中包含本地化元数据
+    autoDetect: true, // 自动检测语言
+    forceLocalization: false, // 强制本地化所有响应
+    cacheTranslations: true, // 缓存翻译结果
+    supportedLanguages: ['en-US', 'zh-CN', 'ja-JP'], // 支持的语言列表
+    defaultNamespace: 'common', // 默认命名空间
+  })
+);
 ```
 
 ## 🔧 使用指南
@@ -252,23 +263,24 @@ class CustomMultilingualManager extends MultilingualManager {
 
 ## 📊 翻译覆盖率统计
 
-| 命名空间 | 英文键数 | 中文翻译 | 覆盖率 | 状态 |
-|----------|----------|----------|--------|------|
-| common | 24 | 24 | 100% | ✅ 完成 |
-| auth | 15 | 15 | 100% | ✅ 完成 |
-| api | 14 | 14 | 100% | ✅ 完成 |
-| validation | 12 | 12 | 100% | ✅ 完成 |
-| ai | 18 | 18 | 100% | ✅ 完成 |
-| routing | 12 | 12 | 100% | ✅ 完成 |
-| training | 19 | 19 | 100% | ✅ 完成 |
-| multilingual | 17 | 17 | 100% | ✅ 完成 |
-| errors | 18 | 18 | 100% | ✅ 完成 |
-| messages | 18 | 18 | 100% | ✅ 完成 |
-| **总计** | **167** | **167** | **100%** | **✅ 完成** |
+| 命名空间     | 英文键数 | 中文翻译 | 覆盖率   | 状态        |
+| ------------ | -------- | -------- | -------- | ----------- |
+| common       | 24       | 24       | 100%     | ✅ 完成     |
+| auth         | 15       | 15       | 100%     | ✅ 完成     |
+| api          | 14       | 14       | 100%     | ✅ 完成     |
+| validation   | 12       | 12       | 100%     | ✅ 完成     |
+| ai           | 18       | 18       | 100%     | ✅ 完成     |
+| routing      | 12       | 12       | 100%     | ✅ 完成     |
+| training     | 19       | 19       | 100%     | ✅ 完成     |
+| multilingual | 17       | 17       | 100%     | ✅ 完成     |
+| errors       | 18       | 18       | 100%     | ✅ 完成     |
+| messages     | 18       | 18       | 100%     | ✅ 完成     |
+| **总计**     | **167**  | **167**  | **100%** | **✅ 完成** |
 
 ## 🧪 测试验证
 
 ### 单元测试
+
 ```bash
 # 语言检测测试
 npm test -- --grep "multilingual.*detect"
@@ -281,6 +293,7 @@ npm test -- --grep "localization.*middleware"
 ```
 
 ### 集成测试
+
 ```bash
 # API本地化端到端测试
 npm run test:e2e -- --testPathPattern=localization
@@ -290,6 +303,7 @@ npm run test:integration -- --grep multilingual
 ```
 
 ### 性能测试
+
 ```javascript
 // 翻译性能基准测试
 describe('Translation Performance', () => {
@@ -297,9 +311,9 @@ describe('Translation Performance', () => {
     const texts = Array(1000).fill('Hello World');
     const startTime = Date.now();
 
-    await Promise.all(texts.map(text =>
-      multilingualManager.translate(text, 'en-US', 'zh-CN')
-    ));
+    await Promise.all(
+      texts.map(text => multilingualManager.translate(text, 'en-US', 'zh-CN'))
+    );
 
     const duration = Date.now() - startTime;
     expect(duration).toBeLessThan(5000);
@@ -317,6 +331,7 @@ describe('Translation Performance', () => {
 ## 🤝 贡献指南
 
 ### 添加新语言
+
 1. 创建新的语言包JSON文件
 2. 确保所有现有键都有翻译
 3. 在MultilingualManager中注册语言
@@ -324,12 +339,14 @@ describe('Translation Performance', () => {
 5. 更新文档
 
 ### 扩展翻译功能
+
 1. 遵循现有的命名空间约定
 2. 为新功能添加完整的翻译覆盖
 3. 更新翻译统计表
 4. 确保向后兼容性
 
 ### 翻译质量保证
+
 - 使用专业翻译或母语翻译者
 - 保持术语一致性
 - 考虑文化差异和本地化习惯
@@ -337,4 +354,4 @@ describe('Translation Performance', () => {
 
 ---
 
-*最后更新: 2025年11月8日* | 🔙 [返回模块列表](../README.md#模块导航)
+_最后更新: 2025年11月8日_ | 🔙 [返回模块列表](../README.md#模块导航)

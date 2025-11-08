@@ -3,12 +3,17 @@
  * 用于端到端测试和视觉回归测试
  */
 
-const { defineConfig, devices } = require('@playwright/test')
+const { defineConfig, devices } = require('@playwright/test');
+const failFastConfig = require('./test-fail-fast.config');
 
 module.exports = defineConfig({
   // 测试发现
   testDir: './test/e2e',
   testMatch: '**/*.e2e.test.js',
+
+  // 测试快速失败机制 - GitHub社区最佳实践
+  // 根据测试类型应用相应的快速失败策略
+  bail: failFastConfig.getConfig(process.env.TEST_TYPE || 'e2e').bail,
 
   // 并行执行
   fullyParallel: true,
@@ -21,7 +26,7 @@ module.exports = defineConfig({
   reporter: [
     ['html'],
     ['junit', { outputFile: 'reports/playwright-junit.xml' }],
-    ['json', { outputFile: 'reports/playwright-results.json' }]
+    ['json', { outputFile: 'reports/playwright-results.json' }],
   ],
 
   // 共享设置
@@ -29,7 +34,7 @@ module.exports = defineConfig({
     baseURL: process.env.BASE_URL || 'http://localhost:3004',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure'
+    video: 'retain-on-failure',
   },
 
   // 项目配置
@@ -61,8 +66,8 @@ module.exports = defineConfig({
       testMatch: '**/*.visual.test.js',
       use: {
         ...devices['Desktop Chrome'],
-        screenshot: 'on'
-      }
+        screenshot: 'on',
+      },
     },
 
     // 可访问性测试项目
@@ -70,9 +75,9 @@ module.exports = defineConfig({
       name: 'accessibility',
       testMatch: '**/*.accessibility.test.js',
       use: {
-        ...devices['Desktop Chrome']
-      }
-    }
+        ...devices['Desktop Chrome'],
+      },
+    },
   ],
 
   // 全局设置
@@ -103,4 +108,4 @@ module.exports = defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
-})
+});

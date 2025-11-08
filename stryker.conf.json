@@ -1,12 +1,7 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
   "packageManager": "npm",
-  "reporters": [
-    "html",
-    "clear-text",
-    "progress",
-    "dashboard"
-  ],
+  "reporters": ["html", "clear-text", "progress", "dashboard"],
   "testRunner": "jest",
   "jest": {
     "projectType": "custom",
@@ -14,16 +9,8 @@
     "enableFindRelatedTests": true
   },
   "coverageAnalysis": "perTest",
-  "mutate": [
-    "lib/**/*.js",
-    "!lib/config/**/*.json",
-    "!lib/locales/**/*.json"
-  ],
-  "mutateFilePatterns": [
-    "!lib/index.js",
-    "!lib/**/*.test.js",
-    "!lib/**/*.spec.js"
-  ],
+  "mutate": ["lib/**/*.js", "!lib/config/**/*.json", "!lib/locales/**/*.json"],
+  "mutateFilePatterns": ["!lib/index.js", "!lib/**/*.test.js", "!lib/**/*.spec.js"],
   "thresholds": {
     "high": 80,
     "low": 60,

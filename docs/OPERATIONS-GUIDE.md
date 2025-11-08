@@ -9,7 +9,7 @@
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-326CE5?style=for-the-badge&logo=kubernetes)](https://kubernetes.io/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge&logo=apache)](https://opensource.org/licenses/Apache-2.0)
 
-*基于Express Gateway深度定制，专为AI服务场景优化的智能API网关*
+_基于Express Gateway深度定制，专为AI服务场景优化的智能API网关_
 
 [快速开始](#-快速开始) • [部署指南](#-部署方式) • [监控运维](#-监控与运维) • [故障排除](#-故障排除) • [最佳实践](#-最佳实践)
 
@@ -50,14 +50,14 @@ Sira AI Gateway作为AI服务的统一入口，其运维核心包括：
 
 ### 关键指标
 
-| 指标类型 | 目标值 | 告警阈值 | 严重程度 |
-|---------|--------|----------|----------|
-| 服务可用性 | 99.9% | < 99.5% | 🔴 严重 |
-| API响应时间 | < 500ms | > 2000ms | 🔴 严重 |
-| 错误率 | < 1% | > 5% | 🟡 警告 |
-| 并发连接数 | < 1000 | > 2000 | 🟡 警告 |
-| CPU使用率 | < 70% | > 85% | 🟡 警告 |
-| 内存使用率 | < 80% | > 90% | 🔴 严重 |
+| 指标类型    | 目标值  | 告警阈值 | 严重程度 |
+| ----------- | ------- | -------- | -------- |
+| 服务可用性  | 99.9%   | < 99.5%  | 🔴 严重  |
+| API响应时间 | < 500ms | > 2000ms | 🔴 严重  |
+| 错误率      | < 1%    | > 5%     | 🟡 警告  |
+| 并发连接数  | < 1000  | > 2000   | 🟡 警告  |
+| CPU使用率   | < 70%   | > 85%    | 🟡 警告  |
+| 内存使用率  | < 80%   | > 90%    | 🔴 严重  |
 
 ---
 
@@ -185,8 +185,8 @@ services:
   sira-gateway:
     image: sira/ai-gateway:latest
     ports:
-      - "8080:8080"   # 网关端口
-      - "9876:9876"   # 管理端口
+      - '8080:8080' # 网关端口
+      - '9876:9876' # 管理端口
     environment:
       - EG_HTTP_PORT=8080
       - EG_ADMIN_PORT=9876
@@ -203,7 +203,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
 
@@ -236,35 +236,35 @@ spec:
         app: sira-gateway
     spec:
       containers:
-      - name: gateway
-        image: sira/ai-gateway:latest
-        ports:
-        - containerPort: 8080
-        - containerPort: 9876
-        env:
-        - name: EG_HTTP_PORT
-          value: "8080"
-        - name: EG_ADMIN_PORT
-          value: "9876"
-        resources:
-          requests:
-            cpu: 500m
-            memory: 1Gi
-          limits:
-            cpu: 2000m
-            memory: 4Gi
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: gateway
+          image: sira/ai-gateway:latest
+          ports:
+            - containerPort: 8080
+            - containerPort: 9876
+          env:
+            - name: EG_HTTP_PORT
+              value: '8080'
+            - name: EG_ADMIN_PORT
+              value: '9876'
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ```
 
 ### 云服务部署
@@ -308,9 +308,9 @@ service:
 
 env:
   - name: EG_HTTP_PORT
-    value: "8080"
+    value: '8080'
   - name: REDIS_URL
-    value: "redis://redis:6379"
+    value: 'redis://redis:6379'
 
 ingress:
   enabled: true
@@ -501,8 +501,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "AI请求错误率过高"
-          description: "错误率超过5%，当前值: {{ $value }}"
+          summary: 'AI请求错误率过高'
+          description: '错误率超过5%，当前值: {{ $value }}'
 
       - alert: SlowResponseTime
         expr: histogram_quantile(0.95, rate(ai_request_duration_bucket[5m])) > 5
@@ -510,8 +510,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "AI响应时间过慢"
-          description: "95分位响应时间超过5秒"
+          summary: 'AI响应时间过慢'
+          description: '95分位响应时间超过5秒'
 ```
 
 ### 日志分析
@@ -538,6 +538,7 @@ grep "API_CALL" logs/application.log | jq '.endpoint' | sort | uniq -c | sort -n
 **现象**: `Error: listen EADDRINUSE`
 
 **解决**:
+
 ```bash
 # 检查端口占用
 netstat -tulpn | grep :8080
@@ -554,6 +555,7 @@ export EG_HTTP_PORT=8081
 **现象**: `Provider connection timeout`
 
 **解决**:
+
 ```bash
 # 检查网络连接
 curl -I https://api.openai.com/v1/models
@@ -572,6 +574,7 @@ curl -X PUT http://localhost:9876/config/ai-providers \
 **现象**: 内存使用率持续 > 90%
 
 **解决**:
+
 ```bash
 # 检查内存泄漏
 node --inspect --max-old-space-size=4096 lib/index.js
@@ -588,6 +591,7 @@ kubectl scale deployment sira-gateway --replicas=5
 **现象**: Redis连接超时
 
 **解决**:
+
 ```bash
 # 检查Redis状态
 redis-cli ping
@@ -657,19 +661,22 @@ nslookup gateway.example.com
 ```javascript
 // 多级缓存配置
 const cacheConfig = {
-  l1: { // 内存缓存
-    ttl: 300,    // 5分钟
-    maxSize: 1000
+  l1: {
+    // 内存缓存
+    ttl: 300, // 5分钟
+    maxSize: 1000,
   },
-  l2: { // Redis缓存
-    ttl: 3600,   // 1小时
-    prefix: 'sira:ai:'
+  l2: {
+    // Redis缓存
+    ttl: 3600, // 1小时
+    prefix: 'sira:ai:',
   },
-  l3: { // 数据库缓存
-    ttl: 86400,  // 24小时
-    compression: true
-  }
-}
+  l3: {
+    // 数据库缓存
+    ttl: 86400, // 24小时
+    compression: true,
+  },
+};
 ```
 
 ### 连接池配置
@@ -680,16 +687,16 @@ const httpAgent = new http.Agent({
   keepAlive: true,
   maxSockets: 100,
   maxFreeSockets: 10,
-  timeout: 60000
-})
+  timeout: 60000,
+});
 
 // 数据库连接池
 const dbPool = new Pool({
   max: 20,
   min: 5,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000
-})
+  connectionTimeoutMillis: 2000,
+});
 ```
 
 ### 负载均衡
@@ -697,20 +704,20 @@ const dbPool = new Pool({
 ```yaml
 # Nginx负载均衡配置
 upstream sira_gateway {
-    least_conn;
-    server gateway-1:8080 weight=3;
-    server gateway-2:8080 weight=3;
-    server gateway-3:8080 weight=2;
-    server gateway-4:8080 weight=1 backup;
+least_conn;
+server gateway-1:8080 weight=3;
+server gateway-2:8080 weight=3;
+server gateway-3:8080 weight=2;
+server gateway-4:8080 weight=1 backup;
 }
 
 server {
-    listen 80;
-    location / {
-        proxy_pass http://sira_gateway;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+listen 80;
+location / {
+proxy_pass http://sira_gateway;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+}
 }
 ```
 
@@ -742,8 +749,8 @@ apiKeyPolicy:
   headerName: 'X-API-Key'
   queryParam: 'api_key'
   rateLimit:
-    windowMs: 900000  # 15分钟
-    max: 100         # 最大请求数
+    windowMs: 900000 # 15分钟
+    max: 100 # 最大请求数
 
 # JWT认证
 jwtPolicy:
@@ -757,18 +764,19 @@ jwtPolicy:
 
 ```javascript
 // API密钥加密存储
-const encryptedKey = crypto.createCipher('aes-256-cbc', process.env.EG_CRYPTO_CIPHER_KEY)
+const encryptedKey = crypto
+  .createCipher('aes-256-cbc', process.env.EG_CRYPTO_CIPHER_KEY)
   .update(apiKey, 'utf8', 'hex')
-  .final('hex')
+  .final('hex');
 
 // 敏感数据脱敏
-const maskSensitiveData = (data) => {
+const maskSensitiveData = data => {
   return {
     ...data,
     apiKey: data.apiKey.replace(/./g, '*').slice(-4),
-    token: data.token.substring(0, 8) + '...'
-  }
-}
+    token: data.token.substring(0, 8) + '...',
+  };
+};
 ```
 
 ### 安全审计
@@ -815,15 +823,15 @@ metadata:
   name: sira-gateway
 spec:
   http:
-  - route:
-    - destination:
-        host: sira-gateway
-        subset: v1
-      weight: 90
-    - destination:
-        host: sira-gateway
-        subset: v2
-      weight: 10
+    - route:
+        - destination:
+            host: sira-gateway
+            subset: v1
+          weight: 90
+        - destination:
+            host: sira-gateway
+            subset: v2
+          weight: 10
 ```
 
 ### 监控策略
@@ -839,13 +847,13 @@ app.get('/health', (req, res) => {
     checks: {
       database: checkDatabase(),
       redis: checkRedis(),
-      aiProviders: checkAIProviders()
-    }
-  }
+      aiProviders: checkAIProviders(),
+    },
+  };
 
-  const unhealthy = Object.values(health.checks).some(check => !check.healthy)
-  res.status(unhealthy ? 503 : 200).json(health)
-})
+  const unhealthy = Object.values(health.checks).some(check => !check.healthy);
+  res.status(unhealthy ? 503 : 200).json(health);
+});
 ```
 
 #### 性能监控
@@ -853,17 +861,17 @@ app.get('/health', (req, res) => {
 ```javascript
 // 响应时间监控中间件
 app.use((req, res, next) => {
-  const start = Date.now()
+  const start = Date.now();
   res.on('finish', () => {
-    const duration = Date.now() - start
+    const duration = Date.now() - start;
     metrics.histogram('http_request_duration', duration, {
       method: req.method,
       route: req.route?.path,
-      status: res.statusCode
-    })
-  })
-  next()
-})
+      status: res.statusCode,
+    });
+  });
+  next();
+});
 ```
 
 ### 备份策略
@@ -964,12 +972,12 @@ iptables -A INPUT -s malicious_ip -j DROP
 
 ### 支持级别
 
-| 级别 | 响应时间 | 支持内容 |
-|-----|---------|----------|
-| 🆘 紧急 | 15分钟 | 生产环境宕机、数据丢失 |
-| 🔴 严重 | 2小时 | 主要功能不可用、性能严重下降 |
-| 🟡 一般 | 8小时 | 功能异常、配置问题 |
-| 🟢 轻微 | 24小时 | 文档问题、功能建议 |
+| 级别    | 响应时间 | 支持内容                     |
+| ------- | -------- | ---------------------------- |
+| 🆘 紧急 | 15分钟   | 生产环境宕机、数据丢失       |
+| 🔴 严重 | 2小时    | 主要功能不可用、性能严重下降 |
+| 🟡 一般 | 8小时    | 功能异常、配置问题           |
+| 🟢 轻微 | 24小时   | 文档问题、功能建议           |
 
 ### 知识库
 
@@ -990,8 +998,8 @@ iptables -A INPUT -s malicious_ip -j DROP
 
 ---
 
-*最后更新: 2024年11月8日*
+_最后更新: 2024年11月8日_
 
-*版本: v2.0.0*
+_版本: v2.0.0_
 
 </div>

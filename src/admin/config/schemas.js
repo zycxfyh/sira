@@ -1,16 +1,14 @@
 module.exports = function (client) {
-  const baseUrl = '/schemas/'
+  const baseUrl = '/schemas/';
   return {
-    list (param = '') {
-      let url = baseUrl
+    list(param = '') {
+      let url = baseUrl;
 
       if (param) {
-        url += encodeURIComponent(param)
+        url += encodeURIComponent(param);
       }
 
-      return client
-        .get(url)
-        .then(res => res.body)
-    }
-  }
-}
+      return client.get(url).then(res => res.body);
+    },
+  };
+};

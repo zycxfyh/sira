@@ -7,6 +7,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 ## 📚 核心依赖
 
 ### Web框架 & HTTP工具
+
 - **[Express.js](https://github.com/expressjs/express)** - 快速、开放、极简的Web框架
 - **[Axios](https://github.com/axios/axios)** - 基于Promise的HTTP库
 - **[SuperAgent](https://github.com/ladjs/superagent)** - 轻量级渐进式AJAX API
@@ -20,6 +21,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[Rate Limit Redis](https://github.com/wyattjoh/rate-limit-redis)** - Redis速率限制存储
 
 ### 身份验证 & 安全
+
 - **[Passport.js](https://github.com/jaredhanson/passport)** - Node.js身份验证中间件
 - **[Passport HTTP](https://github.com/jaredhanson/passport-http)** - HTTP基本认证策略
 - **[Passport HTTP Bearer](https://github.com/jaredhanson/passport-http-bearer)** - HTTP Bearer认证策略
@@ -34,11 +36,13 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[Opossum](https://github.com/nodeshift/opossum)** - Node.js断路器模式实现
 
 ### 数据存储 & 缓存
+
 - **[Redis](https://redis.io/)** - 高性能键值数据库
 - **[Ioredis](https://github.com/luin/ioredis)** - Redis Node.js客户端
 - **[Ioredis Mock](https://github.com/stipsan/ioredis-mock)** - Redis内存模拟器
 
 ### 配置 & 数据处理
+
 - **[JS-YAML](https://github.com/nodeca/js-yaml)** - YAML解析器和字符串化器
 - **[Yawn YAML](https://github.com/mohsen1/yawn-yaml)** - YAML编辑和格式化
 - **[AJV](https://github.com/ajv-validator/ajv)** - JSON Schema验证器
@@ -53,10 +57,12 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[Minimatch](https://github.com/isaacs/minimatch)** - 通配符匹配库
 
 ### 日志 & 监控
+
 - **[Winston](https://github.com/winstonjs/winston)** - 多传输异步日志库
 - **[OpenTelemetry](https://opentelemetry.io/)** - 可观测性框架
 
 ### 开发工具 & 测试
+
 - **[Mocha](https://github.com/mochajs/mocha)** - JavaScript测试框架
 - **[Chai](https://github.com/chaijs/chai)** - BDD/TDD断言库
 - **[Supertest](https://github.com/ladjs/supertest)** - HTTP端到端测试库
@@ -67,6 +73,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[Prettier](https://prettier.io/)** - 代码格式化工具
 
 ### 构建 & 部署工具
+
 - **[Yeoman](https://yeoman.io/)** - 现代Web应用脚手架工具
 - **[Cross-Env](https://github.com/kentcdodds/cross-env)** - 跨平台环境变量设置
 - **[Rimraf](https://github.com/isaacs/rimraf)** - 深度删除工具
@@ -75,36 +82,44 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 ## 🏗️ 基础设施
 
 ### API网关
+
 - **[Kong](https://github.com/Kong/kong)** - 云原生API网关和微服务管理层
 
 ### 容器化
+
 - **[Docker](https://www.docker.com/)** - 容器化平台
 - **[Docker Compose](https://github.com/docker/compose)** - 多容器Docker应用程序定义和运行
 
 ### 监控 & 可观测性
+
 - **[Prometheus](https://prometheus.io/)** - 开源监控和告警工具包
 - **[Grafana](https://github.com/grafana/grafana)** - 开源分析和监控平台
 - **[Alertmanager](https://github.com/prometheus/alertmanager)** - Prometheus告警管理器
 
 ### 消息队列
+
 - **[NATS](https://nats.io/)** - 高性能云原生消息传递系统
 
 ## 🎨 前端 & UI
 
 ### 样式 & 图标
+
 - **[Chalk](https://github.com/chalk/chalk)** - 终端字符串样式
 - **[Color Convert](https://github.com/Qix-/color-convert)** - 颜色空间转换
 
 ### 模板引擎
+
 - **[EJS](https://github.com/mde/ejs)** - 嵌入式JavaScript模板
 
 ## 📦 开发依赖
 
 ### 类型定义
+
 - **[@types/express](https://github.com/DefinitelyTyped/DefinitelyTyped)** - Express.js TypeScript类型定义
 - **[@types/json-schema](https://github.com/DefinitelyTyped/DefinitelyTyped)** - JSON Schema TypeScript类型定义
 
 ### 代码质量
+
 - **[ESLint Config Standard](https://github.com/standard/eslint-config-standard)** - ESLint标准配置
 - **[ESLint Plugin Import](https://github.com/import-js/eslint-plugin-import)** - ESLint导入插件
 - **[ESLint Plugin Node](https://github.com/mysticatea/eslint-plugin-node)** - ESLint Node.js插件
@@ -112,6 +127,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[ESLint Plugin Standard](https://github.com/standard/eslint-plugin-standard)** - ESLint标准插件
 
 ### 测试框架 & 工具
+
 - **[Chai](https://github.com/chaijs/chai)** - BDD/TDD断言库
 - **[Should.js](https://github.com/shouldjs/should.js)** - 行为驱动的测试库
 - **[Supertest](https://github.com/ladjs/supertest)** - HTTP端到端测试库
@@ -120,6 +136,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[Istanbul](https://github.com/gotwarlost/istanbul)** - JavaScript代码覆盖率工具
 
 ### 开发工具
+
 - **[CPR](https://github.com/davglass/cpr)** - 文件和目录复制工具
 - **[Find Free Port](https://github.com/tapjs/find-free-port)** - 查找可用网络端口
 - **[Husky](https://github.com/typicode/husky)** - Git钩子管理工具
@@ -128,6 +145,7 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 - **[TMP](https://github.com/raszi/node-tmp)** - 临时文件和目录管理
 
 ### 实用工具
+
 - **[Clone](https://github.com/pvorb/clone)** - 深拷贝JavaScript对象
 - **[Form URL Encoded](https://github.com/brandonhorst/form-urlencoded)** - 表单URL编码/解码
 - **[Find Up](https://github.com/sindresorhus/find-up)** - 向上查找文件或目录
@@ -138,14 +156,17 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 ## 🤝 贡献框架
 
 ### 原始项目
+
 - **[Express Gateway](https://github.com/ExpressGateway/express-gateway)** - 基于Express的API网关框架
 
 ### 设计理念借鉴
+
 - **[VCP Toolbox](https://github.com/vcp-toolbox)** - 开源AI工具生态系统，提供了Agent架构、记忆网络、工作流引擎等核心设计理念
 
 ## 📄 许可证
 
 本项目中的开源组件使用各种许可证，包括但不限于：
+
 - MIT License
 - Apache License 2.0
 - BSD License
@@ -189,26 +210,30 @@ Sira AI网关项目基于众多优秀的开源项目和技术构建而成。我�
 
 ---
 
-*最后更新: 2025年11月8日 (添加致谢声明和道歉机制)*
+_最后更新: 2025年11月8日 (添加致谢声明和道歉机制)_
 
 ## 🔄 更新日志
 
 ### v2.0.0 (2025-11-08)
+
 - 添加完整的开源技术致谢名单
 - 分类整理所有依赖包和工具
 - 包含基础设施和监控工具的致谢
 
 ### v2.0.1 (2025-11-08)
+
 - 补充遗漏的开源技术：SuperAgent扩展、Passport策略、实用工具库
 - 添加完整的开发依赖：ESLint插件、测试工具、构建工具等
 - 完善开源技术清单，总计80+个开源项目
 
 ### v2.0.2 (2025-11-08)
+
 - 添加VCP Toolbox致谢：开源AI工具生态系统设计理念的借鉴者
 - 在设计理念借鉴部分特别标注VCP Toolbox的核心贡献
 - 完善开源项目生态系统的完整性
 
 ### v2.0.3 (2025-11-08)
+
 - 添加致谢声明和道歉机制：为可能的遗漏项目提供联系方式和更正承诺
 - 设立24小时响应承诺，确保开源项目维护者能及时得到致谢
 - 表达对开源社区的诚挚敬意和持续改进的决心

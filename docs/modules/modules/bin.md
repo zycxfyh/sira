@@ -29,6 +29,7 @@ bin/
 ### 1. CLI主命令 (eg.js)
 
 **全局命令**:
+
 ```bash
 # 显示帮助信息
 eg --help
@@ -47,6 +48,7 @@ eg gateway stop
 ```
 
 **管理命令**:
+
 ```bash
 # 用户管理
 eg users create --username john --email john@example.com
@@ -66,6 +68,7 @@ eg credentials list --consumerId user-123
 ### 2. 代码生成器
 
 **应用生成器**:
+
 ```bash
 # 生成应用模板
 eg generate app my-app --template oauth2
@@ -77,6 +80,7 @@ eg generate app my-app --template oauth2
 ```
 
 **凭据生成器**:
+
 ```bash
 # 生成API密钥凭据
 eg generate credential key-auth --consumerId user-123
@@ -86,6 +90,7 @@ eg generate credential oauth2 --appId app-456 --scopes "read write"
 ```
 
 **网关配置生成器**:
+
 ```bash
 # 生成完整网关配置
 eg generate gateway --plugins "cors,key-auth,rate-limit"
@@ -97,6 +102,7 @@ eg generate gateway --docker --monitoring
 ### 3. 环境管理 (environment.js)
 
 **环境变量管理**:
+
 ```bash
 # 验证环境配置
 eg env validate
@@ -110,6 +116,7 @@ eg env set REDIS_PORT 6379
 ```
 
 **配置模板管理**:
+
 ```bash
 # 使用环境模板
 eg env template production
@@ -147,6 +154,7 @@ class Generator {
 ### 专用生成器示例
 
 **用户生成器**:
+
 ```javascript
 // generators/users/user-generator.js
 module.exports = class UserGenerator extends Generator {
@@ -158,7 +166,7 @@ module.exports = class UserGenerator extends Generator {
       username,
       email,
       scopes: scopes || ['read'],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     // 写入配置文件
@@ -170,35 +178,38 @@ module.exports = class UserGenerator extends Generator {
 ## 🔧 执行上下文 (execution-scope.js)
 
 **作用域管理**:
+
 - 🔍 确定命令执行环境
 - 📁 解析配置文件路径
 - 🔐 验证执行权限
 - 📊 收集执行上下文信息
 
 **上下文信息**:
+
 ```javascript
 const context = {
-  cwd: process.cwd(),           // 当前工作目录
-  configPath: './config',       // 配置目录路径
-  env: process.env.NODE_ENV,    // 环境变量
-  user: process.getuid(),       // 执行用户ID
-  platform: process.platform    // 操作系统平台
+  cwd: process.cwd(), // 当前工作目录
+  configPath: './config', // 配置目录路径
+  env: process.env.NODE_ENV, // 环境变量
+  user: process.getuid(), // 执行用户ID
+  platform: process.platform, // 操作系统平台
 };
 ```
 
 ## 📊 统计信息
 
-| 分类 | 数量 | 说明 |
-|------|------|------|
-| 核心文件 | 5个 | CLI入口和核心工具 |
-| 生成器目录 | 8个 | 不同类型代码生成器 |
-| 生成器文件 | 38个 | 具体生成器实现 |
+| 分类       | 数量     | 说明               |
+| ---------- | -------- | ------------------ |
+| 核心文件   | 5个      | CLI入口和核心工具  |
+| 生成器目录 | 8个      | 不同类型代码生成器 |
+| 生成器文件 | 38个     | 具体生成器实现     |
 | 总代码行数 | ~8,500行 | 包含所有生成器逻辑 |
-| 测试覆盖率 | 92% | 自动化测试覆盖 |
+| 测试覆盖率 | 92%      | 自动化测试覆盖     |
 
 ## 🧪 测试验证
 
 **CLI测试**:
+
 ```bash
 # 单元测试
 npm test -- --grep "cli"
@@ -211,6 +222,7 @@ npm run test:e2e -- --testPathPattern=generators
 ```
 
 **生成器测试**:
+
 ```bash
 # 测试所有生成器
 npm run test:generators
@@ -230,6 +242,7 @@ npm run test:generator -- --type apps
 ## 🤝 使用技巧
 
 ### 1. 批量操作
+
 ```bash
 # 批量创建用户
 cat users.csv | eg users create --batch
@@ -239,6 +252,7 @@ eg config import --file config.json --overwrite
 ```
 
 ### 2. 调试模式
+
 ```bash
 # 启用详细日志
 DEBUG=eg:* eg gateway start
@@ -248,6 +262,7 @@ eg debug report --output debug.log
 ```
 
 ### 3. 自定义生成器
+
 ```bash
 # 创建自定义生成器
 eg generate custom my-plugin --template plugin
@@ -258,4 +273,4 @@ eg generator register my-custom-generator
 
 ---
 
-*最后更新: 2025年11月7日* | 🔙 [返回模块列表](../README.md#模块导航)
+_最后更新: 2025年11月7日_ | 🔙 [返回模块列表](../README.md#模块导航)

@@ -1,8 +1,8 @@
-const eg = require('../../eg')
-const chalk = require('chalk')
+const eg = require('../../eg');
+const chalk = require('chalk');
 module.exports = class extends eg.Generator {
-  constructor (args, opts) {
-    super(args, opts)
+  constructor(args, opts) {
+    super(args, opts);
 
     this.configureCommand({
       command: 'add [options] <scopes..>',
@@ -16,31 +16,37 @@ module.exports = class extends eg.Generator {
           .nargs('t', 1)
           .describe('t', 'Type of credential: can be one of: oauth2, basic-auth, key-auth')
           .alias('id', 'keyid')
-          .describe('id', 'Id or keyId of credential to add scopes to')
-    })
+          .describe('id', 'Id or keyId of credential to add scopes to'),
+    });
   }
 
-  prompting () {
-    const argv = this.argv
-    let p = Promise.resolve()
+  prompting() {
+    const { argv } = this;
+    let p = Promise.resolve();
     argv.scopes.forEach(scope => {
       // executing in sequence to avoid race
       p = p.then(() => {
-        return this.admin.credentials.addScope(argv.id, argv.t, scope)
+        return this.admin.credentials
+          .addScope(argv.id, argv.t, scope)
           .then(res => {
             if (!argv.q) {
-              this.log.ok(`Scope ${scope} added to ${argv.id}`)
+              this.log.ok(`Scope ${scope} added to ${argv.id}`);
             }
-            return res
+            return res;
           })
           .catch(err => {
-            this.log.error(chalk.red('Error adding scope ') + chalk.yellow(scope) + ' : ' + ((err.response && err.response.error && err.response.error.text) || err.message))
-          })
-      })
-    })
+            this.log.error(
+              chalk.red('Error adding scope ') +
+                chalk.yellow(scope) +
+                ' : ' +
+                ((err.response && err.response.error && err.response.error.text) || err.message)
+            );
+          });
+      });
+    });
     p.catch(err => {
-      this.log.error(err.message)
-    })
-    return p
+      this.log.error(err.message);
+    });
+    return p;
   }
-}
+};

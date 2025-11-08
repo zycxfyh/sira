@@ -1,6 +1,13 @@
 http:
-  port: ${EG_HTTP_PORT:-8080}
+  port: ${PORT:-9090}
   hostname: localhost
+
+crypto:
+  cipherKey: ${EG_CRYPTO_CIPHER_KEY}
+
+session:
+  secret: ${EG_SESSION_SECRET}
+
 apiEndpoints:
   ai-api:
     host: localhost
@@ -8,41 +15,27 @@ apiEndpoints:
   health-api:
     host: localhost
     paths: ['/health']
-  admin-api:
-    host: localhost
-    paths: ['/admin/*']
 
 serviceEndpoints:
   ai-router:
-    url: 'http://localhost:3000' # Placeholder, will be overridden by AI router policy
+    url: 'http://localhost:3000'
   health-service:
-    url: 'http://localhost:9876' # Health service endpoint
-  admin-service:
-    url: 'http://localhost:9876'
+    url: 'http://localhost:${ADMIN_PORT:-9999}'
 
 policies:
   - ai-router
   - ai-cache
   - cors
-  # - expression  # DISABLED: Security vulnerability - allows RCE
-  - headers
-  - jwt
   - key-auth
   - log
-  - oauth2
-  - oauth2-introspect
   - proxy
   - rate-limit
-  # - request-transformer  # DISABLED: Security vulnerability - allows RCE
-  - response-transformer
 
 pipelines:
   health-pipeline:
     apiEndpoints:
       - health-api
     policies:
-      # - request-transformer:  # DISABLED: Security vulnerability - allows RCE
-      #     rewrite: '/health'  # Rewrite /health to match admin service
       - proxy:
           serviceEndpoint: health-service
 
@@ -61,17 +54,6 @@ pipelines:
           cacheEnabled: true
       - proxy: {}
 
-  # admin-pipeline:
-  #   apiEndpoints:
-  #     - admin-api
-  #   policies:
-  #     - jwt: {}
-  #     - rate-limit:
-  #         windowMs: 900000
-  #         max: 100
-  #     - proxy:
-  #         serviceEndpoint: admin-service
-
 admin:
-  port: 9877
+  port: ${ADMIN_PORT:-9999}
   host: localhost

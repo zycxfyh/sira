@@ -1,22 +1,58 @@
-# This file defines the code owners for this repository
-# When a pull request is opened, the users listed here will be automatically
-# requested for review
+# CODEOWNERS file for Sira Project
+# This file defines who owns different parts of the codebase
+# Learn more: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-# Global owners (apply to all files)
-* @1666384464
+# Global owners (required reviewers for all changes)
+* @zycxfyh
 
-# Core source code
-/src/ @1666384464
+# Core system components
+/src/core/ @zycxfyh
+/src/core/**/*.js @zycxfyh
+
+# Admin module
+/src/admin/ @zycxfyh
+
+# CLI tools
+/src/bin/ @zycxfyh
+/bin/ @zycxfyh
+
+# Configuration
+/src/config/ @zycxfyh
+/config/ @zycxfyh
 
 # Documentation
-/docs/ @1666384464
+/docs/ @zycxfyh
+*.md @zycxfyh
+README* @zycxfyh
 
-# Infrastructure and configuration
-/infrastructure/ @1666384464
-/.github/ @1666384464
+# CI/CD and workflows
+/.github/ @zycxfyh
+/.github/workflows/ @zycxfyh
 
-# CI/CD workflows
-/.github/workflows/ @1666384464
+# Docker and infrastructure
+/docker/ @zycxfyh
+/infrastructure/ @zycxfyh
+Dockerfile* @zycxfyh
+docker-compose.yml @zycxfyh
 
-# Scripts
-/scripts/ @1666384464
+# Testing
+/src/test/ @zycxfyh
+/test/ @zycxfyh
+jest.config.js @zycxfyh
+playwright.config.js @zycxfyh
+
+# Scripts and utilities
+/scripts/ @zycxfyh
+
+# Security-related files
+SECURITY.md @zycxfyh
+LICENSE @zycxfyh
+CODE_OF_CONDUCT.md @zycxfyh
+
+# Package configuration
+package.json @zycxfyh
+package-lock.json @zycxfyh
+
+# Configuration files
+.env* @zycxfyh
+*.config.* @zycxfyh

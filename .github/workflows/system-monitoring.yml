@@ -1,0 +1,108 @@
+name: System Monitoring
+
+on:
+  schedule:
+    # Run every 4 hours
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Monitoring mode'
+        required: false
+        default: 'audit'
+        type: choice
+        options:
+          - audit
+          - check
+          - monitor
+      duration:
+        description: 'Monitoring duration in minutes (for monitor mode)'
+        required: false
+        default: '5'
+        type: string
+
+jobs:
+  system-health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run system audit
+        if: github.event.inputs.mode == 'audit' || github.event_name == 'schedule'
+        run: |
+          chmod +x scripts/monitor-system.sh
+          ./scripts/monitor-system.sh audit --verbose
+
+      - name: Run health check
+        if: github.event.inputs.mode == 'check'
+        run: |
+          chmod +x scripts/monitor-system.sh
+          ./scripts/monitor-system.sh check --verbose
+
+      - name: Run continuous monitoring
+        if: github.event.inputs.mode == 'monitor'
+        timeout-minutes: ${{ fromJSON(github.event.inputs.duration || '5') }}
+        run: |
+          chmod +x scripts/monitor-system.sh
+          ./scripts/monitor-system.sh monitor --interval 30 --verbose
+
+      - name: Generate monitoring report
+        run: |
+          mkdir -p reports/monitoring
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          ./scripts/monitor-system.sh check --metrics reports/monitoring/scheduled-${TIMESTAMP}.json
+
+      - name: Upload monitoring artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-monitoring-${{ github.run_id }}
+          path: reports/monitoring/
+          retention-days: 7
+
+      - name: Create monitoring summary
+        run: |
+          echo "## System Monitoring Report" >> monitoring-summary.md
+          echo "- **Timestamp**: $(date)" >> monitoring-summary.md
+          echo "- **Workflow**: ${{ github.workflow }}" >> monitoring-summary.md
+          echo "- **Run ID**: ${{ github.run_id }}" >> monitoring-summary.md
+          echo "" >> monitoring-summary.md
+
+          if [ -f "reports/monitoring/scheduled-*.json" ]; then
+            LATEST_REPORT=$(ls -t reports/monitoring/scheduled-*.json | head -1)
+            echo "### Latest Metrics" >> monitoring-summary.md
+            echo "\`\`\`json" >> monitoring-summary.md
+            cat "$LATEST_REPORT" >> monitoring-summary.md
+            echo "\`\`\`" >> monitoring-summary.md
+          fi
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitoring-summary-${{ github.run_id }}
+          path: monitoring-summary.md
+          retention-days: 7
+
+      - name: Check for alerts
+        run: |
+          if [ -f "reports/monitoring/scheduled-*.json" ]; then
+            LATEST_REPORT=$(ls -t reports/monitoring/scheduled-*.json | head -1)
+
+            # Check for alerts in the JSON
+            ALERTS=$(jq -r '.alerts | length' "$LATEST_REPORT" 2>/dev/null || echo "0")
+
+            if [ "$ALERTS" -gt 0 ]; then
+              echo "🚨 **System Alerts Detected**: $ALERTS alert(s) found" >> $GITHUB_STEP_SUMMARY
+              jq -r '.alerts[] | "- **\(.type)**: \(.value)% (threshold: \(.threshold)%)"' "$LATEST_REPORT" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "✅ **System Health**: All systems operating normally" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi

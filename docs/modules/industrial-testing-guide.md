@@ -7,6 +7,7 @@ Sira AI网关的工业级测试框架提供全面的测试能力，涵盖从单�
 ## 🧪 测试类型
 
 ### 1. 单元测试 (Unit Tests)
+
 - **目的**: 验证单个组件的正确性
 - **范围**: 函数、类、模块
 - **工具**: Mocha + Chai + Sinon
@@ -18,6 +19,7 @@ npm run test:unit
 ```
 
 ### 2. 集成测试 (Integration Tests)
+
 - **目的**: 验证组件间的协作
 - **范围**: API调用、数据库操作、服务间通信
 - **工具**: Supertest + TestContainers
@@ -29,6 +31,7 @@ npm run test:integration
 ```
 
 ### 3. 端到端测试 (E2E Tests)
+
 - **目的**: 验证完整用户旅程
 - **范围**: 用户界面到后端服务
 - **工具**: Playwright + Puppeteer
@@ -40,6 +43,7 @@ npm run test:e2e
 ```
 
 ### 4. 性能测试 (Performance Tests)
+
 - **目的**: 验证系统性能指标
 - **范围**: 响应时间、吞吐量、资源使用
 - **工具**: Custom Performance Framework
@@ -51,6 +55,7 @@ npm run test:industrial:performance
 ```
 
 ### 5. 负载测试 (Load Tests)
+
 - **目的**: 验证系统在正常负载下的表现
 - **范围**: 持续负载、峰值负载、逐步负载
 - **工具**: Custom Load Generator
@@ -62,6 +67,7 @@ npm run test:industrial:load
 ```
 
 ### 6. 压力测试 (Stress Tests)
+
 - **目的**: 发现系统极限和薄弱点
 - **范围**: 资源耗尽、内存压力、CPU过载
 - **工具**: Custom Stress Framework
@@ -73,12 +79,14 @@ npm run test:industrial:stress
 ```
 
 ### 7. 可靠性测试 (Reliability Tests)
+
 - **目的**: 验证长期运行的稳定性
 - **范围**: 24/7运行、故障恢复、SLO合规
 - **工具**: Custom Reliability Framework
 - **目标**: 可用性 > 99.9%, MTTR < 5分钟
 
 ### 8. 安全测试 (Security Tests)
+
 - **目的**: 识别安全漏洞和弱点
 - **范围**: 依赖扫描、代码分析、渗透测试
 - **工具**: ESLint Security + npm audit
@@ -257,11 +265,11 @@ name: Industrial Testing Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   schedule:
-    - cron: '0 2 * * 0'  # 每周日凌晨运行
+    - cron: '0 2 * * 0' # 每周日凌晨运行
   workflow_dispatch:
     inputs:
       test_type:
@@ -323,24 +331,28 @@ watch -n 5 'ps aux | grep node | grep -v grep'
 
 **Q: 测试超时**
 A: 增加超时时间或优化测试代码
+
 ```bash
 export TEST_TIMEOUT=180000  # 3分钟
 ```
 
 **Q: 内存不足**
 A: 增加Node.js内存限制
+
 ```bash
 export NODE_OPTIONS="--max-old-space-size=8192"
 ```
 
 **Q: 端口冲突**
 A: 使用不同的端口或清理占用端口的进程
+
 ```bash
 lsof -ti:8080 | xargs kill -9
 ```
 
 **Q: 浏览器测试失败**
 A: 重新安装浏览器或检查显示设置
+
 ```bash
 npx playwright install --force
 ```
@@ -379,21 +391,21 @@ class CustomTestingTool {
   }
 }
 
-module.exports = { CustomTestingTool }
+module.exports = { CustomTestingTool };
 ```
 
 ### 集成第三方工具
 
 ```javascript
 // 集成k6进行负载测试
-const { K6TestingTool } = require('./k6-integration')
+const { K6TestingTool } = require('./k6-integration');
 
-const k6Tool = new K6TestingTool()
+const k6Tool = new K6TestingTool();
 await k6Tool.runK6Test({
   script: 'load-test.js',
   vus: 100,
-  duration: '5m'
-})
+  duration: '5m',
+});
 ```
 
 ### 自定义报告格式
@@ -403,7 +415,7 @@ await k6Tool.runK6Test({
 class CustomReportGenerator extends TestReportGenerator {
   async generateCustomReport(data) {
     // 自定义报告逻辑
-    return customReport
+    return customReport;
   }
 }
 ```

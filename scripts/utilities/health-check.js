@@ -50,7 +50,7 @@ const requiredDirs = [
   'docs',
   'scripts/utilities',
   'infrastructure',
-  '.github/workflows'
+  '.github/workflows',
 ];
 
 for (const dir of requiredDirs) {
@@ -70,7 +70,7 @@ const requiredFiles = [
   '.gitignore',
   '.github/workflows/ci.yml',
   'src/core/index.js',
-  'src/config/gateway.config.yml'
+  'src/config/gateway.config.yml',
 ];
 
 for (const file of requiredFiles) {
@@ -98,7 +98,13 @@ try {
 
 // Check for common security issues
 console.log('🔒 Checking for security issues...');
-const envFiles = ['.env', '.env.local', '.env.development.local', '.env.test.local', '.env.production.local'];
+const envFiles = [
+  '.env',
+  '.env.local',
+  '.env.development.local',
+  '.env.test.local',
+  '.env.production.local',
+];
 
 for (const envFile of envFiles) {
   if (fs.existsSync(envFile)) {

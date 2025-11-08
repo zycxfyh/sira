@@ -1,0 +1,57 @@
+# Sira AI Gateway - 简化配置
+# 用于快速开始和开发环境
+
+http:
+  port: ${PORT:-9090}
+  hostname: localhost
+
+apiEndpoints:
+  ai-api:
+    host: localhost
+    paths: ['/api/v1/ai/*']
+  health-api:
+    host: localhost
+    paths: ['/health']
+
+serviceEndpoints:
+  ai-router:
+    url: 'http://localhost:3000'
+  health-service:
+    url: 'http://localhost:${ADMIN_PORT:-9999}'
+
+policies:
+  - ai-router
+  - ai-cache
+  - cors
+  - key-auth
+  - log
+  - proxy
+  - rate-limit
+
+pipelines:
+  health-pipeline:
+    apiEndpoints:
+      - health-api
+    policies:
+      - proxy:
+          serviceEndpoint: health-service
+
+  ai-pipeline:
+    apiEndpoints:
+      - ai-api
+    policies:
+      # 开发环境简化认证
+      - cors: {}
+      # - key-auth:
+      #     apiKeyHeader: 'x-api-key'
+      - ai-cache:
+          ttl: 300
+          maxSize: 1000
+      - ai-router:
+          timeout: 30000
+          cacheEnabled: true
+      - proxy: {}
+
+admin:
+  port: ${ADMIN_PORT:-9999}
+  host: localhost

@@ -16,12 +16,14 @@
 #### 问题：`npm install` 失败
 
 **错误信息：**
+
 ```
 npm ERR! code ENOTFOUND
 npm ERR! errno ENOTFOUND
 ```
 
 **解决方案：**
+
 ```bash
 # 检查网络连接
 ping registry.npmjs.org
@@ -39,11 +41,13 @@ npm install
 #### 问题：Docker容器无法启动
 
 **错误信息：**
+
 ```
 ERROR: Couldn't connect to Docker daemon
 ```
 
 **解决方案：**
+
 ```bash
 # 启动Docker服务
 sudo systemctl start docker  # Linux
@@ -59,11 +63,13 @@ docker-compose --version
 #### 问题：环境变量未设置
 
 **错误信息：**
+
 ```
 Error: OPENAI_API_KEY is not set
 ```
 
 **解决方案：**
+
 ```bash
 # 创建环境变量文件
 cp env.template .env
@@ -80,11 +86,13 @@ GATEWAY_API_KEY=your_gateway_key
 #### 问题：Redis连接失败
 
 **错误信息：**
+
 ```
 Error: Redis connection failed
 ```
 
 **解决方案：**
+
 ```bash
 # 检查Redis服务状态
 docker-compose ps redis
@@ -101,11 +109,13 @@ docker-compose exec redis redis-cli ping
 #### 问题：AI API调用失败
 
 **错误信息：**
+
 ```
 Error: 401 Unauthorized - Invalid API key
 ```
 
 **解决方案：**
+
 ```bash
 # 检查API密钥格式
 echo $OPENAI_API_KEY | head -c 10  # 应该以sk-开头
@@ -118,11 +128,13 @@ curl -H "Authorization: Bearer $OPENAI_API_KEY" \
 #### 问题：配额超限
 
 **错误信息：**
+
 ```
 Error: 429 Too Many Requests
 ```
 
 **解决方案：**
+
 - 检查API使用量：https://platform.openai.com/usage
 - 降低请求频率
 - 考虑升级API计划
@@ -131,11 +143,13 @@ Error: 429 Too Many Requests
 #### 问题：模型不可用
 
 **错误信息：**
+
 ```
 Error: Model not found
 ```
 
 **解决方案：**
+
 ```bash
 # 检查支持的模型
 curl http://localhost:8080/api/v1/ai/models \
@@ -150,11 +164,13 @@ curl http://localhost:8080/api/v1/ai/models \
 #### 问题：无法访问网关
 
 **错误信息：**
+
 ```
 Connection refused
 ```
 
 **解决方案：**
+
 ```bash
 # 检查网关状态
 docker-compose ps ai-gateway
@@ -169,11 +185,13 @@ curl http://localhost:8080/health
 #### 问题：Kong配置错误
 
 **错误信息：**
+
 ```
 Policy configuration invalid
 ```
 
 **解决方案：**
+
 ```bash
 # 验证Kong配置
 docker-compose exec kong kong config db_import /kong.yml
@@ -190,11 +208,13 @@ docker-compose restart kong
 #### 问题：Prometheus指标缺失
 
 **错误信息：**
+
 ```
 No metrics found
 ```
 
 **解决方案：**
+
 ```bash
 # 检查Prometheus配置
 docker-compose exec prometheus cat /etc/prometheus/prometheus.yml
@@ -209,6 +229,7 @@ docker-compose restart prometheus
 #### 问题：Grafana无法连接
 
 **解决方案：**
+
 ```bash
 # 检查Grafana状态
 docker-compose ps grafana
@@ -224,6 +245,7 @@ docker-compose logs grafana
 #### 问题：响应时间过长
 
 **排查步骤：**
+
 ```bash
 # 检查AI服务响应时间
 curl -w "@curl-format.txt" http://localhost:8080/api/v1/ai/chat/completions \
@@ -240,6 +262,7 @@ docker stats
 #### 问题：内存使用过高
 
 **解决方案：**
+
 ```bash
 # 检查Node.js内存使用
 docker-compose exec ai-gateway ps aux
@@ -253,6 +276,7 @@ export NODE_OPTIONS="--max-old-space-size=4096"
 #### 问题：容器间网络不通
 
 **解决方案：**
+
 ```bash
 # 检查网络状态
 docker network ls
@@ -266,6 +290,7 @@ docker-compose up -d
 #### 问题：外部访问失败
 
 **解决方案：**
+
 ```bash
 # 检查端口映射
 docker-compose ps
@@ -331,6 +356,7 @@ ping -c 4 api.openai.com
 如果以上方法都无法解决问题：
 
 1. **收集诊断信息**：
+
    ```bash
    # 系统信息
    uname -a
@@ -370,4 +396,4 @@ ping -c 4 api.openai.com
 
 **记住**：大多数问题都有解决方案，多查看日志是解决问题的关键！
 
-📝 *最后更新: 2025年11月7日*
+📝 _最后更新: 2025年11月7日_

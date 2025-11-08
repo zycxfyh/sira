@@ -1,13 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    ":dependencyDashboard",
-    ":semanticPrefixFixDepsChoreOthers",
-    ":ignoreUnstable",
-    "group:monorepos",
-    "group:recommended"
-  ],
+  "extends": ["config:recommended", ":dependencyDashboard", ":semanticPrefixFixDepsChoreOthers", ":ignoreUnstable", "group:monorepos", "group:recommended"],
   "schedule": ["before 4am on Monday"],
   "timezone": "Asia/Shanghai",
   "labels": ["dependencies"],
@@ -23,35 +16,19 @@
     {
       "description": "Group Express.js ecosystem",
       "groupName": "Express.js ecosystem",
-      "matchPackageNames": [
-        "express",
-        "express-gateway",
-        "@express-gateway/**"
-      ],
+      "matchPackageNames": ["express", "express-gateway", "@express-gateway/**"],
       "schedule": ["before 4am on Monday"]
     },
     {
       "description": "Group testing dependencies",
       "groupName": "Testing dependencies",
-      "matchPackageNames": [
-        "jest",
-        "playwright",
-        "@playwright/**",
-        "stryker",
-        "@stryker-mutator/**"
-      ],
+      "matchPackageNames": ["jest", "playwright", "@playwright/**", "stryker", "@stryker-mutator/**"],
       "schedule": ["before 4am on Monday"]
     },
     {
       "description": "Group linting and formatting",
       "groupName": "Linting and formatting",
-      "matchPackageNames": [
-        "eslint",
-        "@eslint/**",
-        "prettier",
-        "markdownlint",
-        "shellcheck"
-      ],
+      "matchPackageNames": ["eslint", "@eslint/**", "prettier", "markdownlint", "shellcheck"],
       "schedule": ["before 4am on Monday"]
     },
     {

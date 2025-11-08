@@ -1,7 +1,7 @@
-const eg = require('../../eg')
+const eg = require('../../eg');
 module.exports = class extends eg.Generator {
-  constructor (args, opts) {
-    super(args, opts)
+  constructor(args, opts) {
+    super(args, opts);
 
     this.configureCommand({
       command: 'deactivate [options] <id|keyid..>',
@@ -14,26 +14,27 @@ module.exports = class extends eg.Generator {
           .demandOption(['t'])
           .nargs('t', 1)
           .describe('t', 'Type of credential: can be one of: oauth2, basic-auth, key-auth')
-          .positional('id', { type: 'string' })
-    })
+          .positional('id', { type: 'string' }),
+    });
   }
 
-  prompting () {
-    const argv = this.argv
-    return this.admin.credentials.deactivate(argv.id, argv.t)
+  prompting() {
+    const { argv } = this;
+    return this.admin.credentials
+      .deactivate(argv.id, argv.t)
       .then(res => {
-        const status = res.status
+        const { status } = res;
 
         if (status) {
           if (argv.q) {
-            this.stdout(argv.id)
+            this.stdout(argv.id);
           } else {
-            this.log.ok(`${status} ${argv.id}`)
+            this.log.ok(`${status} ${argv.id}`);
           }
         }
       })
       .catch(err => {
-        this.log.error(err.message)
-      })
+        this.log.error(err.message);
+      });
   }
-}
+};

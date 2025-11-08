@@ -28,6 +28,7 @@ docker/
 ### 1. 完整生产环境 (production/docker-compose-full.yml)
 
 **服务架构**:
+
 ```yaml
 version: '3.8'
 services:
@@ -35,8 +36,8 @@ services:
   ai-gateway:
     image: ai-gateway:latest
     ports:
-      - "8080:8080"          # HTTP端口
-      - "8443:8443"          # HTTPS端口
+      - '8080:8080' # HTTP端口
+      - '8443:8443' # HTTPS端口
     environment:
       - NODE_ENV=production
       - REDIS_HOST=redis
@@ -50,7 +51,7 @@ services:
       - ./logs:/app/logs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -59,10 +60,10 @@ services:
   kong:
     image: kong:3.4
     ports:
-      - "8000:8000"          # Kong代理端口
-      - "8443:8443"          # Kong HTTPS端口
-      - "8001:8001"          # Kong管理端口
-      - "8444:8444"          # Kong管理HTTPS
+      - '8000:8000' # Kong代理端口
+      - '8443:8443' # Kong HTTPS端口
+      - '8001:8001' # Kong管理端口
+      - '8444:8444' # Kong管理HTTPS
     environment:
       - KONG_DATABASE=postgres
       - KONG_PG_HOST=kong-db
@@ -88,7 +89,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - ./redis/redis.conf:/etc/redis/redis.conf
       - redis_data:/data
@@ -99,20 +100,20 @@ services:
   nats:
     image: nats:2.9
     ports:
-      - "4222:4222"          # 客户端端口
-      - "8222:8222"          # 监控端口
-      - "6222:6222"          # 集群端口
+      - '4222:4222' # 客户端端口
+      - '8222:8222' # 监控端口
+      - '6222:6222' # 集群端口
     volumes:
       - nats_data:/data
       - ./nats.conf:/etc/nats/nats.conf
-    command: ["-c", "/etc/nats/nats.conf", "--jetstream"]
+    command: ['-c', '/etc/nats/nats.conf', '--jetstream']
     restart: unless-stopped
 
   # Prometheus监控
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - "9090:9090"
+      - '9090:9090'
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -127,7 +128,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
@@ -140,8 +141,8 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
-      - "16686:16686"        # Jaeger UI
-      - "14268:14268"        # 接收Jaeger数据
+      - '16686:16686' # Jaeger UI
+      - '14268:14268' # 接收Jaeger数据
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     volumes:
@@ -152,7 +153,7 @@ services:
   loki:
     image: grafana/loki:latest
     ports:
-      - "3100:3100"
+      - '3100:3100'
     volumes:
       - loki_data:/loki
       - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml
@@ -184,13 +185,14 @@ volumes:
 ### 2. 简化生产环境 (production/docker-compose.yml)
 
 **轻量级部署**:
+
 ```yaml
 version: '3.8'
 services:
   ai-gateway:
     build: ..
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
       - NODE_ENV=production
       - REDIS_HOST=redis
@@ -200,12 +202,13 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
 ```
 
 ### 3. Staging环境 (staging/docker-compose.yml)
 
 **预发布验证**:
+
 ```yaml
 version: '3.8'
 services:
@@ -480,15 +483,15 @@ docker-compose -f docker-compose.test.yml down
 
 ## 📊 统计信息
 
-| 组件 | 镜像大小 | 端口数量 | 数据卷 |
-|------|----------|----------|--------|
-| AI网关 | ~250MB | 2个 | 2个 |
-| Kong | ~180MB | 4个 | 2个 |
-| Redis | ~30MB | 1个 | 1个 |
-| NATS | ~45MB | 3个 | 1个 |
-| Prometheus | ~220MB | 1个 | 1个 |
-| Grafana | ~280MB | 1个 | 1个 |
-| **总计** | **~1.2GB** | **12个** | **8个** |
+| 组件       | 镜像大小   | 端口数量 | 数据卷  |
+| ---------- | ---------- | -------- | ------- |
+| AI网关     | ~250MB     | 2个      | 2个     |
+| Kong       | ~180MB     | 4个      | 2个     |
+| Redis      | ~30MB      | 1个      | 1个     |
+| NATS       | ~45MB      | 3个      | 1个     |
+| Prometheus | ~220MB     | 1个      | 1个     |
+| Grafana    | ~280MB     | 1个      | 1个     |
+| **总计**   | **~1.2GB** | **12个** | **8个** |
 
 ## 🔗 相关链接
 
@@ -500,6 +503,7 @@ docker-compose -f docker-compose.test.yml down
 ## 🤝 部署最佳实践
 
 ### 1. 渐进式部署
+
 ```bash
 # 1. 部署基础设施
 docker-compose up -d redis nats
@@ -512,6 +516,7 @@ docker-compose up -d prometheus grafana jaeger
 ```
 
 ### 2. 备份策略
+
 ```bash
 # 数据卷备份
 docker run --rm -v ai-gateway_redis_data:/data -v $(pwd):/backup alpine tar czf /backup/redis-backup.tar.gz -C /data .
@@ -521,6 +526,7 @@ docker run --rm -v ai-gateway_config:/config -v $(pwd):/backup alpine tar czf /b
 ```
 
 ### 3. 故障恢复
+
 ```bash
 # 快速重启服务
 docker-compose restart ai-gateway
@@ -534,4 +540,4 @@ docker-compose up -d --force-recreate ai-gateway
 
 ---
 
-*最后更新: 2025年11月7日* | 🔙 [返回模块列表](../README.md#模块导航)
+_最后更新: 2025年11月7日_ | 🔙 [返回模块列表](../README.md#模块导航)

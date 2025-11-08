@@ -50,17 +50,20 @@ git commit -m "docs: update API documentation"
 ### 阶段1: 本地验证环境 🔍
 
 **执行内容:**
+
 - Node.js版本验证
 - 项目结构检查
 - 依赖完整性验证
 - 许可证合规检查
 
 **成功标准:**
+
 - 所有必需文件存在
 - Node.js版本兼容
 - 依赖安装成功
 
 **故障排除:**
+
 ```bash
 # 检查Node.js版本
 node --version
@@ -72,12 +75,14 @@ ls -la && cat package.json
 ### 阶段2: 智能测试执行 🧪
 
 **测试类型:**
+
 - **单元测试**: 单个函数/模块测试
 - **集成测试**: 模块间交互测试
 - **组件测试**: UI组件功能测试
 - **契约测试**: API接口契约验证
 
 **质量门禁:**
+
 ```javascript
 // 覆盖率阈值 (jest.config.js)
 coverageThreshold: {
@@ -91,6 +96,7 @@ coverageThreshold: {
 ```
 
 **运行测试:**
+
 ```bash
 # 本地运行测试
 npm test
@@ -107,19 +113,21 @@ npm run test:e2e
 ### 阶段3: 高级安全分析 🔒
 
 **安全扫描:**
+
 - **npm审计**: 依赖漏洞扫描
 - **CodeQL**: 代码安全分析
 - **Trivy**: 容器安全扫描
 - **Semgrep**: 自定义安全规则
 
 **安全评分计算:**
+
 ```javascript
 // 安全评分算法
 function calculateSecurityScore(vulnerabilities) {
   let score = 100;
-  score -= vulnerabilities.critical * 20;    // 严重漏洞扣20分
-  score -= vulnerabilities.high * 10;       // 高风险扣10分
-  score -= vulnerabilities.moderate * 2;    // 中风险扣2分
+  score -= vulnerabilities.critical * 20; // 严重漏洞扣20分
+  score -= vulnerabilities.high * 10; // 高风险扣10分
+  score -= vulnerabilities.moderate * 2; // 中风险扣2分
   return Math.max(0, score);
 }
 ```
@@ -127,6 +135,7 @@ function calculateSecurityScore(vulnerabilities) {
 ### 阶段4: 端到端测试 🌐
 
 **测试环境:**
+
 ```yaml
 # 测试服务配置 (docker-compose.test.yml)
 services:
@@ -141,6 +150,7 @@ services:
 ```
 
 **API兼容性测试:**
+
 ```javascript
 // 向后兼容性检查
 const apiVersions = ['v1', 'v2'];
@@ -158,12 +168,14 @@ apiVersions.forEach(version => {
 ### 阶段5: PR审核流程 📋
 
 **自动化检查:**
+
 - 代码质量分析
 - 复杂度评估
 - 安全问题检测
 - 风险等级评定
 
 **风险评估算法:**
+
 ```javascript
 function assessPRRisk(changes) {
   let risk = 0;
@@ -187,16 +199,18 @@ function assessPRRisk(changes) {
 ### 阶段6: Staging部署 🚀
 
 **部署策略:**
+
 ```yaml
 # 金丝雀发布配置
 canary:
-  initialTraffic: 10%      # 初始流量
-  increment: 25%          # 流量递增
-  validationTime: 300s    # 验证时间
-  rollbackThreshold: 5%   # 回滚阈值
+  initialTraffic: 10% # 初始流量
+  increment: 25% # 流量递增
+  validationTime: 300s # 验证时间
+  rollbackThreshold: 5% # 回滚阈值
 ```
 
 **验证检查:**
+
 ```bash
 # 健康检查
 curl -f https://staging.sira-gateway.com/health
@@ -211,6 +225,7 @@ curl -X POST https://staging.sira-gateway.com/api/v1/ai/chat/completions \
 ### 阶段7: 回归测试 🔄
 
 **性能回归检测:**
+
 ```javascript
 // 性能基准比较
 function checkPerformanceRegression(current, baseline) {
@@ -228,6 +243,7 @@ function checkPerformanceRegression(current, baseline) {
 ### 阶段8: 生产部署 🎯
 
 **生产就绪检查:**
+
 - [ ] 安全审计通过
 - [ ] 性能基准达成
 - [ ] 集成测试通过
@@ -235,6 +251,7 @@ function checkPerformanceRegression(current, baseline) {
 - [ ] 监控配置完成
 
 **部署验证:**
+
 ```bash
 # 生产健康检查
 curl -f https://api.sira-gateway.com/health
@@ -249,21 +266,22 @@ npm run test:load -- --url=https://api.sira-gateway.com --concurrency=10 --durat
 ### 阶段9: 监控回溯 📊
 
 **监控指标:**
+
 ```javascript
 // 关键指标定义
 const monitoringMetrics = {
   availability: {
     target: 99.9,
-    alert: 99.5
+    alert: 99.5,
   },
   responseTime: {
-    p95: 2000,    // 毫秒
-    p99: 5000
+    p95: 2000, // 毫秒
+    p99: 5000,
   },
   errorRate: {
-    threshold: 0.05,  // 5%
-    window: 300000    // 5分钟
-  }
+    threshold: 0.05, // 5%
+    window: 300000, // 5分钟
+  },
 };
 ```
 
@@ -321,15 +339,15 @@ spec:
   template:
     spec:
       containers:
-      - name: sira-gateway
-        image: ghcr.io/your-org/sira-gateway:latest
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "200m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
+        - name: sira-gateway
+          image: ghcr.io/your-org/sira-gateway:latest
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '200m'
+            limits:
+              memory: '1Gi'
+              cpu: '1000m'
 ```
 
 ## 🔧 故障排除
@@ -339,6 +357,7 @@ spec:
 #### 1. 构建失败
 
 **问题:** `npm install` 失败
+
 ```bash
 # 解决方案
 rm -rf node_modules package-lock.json
@@ -349,6 +368,7 @@ npm install
 #### 2. 测试超时
 
 **问题:** Jest测试超时
+
 ```bash
 # 解决方案
 export JEST_TIMEOUT=10000
@@ -358,6 +378,7 @@ npm test -- --testTimeout=10000
 #### 3. Docker构建失败
 
 **问题:** 构建缓存问题
+
 ```bash
 # 解决方案
 docker system prune -a
@@ -367,6 +388,7 @@ docker build --no-cache -t sira-gateway .
 #### 4. 部署失败
 
 **问题:** Kubernetes部署失败
+
 ```bash
 # 检查状态
 kubectl get pods -n production
@@ -402,6 +424,7 @@ curl http://localhost:8080/health
 ### 开发最佳实践
 
 1. **小批量提交**
+
    ```bash
    # 避免大PR，使用小批量提交
    git add -p
@@ -409,6 +432,7 @@ curl http://localhost:8080/health
    ```
 
 2. **编写测试**
+
    ```javascript
    // 为每个功能编写测试
    describe('UserService', () => {
@@ -420,6 +444,7 @@ curl http://localhost:8080/health
    ```
 
 3. **安全编码**
+
    ```javascript
    // 避免安全漏洞
    // ❌ 不安全
@@ -455,6 +480,7 @@ curl http://localhost:8080/health
 ### 性能优化
 
 1. **构建优化**
+
    ```dockerfile
    # 使用多阶段构建
    FROM node:20-alpine AS builder
@@ -469,15 +495,17 @@ curl http://localhost:8080/health
    ```
 
 2. **测试优化**
+
    ```javascript
    // 并行测试执行
    module.exports = {
-     maxWorkers: '50%',  // 使用50% CPU核心
-     testTimeout: 10000
+     maxWorkers: '50%', // 使用50% CPU核心
+     testTimeout: 10000,
    };
    ```
 
 3. **缓存策略**
+
    ```yaml
    # 依赖缓存
    - uses: actions/cache@v4
@@ -504,6 +532,7 @@ curl http://localhost:8080/health
 ### 紧急情况
 
 对于生产环境紧急问题:
+
 1. 立即通知DevOps团队
 2. 执行自动回滚 (如果可用)
 3. 启动应急响应流程
@@ -511,4 +540,4 @@ curl http://localhost:8080/health
 
 ---
 
-*📚 持续更新中 | 🤝 欢迎贡献 | 🚀 一起构建更好的CI/CD*
+_📚 持续更新中 | 🤝 欢迎贡献 | 🚀 一起构建更好的CI/CD_

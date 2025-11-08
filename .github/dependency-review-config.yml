@@ -27,40 +27,40 @@ dependency_check: true
 
 # 允许的依赖包列表（白名单）
 allow_dependencies:
-  - "@nestjs/*"
-  - "@prisma/*"
-  - "@sentry/*"
-  - "@langchain/*"
-  - "zod"
-  - "redis"
-  - "axios"
-  - "bcryptjs"
-  - "jsonwebtoken"
-  - "passport"
-  - "passport-jwt"
-  - "rxjs"
-  - "socket.io*"
-  - "vue"
-  - "vue-router"
-  - "pinia"
-  - "vite"
-  - "typescript"
-  - "eslint*"
-  - "prettier"
-  - "jest*"
-  - "supertest"
+  - '@nestjs/*'
+  - '@prisma/*'
+  - '@sentry/*'
+  - '@langchain/*'
+  - 'zod'
+  - 'redis'
+  - 'axios'
+  - 'bcryptjs'
+  - 'jsonwebtoken'
+  - 'passport'
+  - 'passport-jwt'
+  - 'rxjs'
+  - 'socket.io*'
+  - 'vue'
+  - 'vue-router'
+  - 'pinia'
+  - 'vite'
+  - 'typescript'
+  - 'eslint*'
+  - 'prettier'
+  - 'jest*'
+  - 'supertest'
 
 # 拒绝的依赖包列表（黑名单）
 deny_dependencies:
-  - "left-pad"  # 著名的恶意包示例
-  - "event-stream"  # 另一个恶意包示例
+  - 'left-pad' # 著名的恶意包示例
+  - 'event-stream' # 另一个恶意包示例
 
 # 版本限制
 version_restrictions:
-  - package: "zod"
-    min_version: "3.25.0"
-  - package: "@nestjs/*"
-    min_version: "10.0.0"
+  - package: 'zod'
+    min_version: '3.25.0'
+  - package: '@nestjs/*'
+    min_version: '10.0.0'
 
 # 安全策略
 security_advisories:

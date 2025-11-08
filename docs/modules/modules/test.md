@@ -62,7 +62,9 @@ test/
 ## 🚀 九阶段测试工作流
 
 ### 1. 本地验证阶段 ✅
+
 **目标**: 确保开发环境配置正确
+
 ```bash
 # 依赖安装检查
 npm install
@@ -78,7 +80,9 @@ npm run test:local-setup
 ```
 
 ### 2. 自动化测试阶段 ✅
+
 **目标**: 代码质量和单元测试
+
 ```bash
 # ESLint代码检查
 npm run lint
@@ -94,7 +98,9 @@ npm run test:quality
 ```
 
 ### 3. 静态安全检查阶段 ✅
+
 **目标**: 安全漏洞扫描和修复
+
 ```bash
 # npm audit安全扫描
 npm audit
@@ -110,7 +116,9 @@ npm run test:security-report
 ```
 
 ### 4. 集成测试阶段 ✅
+
 **目标**: 组件协作验证
+
 ```bash
 # 多组件集成测试
 npm run test:integration
@@ -126,7 +134,9 @@ npm run test:db-integration
 ```
 
 ### 5. PR审核流程阶段 ✅
+
 **目标**: 代码审查自动化
+
 ```bash
 # PR代码审查
 npm run test:pr-review
@@ -142,7 +152,9 @@ npm run test:branch-policy
 ```
 
 ### 6. Staging部署阶段 ✅
+
 **目标**: 容器化环境验证
+
 ```bash
 # Docker镜像构建测试
 npm run test:docker-build
@@ -158,7 +170,9 @@ npm run test:staging-basic
 ```
 
 ### 7. 回归测试阶段 ✅
+
 **目标**: 历史功能稳定性
+
 ```bash
 # 全量回归测试
 npm run test:regression-full
@@ -174,7 +188,9 @@ npm run test:regression-data
 ```
 
 ### 8. 生产部署阶段 ✅
+
 **目标**: 生产环境就绪验证
+
 ```bash
 # 生产配置验证
 npm run test:production-config
@@ -190,7 +206,9 @@ npm run test:production-disaster
 ```
 
 ### 9. 监控回溯阶段 ✅
+
 **目标**: 系统监控和告警验证
+
 ```bash
 # 监控指标验证
 npm run test:monitoring-metrics
@@ -210,6 +228,7 @@ npm run test:monitoring-e2e
 ### 单元测试 (Unit Tests)
 
 **策略测试示例**:
+
 ```javascript
 // test/policies/ai-router.test.js
 const aiRouter = require('../lib/policies/ai-router');
@@ -220,16 +239,19 @@ describe('AI Router Policy', () => {
   beforeEach(() => {
     mockReq = {
       body: { model: 'gpt-4', messages: [] },
-      egContext: new Map()
+      egContext: new Map(),
     };
     mockRes = {};
     mockNext = jest.fn();
   });
 
   it('should select OpenAI for GPT-4 requests', () => {
-    const policy = aiRouter({}, {
-      providers: ['openai', 'anthropic']
-    });
+    const policy = aiRouter(
+      {},
+      {
+        providers: ['openai', 'anthropic'],
+      }
+    );
 
     policy(mockReq, mockRes, mockNext);
 
@@ -238,10 +260,13 @@ describe('AI Router Policy', () => {
   });
 
   it('should handle provider failures gracefully', () => {
-    const policy = aiRouter({}, {
-      providers: ['failing-provider'],
-      fallbackProvider: 'openai'
-    });
+    const policy = aiRouter(
+      {},
+      {
+        providers: ['failing-provider'],
+        fallbackProvider: 'openai',
+      }
+    );
 
     policy(mockReq, mockRes, mockNext);
 
@@ -251,6 +276,7 @@ describe('AI Router Policy', () => {
 ```
 
 **服务测试示例**:
+
 ```javascript
 // test/services/auth.test.js
 const authService = require('../lib/services/auth');
@@ -268,7 +294,7 @@ describe('Authentication Service', () => {
     it('should authenticate valid credentials', async () => {
       const result = await authService.authenticate({
         username: 'testuser',
-        password: 'validpassword'
+        password: 'validpassword',
       });
 
       expect(result).toHaveProperty('token');
@@ -277,10 +303,12 @@ describe('Authentication Service', () => {
     });
 
     it('should reject invalid credentials', async () => {
-      await expect(authService.authenticate({
-        username: 'testuser',
-        password: 'wrongpassword'
-      })).rejects.toThrow('Invalid credentials');
+      await expect(
+        authService.authenticate({
+          username: 'testuser',
+          password: 'wrongpassword',
+        })
+      ).rejects.toThrow('Invalid credentials');
     });
   });
 });
@@ -289,6 +317,7 @@ describe('Authentication Service', () => {
 ### 集成测试 (Integration Tests)
 
 **端到端流程测试**:
+
 ```javascript
 // test/e2e/ai-gateway.e2e.test.js
 const { setupGateway, teardownGateway } = require('../common/gateway.helper');
@@ -298,7 +327,7 @@ describe('Sira E2E', () => {
 
   beforeAll(async () => {
     gateway = await setupGateway({
-      config: 'test/fixtures/gateway.config.yml'
+      config: 'test/fixtures/gateway.config.yml',
     });
   });
 
@@ -312,12 +341,12 @@ describe('Sira E2E', () => {
       path: '/api/v1/ai/chat/completions',
       headers: {
         'x-api-key': 'test-key',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: {
         model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: 'Hello!' }]
-      }
+        messages: [{ role: 'user', content: 'Hello!' }],
+      },
     });
 
     expect(response.status).toBe(200);
@@ -331,6 +360,7 @@ describe('Sira E2E', () => {
 ### 性能测试 (Performance Tests)
 
 **负载测试**:
+
 ```javascript
 // test/performance/load.test.js
 const loadTest = require('loadtest');
@@ -344,12 +374,12 @@ describe('Load Testing', () => {
       method: 'POST',
       body: {
         model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: 'Test' }]
+        messages: [{ role: 'user', content: 'Test' }],
       },
       headers: {
         'x-api-key': 'test-key',
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     };
 
     const result = await loadTest.loadTest(options);
@@ -366,6 +396,7 @@ describe('Load Testing', () => {
 ### 测试助手 (Test Helpers)
 
 **网关测试助手**:
+
 ```javascript
 // test/common/gateway.helper.js
 class GatewayHelper {
@@ -396,20 +427,21 @@ class GatewayHelper {
       path: '/test',
       headers: {},
       body: null,
-      ...overrides
+      ...overrides,
     };
   }
 }
 ```
 
 **数据库测试助手**:
+
 ```javascript
 // test/common/db.helper.js
 class DatabaseHelper {
   static async setupTestDatabase() {
     // 创建测试数据库
     const db = new Database({
-      url: 'mongodb://localhost:27017/test-db'
+      url: 'mongodb://localhost:27017/test-db',
     });
 
     // 插入测试数据
@@ -431,6 +463,7 @@ class DatabaseHelper {
 ### 测试配置管理
 
 **测试环境配置**:
+
 ```javascript
 // test/config/test.config.js
 module.exports = {
@@ -439,8 +472,8 @@ module.exports = {
     url: process.env.TEST_DB_URL || 'mongodb://localhost:27017/test',
     options: {
       useNewUrlParser: true,
-      useUnifiedTopology: true
-    }
+      useUnifiedTopology: true,
+    },
   },
 
   // 测试AI提供商配置
@@ -448,16 +481,16 @@ module.exports = {
     providers: {
       mock: {
         apiKey: 'test-key',
-        baseUrl: 'http://localhost:3001/mock'
-      }
-    }
+        baseUrl: 'http://localhost:3001/mock',
+      },
+    },
   },
 
   // 测试服务器配置
   server: {
     port: 3000,
-    host: 'localhost'
-  }
+    host: 'localhost',
+  },
 };
 ```
 
@@ -486,28 +519,29 @@ const qualityGates = {
     statements: 80,
     branches: 75,
     functions: 85,
-    lines: 80
+    lines: 80,
   },
 
   // 性能基准
   performance: {
-    responseTime: 500,    // ms
-    throughput: 100,      // req/sec
-    errorRate: 0.1        // %
+    responseTime: 500, // ms
+    throughput: 100, // req/sec
+    errorRate: 0.1, // %
   },
 
   // 安全检查
   security: {
     vulnerabilities: 0,
     deprecatedPackages: 0,
-    securityHeaders: true
-  }
+    securityHeaders: true,
+  },
 };
 ```
 
 ## 🎯 测试策略和最佳实践
 
 ### 1. 测试金字塔策略
+
 ```
    /\
   /  \    E2E Tests (10%)
@@ -517,6 +551,7 @@ const qualityGates = {
 ```
 
 ### 2. 测试数据管理
+
 ```javascript
 // 测试数据工厂
 class TestDataFactory {
@@ -525,25 +560,28 @@ class TestDataFactory {
       username: faker.internet.userName(),
       email: faker.internet.email(),
       password: faker.internet.password(),
-      ...overrides
+      ...overrides,
     };
   }
 
   static createAIRequest(overrides = {}) {
     return {
       model: 'gpt-3.5-turbo',
-      messages: [{
-        role: 'user',
-        content: faker.lorem.sentence()
-      }],
+      messages: [
+        {
+          role: 'user',
+          content: faker.lorem.sentence(),
+        },
+      ],
       temperature: 0.7,
-      ...overrides
+      ...overrides,
     };
   }
 }
 ```
 
 ### 3. 异步测试处理
+
 ```javascript
 // 异步操作测试
 it('should handle async AI requests', async () => {
@@ -575,29 +613,29 @@ jobs:
         node-version: [16, 18, 20]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run lint
-      run: npm run lint
+      - name: Run lint
+        run: npm run lint
 
-    - name: Run unit tests
-      run: npm run test:unit
+      - name: Run unit tests
+        run: npm run test:unit
 
-    - name: Run integration tests
-      run: npm run test:integration
+      - name: Run integration tests
+        run: npm run test:integration
 
-    - name: Run E2E tests
-      run: npm run test:e2e
+      - name: Run E2E tests
+        run: npm run test:e2e
 
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
 ```
 
 ### 测试并行化
@@ -610,12 +648,12 @@ async function runParallelTests() {
   const testSuites = [
     'test/policies/**/*.test.js',
     'test/services/**/*.test.js',
-    'test/e2e/**/*.test.js'
+    'test/e2e/**/*.test.js',
   ];
 
   const results = await runTestsInParallel(testSuites, {
     workers: 4,
-    timeout: 60000
+    timeout: 60000,
   });
 
   return results;
@@ -624,14 +662,14 @@ async function runParallelTests() {
 
 ## 📊 统计信息
 
-| 测试类型 | 文件数量 | 代码行数 | 覆盖率目标 |
-|----------|----------|----------|------------|
-| 单元测试 | 45+ | ~8,500行 | 85% |
-| 集成测试 | 15+ | ~3,200行 | 90% |
-| E2E测试 | 8+ | ~1,800行 | 95% |
-| 性能测试 | 5+ | ~600行 | - |
-| 测试助手 | 8+ | ~1,200行 | - |
-| **总计** | **81+文件** | **~15,300行** | **88%** |
+| 测试类型 | 文件数量    | 代码行数      | 覆盖率目标 |
+| -------- | ----------- | ------------- | ---------- |
+| 单元测试 | 45+         | ~8,500行      | 85%        |
+| 集成测试 | 15+         | ~3,200行      | 90%        |
+| E2E测试  | 8+          | ~1,800行      | 95%        |
+| 性能测试 | 5+          | ~600行        | -          |
+| 测试助手 | 8+          | ~1,200行      | -          |
+| **总计** | **81+文件** | **~15,300行** | **88%**    |
 
 ## 🔗 相关链接
 
@@ -643,6 +681,7 @@ async function runParallelTests() {
 ## 🤝 测试开发指南
 
 ### 1. 添加新测试
+
 ```bash
 # 生成测试文件模板
 npm run generate:test -- --type unit --name my-feature
@@ -652,6 +691,7 @@ npm test -- --grep "my-feature"
 ```
 
 ### 2. 测试调试
+
 ```javascript
 // 调试模式运行
 DEBUG=test:* npm test
@@ -661,6 +701,7 @@ node --inspect-brk test/policies/ai-router.test.js
 ```
 
 ### 3. 性能基准测试
+
 ```javascript
 // 建立性能基准
 npm run test:benchmark
@@ -671,4 +712,4 @@ npm run test:performance-regression
 
 ---
 
-*最后更新: 2025年11月7日* | 🔙 [返回模块列表](../README.md#模块导航)
+_最后更新: 2025年11月7日_ | 🔙 [返回模块列表](../README.md#模块导航)

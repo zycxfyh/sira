@@ -187,11 +187,11 @@ curl -X POST http://localhost:8080/api/v1/ai/chat/completions \
 
 ### 支持的模型
 
-| 提供商 | 模型 | 特点 |
-|--------|------|------|
-| OpenAI | gpt-4, gpt-4-turbo, gpt-3.5-turbo | 高质量，快速响应 |
-| Anthropic | claude-3-opus, claude-3-sonnet, claude-3-haiku | 安全，可靠 |
-| Azure OpenAI | gpt-4, gpt-3.5-turbo | 企业级部署 |
+| 提供商       | 模型                                           | 特点             |
+| ------------ | ---------------------------------------------- | ---------------- |
+| OpenAI       | gpt-4, gpt-4-turbo, gpt-3.5-turbo              | 高质量，快速响应 |
+| Anthropic    | claude-3-opus, claude-3-sonnet, claude-3-haiku | 安全，可靠       |
+| Azure OpenAI | gpt-4, gpt-3.5-turbo                           | 企业级部署       |
 
 ## 🧪 测试
 

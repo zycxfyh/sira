@@ -256,7 +256,7 @@ jobs:
         if: success()
         with:
           status: success
-          text: "✅ Staging deployment successful: ${{ needs.build-and-push.outputs.version }}"
+          text: '✅ Staging deployment successful: ${{ needs.build-and-push.outputs.version }}'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
@@ -265,7 +265,7 @@ jobs:
         if: failure()
         with:
           status: failure
-          text: "❌ Staging deployment failed: ${{ needs.build-and-push.outputs.version }}"
+          text: '❌ Staging deployment failed: ${{ needs.build-and-push.outputs.version }}'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
@@ -309,7 +309,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: success
-          text: "🚀 Production deployment successful: ${{ needs.build-and-push.outputs.version }}"
+          text: '🚀 Production deployment successful: ${{ needs.build-and-push.outputs.version }}'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_PRODUCTION_WEBHOOK_URL }}
 

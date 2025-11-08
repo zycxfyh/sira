@@ -72,6 +72,7 @@ core/
 ### 1. 网关运行时 (gateway/)
 
 **服务器管理 (server.js)**:
+
 ```javascript
 const server = require('./gateway/server');
 
@@ -79,7 +80,7 @@ const server = require('./gateway/server');
 await server.start({
   port: 8080,
   host: '0.0.0.0',
-  ssl: false
+  ssl: false,
 });
 
 // 优雅关闭
@@ -89,6 +90,7 @@ process.on('SIGTERM', async () => {
 ```
 
 **管道系统 (pipelines.js)**:
+
 ```javascript
 const pipelines = require('./gateway/pipelines');
 
@@ -96,11 +98,12 @@ const pipelines = require('./gateway/pipelines');
 const result = await pipelines.execute('ai-pipeline', {
   req: request,
   res: response,
-  next: nextFunction
+  next: nextFunction,
 });
 ```
 
 **上下文管理 (context.js)**:
+
 ```javascript
 const Context = require('./gateway/context');
 
@@ -115,9 +118,10 @@ ctx.set('cache', cacheResult);
 **AI专用策略 (6个核心策略)**:
 
 #### 🔄 AI路由策略 (ai-router)
+
 ```javascript
 // lib/policies/ai-router/ai-router.js
-module.exports = function(params, config) {
+module.exports = function (params, config) {
   return function aiRouter(req, res, next) {
     // 智能选择AI提供商
     const provider = selectBestProvider(req.body, config);
@@ -128,6 +132,7 @@ module.exports = function(params, config) {
 ```
 
 #### 💾 AI缓存策略 (ai-cache)
+
 ```javascript
 // 基于请求内容的智能缓存
 {
@@ -140,6 +145,7 @@ module.exports = function(params, config) {
 ```
 
 #### 🛡️ AI熔断器策略 (ai-circuit-breaker)
+
 ```javascript
 // 提供商故障自动熔断
 {
@@ -151,6 +157,7 @@ module.exports = function(params, config) {
 ```
 
 #### 🚦 AI速率限制策略 (ai-rate-limit)
+
 ```javascript
 // 基于Token消耗的智能限流
 {
@@ -163,6 +170,7 @@ module.exports = function(params, config) {
 ```
 
 #### 📊 AI追踪策略 (ai-tracing)
+
 ```javascript
 // 分布式追踪
 {
@@ -178,6 +186,7 @@ module.exports = function(params, config) {
 ```
 
 #### 📋 AI队列策略 (ai-queue)
+
 ```javascript
 // 异步请求处理
 {
@@ -191,6 +200,7 @@ module.exports = function(params, config) {
 ```
 
 **通用策略**:
+
 - 🔐 **认证策略**: `basic-auth`, `key-auth`, `jwt`, `oauth2`
 - 🌐 **网络策略**: `cors`, `rate-limit`, `proxy`
 - 🔄 **转换策略**: `request-transformer`, `response-transformer`
@@ -200,6 +210,7 @@ module.exports = function(params, config) {
 ### 3. 插件系统 (plugins.js)
 
 **插件生命周期**:
+
 ```javascript
 class AIPlugin {
   constructor(config) {
@@ -224,13 +235,14 @@ class AIPlugin {
 ```
 
 **插件安装器 (plugin-installer.js)**:
+
 ```javascript
 const installer = require('./plugin-installer');
 
 // 安装插件
 await installer.install('ai-cache', {
   version: '1.0.0',
-  registry: 'npm'
+  registry: 'npm',
 });
 
 // 卸载插件
@@ -240,13 +252,14 @@ await installer.uninstall('ai-cache');
 ### 4. 业务服务层 (services/)
 
 **认证服务 (auth.js)**:
+
 ```javascript
 const auth = require('./services/auth');
 
 // 用户认证
 const token = await auth.authenticate({
   username: 'john',
-  password: 'secret'
+  password: 'secret',
 });
 
 // 令牌验证
@@ -254,6 +267,7 @@ const user = await auth.verifyToken(token);
 ```
 
 **用户服务**:
+
 ```javascript
 const users = require('./services/consumers/user.service');
 
@@ -261,17 +275,18 @@ const users = require('./services/consumers/user.service');
 const user = await users.create({
   username: 'john_doe',
   email: 'john@example.com',
-  password: 'hashed_password'
+  password: 'hashed_password',
 });
 
 // 用户查询
 const userList = await users.find({
   role: 'admin',
-  status: 'active'
+  status: 'active',
 });
 ```
 
 **凭据服务**:
+
 ```javascript
 const credentials = require('./services/credentials/credential.service');
 
@@ -279,11 +294,12 @@ const credentials = require('./services/credentials/credential.service');
 const credential = await credentials.create({
   type: 'key-auth',
   consumerId: 'user-123',
-  key: generateSecureKey()
+  key: generateSecureKey(),
 });
 ```
 
 **令牌服务**:
+
 ```javascript
 const tokens = require('./services/tokens/token.service');
 
@@ -291,7 +307,7 @@ const tokens = require('./services/tokens/token.service');
 const token = await tokens.generate({
   userId: 'user-123',
   scopes: ['read', 'write'],
-  expiresIn: '1h'
+  expiresIn: '1h',
 });
 
 // 验证令牌
@@ -301,6 +317,7 @@ const payload = await tokens.verify(token);
 ### 5. 条件判断引擎 (conditions/)
 
 **预定义条件**:
+
 ```javascript
 // conditions/predefined.js
 module.exports = {
@@ -318,11 +335,12 @@ module.exports = {
   scope: (condition, ctx) => {
     const userScopes = ctx.get('user.scopes') || [];
     return condition.scopes.every(scope => userScopes.includes(scope));
-  }
+  },
 };
 ```
 
 **JSON Schema条件**:
+
 ```javascript
 // conditions/json-schema.js
 const validateRequest = (schema, data) => {
@@ -336,15 +354,16 @@ const validateRequest = (schema, data) => {
 ### 6. 事件总线 (eventBus.js)
 
 **事件系统**:
+
 ```javascript
 const eventBus = require('./eventBus');
 
 // 注册事件监听器
-eventBus.on('request.start', (req) => {
+eventBus.on('request.start', req => {
   console.log('Request started:', req.id);
 });
 
-eventBus.on('ai.response', (response) => {
+eventBus.on('ai.response', response => {
   console.log('AI response received:', response.model);
 });
 
@@ -352,29 +371,30 @@ eventBus.on('ai.response', (response) => {
 eventBus.emit('request.complete', {
   id: requestId,
   duration: Date.now() - startTime,
-  status: 200
+  status: 200,
 });
 ```
 
 ## 📊 统计信息
 
-| 组件 | 文件数 | 代码行数 | 功能描述 |
-|------|--------|----------|----------|
-| 策略引擎 | 25+个策略目录 | ~15,000行 | AI专用和通用策略 |
-| 服务层 | 20+个文件 | ~12,000行 | 业务逻辑和数据访问 |
-| 管理器组件 | 30+个文件 | ~25,000行 | 各种功能管理器 |
-| 网关运行时 | 5个文件 | ~3,500行 | 核心运行环境 |
-| REST API层 | 25+个路由文件 | ~8,000行 | API端点和控制器 |
-| 中间件层 | 2个文件 | ~1,200行 | 请求处理中间件 |
-| 条件引擎 | 3个文件 | ~900行 | 条件判断逻辑 |
-| 插件系统 | 2个文件 | ~800行 | 插件管理框架 |
-| 配置系统 | 10+个文件 | ~2,500行 | 配置管理和验证 |
-| 测试框架 | 5个文件 | ~4,000行 | 各种测试框架 |
-| **总计** | **120+文件** | **~72,900行** | **完整核心模块** |
+| 组件       | 文件数        | 代码行数      | 功能描述           |
+| ---------- | ------------- | ------------- | ------------------ |
+| 策略引擎   | 25+个策略目录 | ~15,000行     | AI专用和通用策略   |
+| 服务层     | 20+个文件     | ~12,000行     | 业务逻辑和数据访问 |
+| 管理器组件 | 30+个文件     | ~25,000行     | 各种功能管理器     |
+| 网关运行时 | 5个文件       | ~3,500行      | 核心运行环境       |
+| REST API层 | 25+个路由文件 | ~8,000行      | API端点和控制器    |
+| 中间件层   | 2个文件       | ~1,200行      | 请求处理中间件     |
+| 条件引擎   | 3个文件       | ~900行        | 条件判断逻辑       |
+| 插件系统   | 2个文件       | ~800行        | 插件管理框架       |
+| 配置系统   | 10+个文件     | ~2,500行      | 配置管理和验证     |
+| 测试框架   | 5个文件       | ~4,000行      | 各种测试框架       |
+| **总计**   | **120+文件**  | **~72,900行** | **完整核心模块**   |
 
 ## 🧪 测试验证
 
 **单元测试覆盖**:
+
 ```bash
 # 策略测试
 npm test -- --grep "policies"
@@ -387,6 +407,7 @@ npm test -- --grep "gateway"
 ```
 
 **集成测试**:
+
 ```bash
 # 端到端策略测试
 npm run test:e2e -- --testPathPattern=policies
@@ -396,6 +417,7 @@ npm run test:perf -- --module lib
 ```
 
 **策略测试示例**:
+
 ```javascript
 // test/policies/ai-router.test.js
 describe('AI Router Policy', () => {
@@ -419,6 +441,7 @@ describe('AI Router Policy', () => {
 ## 🤝 开发指南
 
 ### 1. 添加新策略
+
 ```javascript
 // core/policies/custom-policy/index.js
 module.exports = function(params, config) {
@@ -440,6 +463,7 @@ module.exports = function(params, config) {
 ```
 
 ### 2. 扩展服务
+
 ```javascript
 // core/services/custom/custom.service.js
 class CustomService {
@@ -456,6 +480,7 @@ module.exports = new CustomService();
 ```
 
 ### 3. 自定义条件
+
 ```javascript
 // core/conditions/custom.js
 module.exports = function customCondition(condition, context) {
@@ -466,4 +491,4 @@ module.exports = function customCondition(condition, context) {
 
 ---
 
-*最后更新: 2025年11月8日* | 🔙 [返回模块列表](../README.md#模块导航)
+_最后更新: 2025年11月8日_ | 🔙 [返回模块列表](../README.md#模块导航)

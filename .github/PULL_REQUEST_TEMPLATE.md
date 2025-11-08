@@ -1,145 +1,91 @@
-## 📝 Pull Request 描述
+## 📋 Pull Request Description
 
-### 🎯 变更概述
+### 🎯 What does this PR do?
 
-请简要描述这个PR做了什么。
+<!-- A clear and concise description of what this PR accomplishes -->
 
-**问题/背景**: [解决什么问题或为什么需要这个变更]
+### 🔍 Context
 
-**解决方案**: [如何解决的]
+<!-- Why is this change needed? What problem does it solve? -->
 
-### 🔧 变更内容
+### 🧪 Changes Made
 
-#### 修改的文件
+<!-- List the key changes made in this PR -->
 
-| 文件路径 | 变更类型 | 描述 |
-|----------|----------|------|
-| `src/` | [新增/修改/删除] | [具体说明] |
-| `test/` | [新增/修改/删除] | [具体说明] |
-| `docs/` | [新增/修改/删除] | [具体说明] |
+### ✅ Testing
 
-#### 主要变更点
+<!-- How have you tested these changes? -->
 
-- **功能新增**: 列出新增的功能
-- **功能修改**: 列出修改的功能
-- **功能删除**: 列出删除的功能
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] E2E tests pass (if applicable)
+- [ ] Manual testing completed
+- [ ] Performance tests pass (if applicable)
 
-### ✅ 测试验证
+### 📚 Documentation
 
-#### 测试覆盖
+<!-- Does this PR require documentation updates? -->
 
-- [ ] 单元测试通过
-- [ ] 集成测试通过
-- [ ] E2E测试通过 (如适用)
+- [ ] Documentation updated
+- [ ] README updated (if applicable)
+- [ ] API documentation updated (if applicable)
+- [ ] Code comments added/updated
 
-#### 测试命令
+### 🔧 Configuration
 
-```bash
-# 运行相关测试
-npm run test:unit
-npm run test:integration
-npm run test:e2e
-```
+<!-- Does this PR require configuration changes? -->
 
-#### 手动测试步骤
+- [ ] Configuration files updated
+- [ ] Environment variables documented
+- [ ] Migration scripts provided (if applicable)
 
-1. [测试步骤1]
-2. [测试步骤2]
-3. [测试步骤3]
+### 🚀 Breaking Changes
 
-### 🔍 代码审查要点
+<!-- Does this PR introduce breaking changes? -->
 
-#### 关注点
+- [ ] Breaking changes introduced
+- [ ] Migration guide provided
+- [ ] Deprecation notices added
 
-- **安全性**: 是否有安全风险？
-- **性能**: 是否影响系统性能？
-- **兼容性**: 是否向后兼容？
-- **文档**: 是否更新了相关文档？
+### 📊 Performance Impact
 
-#### 审查清单
+<!-- Does this PR affect performance? -->
 
-- [ ] 代码符合项目规范
-- [ ] 添加了必要的测试
-- [ ] 更新了相关文档
-- [ ] 通过了所有CI检查
-- [ ] 没有破坏性变更
+- [ ] Performance impact assessed
+- [ ] Benchmarks updated
+- [ ] No performance regression
 
-### 🚀 部署说明
+### 🔐 Security Considerations
 
-#### 部署步骤
+<!-- Does this PR have security implications? -->
 
-```bash
-# 部署命令
-npm run build
-npm run deploy
-```
+- [ ] Security impact assessed
+- [ ] Security tests added/updated
+- [ ] Dependencies scanned for vulnerabilities
 
-#### 回滚计划
+### 🏷️ Related Issues
 
-如果需要回滚，如何操作：
+<!-- Link to related issues this PR addresses -->
 
-1. [回滚步骤1]
-2. [回滚步骤2]
-3. [验证步骤]
+Closes #<!-- issue number -->
+Related to #<!-- issue number -->
 
-#### 环境影响
+### 📝 Checklist
 
-- **生产环境**: [影响说明]
-- **数据库**: [变更说明]
-- **第三方服务**: [影响说明]
+- [ ] Code follows project coding standards
+- [ ] Commit messages are clear and descriptive
+- [ ] Code is properly typed (if applicable)
+- [ ] All CI checks pass
+- [ ] Reviewed by at least one maintainer (if required)
 
-### 📋 关联信息
+### 🎨 Screenshots/GIFs (if applicable)
 
-#### 关联Issues
+<!-- Add screenshots or GIFs to demonstrate the changes -->
 
-- Closes #[Issue编号]
-- Related to #[Issue编号]
+### 🤔 Additional Notes
 
-#### 依赖的PR
-
-- [ ] 需要先合并 #[PR编号]
-- [ ] 阻塞 #[PR编号]
-
-### 📊 影响评估
-
-| 维度 | 影响程度 | 说明 |
-|------|----------|------|
-| **用户体验** | [无/轻微/中等/重大] | [具体影响] |
-| **性能** | [无/轻微/中等/重大] | [具体影响] |
-| **安全性** | [无/轻微/中等/重大] | [具体影响] |
-| **维护性** | [无/轻微/中等/重大] | [具体影响] |
-
-### 🏷️ 标签
-
-选择合适的标签：
-- `bugfix` - Bug修复
-- `feature` - 新功能
-- `enhancement` - 功能增强
-- `refactor` - 代码重构
-- `docs` - 文档更新
-- `test` - 测试相关
-- `ci` - CI/CD相关
-- `security` - 安全相关
-- `breaking-change` - 破坏性变更
+<!-- Any additional information or context reviewers should know -->
 
 ---
 
-## 📞 联系方式
-
-**审查者**: @reviewer
-**测试者**: @tester
-**产品负责人**: @product-owner
-
----
-
-**提交前检查** ✅
-
-- [ ] 我已经自测过这个变更
-- [ ] 代码符合项目的编码规范
-- [ ] 提交信息清晰明了
-- [ ] 相关的文档已更新
-- [ ] 所有测试都通过
-
----
-
-**感谢你的贡献！** 🙏
+**Thank you for contributing to Sira! 🎉**

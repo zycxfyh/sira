@@ -1,104 +1,259 @@
 version: '3.8'
 
 services:
-  # Sira AI Gateway 主服务
-  sira-gateway:
+  # Sira - Production Environment (Load Balanced)
+  ai-gateway:
     build:
-      context: .
+      context: ../..
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"  # 主端口
-      - "9876:9876"  # 管理端口
+      - "${EG_HTTP_PORT:-8080}:8080"
     environment:
-      - NODE_ENV=development
-      - LOG_LEVEL=info
-      - EG_CONFIG_DIR=/app/src/config
+      - NODE_ENV=production
+      - EG_HTTP_PORT=${EG_HTTP_PORT:-8080}
+      - EG_ADMIN_PORT=${EG_ADMIN_PORT:-9876}
+      - EG_REDIS_HOST=redis
+      - EG_REDIS_PORT=6379
+      - EG_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - EG_DB_REDIS_DB=0
+      - EG_LOG_LEVEL=warn
+      # AI Provider Keys (use production keys)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      # Security
+      - GATEWAY_API_KEY=${GATEWAY_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      # Monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+      - DATADOG_API_KEY=${DATADOG_API_KEY}
     volumes:
-      - .:/app
-      - /app/node_modules
+      - ../../config:/app/config:ro
+      - ../../logs:/app/logs
+      - ../../ssl:/app/ssl:ro
     depends_on:
       - redis
-      - postgres
-    networks:
-      - sira-network
-    restart: unless-stopped
+    restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
+    networks:
+      - ai-gateway-prod
+    deploy:
+      mode: replicated
+      replicas: 3
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        monitor: 60s
+        max_failure_ratio: 0.3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.ai-gateway.rule=Host(`${DOMAIN:-ai-gateway.company.com}`)"
+        - "traefik.http.routers.ai-gateway.tls.certresolver=letsencrypt"
+        - "traefik.http.services.ai-gateway.loadbalancer.server.port=8080"
+        - "traefik.http.middlewares.ai-gateway-ratelimit.ratelimit.burst=100"
+        - "traefik.http.middlewares.ai-gateway-ratelimit.ratelimit.average=50"
 
-  # Redis 缓存服务
+  # Redis Cluster for production
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass "${REDIS_PASSWORD}"
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 60
+      --timeout 300
     volumes:
-      - redis_data:/data
-    networks:
-      - sira-network
-    restart: unless-stopped
+      - redis_prod_data:/data
+      - ./redis/prod.conf:/etc/redis/redis.conf:ro
+    restart: always
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - ai-gateway-prod
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
 
-  # PostgreSQL 数据库 (可选)
+  # Load Balancer / Reverse Proxy
+  traefik:
+    image: traefik:v2.10
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8081:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - traefik_acme:/letsencrypt
+    restart: always
+    networks:
+      - ai-gateway-prod
+      - web
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN:-company.com}`)"
+        - "traefik.http.routers.traefik.service=api@internal"
+        - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.traefik.middlewares=auth"
+
+  # PostgreSQL for metadata (optional, for advanced features)
   postgres:
     image: postgres:15-alpine
-    ports:
-      - "5432:5432"
     environment:
-      - POSTGRES_DB=sira_db
-      - POSTGRES_USER=sira_user
-      - POSTGRES_PASSWORD=sira_password
+      - POSTGRES_DB=ai_gateway_prod
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_prod_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: always
     networks:
-      - sira-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sira_user -d sira_db"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - ai-gateway-prod
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
 
-  # Prometheus 监控 (可选)
+  # Monitoring Stack
   prometheus:
     image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
     volumes:
-      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_prod_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--web.external-url=https://prometheus.${DOMAIN:-company.com}'
+    restart: always
     networks:
-      - sira-network
-    restart: unless-stopped
-    profiles:
-      - monitoring
+      - ai-gateway-prod
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2G
 
-  # Grafana 可视化 (可选)
   grafana:
     image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+      - GF_SERVER_ROOT_URL=https://grafana.${DOMAIN:-company.com}
     volumes:
-      - grafana_data:/var/lib/grafana
-    networks:
-      - sira-network
-    restart: unless-stopped
+      - grafana_prod_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    restart: always
     depends_on:
       - prometheus
-    profiles:
-      - monitoring
+    networks:
+      - ai-gateway-prod
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN:-company.com}`)"
+        - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+        - "traefik.http.routers.grafana.middlewares=grafana-auth"
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=https://alertmanager.${DOMAIN:-company.com}'
+    restart: always
+    networks:
+      - ai-gateway-prod
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.alertmanager.rule=Host(`alertmanager.${DOMAIN:-company.com}`)"
+        - "traefik.http.routers.alertmanager.tls.certresolver=letsencrypt"
+        - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
+
+  # Log aggregation
+  loki:
+    image: grafana/loki:latest
+    volumes:
+      - loki_prod_data:/loki
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+    command: -config.file=/etc/loki/loki-config.yml
+    restart: always
+    networks:
+      - ai-gateway-prod
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ../../logs:/var/log/ai-gateway:ro
+      - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/promtail-config.yml
+    restart: always
+    networks:
+      - ai-gateway-prod
 
 volumes:
-  redis_data:
-  postgres_data:
-  grafana_data:
+  redis_prod_data:
+  postgres_prod_data:
+  prometheus_prod_data:
+  grafana_prod_data:
+  traefik_acme:
+  loki_prod_data:
 
 networks:
-  sira-network:
-    driver: bridge
+  ai-gateway-prod:
+    driver: overlay
+    attachable: true
+  web:
+    external: true

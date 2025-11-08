@@ -1,0 +1,146 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sira-gateway
+  labels:
+    app: sira-gateway
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sira-gateway
+  template:
+    metadata:
+      labels:
+        app: sira-gateway
+        version: v1
+    spec:
+      containers:
+        - name: sira-gateway
+          image: sira/gateway:latest
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 3001
+              name: admin
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: PORT
+              value: '8080'
+            - name: ADMIN_PORT
+              value: '3001'
+            - name: LOG_LEVEL
+              value: 'info'
+            - name: REDIS_URL
+              value: 'redis://redis-service:6379'
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sira-secrets
+                  key: database-url
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '250m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+            - name: logs-volume
+              mountPath: /app/logs
+      volumes:
+        - name: config-volume
+          configMap:
+            name: sira-config
+        - name: logs-volume
+          emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - sira-gateway
+                topologyKey: kubernetes.io/hostname
+      tolerations:
+        - key: 'node-type'
+          operator: 'Equal'
+          value: 'gateway'
+          effect: 'NoSchedule'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sira-gateway-service
+  labels:
+    app: sira-gateway
+spec:
+  selector:
+    app: sira-gateway
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: admin
+      port: 3001
+      targetPort: 3001
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sira-gateway-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.sira-gateway.com
+      secretName: sira-gateway-tls
+  rules:
+    - host: api.sira-gateway.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sira-gateway-service
+                port:
+                  number: 80
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: sira-gateway-service
+                port:
+                  number: 3001

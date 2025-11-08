@@ -1,0 +1,80 @@
+name: 📚 Documentation Issue
+description: Report issues with documentation
+title: '[Docs] '
+labels: ['documentation']
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📚 Documentation Issue
+
+        Help us improve our documentation!
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Documentation Issue Type
+      description: What type of documentation issue is this?
+      options:
+        - Missing documentation
+        - Outdated documentation
+        - Incorrect documentation
+        - Unclear documentation
+        - Documentation formatting/style issue
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: Where is the documentation issue located?
+      placeholder: e.g., README.md, docs/api.md, specific section
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the documentation issue.
+      placeholder: What's wrong with the current documentation?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Fix
+      description: How should the documentation be improved?
+      placeholder: What should be changed or added?
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: How urgent is this documentation fix?
+      options:
+        - Low - Nice to have
+        - Medium - Should be fixed
+        - High - Important for user experience
+        - Critical - Blocks user understanding
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any additional context or screenshots.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please check all that apply.
+      options:
+        - label: I have checked that this documentation issue hasn't been reported before
+          required: true
+        - label: I am willing to help fix this documentation issue

@@ -1,0 +1,78 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+rule_files:
+  - "alert-rules.yml"
+
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Sira AI Gateway
+  - job_name: 'sira-gateway'
+    static_configs:
+      - targets: ['sira-gateway:8080']
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+    params:
+      format: ['prometheus']
+    http_config:
+      follow_redirects: true
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'sira-gateway:8080'
+
+  # Sira Admin API
+  - job_name: 'sira-admin'
+    static_configs:
+      - targets: ['sira-gateway:3001']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'sira-admin:3001'
+
+  # Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 30s
+
+  # PostgreSQL
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:9187']
+    scrape_interval: 30s
+
+  # Node.js applications (if exposing metrics)
+  - job_name: 'node-applications'
+    static_configs:
+      - targets: ['sira-gateway:8080']
+    scrape_interval: 10s
+    metrics_path: '/debug/metrics'
+    params:
+      format: ['prometheus']
+
+  # System metrics (if node-exporter is running)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  # Nginx metrics (if nginx-prometheus-exporter is running)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
