@@ -496,178 +496,36 @@ module.exports = function (params, config) {
     // Prepare headers with API key from key manager
     const headers = buildHeaders(providerConfig, req.headers, keyData)
 
-    // Make the request
-    axios({
-      method: req.method,
-      url: targetUrl,
-      headers,
-      data: transformedRequest,
+    // Set up Express Gateway proxy context for the proxy policy
+    req.egContext = req.egContext || {}
+    req.egContext.proxy = {
+      target: targetUrl,
+      headers: headers,
       timeout: params.timeout || 30000,
-      validateStatus: () => true // Don't throw on any status code
+      changeOrigin: true,
+      secure: false
+    }
+
+    // Store AI routing metadata for response processing
+    req.egContext.aiRouting = {
+      selectedProvider,
+      model,
+      userId,
+      requestId,
+      startTime,
+      keyId: selectedKey.id,
+      abTestAllocation,
+      transformedRequest
+    }
+
+    logger.info(`AI Router: routing to ${selectedProvider} (${model})`, {
+      userId,
+      requestId,
+      targetUrl: targetUrl.replace(/api[-_]?key=[^&\s]*/gi, 'api-key=***')
     })
-      .then(response => {
-        const responseTime = Date.now() - startTime
 
-        // Record provider performance
-        recordProviderPerformance(selectedProvider, response.status < 400, responseTime)
-
-        // Transform response if needed
-        const transformedResponse = transformResponse(response.data, selectedProvider)
-
-        // Extract token usage from response
-        const tokens = extractTokenUsage(transformedResponse, selectedProvider)
-        const cost = calculateCost(selectedProvider, model, tokens)
-
-        // 记录API密钥使用情况
-        apiKeyManager.recordKeyUsage(selectedKey.id, {
-          tokens: tokens.total || 0,
-          cost: cost || 0,
-          responseTime,
-          statusCode: response.status,
-          timestamp: new Date()
-        })
-
-        // 记录成功请求统计
-        usageAnalytics.recordRequest({
-          userId,
-          requestId,
-          provider: selectedProvider,
-          model,
-          tokens: tokens.total || 0,
-          cost: cost || 0,
-          responseTime,
-          statusCode: response.status,
-          timestamp: new Date(),
-          ip: req.ip,
-          userAgent: req.headers['user-agent']
-        })
-
-        // Add custom headers
-        res.set({
-          'x-ai-provider': selectedProvider,
-          'x-ai-model': model,
-          'x-response-time': responseTime,
-          'x-tokens-used': tokens.total || 0,
-          'x-cost': cost || 0,
-          'x-request-id': requestId
-        })
-
-        // A/B测试：记录成功请求的结果
-        if (abTestAllocation && abTestManager) {
-          try {
-            const metrics = {
-              response_time: responseTime,
-              cost: cost || 0,
-              quality_score: calculateQualityScore(transformedResponse, model) // 简单的质量评分
-            }
-
-            await abTestManager.recordResult(
-              abTestAllocation.testId,
-              abTestAllocation.variantId,
-              userId,
-              metrics
-            )
-
-            logger.debug(`A/B测试结果记录成功: ${abTestAllocation.testId}`, {
-              userId,
-              requestId,
-              variantId: abTestAllocation.variantId,
-              metrics
-            })
-          } catch (error) {
-            logger.warn('A/B测试结果记录失败', {
-              userId,
-              requestId,
-              testId: abTestAllocation.testId,
-              error: error.message
-            })
-          }
-        }
-
-        // Send response
-        res.status(response.status).json(transformedResponse)
-
-        logger.info('AI request processed', {
-          requestId,
-          userId,
-          model,
-          provider: selectedProvider,
-          responseTime,
-          statusCode: response.status,
-          tokens: tokens.total,
-          cost
-        })
-      })
-      .catch(error => {
-        const responseTime = Date.now() - startTime
-
-        // Record provider performance
-        recordProviderPerformance(selectedProvider, false, responseTime)
-
-        // A/B测试：记录失败请求的结果
-        if (abTestAllocation && abTestManager) {
-          try {
-            const metrics = {
-              response_time: responseTime,
-              cost: 0,
-              quality_score: 0, // 失败请求的质量评分
-              error_count: 1 // 错误计数
-            }
-
-            await abTestManager.recordResult(
-              abTestAllocation.testId,
-              abTestAllocation.variantId,
-              userId,
-              metrics
-            )
-
-            logger.debug(`A/B测试错误结果记录成功: ${abTestAllocation.testId}`, {
-              userId,
-              requestId,
-              variantId: abTestAllocation.variantId,
-              error: error.code || 'PROVIDER_ERROR'
-            })
-          } catch (recordError) {
-            logger.warn('A/B测试错误结果记录失败', {
-              userId,
-              requestId,
-              testId: abTestAllocation.testId,
-              error: recordError.message
-            })
-          }
-        }
-
-        // 记录失败请求统计
-        usageAnalytics.recordRequest({
-          userId,
-          requestId,
-          provider: selectedProvider,
-          model,
-          statusCode: 502,
-          error: error.code || 'PROVIDER_ERROR',
-          responseTime,
-          timestamp: new Date(),
-          ip: req.ip,
-          userAgent: req.headers['user-agent']
-        })
-
-        logger.error('AI provider request failed', {
-          requestId,
-          userId,
-          model,
-          provider: selectedProvider,
-          error: error.message,
-          responseTime
-        })
-
-        // Return error response
-        res.status(502).json({
-          error: 'AI provider error',
-          code: 'PROVIDER_ERROR',
-          requestId,
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        })
-      })
+    // Continue to next middleware (proxy policy will handle the actual request)
+    next()
   }
 
   // Select best provider based on cost, performance, and availability

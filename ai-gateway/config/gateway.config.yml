@@ -17,6 +17,7 @@ serviceEndpoints:
 
 policies:
   - ai-router
+  - ai-response-processor
   - ai-cache
   - cors
   - expression
@@ -45,6 +46,8 @@ pipelines:
       - ai-router:
           timeout: 30000
           cacheEnabled: true
+      - proxy: {}
+      - ai-response-processor: {}
 
   # admin-pipeline:
   #   apiEndpoints:
