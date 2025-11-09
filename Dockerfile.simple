@@ -1,7 +1,7 @@
 # 简化的AI网关Docker镜像
 # 专为学习项目设计，使用pnpm
 
-FROM node:18-alpine
+FROM node:25-alpine
 
 # 设置工作目录
 WORKDIR /app
