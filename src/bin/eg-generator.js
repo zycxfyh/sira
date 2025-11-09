@@ -1,7 +1,7 @@
-const Generator = require('yeoman-generator');
-const chalk = require('chalk');
-const config = require('../lib/config');
-const { validate, find } = require('../lib/schemas');
+const Generator = require("yeoman-generator").default;
+const chalk = require("chalk");
+const config = require("../core/config");
+const { validate, find } = require("../core/schemas");
 
 module.exports = class EgGenerator extends Generator {
   constructor(args, opts) {
@@ -10,20 +10,20 @@ module.exports = class EgGenerator extends Generator {
     this._configuration = null;
     this.eg = this.env.eg;
     this.argv = this.env.argv;
-    this.admin = require('../admin')({
+    this.admin = require("../admin")({
       baseUrl: this._getAdminClientBaseURL(),
       verbose: this._getAdminClientVerboseFlag(),
-      headers: this.argv && this.argv.H ? this.processHeaders(this.argv.H) : null,
+      headers: this.argv?.H ? this.processHeaders(this.argv.H) : null,
     });
   }
 
   configureCommand(configuration) {
     const { builder } = configuration;
-    configuration.builder = yargs => {
+    configuration.builder = (yargs) => {
       return this._wrapConfig(builder(yargs));
     };
 
-    configuration.handler = argv => {
+    configuration.handler = (argv) => {
       this.env.argv = argv;
 
       const command = this.options.env.commandAliases[0][argv._[0]];
@@ -48,33 +48,33 @@ module.exports = class EgGenerator extends Generator {
   // configuration defaults
   _wrapConfig(yargs) {
     return yargs
-      .boolean(['no-color', 'q', 'v'])
-      .string(['H'])
-      .describe('no-color', 'Disable color in prompts')
-      .alias('q', 'quiet')
-      .describe('q', 'Only show major pieces of output')
+      .boolean(["no-color", "q", "v"])
+      .string(["H"])
+      .describe("no-color", "Disable color in prompts")
+      .alias("q", "quiet")
+      .describe("q", "Only show major pieces of output")
       .describe(
-        'H',
-        'Header to send with each request to Express Gateway Admin API KEY:VALUE format'
+        "H",
+        "Header to send with each request to Express Gateway Admin API KEY:VALUE format",
       )
-      .alias('v', 'verbose')
-      .describe('v', 'Verbose output, will show request to Admin API')
-      .group(['no-color', 'q'], 'Options:');
+      .alias("v", "verbose")
+      .describe("v", "Verbose output, will show request to Admin API")
+      .group(["no-color", "q"], "Options:");
   }
 
   _getAdminClientBaseURL() {
     const { gatewayConfig } = config;
     const { systemConfig } = config;
 
-    let baseURL = 'http://localhost:9876'; // fallback default
+    let baseURL = "http://localhost:9876"; // fallback default
 
     if (process.env.EG_ADMIN_URL) {
       baseURL = process.env.EG_ADMIN_URL;
-    } else if (systemConfig && systemConfig.cli && systemConfig.cli.url) {
+    } else if (systemConfig?.cli?.url) {
       baseURL = systemConfig.cli.url;
-    } else if (gatewayConfig && gatewayConfig.admin) {
+    } else if (gatewayConfig?.admin) {
       const adminConfig = gatewayConfig.admin;
-      const host = adminConfig.host || adminConfig.hostname || 'localhost';
+      const host = adminConfig.host || adminConfig.hostname || "localhost";
       const port = adminConfig.port || 9876;
 
       baseURL = `http://${host}:${port}`;
@@ -86,7 +86,7 @@ module.exports = class EgGenerator extends Generator {
       Ref: https://github.com/ExpressGateway/express-gateway/issues/672
     */
 
-    if (baseURL.endsWith('/')) {
+    if (baseURL.endsWith("/")) {
       baseURL = baseURL.substr(0, baseURL.length - 1);
     }
 
@@ -96,9 +96,9 @@ module.exports = class EgGenerator extends Generator {
   _getAdminClientVerboseFlag() {
     let verbose = false; // default
 
-    if (this.argv && this.argv.v) {
+    if (this.argv?.v) {
       verbose = this.argv.v;
-    } else if (config.systemConfig && config.systemConfig.cli) {
+    } else if (config.systemConfig?.cli) {
       verbose = !!config.systemConfig.cli.verbose;
     }
 
@@ -127,10 +127,14 @@ module.exports = class EgGenerator extends Generator {
       const missingProperties = [];
       const modelSchema = find(schema).schema;
 
-      Object.keys(modelSchema.properties).forEach(prop => {
+      Object.keys(modelSchema.properties).forEach((prop) => {
         const descriptor = modelSchema.properties[prop];
         if (!object[prop]) {
-          if (!shouldPrompt && modelSchema.required && modelSchema.required.includes(prop)) {
+          if (
+            !shouldPrompt &&
+            modelSchema.required &&
+            modelSchema.required.includes(prop)
+          ) {
             shouldPrompt = true;
           }
 
@@ -139,24 +143,28 @@ module.exports = class EgGenerator extends Generator {
       });
 
       if (shouldPrompt) {
-        questions = missingProperties.map(p => {
-          const required = modelSchema.required.includes(p.name) ? ' [required]' : '';
+        questions = missingProperties.map((p) => {
+          const required = modelSchema.required.includes(p.name)
+            ? " [required]"
+            : "";
 
           return {
             name: p.name,
             message: `Enter ${chalk.yellow(p.name)}${chalk.green(required)}:`,
             default: object[p.name] || p.descriptor.default,
-            validate: input =>
+            validate: (input) =>
               !modelSchema.required.includes(p.name) ||
               (!!input && modelSchema.required.includes(p.name)),
-            filter: input =>
-              input === '' && !modelSchema.required.includes(p.name) ? undefined : input,
+            filter: (input) =>
+              input === "" && !modelSchema.required.includes(p.name)
+                ? undefined
+                : input,
           };
         });
       }
     }
 
-    const validateData = data => {
+    const validateData = (data) => {
       const { isValid, error } = validate(schema, data);
       if (!isValid) {
         this.log.error(error);
@@ -168,7 +176,7 @@ module.exports = class EgGenerator extends Generator {
       return data;
     };
 
-    return this.prompt(questions).then(answers => {
+    return this.prompt(questions).then((answers) => {
       Object.assign(object, answers);
       return validateData(object);
     });

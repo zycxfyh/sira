@@ -1,5 +1,5 @@
-const express = require('express');
-const { StreamingManager } = require('../../streaming-manager');
+const express = require("express");
+const { StreamingManager } = require("../../streaming-manager");
 
 let streamingManager = null;
 
@@ -23,11 +23,11 @@ function streamingRoutes() {
    * GET /streaming/sse
    * 建立SSE连接
    */
-  router.get('/sse', (req, res) => {
+  router.get("/sse", (req, res) => {
     try {
       const options = {
         streamId: req.query.streamId,
-        userId: req.headers['x-user-id'] || req.query.userId,
+        userId: req.headers["x-user-id"] || req.query.userId,
       };
 
       const result = streamingManager.createSSEConnection(req, res, options);
@@ -35,11 +35,11 @@ function streamingRoutes() {
       // SSE连接已建立，响应将在createSSEConnection中处理
       console.log(`📡 SSE流已建立: ${result.connectionId}`);
     } catch (error) {
-      console.error('建立SSE连接失败:', error);
+      console.error("建立SSE连接失败:", error);
       if (!res.headersSent) {
         res.status(500).json({
           success: false,
-          error: '建立SSE连接失败',
+          error: "建立SSE连接失败",
           message: error.message,
         });
       }
@@ -50,15 +50,15 @@ function streamingRoutes() {
    * POST /streaming/sse/:streamId/data
    * 向SSE流发送数据
    */
-  router.post('/sse/:streamId/data', async (req, res) => {
+  router.post("/sse/:streamId/data", async (req, res) => {
     try {
       const { streamId } = req.params;
-      const { data, eventType = 'data', metadata = {} } = req.body;
+      const { data, eventType = "data", metadata = {} } = req.body;
 
       if (!data) {
         return res.status(400).json({
           success: false,
-          error: '缺少数据内容',
+          error: "缺少数据内容",
         });
       }
 
@@ -66,20 +66,20 @@ function streamingRoutes() {
         eventType,
         metadata: {
           ...metadata,
-          source: 'api',
-          sender: req.headers['x-user-id'] || 'api',
+          source: "api",
+          sender: req.headers["x-user-id"] || "api",
         },
       });
 
       res.json({
         success: true,
-        message: '数据已发送到流',
+        message: "数据已发送到流",
       });
     } catch (error) {
-      console.error('发送SSE数据失败:', error);
+      console.error("发送SSE数据失败:", error);
       res.status(400).json({
         success: false,
-        error: '发送SSE数据失败',
+        error: "发送SSE数据失败",
         message: error.message,
       });
     }
@@ -91,9 +91,9 @@ function streamingRoutes() {
    * POST /streaming/streams
    * 创建流式会话
    */
-  router.post('/streams', async (req, res) => {
+  router.post("/streams", async (req, res) => {
     try {
-      const userId = req.headers['x-user-id'] || req.body.userId || 'anonymous';
+      const userId = req.headers["x-user-id"] || req.body.userId || "anonymous";
       const options = req.body.options || {};
 
       const stream = streamingManager.createStream(userId, options);
@@ -107,13 +107,13 @@ function streamingRoutes() {
           createdAt: stream.createdAt,
           options: stream.options,
         },
-        message: '流式会话已创建',
+        message: "流式会话已创建",
       });
     } catch (error) {
-      console.error('创建流式会话失败:', error);
+      console.error("创建流式会话失败:", error);
       res.status(400).json({
         success: false,
-        error: '创建流式会话失败',
+        error: "创建流式会话失败",
         message: error.message,
       });
     }
@@ -123,28 +123,31 @@ function streamingRoutes() {
    * GET /streaming/streams
    * 获取流式会话列表
    */
-  router.get('/streams', async (req, res) => {
+  router.get("/streams", async (req, res) => {
     try {
-      const { userId, status = 'active', limit = 20, offset = 0 } = req.query;
+      const { userId, status = "active", limit = 20, offset = 0 } = req.query;
 
-      const effectiveUserId = userId || req.headers['x-user-id'];
+      const effectiveUserId = userId || req.headers["x-user-id"];
       if (!effectiveUserId) {
         return res.status(400).json({
           success: false,
-          error: '缺少用户ID',
+          error: "缺少用户ID",
         });
       }
 
       // 获取用户的所有活跃流
       const userStreams = Array.from(streamingManager.activeStreams.values())
-        .filter(stream => stream.userId === effectiveUserId)
-        .filter(stream => !status || stream.status === status)
+        .filter((stream) => stream.userId === effectiveUserId)
+        .filter((stream) => !status || stream.status === status)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       const total = userStreams.length;
-      const streams = userStreams.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+      const streams = userStreams.slice(
+        parseInt(offset, 10),
+        parseInt(offset, 10) + parseInt(limit, 10),
+      );
 
-      const formattedStreams = streams.map(stream => ({
+      const formattedStreams = streams.map((stream) => ({
         id: stream.id,
         userId: stream.userId,
         status: stream.status,
@@ -159,16 +162,16 @@ function streamingRoutes() {
         data: formattedStreams,
         pagination: {
           total,
-          limit: parseInt(limit),
-          offset: parseInt(offset),
-          hasMore: parseInt(offset) + parseInt(limit) < total,
+          limit: parseInt(limit, 10),
+          offset: parseInt(offset, 10),
+          hasMore: parseInt(offset, 10) + parseInt(limit, 10) < total,
         },
       });
     } catch (error) {
-      console.error('获取流式会话列表失败:', error);
+      console.error("获取流式会话列表失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取流式会话列表失败',
+        error: "获取流式会话列表失败",
         message: error.message,
       });
     }
@@ -178,17 +181,17 @@ function streamingRoutes() {
    * GET /streaming/streams/:streamId
    * 获取流式会话详情
    */
-  router.get('/streams/:streamId', async (req, res) => {
+  router.get("/streams/:streamId", async (req, res) => {
     try {
       const { streamId } = req.params;
-      const userId = req.headers['x-user-id'];
+      const userId = req.headers["x-user-id"];
 
       const stream = streamingManager.activeStreams.get(streamId);
 
       if (!stream) {
         return res.status(404).json({
           success: false,
-          error: '流式会话不存在',
+          error: "流式会话不存在",
         });
       }
 
@@ -196,7 +199,7 @@ function streamingRoutes() {
       if (userId && stream.userId !== userId) {
         return res.status(403).json({
           success: false,
-          error: '无权访问此流式会话',
+          error: "无权访问此流式会话",
         });
       }
 
@@ -215,10 +218,10 @@ function streamingRoutes() {
         },
       });
     } catch (error) {
-      console.error('获取流式会话详情失败:', error);
+      console.error("获取流式会话详情失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取流式会话详情失败',
+        error: "获取流式会话详情失败",
         message: error.message,
       });
     }
@@ -228,15 +231,16 @@ function streamingRoutes() {
    * POST /streaming/streams/:streamId/join
    * 加入流式会话
    */
-  router.post('/streams/:streamId/join', async (req, res) => {
+  router.post("/streams/:streamId/join", async (req, res) => {
     try {
       const { streamId } = req.params;
-      const connectionId = req.body.connectionId || req.headers['x-connection-id'];
+      const connectionId =
+        req.body.connectionId || req.headers["x-connection-id"];
 
       if (!connectionId) {
         return res.status(400).json({
           success: false,
-          error: '缺少连接ID',
+          error: "缺少连接ID",
         });
       }
 
@@ -245,13 +249,13 @@ function streamingRoutes() {
       res.json({
         success: true,
         data: result,
-        message: '已成功加入流式会话',
+        message: "已成功加入流式会话",
       });
     } catch (error) {
-      console.error('加入流式会话失败:', error);
+      console.error("加入流式会话失败:", error);
       res.status(400).json({
         success: false,
-        error: '加入流式会话失败',
+        error: "加入流式会话失败",
         message: error.message,
       });
     }
@@ -261,15 +265,16 @@ function streamingRoutes() {
    * POST /streaming/streams/:streamId/leave
    * 离开流式会话
    */
-  router.post('/streams/:streamId/leave', async (req, res) => {
+  router.post("/streams/:streamId/leave", async (req, res) => {
     try {
       const { streamId } = req.params;
-      const connectionId = req.body.connectionId || req.headers['x-connection-id'];
+      const connectionId =
+        req.body.connectionId || req.headers["x-connection-id"];
 
       if (!connectionId) {
         return res.status(400).json({
           success: false,
-          error: '缺少连接ID',
+          error: "缺少连接ID",
         });
       }
 
@@ -277,13 +282,13 @@ function streamingRoutes() {
 
       res.json({
         success: true,
-        message: '已成功离开流式会话',
+        message: "已成功离开流式会话",
       });
     } catch (error) {
-      console.error('离开流式会话失败:', error);
+      console.error("离开流式会话失败:", error);
       res.status(400).json({
         success: false,
-        error: '离开流式会话失败',
+        error: "离开流式会话失败",
         message: error.message,
       });
     }
@@ -293,16 +298,16 @@ function streamingRoutes() {
    * POST /streaming/streams/:streamId/send
    * 向流发送数据
    */
-  router.post('/streams/:streamId/send', async (req, res) => {
+  router.post("/streams/:streamId/send", async (req, res) => {
     try {
       const { streamId } = req.params;
-      const { data, eventType = 'data', metadata = {} } = req.body;
-      const userId = req.headers['x-user-id'];
+      const { data, eventType = "data", metadata = {} } = req.body;
+      const userId = req.headers["x-user-id"];
 
       if (!data) {
         return res.status(400).json({
           success: false,
-          error: '缺少数据内容',
+          error: "缺少数据内容",
         });
       }
 
@@ -311,14 +316,14 @@ function streamingRoutes() {
       if (!stream) {
         return res.status(404).json({
           success: false,
-          error: '流式会话不存在',
+          error: "流式会话不存在",
         });
       }
 
       if (userId && stream.userId !== userId) {
         return res.status(403).json({
           success: false,
-          error: '无权向此流发送数据',
+          error: "无权向此流发送数据",
         });
       }
 
@@ -326,20 +331,20 @@ function streamingRoutes() {
         eventType,
         metadata: {
           ...metadata,
-          sender: userId || 'api',
-          source: 'api',
+          sender: userId || "api",
+          source: "api",
         },
       });
 
       res.json({
         success: true,
-        message: '数据已发送到流',
+        message: "数据已发送到流",
       });
     } catch (error) {
-      console.error('发送流数据失败:', error);
+      console.error("发送流数据失败:", error);
       res.status(400).json({
         success: false,
-        error: '发送流数据失败',
+        error: "发送流数据失败",
         message: error.message,
       });
     }
@@ -349,17 +354,17 @@ function streamingRoutes() {
    * DELETE /streaming/streams/:streamId
    * 关闭流式会话
    */
-  router.delete('/streams/:streamId', async (req, res) => {
+  router.delete("/streams/:streamId", async (req, res) => {
     try {
       const { streamId } = req.params;
-      const { reason = 'api_request' } = req.body;
-      const userId = req.headers['x-user-id'];
+      const { reason = "api_request" } = req.body;
+      const userId = req.headers["x-user-id"];
 
       const stream = streamingManager.activeStreams.get(streamId);
       if (!stream) {
         return res.status(404).json({
           success: false,
-          error: '流式会话不存在',
+          error: "流式会话不存在",
         });
       }
 
@@ -367,7 +372,7 @@ function streamingRoutes() {
       if (userId && stream.userId !== userId) {
         return res.status(403).json({
           success: false,
-          error: '无权关闭此流式会话',
+          error: "无权关闭此流式会话",
         });
       }
 
@@ -375,13 +380,13 @@ function streamingRoutes() {
 
       res.json({
         success: true,
-        message: '流式会话已关闭',
+        message: "流式会话已关闭",
       });
     } catch (error) {
-      console.error('关闭流式会话失败:', error);
+      console.error("关闭流式会话失败:", error);
       res.status(400).json({
         success: false,
-        error: '关闭流式会话失败',
+        error: "关闭流式会话失败",
         message: error.message,
       });
     }
@@ -393,14 +398,19 @@ function streamingRoutes() {
    * POST /streaming/broadcast
    * 广播消息到所有连接
    */
-  router.post('/broadcast', async (req, res) => {
+  router.post("/broadcast", async (req, res) => {
     try {
-      const { message, userId, eventType = 'broadcast', metadata = {} } = req.body;
+      const {
+        message,
+        userId,
+        eventType = "broadcast",
+        metadata = {},
+      } = req.body;
 
       if (!message) {
         return res.status(400).json({
           success: false,
-          error: '缺少消息内容',
+          error: "缺少消息内容",
         });
       }
 
@@ -409,20 +419,20 @@ function streamingRoutes() {
         eventType,
         metadata: {
           ...metadata,
-          broadcaster: req.headers['x-user-id'] || 'api',
+          broadcaster: req.headers["x-user-id"] || "api",
           timestamp: new Date().toISOString(),
         },
       });
 
       res.json({
         success: true,
-        message: '广播消息已发送',
+        message: "广播消息已发送",
       });
     } catch (error) {
-      console.error('广播消息失败:', error);
+      console.error("广播消息失败:", error);
       res.status(500).json({
         success: false,
-        error: '广播消息失败',
+        error: "广播消息失败",
         message: error.message,
       });
     }
@@ -434,19 +444,21 @@ function streamingRoutes() {
    * GET /streaming/connections
    * 获取连接列表（管理员功能）
    */
-  router.get('/connections', async (req, res) => {
+  router.get("/connections", async (req, res) => {
     try {
       // 这里应该添加管理员权限检查
-      const isAdmin = req.headers['x-admin'] === 'true';
+      const isAdmin = req.headers["x-admin"] === "true";
 
       if (!isAdmin) {
         return res.status(403).json({
           success: false,
-          error: '需要管理员权限',
+          error: "需要管理员权限",
         });
       }
 
-      const connections = Array.from(streamingManager.activeConnections.values()).map(conn => ({
+      const connections = Array.from(
+        streamingManager.activeConnections.values(),
+      ).map((conn) => ({
         id: conn.id,
         type: conn.type,
         streamId: conn.streamId,
@@ -463,10 +475,10 @@ function streamingRoutes() {
         total: connections.length,
       });
     } catch (error) {
-      console.error('获取连接列表失败:', error);
+      console.error("获取连接列表失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取连接列表失败',
+        error: "获取连接列表失败",
         message: error.message,
       });
     }
@@ -476,18 +488,18 @@ function streamingRoutes() {
    * DELETE /streaming/connections/:connectionId
    * 关闭指定连接
    */
-  router.delete('/connections/:connectionId', async (req, res) => {
+  router.delete("/connections/:connectionId", async (req, res) => {
     try {
       const { connectionId } = req.params;
-      const { reason = 'admin_request' } = req.body;
+      const { reason = "admin_request" } = req.body;
 
       // 这里应该添加管理员权限检查
-      const isAdmin = req.headers['x-admin'] === 'true';
+      const isAdmin = req.headers["x-admin"] === "true";
 
       if (!isAdmin) {
         return res.status(403).json({
           success: false,
-          error: '需要管理员权限',
+          error: "需要管理员权限",
         });
       }
 
@@ -495,13 +507,13 @@ function streamingRoutes() {
 
       res.json({
         success: true,
-        message: '连接已关闭',
+        message: "连接已关闭",
       });
     } catch (error) {
-      console.error('关闭连接失败:', error);
+      console.error("关闭连接失败:", error);
       res.status(400).json({
         success: false,
-        error: '关闭连接失败',
+        error: "关闭连接失败",
         message: error.message,
       });
     }
@@ -513,7 +525,7 @@ function streamingRoutes() {
    * GET /streaming/stats
    * 获取流式响应统计信息
    */
-  router.get('/stats', async (req, res) => {
+  router.get("/stats", async (_req, res) => {
     try {
       const stats = streamingManager.getPerformanceStatistics();
 
@@ -522,10 +534,10 @@ function streamingRoutes() {
         data: stats,
       });
     } catch (error) {
-      console.error('获取流式统计失败:', error);
+      console.error("获取流式统计失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取流式统计失败',
+        error: "获取流式统计失败",
         message: error.message,
       });
     }
@@ -535,7 +547,7 @@ function streamingRoutes() {
    * GET /streaming/connections/stats
    * 获取连接统计
    */
-  router.get('/connections/stats', async (req, res) => {
+  router.get("/connections/stats", async (_req, res) => {
     try {
       const stats = streamingManager.getConnectionStats();
 
@@ -544,10 +556,10 @@ function streamingRoutes() {
         data: stats,
       });
     } catch (error) {
-      console.error('获取连接统计失败:', error);
+      console.error("获取连接统计失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取连接统计失败',
+        error: "获取连接统计失败",
         message: error.message,
       });
     }
@@ -557,7 +569,7 @@ function streamingRoutes() {
    * GET /streaming/streams/stats
    * 获取流统计
    */
-  router.get('/streams/stats', async (req, res) => {
+  router.get("/streams/stats", async (_req, res) => {
     try {
       const stats = streamingManager.getStreamStats();
 
@@ -566,10 +578,10 @@ function streamingRoutes() {
         data: stats,
       });
     } catch (error) {
-      console.error('获取流统计失败:', error);
+      console.error("获取流统计失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取流统计失败',
+        error: "获取流统计失败",
         message: error.message,
       });
     }
@@ -581,12 +593,12 @@ function streamingRoutes() {
    * GET /streaming/health
    * 流式响应服务健康检查
    */
-  router.get('/health', async (req, res) => {
+  router.get("/health", async (_req, res) => {
     try {
       const stats = streamingManager.getPerformanceStatistics();
 
       const health = {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date().toISOString(),
         components: {
           streamingManager: !!streamingManager,
@@ -606,35 +618,41 @@ function streamingRoutes() {
 
       // 检查组件状态
       if (!streamingManager) {
-        health.status = 'unhealthy';
+        health.status = "unhealthy";
       }
 
       // 检查连接负载
       if (stats.activeConnections > streamingManager.maxConnections * 0.9) {
-        health.status = 'warning';
-        health.warnings = ['连接数接近上限'];
+        health.status = "warning";
+        health.warnings = ["连接数接近上限"];
       }
 
       // 检查错误率
       const errorRate =
-        stats.totalConnections > 0 ? stats.connectionErrors / stats.totalConnections : 0;
+        stats.totalConnections > 0
+          ? stats.connectionErrors / stats.totalConnections
+          : 0;
       if (errorRate > 0.1) {
-        health.status = 'warning';
-        health.warnings = (health.warnings || []).concat(['连接错误率较高']);
+        health.status = "warning";
+        health.warnings = (health.warnings || []).concat(["连接错误率较高"]);
       }
 
       const statusCode =
-        health.status === 'healthy' ? 200 : health.status === 'warning' ? 200 : 503;
+        health.status === "healthy"
+          ? 200
+          : health.status === "warning"
+            ? 200
+            : 503;
 
       res.status(statusCode).json({
         success: true,
         data: health,
       });
     } catch (error) {
-      console.error('健康检查失败:', error);
+      console.error("健康检查失败:", error);
       res.status(503).json({
         success: false,
-        error: '健康检查失败',
+        error: "健康检查失败",
         message: error.message,
       });
     }

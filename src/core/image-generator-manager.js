@@ -11,65 +11,65 @@
  * - Craiyon
  */
 
-const { EventEmitter } = require('events');
-const crypto = require('crypto');
-const { WebhookManager } = require('./webhook-manager');
+const { EventEmitter } = require("node:events");
+const crypto = require("node:crypto");
+const { WebhookManager } = require("./webhook-manager");
 
 // 图像生成配置
 const IMAGE_CONFIG = {
   maxConcurrentJobs: 10,
   maxQueueSize: 100,
-  defaultProvider: 'openai_dalle',
-  defaultModel: 'dall-e-3',
+  defaultProvider: "openai_dalle",
+  defaultModel: "dall-e-3",
   maxPromptLength: 1000,
-  supportedFormats: ['png', 'jpg', 'webp'],
-  maxImageSize: '1024x1024',
-  defaultQuality: 'standard',
+  supportedFormats: ["png", "jpg", "webp"],
+  maxImageSize: "1024x1024",
+  defaultQuality: "standard",
 };
 
 // 支持的图像生成提供商配置
 const IMAGE_PROVIDERS = {
   openai_dalle: {
-    name: 'OpenAI DALL-E',
-    baseUrl: 'https://api.openai.com/v1/images/generations',
-    models: ['dall-e-2', 'dall-e-3'],
-    maxSize: '1024x1024',
+    name: "OpenAI DALL-E",
+    baseUrl: "https://api.openai.com/v1/images/generations",
+    models: ["dall-e-2", "dall-e-3"],
+    maxSize: "1024x1024",
     supportsEdit: true,
     supportsVariation: true,
   },
   midjourney: {
-    name: 'Midjourney',
-    baseUrl: 'https://api.midjourney.com/v1/imagine',
-    models: ['midjourney-v5', 'midjourney-v6'],
-    maxSize: '1024x1024',
+    name: "Midjourney",
+    baseUrl: "https://api.midjourney.com/v1/imagine",
+    models: ["midjourney-v5", "midjourney-v6"],
+    maxSize: "1024x1024",
     supportsEdit: false,
     supportsVariation: true,
     asyncProcessing: true,
   },
   stability_ai: {
-    name: 'Stability AI',
-    baseUrl: 'https://api.stability.ai/v1/generation',
-    models: ['stable-diffusion-xl-1024-v1-0', 'stable-diffusion-v1-6'],
-    maxSize: '1024x1024',
+    name: "Stability AI",
+    baseUrl: "https://api.stability.ai/v1/generation",
+    models: ["stable-diffusion-xl-1024-v1-0", "stable-diffusion-v1-6"],
+    maxSize: "1024x1024",
     supportsEdit: true,
     supportsVariation: true,
   },
   replicate: {
-    name: 'Replicate',
-    baseUrl: 'https://api.replicate.com/v1/predictions',
+    name: "Replicate",
+    baseUrl: "https://api.replicate.com/v1/predictions",
     models: [
-      'stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc',
-      'cjwbw/anything-v3-better-vae:09a5805203f4c12da649ec1923bb7729517ca25fcac790e640eaa9ed66573b65',
+      "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
+      "cjwbw/anything-v3-better-vae:09a5805203f4c12da649ec1923bb7729517ca25fcac790e640eaa9ed66573b65",
     ],
-    maxSize: '1024x1024',
+    maxSize: "1024x1024",
     supportsEdit: false,
     supportsVariation: false,
   },
   adobe_firefly: {
-    name: 'Adobe Firefly',
-    baseUrl: 'https://firefly-api.adobe.io/v2/images/generate',
-    models: ['firefly-v1', 'firefly-v2'],
-    maxSize: '1024x1024',
+    name: "Adobe Firefly",
+    baseUrl: "https://firefly-api.adobe.io/v2/images/generate",
+    models: ["firefly-v1", "firefly-v2"],
+    maxSize: "1024x1024",
     supportsEdit: true,
     supportsVariation: true,
   },
@@ -79,19 +79,19 @@ const IMAGE_PROVIDERS = {
 class ImageGenerationJob {
   constructor(options = {}) {
     this.id = crypto.randomUUID();
-    this.userId = options.userId || 'anonymous';
+    this.userId = options.userId || "anonymous";
     this.provider = options.provider || IMAGE_CONFIG.defaultProvider;
     this.model = options.model || IMAGE_CONFIG.defaultModel;
-    this.prompt = options.prompt || '';
-    this.negativePrompt = options.negativePrompt || '';
+    this.prompt = options.prompt || "";
+    this.negativePrompt = options.negativePrompt || "";
     this.size = options.size || IMAGE_CONFIG.maxImageSize;
     this.quality = options.quality || IMAGE_CONFIG.defaultQuality;
-    this.style = options.style || 'natural';
+    this.style = options.style || "natural";
     this.count = Math.min(options.count || 1, 4); // 最多4张
-    this.format = options.format || 'png';
+    this.format = options.format || "png";
 
     // 任务状态
-    this.status = 'queued'; // queued, processing, completed, failed
+    this.status = "queued"; // queued, processing, completed, failed
     this.progress = 0;
     this.createdAt = new Date();
     this.startedAt = null;
@@ -115,11 +115,11 @@ class ImageGenerationJob {
       this.status = status;
     }
 
-    if (status === 'processing' && !this.startedAt) {
+    if (status === "processing" && !this.startedAt) {
       this.startedAt = new Date();
     }
 
-    if (status === 'completed' || status === 'failed') {
+    if (status === "completed" || status === "failed") {
       this.completedAt = new Date();
       if (this.startedAt) {
         this.metadata.processingTime = this.completedAt - this.startedAt;
@@ -135,23 +135,23 @@ class ImageGenerationJob {
       count: images.length,
     };
     this.metadata.actualCost = cost;
-    this.updateProgress(100, 'completed');
+    this.updateProgress(100, "completed");
   }
 
   // 设置错误
   setError(error) {
     this.error = {
-      message: error.message || 'Unknown error',
-      code: error.code || 'GENERATION_FAILED',
+      message: error.message || "Unknown error",
+      code: error.code || "GENERATION_FAILED",
       timestamp: new Date(),
     };
-    this.updateProgress(0, 'failed');
+    this.updateProgress(0, "failed");
   }
 
   // 重试
   retry() {
     this.metadata.retryCount++;
-    this.status = 'queued';
+    this.status = "queued";
     this.progress = 0;
     this.error = null;
     this.result = null;
@@ -172,7 +172,7 @@ class ImageGenerationQueue {
   // 添加任务到队列
   enqueue(job) {
     if (this.queue.length >= IMAGE_CONFIG.maxQueueSize) {
-      throw new Error('Queue is full');
+      throw new Error("Queue is full");
     }
     this.queue.push(job);
     return job.id;
@@ -184,9 +184,9 @@ class ImageGenerationQueue {
       return null;
     }
 
-    const job = this.queue.find(job => job.status === 'queued');
+    const job = this.queue.find((job) => job.status === "queued");
     if (job) {
-      job.updateProgress(0, 'processing');
+      job.updateProgress(0, "processing");
       this.processing.add(job.id);
     }
     return job;
@@ -218,7 +218,7 @@ class ImageGenerationQueue {
           () => {
             this.queue.unshift(job);
           },
-          1000 * (job.metadata.retryCount + 1)
+          1000 * (job.metadata.retryCount + 1),
         ); // 递增延迟
       } else {
         this.completed.set(jobId, job);
@@ -229,8 +229,8 @@ class ImageGenerationQueue {
   // 获取任务
   getJob(jobId) {
     return (
-      this.queue.find(job => job.id === jobId) ||
-      Array.from(this.processing).find(job => job.id === jobId) ||
+      this.queue.find((job) => job.id === jobId) ||
+      Array.from(this.processing).find((job) => job.id === jobId) ||
       this.completed.get(jobId)
     );
   }
@@ -238,7 +238,7 @@ class ImageGenerationQueue {
   // 获取队列状态
   getStats() {
     return {
-      queued: this.queue.filter(job => job.status === 'queued').length,
+      queued: this.queue.filter((job) => job.status === "queued").length,
       processing: this.processing.size,
       completed: this.completed.size,
       total: this.queue.length + this.processing.size + this.completed.size,
@@ -249,40 +249,40 @@ class ImageGenerationQueue {
 // 图像风格预设
 const IMAGE_STYLES = {
   natural: {
-    name: '自然风格',
-    description: '自然的、写实的图像',
-    promptPrefix: '',
-    negativePrompt: 'cartoon, anime, illustration',
+    name: "自然风格",
+    description: "自然的、写实的图像",
+    promptPrefix: "",
+    negativePrompt: "cartoon, anime, illustration",
   },
   artistic: {
-    name: '艺术风格',
-    description: '艺术化的、富有创意的图像',
-    promptPrefix: 'in the style of a masterpiece painting, artistic, creative',
-    negativePrompt: 'photorealistic, realistic',
+    name: "艺术风格",
+    description: "艺术化的、富有创意的图像",
+    promptPrefix: "in the style of a masterpiece painting, artistic, creative",
+    negativePrompt: "photorealistic, realistic",
   },
   cartoon: {
-    name: '卡通风格',
-    description: '卡通动漫风格的图像',
-    promptPrefix: 'cartoon style, animated, vibrant colors',
-    negativePrompt: 'realistic, photorealistic',
+    name: "卡通风格",
+    description: "卡通动漫风格的图像",
+    promptPrefix: "cartoon style, animated, vibrant colors",
+    negativePrompt: "realistic, photorealistic",
   },
   minimalist: {
-    name: '极简风格',
-    description: '简洁、现代的极简设计',
-    promptPrefix: 'minimalist, clean design, simple, modern',
-    negativePrompt: 'complex, detailed, busy',
+    name: "极简风格",
+    description: "简洁、现代的极简设计",
+    promptPrefix: "minimalist, clean design, simple, modern",
+    negativePrompt: "complex, detailed, busy",
   },
   cyberpunk: {
-    name: '赛博朋克',
-    description: '未来科技、霓虹灯风格',
-    promptPrefix: 'cyberpunk, futuristic, neon lights, high tech',
-    negativePrompt: 'natural, rustic, medieval',
+    name: "赛博朋克",
+    description: "未来科技、霓虹灯风格",
+    promptPrefix: "cyberpunk, futuristic, neon lights, high tech",
+    negativePrompt: "natural, rustic, medieval",
   },
   fantasy: {
-    name: '奇幻风格',
-    description: '魔法、幻想世界的图像',
-    promptPrefix: 'fantasy, magical, mystical, enchanted',
-    negativePrompt: 'modern, realistic, contemporary',
+    name: "奇幻风格",
+    description: "魔法、幻想世界的图像",
+    promptPrefix: "fantasy, magical, mystical, enchanted",
+    negativePrompt: "modern, realistic, contemporary",
   },
 };
 
@@ -303,7 +303,7 @@ class ImageGeneratorManager extends EventEmitter {
     // 启动队列处理器
     this.startQueueProcessor();
 
-    logInfo('图像生成管理器初始化完成');
+    logInfo("图像生成管理器初始化完成");
   }
 
   // 生成图像
@@ -313,18 +313,18 @@ class ImageGeneratorManager extends EventEmitter {
       provider = this.config.defaultProvider,
       model = this.config.defaultModel,
       prompt,
-      negativePrompt = '',
+      negativePrompt = "",
       size = this.config.maxImageSize,
       quality = this.config.defaultQuality,
-      style = 'natural',
+      style = "natural",
       count = 1,
-      format = 'png',
+      format = "png",
     } = options;
 
     // 验证输入
     if (!prompt || prompt.length > this.config.maxPromptLength) {
       throw new Error(
-        `Prompt is required and must be less than ${this.config.maxPromptLength} characters`
+        `Prompt is required and must be less than ${this.config.maxPromptLength} characters`,
       );
     }
 
@@ -343,7 +343,8 @@ class ImageGeneratorManager extends EventEmitter {
       provider,
       model,
       prompt: this.enhancePrompt(prompt, style),
-      negativePrompt: negativePrompt + (IMAGE_STYLES[style]?.negativePrompt || ''),
+      negativePrompt:
+        negativePrompt + (IMAGE_STYLES[style]?.negativePrompt || ""),
       size,
       quality,
       style,
@@ -358,7 +359,7 @@ class ImageGeneratorManager extends EventEmitter {
     this.queue.enqueue(job);
     this.jobs.set(job.id, job);
 
-    this.emit('jobCreated', job);
+    this.emit("jobCreated", job);
 
     logInfo(`创建图像生成任务: ${job.id} - ${provider}/${model}`);
 
@@ -369,7 +370,7 @@ class ImageGeneratorManager extends EventEmitter {
   async generateVariation(jobId, options = {}) {
     const originalJob = this.jobs.get(jobId);
     if (!originalJob || !originalJob.result) {
-      throw new Error('Original job not found or has no result');
+      throw new Error("Original job not found or has no result");
     }
 
     const { provider } = originalJob;
@@ -397,7 +398,7 @@ class ImageGeneratorManager extends EventEmitter {
   async editImage(jobId, options = {}) {
     const originalJob = this.jobs.get(jobId);
     if (!originalJob || !originalJob.result) {
-      throw new Error('Original job not found or has no result');
+      throw new Error("Original job not found or has no result");
     }
 
     const { mask, editPrompt } = options;
@@ -409,7 +410,7 @@ class ImageGeneratorManager extends EventEmitter {
     }
 
     if (!mask) {
-      throw new Error('Mask is required for image editing');
+      throw new Error("Mask is required for image editing");
     }
 
     const editOptions = {
@@ -440,7 +441,7 @@ class ImageGeneratorManager extends EventEmitter {
     }
 
     // 添加质量提示
-    enhancedPrompt += ', high quality, detailed, professional';
+    enhancedPrompt += ", high quality, detailed, professional";
 
     return enhancedPrompt;
   }
@@ -449,16 +450,16 @@ class ImageGeneratorManager extends EventEmitter {
   estimateCost(provider, model, count) {
     const costMap = {
       openai_dalle: {
-        'dall-e-2': 0.02,
-        'dall-e-3': 0.04,
+        "dall-e-2": 0.02,
+        "dall-e-3": 0.04,
       },
       midjourney: {
-        'midjourney-v5': 0.03,
-        'midjourney-v6': 0.03,
+        "midjourney-v5": 0.03,
+        "midjourney-v6": 0.03,
       },
       stability_ai: {
-        'stable-diffusion-xl-1024-v1-0': 0.02,
-        'stable-diffusion-v1-6': 0.01,
+        "stable-diffusion-xl-1024-v1-0": 0.02,
+        "stable-diffusion-v1-6": 0.01,
       },
     };
 
@@ -492,16 +493,16 @@ class ImageGeneratorManager extends EventEmitter {
   // 获取用户任务历史
   getUserJobs(userId, limit = 20) {
     const userJobs = Array.from(this.jobs.values())
-      .filter(job => job.userId === userId)
+      .filter((job) => job.userId === userId)
       .sort((a, b) => b.createdAt - a.createdAt)
       .slice(0, limit);
 
-    return userJobs.map(job => ({
+    return userJobs.map((job) => ({
       id: job.id,
       status: job.status,
       provider: job.provider,
       model: job.model,
-      prompt: job.prompt.substring(0, 100) + '...',
+      prompt: `${job.prompt.substring(0, 100)}...`,
       createdAt: job.createdAt,
       completedAt: job.completedAt,
     }));
@@ -511,8 +512,8 @@ class ImageGeneratorManager extends EventEmitter {
   getQueueStats() {
     return {
       ...this.queue.getStats(),
-      activeJobs: Array.from(this.jobs.values()).filter(job =>
-        ['queued', 'processing'].includes(job.status)
+      activeJobs: Array.from(this.jobs.values()).filter((job) =>
+        ["queued", "processing"].includes(job.status),
       ).length,
     };
   }
@@ -566,10 +567,10 @@ class ImageGeneratorManager extends EventEmitter {
 
       this.queue.complete(job.id, mockImages, job.metadata.estimatedCost);
 
-      this.emit('jobCompleted', job);
+      this.emit("jobCompleted", job);
 
       // 触发webhook事件
-      this.triggerWebhookEvent('image.completed', {
+      this.triggerWebhookEvent("image.completed", {
         jobId: job.id,
         userId: job.userId,
         provider: job.provider,
@@ -584,7 +585,7 @@ class ImageGeneratorManager extends EventEmitter {
     } catch (error) {
       logError(`图像生成任务失败: ${job.id} - ${error.message}`);
       this.queue.fail(job.id, error);
-      this.emit('jobFailed', job);
+      this.emit("jobFailed", job);
     }
   }
 
@@ -592,12 +593,12 @@ class ImageGeneratorManager extends EventEmitter {
   async initializeWebhookManager() {
     try {
       if (!global.webhookManager) {
-        const { WebhookManager } = require('./webhook-manager');
+        const { WebhookManager } = require("./webhook-manager");
         global.webhookManager = new WebhookManager();
         await global.webhookManager.initialize();
       }
       this.webhookManager = global.webhookManager;
-      logInfo('Webhook管理器集成成功');
+      logInfo("Webhook管理器集成成功");
     } catch (error) {
       logError(`Webhook管理器初始化失败: ${error.message}`);
       // 不影响主要功能
@@ -612,7 +613,7 @@ class ImageGeneratorManager extends EventEmitter {
 
     try {
       await this.webhookManager.triggerEvent(eventType, eventData, {
-        source: 'image-generator',
+        source: "image-generator",
         userId: eventData.userId,
       });
     } catch (error) {
@@ -627,16 +628,16 @@ class ImageGeneratorManager extends EventEmitter {
 
     // 更新进度
     job.updateProgress(25);
-    await new Promise(resolve => setTimeout(resolve, processingTime * 0.3));
+    await new Promise((resolve) => setTimeout(resolve, processingTime * 0.3));
 
     job.updateProgress(50);
-    await new Promise(resolve => setTimeout(resolve, processingTime * 0.3));
+    await new Promise((resolve) => setTimeout(resolve, processingTime * 0.3));
 
     job.updateProgress(75);
-    await new Promise(resolve => setTimeout(resolve, processingTime * 0.3));
+    await new Promise((resolve) => setTimeout(resolve, processingTime * 0.3));
 
     job.updateProgress(90);
-    await new Promise(resolve => setTimeout(resolve, processingTime * 0.1));
+    await new Promise((resolve) => setTimeout(resolve, processingTime * 0.1));
   }
 }
 
@@ -646,7 +647,9 @@ function logInfo(message) {
 }
 
 function logError(message) {
-  console.error(`[ImageGenerator Error] ${new Date().toISOString()} - ${message}`);
+  console.error(
+    `[ImageGenerator Error] ${new Date().toISOString()} - ${message}`,
+  );
 }
 
 // 导出单例实例

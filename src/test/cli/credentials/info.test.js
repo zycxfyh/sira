@@ -1,10 +1,10 @@
-const assert = require('assert');
-const environment = require('../../fixtures/cli/environment');
-const adminHelper = require('../../common/admin-helper')();
-const namespace = 'express-gateway:credentials:info';
-const idGen = require('uuid62');
+const assert = require("node:assert");
+const environment = require("../../fixtures/cli/environment");
+const adminHelper = require("../../common/admin-helper")();
+const namespace = "express-gateway:credentials:info";
+const idGen = require("uuid62");
 
-describe('eg credentials info', () => {
+describe("eg credentials info", () => {
   let program, env, user, cred;
   before(() => {
     ({ program, env } = environment.bootstrap());
@@ -17,15 +17,15 @@ describe('eg credentials info', () => {
     return adminHelper.admin.users
       .create({
         username: idGen.v4(),
-        firstname: 'La',
-        lastname: 'Deeda',
+        firstname: "La",
+        lastname: "Deeda",
       })
-      .then(createdUser => {
+      .then((createdUser) => {
         user = createdUser;
 
-        return adminHelper.admin.credentials.create(user.id, 'key-auth', {});
+        return adminHelper.admin.credentials.create(user.id, "key-auth", {});
       })
-      .then(createdCred => {
+      .then((createdCred) => {
         cred = createdCred;
         return cred;
       });
@@ -36,20 +36,20 @@ describe('eg credentials info', () => {
     return adminHelper.reset();
   });
 
-  it('returns cred info', done => {
-    env.hijack(namespace, generator => {
+  it("returns cred info", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.stdout = message => {
+      generator.once("run", () => {
+        generator.stdout = (message) => {
           output = message;
         };
-        generator.log.error = message => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         const c = JSON.parse(output);
         assert.strictEqual(c.keyId, cred.keyId);
         assert.strictEqual(c.isActive, true);

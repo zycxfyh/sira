@@ -3,13 +3,13 @@
  * 借鉴Redis设计理念，提供完整的对话历史管理接口
  */
 
-const express = require('express');
-const { conversationManager } = require('../../conversation-manager');
+const express = require("express");
+const { conversationManager } = require("../../conversation-manager");
 
 const router = express.Router();
 
 // 中间件：异步错误处理
-const asyncHandler = fn => (req, res, next) => {
+const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
@@ -21,7 +21,7 @@ const validateSession = (req, res, next) => {
   if (!session) {
     return res.status(404).json({
       success: false,
-      error: '对话会话不存在',
+      error: "对话会话不存在",
     });
   }
 
@@ -32,13 +32,14 @@ const validateSession = (req, res, next) => {
 // 中间件：验证用户权限
 const validateUserAccess = (req, res, next) => {
   const { userId } = req.params;
-  const authUserId = req.headers['x-user-id'] || req.query.userId || 'anonymous';
+  const authUserId =
+    req.headers["x-user-id"] || req.query.userId || "anonymous";
 
   // 简单的权限检查（实际应该更复杂）
-  if (userId && userId !== authUserId && authUserId !== 'admin') {
+  if (userId && userId !== authUserId && authUserId !== "admin") {
     return res.status(403).json({
       success: false,
-      error: '无权限访问此用户的对话',
+      error: "无权限访问此用户的对话",
     });
   }
 
@@ -53,14 +54,19 @@ const validateUserAccess = (req, res, next) => {
  * POST /conversations
  */
 router.post(
-  '/',
+  "/",
   asyncHandler(async (req, res) => {
-    const { userId = 'anonymous', title, metadata = {}, contextWindow } = req.body;
+    const {
+      userId = "anonymous",
+      title,
+      metadata = {},
+      contextWindow,
+    } = req.body;
 
     if (!userId) {
       return res.status(400).json({
         success: false,
-        error: '用户ID是必需的',
+        error: "用户ID是必需的",
       });
     }
 
@@ -90,7 +96,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -98,17 +104,17 @@ router.post(
  * GET /conversations/:userId
  */
 router.get(
-  '/:userId',
+  "/:userId",
   validateUserAccess,
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
-    const { status = 'active', limit = 20, offset = 0 } = req.query;
+    const { status = "active", limit = 20, offset = 0 } = req.query;
 
     try {
       const sessions = conversationManager.getUserSessions(userId, status);
       const paginatedSessions = sessions.slice(
-        parseInt(offset),
-        parseInt(offset) + parseInt(limit)
+        parseInt(offset, 10),
+        parseInt(offset, 10) + parseInt(limit, 10),
       );
 
       res.json({
@@ -116,8 +122,8 @@ router.get(
         data: {
           sessions: paginatedSessions,
           total: sessions.length,
-          limit: parseInt(limit),
-          offset: parseInt(offset),
+          limit: parseInt(limit, 10),
+          offset: parseInt(offset, 10),
         },
       });
     } catch (error) {
@@ -126,7 +132,7 @@ router.get(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -134,16 +140,16 @@ router.get(
  * GET /conversations/:userId/search
  */
 router.get(
-  '/:userId/search',
+  "/:userId/search",
   validateUserAccess,
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
-    const { q: query, status = 'active', limit = 20 } = req.query;
+    const { q: query, status = "active", limit = 20 } = req.query;
 
     try {
       const sessions = conversationManager.searchSessions(userId, query, {
         status,
-        limit: parseInt(limit),
+        limit: parseInt(limit, 10),
       });
 
       res.json({
@@ -160,14 +166,14 @@ router.get(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
  * 获取会话详情
  * GET /conversations/session/:sessionId
  */
-router.get('/session/:sessionId', validateSession, (req, res) => {
+router.get("/session/:sessionId", validateSession, (req, res) => {
   const { session } = req;
 
   res.json({
@@ -196,7 +202,7 @@ router.get('/session/:sessionId', validateSession, (req, res) => {
  * PUT /conversations/session/:sessionId
  */
 router.put(
-  '/session/:sessionId',
+  "/session/:sessionId",
   validateSession,
   asyncHandler(async (req, res) => {
     const { sessionId } = req.params;
@@ -228,7 +234,7 @@ router.put(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -236,7 +242,7 @@ router.put(
  * DELETE /conversations/session/:sessionId
  */
 router.delete(
-  '/session/:sessionId',
+  "/session/:sessionId",
   validateSession,
   asyncHandler(async (req, res) => {
     const { sessionId } = req.params;
@@ -246,7 +252,7 @@ router.delete(
 
       res.json({
         success: true,
-        message: deleted ? '会话已删除' : '会话不存在',
+        message: deleted ? "会话已删除" : "会话不存在",
       });
     } catch (error) {
       res.status(500).json({
@@ -254,7 +260,7 @@ router.delete(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -262,7 +268,7 @@ router.delete(
  * POST /conversations/session/:sessionId/archive
  */
 router.post(
-  '/session/:sessionId/archive',
+  "/session/:sessionId/archive",
   validateSession,
   asyncHandler(async (req, res) => {
     const { sessionId } = req.params;
@@ -286,7 +292,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 消息管理 ====================
@@ -296,23 +302,23 @@ router.post(
  * POST /conversations/session/:sessionId/messages
  */
 router.post(
-  '/session/:sessionId/messages',
+  "/session/:sessionId/messages",
   validateSession,
   asyncHandler(async (req, res) => {
     const { sessionId } = req.params;
-    const { role, content, metadata = {}, importance = 'medium' } = req.body;
+    const { role, content, metadata = {}, importance = "medium" } = req.body;
 
     if (!role || !content) {
       return res.status(400).json({
         success: false,
-        error: '消息角色和内容都是必需的',
+        error: "消息角色和内容都是必需的",
       });
     }
 
-    if (!['user', 'assistant', 'system'].includes(role)) {
+    if (!["user", "assistant", "system"].includes(role)) {
       return res.status(400).json({
         success: false,
-        error: '无效的消息角色',
+        error: "无效的消息角色",
       });
     }
 
@@ -343,7 +349,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -351,7 +357,7 @@ router.post(
  * GET /conversations/session/:sessionId/messages
  */
 router.get(
-  '/session/:sessionId/messages',
+  "/session/:sessionId/messages",
   validateSession,
   asyncHandler(async (req, res) => {
     const { sessionId } = req.params;
@@ -362,18 +368,18 @@ router.get(
 
     // 过滤消息角色
     if (role) {
-      messages = messages.filter(m => m.role === role);
+      messages = messages.filter((m) => m.role === role);
     }
 
     // 分页
-    const start = parseInt(offset);
-    const end = limit ? start + parseInt(limit) : undefined;
+    const start = parseInt(offset, 10);
+    const end = limit ? start + parseInt(limit, 10) : undefined;
     const paginatedMessages = messages.slice(start, end);
 
     res.json({
       success: true,
       data: {
-        messages: paginatedMessages.map(m => ({
+        messages: paginatedMessages.map((m) => ({
           id: m.id,
           role: m.role,
           content: m.content,
@@ -383,11 +389,11 @@ router.get(
           isSummary: m.isSummary || false,
         })),
         total: messages.length,
-        limit: limit ? parseInt(limit) : messages.length,
+        limit: limit ? parseInt(limit, 10) : messages.length,
         offset: start,
       },
     });
-  })
+  }),
 );
 
 /**
@@ -395,7 +401,7 @@ router.get(
  * GET /conversations/session/:sessionId/context
  */
 router.get(
-  '/session/:sessionId/context',
+  "/session/:sessionId/context",
   validateSession,
   asyncHandler(async (req, res) => {
     const { sessionId } = req.params;
@@ -404,13 +410,13 @@ router.get(
     try {
       const contextMessages = conversationManager.getContext(
         sessionId,
-        limit ? parseInt(limit) : null
+        limit ? parseInt(limit, 10) : null,
       );
 
       res.json({
         success: true,
         data: {
-          context: contextMessages.map(m => ({
+          context: contextMessages.map((m) => ({
             role: m.role,
             content: m.content,
             timestamp: m.timestamp,
@@ -427,7 +433,7 @@ router.get(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -435,19 +441,21 @@ router.get(
  * DELETE /conversations/session/:sessionId/messages/:messageId
  */
 router.delete(
-  '/session/:sessionId/messages/:messageId',
+  "/session/:sessionId/messages/:messageId",
   validateSession,
   asyncHandler(async (req, res) => {
     const { sessionId, messageId } = req.params;
     const { session } = req;
 
     try {
-      const messageIndex = session.messages.findIndex(m => m.id === messageId);
+      const messageIndex = session.messages.findIndex(
+        (m) => m.id === messageId,
+      );
 
       if (messageIndex === -1) {
         return res.status(404).json({
           success: false,
-          error: '消息不存在',
+          error: "消息不存在",
         });
       }
 
@@ -458,9 +466,9 @@ router.delete(
       session.stats.totalMessages--;
       session.stats.totalTokens -= deletedMessage.tokens;
 
-      if (deletedMessage.role === 'user') {
+      if (deletedMessage.role === "user") {
         session.stats.userMessages--;
-      } else if (deletedMessage.role === 'assistant') {
+      } else if (deletedMessage.role === "assistant") {
         session.stats.assistantMessages--;
       }
 
@@ -468,7 +476,7 @@ router.delete(
 
       res.json({
         success: true,
-        message: '消息已删除',
+        message: "消息已删除",
         data: {
           deletedMessage: {
             id: deletedMessage.id,
@@ -483,7 +491,7 @@ router.delete(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 数据管理 ====================
@@ -493,27 +501,27 @@ router.delete(
  * GET /conversations/session/:sessionId/export
  */
 router.get(
-  '/session/:sessionId/export',
+  "/session/:sessionId/export",
   validateSession,
   asyncHandler(async (req, res) => {
     const { sessionId } = req.params;
-    const { format = 'json' } = req.query;
+    const { format = "json" } = req.query;
 
     try {
       const sessionData = conversationManager.exportSession(sessionId);
 
-      if (format === 'json') {
-        res.setHeader('Content-Type', 'application/json');
+      if (format === "json") {
+        res.setHeader("Content-Type", "application/json");
         res.setHeader(
-          'Content-Disposition',
-          `attachment; filename="conversation-${sessionId}.json"`
+          "Content-Disposition",
+          `attachment; filename="conversation-${sessionId}.json"`,
         );
         res.json(sessionData);
       } else {
         // 转换为其他格式（暂时只支持JSON）
         res.status(400).json({
           success: false,
-          error: '暂不支持的导出格式',
+          error: "暂不支持的导出格式",
         });
       }
     } catch (error) {
@@ -522,7 +530,7 @@ router.get(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -530,14 +538,14 @@ router.get(
  * POST /conversations/import
  */
 router.post(
-  '/import',
+  "/import",
   asyncHandler(async (req, res) => {
     const { sessionData } = req.body;
 
     if (!sessionData || !sessionData.id) {
       return res.status(400).json({
         success: false,
-        error: '无效的会话数据',
+        error: "无效的会话数据",
       });
     }
 
@@ -561,7 +569,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -569,21 +577,21 @@ router.post(
  * POST /conversations/batch/delete
  */
 router.post(
-  '/batch/delete',
+  "/batch/delete",
   asyncHandler(async (req, res) => {
     const { sessionIds } = req.body;
 
     if (!Array.isArray(sessionIds) || sessionIds.length === 0) {
       return res.status(400).json({
         success: false,
-        error: '请提供要删除的会话ID列表',
+        error: "请提供要删除的会话ID列表",
       });
     }
 
     if (sessionIds.length > 50) {
       return res.status(400).json({
         success: false,
-        error: '批量删除数量不能超过50个',
+        error: "批量删除数量不能超过50个",
       });
     }
 
@@ -614,7 +622,7 @@ router.post(
         },
       },
     });
-  })
+  }),
 );
 
 // ==================== 记忆网络 ====================
@@ -624,24 +632,27 @@ router.post(
  * GET /conversations/memory
  */
 router.get(
-  '/memory',
+  "/memory",
   asyncHandler(async (req, res) => {
     const { query, limit = 5 } = req.query;
 
     if (!query) {
       return res.status(400).json({
         success: false,
-        error: '查询参数是必需的',
+        error: "查询参数是必需的",
       });
     }
 
     try {
-      const memories = conversationManager.memoryNetwork.retrieveMemories(query, parseInt(limit));
+      const memories = conversationManager.memoryNetwork.retrieveMemories(
+        query,
+        parseInt(limit, 10),
+      );
 
       res.json({
         success: true,
         data: {
-          memories: memories.map(m => ({
+          memories: memories.map((m) => ({
             key: m.key,
             content: m.content,
             relevance: m.relevance,
@@ -658,7 +669,7 @@ router.get(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -666,19 +677,23 @@ router.get(
  * POST /conversations/memory
  */
 router.post(
-  '/memory',
+  "/memory",
   asyncHandler(async (req, res) => {
     const { key, content, metadata = {} } = req.body;
 
     if (!key || !content) {
       return res.status(400).json({
         success: false,
-        error: '记忆键和内容都是必需的',
+        error: "记忆键和内容都是必需的",
       });
     }
 
     try {
-      const memory = conversationManager.memoryNetwork.addMemory(key, content, metadata);
+      const memory = conversationManager.memoryNetwork.addMemory(
+        key,
+        content,
+        metadata,
+      );
 
       res.status(201).json({
         success: true,
@@ -697,7 +712,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 统计和监控 ====================
@@ -706,7 +721,7 @@ router.post(
  * 获取对话统计
  * GET /conversations/stats
  */
-router.get('/stats', (req, res) => {
+router.get("/stats", (_req, res) => {
   const stats = conversationManager.getStats();
 
   res.json({
@@ -723,27 +738,33 @@ router.get('/stats', (req, res) => {
  * GET /conversations/:userId/overview
  */
 router.get(
-  '/:userId/overview',
+  "/:userId/overview",
   validateUserAccess,
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
 
     try {
       const sessions = conversationManager.getUserSessions(userId);
-      const totalMessages = sessions.reduce((sum, s) => sum + s.messageCount, 0);
+      const totalMessages = sessions.reduce(
+        (sum, s) => sum + s.messageCount,
+        0,
+      );
       const totalTokens = sessions.reduce((sum, s) => sum + s.totalTokens, 0);
 
       // 计算最活跃的会话
       const mostActiveSession = sessions.reduce(
-        (max, current) => (current.messageCount > max.messageCount ? current : max),
-        sessions[0] || null
+        (max, current) =>
+          current.messageCount > max.messageCount ? current : max,
+        sessions[0] || null,
       );
 
       // 计算会话活跃度分布
       const activityDistribution = {
-        high: sessions.filter(s => s.messageCount > 50).length,
-        medium: sessions.filter(s => s.messageCount > 10 && s.messageCount <= 50).length,
-        low: sessions.filter(s => s.messageCount <= 10).length,
+        high: sessions.filter((s) => s.messageCount > 50).length,
+        medium: sessions.filter(
+          (s) => s.messageCount > 10 && s.messageCount <= 50,
+        ).length,
+        low: sessions.filter((s) => s.messageCount <= 10).length,
       };
 
       res.json({
@@ -755,9 +776,13 @@ router.get(
             totalMessages,
             totalTokens,
             avgMessagesPerSession:
-              sessions.length > 0 ? Math.round(totalMessages / sessions.length) : 0,
+              sessions.length > 0
+                ? Math.round(totalMessages / sessions.length)
+                : 0,
             avgTokensPerSession:
-              sessions.length > 0 ? Math.round(totalTokens / sessions.length) : 0,
+              sessions.length > 0
+                ? Math.round(totalTokens / sessions.length)
+                : 0,
             mostActiveSession: mostActiveSession
               ? {
                   id: mostActiveSession.id,
@@ -776,7 +801,7 @@ router.get(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 系统维护 ====================
@@ -786,14 +811,14 @@ router.get(
  * POST /conversations/cleanup
  */
 router.post(
-  '/cleanup',
-  asyncHandler(async (req, res) => {
+  "/cleanup",
+  asyncHandler(async (_req, res) => {
     try {
       conversationManager.cleanup();
 
       res.json({
         success: true,
-        message: '数据清理完成',
+        message: "数据清理完成",
         timestamp: new Date(),
       });
     } catch (error) {
@@ -802,20 +827,20 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
  * 健康检查
  * GET /conversations/health
  */
-router.get('/health', (req, res) => {
+router.get("/health", (_req, res) => {
   const stats = conversationManager.getStats();
 
   res.json({
     success: true,
     data: {
-      status: 'healthy',
+      status: "healthy",
       timestamp: new Date(),
       uptime: process.uptime(),
       stats: {
@@ -824,7 +849,7 @@ router.get('/health', (req, res) => {
         totalMessages: stats.totalMessages,
         totalTokens: stats.totalTokens,
       },
-      version: '1.0',
+      version: "1.0",
     },
   });
 });

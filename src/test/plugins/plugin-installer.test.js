@@ -1,18 +1,18 @@
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
+const fs = require("node:fs");
+const path = require("node:path");
+const util = require("node:util");
 
-const should = require('should');
-const cpr = require('cpr');
-const rimraf = require('rimraf');
-const tmp = require('tmp');
-const yaml = require('js-yaml');
+const should = require("should");
+const cpr = require("cpr");
+const rimraf = require("rimraf");
+const tmp = require("tmp");
+const yaml = require("js-yaml");
 
-const PluginInstaller = require('../../../src/core/plugin-installer');
-const PACKAGE_NAME = 'express-gateway-plugin-test';
+const PluginInstaller = require("../../../core/plugin-installer");
+const PACKAGE_NAME = "express-gateway-plugin-test";
 
-const gatewayDirectory = path.join(__dirname, '../../../src/core/config');
-const pluginDirectory = path.join(__dirname, '../fixtures', PACKAGE_NAME);
+const gatewayDirectory = path.join(__dirname, "../../../src/core/config");
+const pluginDirectory = path.join(__dirname, "../fixtures", PACKAGE_NAME);
 
 let tempPath = null;
 
@@ -23,32 +23,36 @@ const config = {
   gatewayConfig: null,
 };
 
-describe('PluginInstaller#runNPMInstallation', () => {
+describe("PluginInstaller#runNPMInstallation", () => {
   before(() => {
     return util
       .promisify(tmp.dir)()
-      .then(temp => {
+      .then((temp) => {
         tempPath = temp;
-        return util.promisify(cpr)(gatewayDirectory, path.join(tempPath, 'config'), {
-          filter: file => file.includes('.yml'),
-        });
-      })
-      .then(files => {
-        const configPath = path.join(tempPath, 'config');
-        fs.writeFileSync(
-          path.join(tempPath, 'package.json'),
-          JSON.stringify({ name: '', version: '1.0.0', main: 'server.js' })
+        return util.promisify(cpr)(
+          gatewayDirectory,
+          path.join(tempPath, "config"),
+          {
+            filter: (file) => file.includes(".yml"),
+          },
         );
-        config.systemConfigPath = path.join(configPath, 'system.config.yml');
-        config.gatewayConfigPath = path.join(configPath, 'gateway.config.yml');
+      })
+      .then((_files) => {
+        const configPath = path.join(tempPath, "config");
+        fs.writeFileSync(
+          path.join(tempPath, "package.json"),
+          JSON.stringify({ name: "", version: "1.0.0", main: "server.js" }),
+        );
+        config.systemConfigPath = path.join(configPath, "system.config.yml");
+        config.gatewayConfigPath = path.join(configPath, "gateway.config.yml");
       });
   });
 
-  after(done => {
+  after((done) => {
     rimraf(tempPath, done);
   });
 
-  it('installs an package using a file-system package specifier', () => {
+  it("installs an package using a file-system package specifier", () => {
     const installer = PluginInstaller.create({ config });
     return installer
       .runNPMInstallation({
@@ -62,7 +66,7 @@ describe('PluginInstaller#runNPMInstallation', () => {
       });
   });
 
-  it('updates configuration for a plugin', () => {
+  it("updates configuration for a plugin", () => {
     const installer = PluginInstaller.create({
       packageName: PACKAGE_NAME,
       pluginManifest: require(pluginDirectory),
@@ -70,7 +74,7 @@ describe('PluginInstaller#runNPMInstallation', () => {
     });
 
     const pluginOptions = {
-      foo: 'abcdefg',
+      foo: "abcdefg",
       baz: 12345,
     };
 
@@ -81,17 +85,23 @@ describe('PluginInstaller#runNPMInstallation', () => {
         addPoliciesToWhitelist: true,
       })
       .then(() => {
-        const systemConfigData = fs.readFileSync(config.systemConfigPath, 'utf8');
+        const systemConfigData = fs.readFileSync(
+          config.systemConfigPath,
+          "utf8",
+        );
         const systemConfig = yaml.load(systemConfigData.toString());
-        const comparison = Object.assign({ package: PACKAGE_NAME }, pluginOptions);
+        const comparison = Object.assign(
+          { package: PACKAGE_NAME },
+          pluginOptions,
+        );
 
         should(systemConfig.plugins.test).be.deepEqual(comparison);
 
         const gatewayConfigData = fs.readFileSync(config.gatewayConfigPath);
         const gatewayConfig = yaml.load(gatewayConfigData.toString());
 
-        should(gatewayConfig.policies.indexOf('policy1')).be.greaterThan(-1);
-        should(gatewayConfig.policies.indexOf('policy2')).be.greaterThan(-1);
+        should(gatewayConfig.policies.indexOf("policy1")).be.greaterThan(-1);
+        should(gatewayConfig.policies.indexOf("policy2")).be.greaterThan(-1);
       });
   });
 });

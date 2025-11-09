@@ -1,19 +1,18 @@
-const https = require('https');
-const minimatch = require('minimatch');
-const tls = require('tls');
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const logger = require('../logger').gateway;
-const config = require('../config');
-const eventBus = require('../eventBus');
+const https = require("node:https");
+const minimatch = require("minimatch");
+const tls = require("node:tls");
+const http = require("node:http");
+const fs = require("node:fs");
+const path = require("node:path");
+const logger = require("../logger").gateway;
+const config = require("../config");
+const eventBus = require("../eventBus");
 
-module.exports.bootstrap = function (app) {
+module.exports.bootstrap = (app) => {
   const httpServer = config.gatewayConfig.http ? http.createServer(app) : null;
-  const httpsServer =
-    config.gatewayConfig.https && config.gatewayConfig.https.tls
-      ? createTlsServer(config.gatewayConfig.https, app)
-      : null;
+  const httpsServer = config.gatewayConfig.https?.tls
+    ? createTlsServer(config.gatewayConfig.https, app)
+    : null;
 
   addOnCloseEventHandlingToServer(httpServer);
   addOnCloseEventHandlingToServer(httpsServer);
@@ -32,17 +31,19 @@ function createTlsServer(httpsConfig, app) {
     const domain = el;
     const certPaths = httpsConfig.tls[el];
     let cert;
-    if (domain === 'default') {
+    if (domain === "default") {
       cert = defaultCert = {};
     } else {
       cert = {};
       sniCerts.push([domain, cert]);
     }
 
-    cert.key = fs.readFileSync(path.resolve(certPaths.key), 'utf-8');
-    cert.cert = fs.readFileSync(path.resolve(certPaths.cert), 'utf-8');
-    if (certPaths.ca && certPaths.ca.length) {
-      cert.ca = certPaths.ca.map(ca => fs.readFileSync(path.resolve(ca), 'utf-8'));
+    cert.key = fs.readFileSync(path.resolve(certPaths.key), "utf-8");
+    cert.cert = fs.readFileSync(path.resolve(certPaths.cert), "utf-8");
+    if (certPaths.ca?.length) {
+      cert.ca = certPaths.ca.map((ca) =>
+        fs.readFileSync(path.resolve(ca), "utf-8"),
+      );
     }
   }
 
@@ -65,11 +66,11 @@ function createTlsServer(httpsConfig, app) {
         }
       }
       if (defaultCert) {
-        logger.debug('sni: using default cert');
+        logger.debug("sni: using default cert");
         cb(null, tls.createSecureContext(defaultCert));
       } else {
-        logger.error('sni: no cert!');
-        cb(new Error('cannot start TLS SNI - no cert configured'));
+        logger.error("sni: no cert!");
+        cb(new Error("cannot start TLS SNI - no cert configured"));
       }
     };
   }
@@ -79,7 +80,7 @@ function createTlsServer(httpsConfig, app) {
 
 function addOnCloseEventHandlingToServer(server) {
   if (server) {
-    server.on('close', () => {
+    server.on("close", () => {
       eventBus.removeAllListeners();
     });
   }

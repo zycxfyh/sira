@@ -1,21 +1,23 @@
-const Ajv = require('ajv');
-const superagent = require('superagent');
-const logger = require('../logger').gateway;
+const Ajv = require("ajv");
+const superagent = require("superagent");
+const logger = require("../logger").gateway;
 
 const ajv = new Ajv({
   useDefaults: true,
   coerceTypes: true,
   verbose: true,
   logger,
-  loadSchema: uri => superagent.get(uri).then(res => res.body),
+  loadSchema: (uri) => superagent.get(uri).then((res) => res.body),
 });
 
-require('ajv-keywords')(ajv, 'instanceof');
+require("ajv-keywords")(ajv, "instanceof");
 
 const registeredKeys = [];
 
 function registerAsync(schema) {
-  return ajv.compileAsync(schema).then(() => data => validate(schema.$id, data));
+  return ajv
+    .compileAsync(schema)
+    .then(() => (data) => validate(schema.$id, data));
 }
 
 function register(type, name, schema) {
@@ -28,15 +30,15 @@ function register(type, name, schema) {
 
   if (!schema) {
     logger.warn(
-      `${name} ${type} hasn't provided a schema. Validation for this ${type} will be skipped.`
+      `${name} ${type} hasn't provided a schema. Validation for this ${type} will be skipped.`,
     );
     return () => ({ isValid: true });
   } else {
     if (!schema.$id) {
-      throw new Error('The schema must have the $id property.');
+      throw new Error("The schema must have the $id property.");
     }
 
-    if (registeredKeys.findIndex(keys => keys.$id === schema.$id) === -1) {
+    if (registeredKeys.findIndex((keys) => keys.$id === schema.$id) === -1) {
       ajv.addSchema(schema);
       registeredKeys.push({ type, $id: schema.$id });
     } else {
@@ -44,7 +46,7 @@ function register(type, name, schema) {
     }
   }
 
-  return data => validate(schema.$id, data);
+  return (data) => validate(schema.$id, data);
 }
 
 function find(param = null) {
@@ -56,11 +58,14 @@ function find(param = null) {
   }
 
   return registeredKeys
-    .filter(item => !param || item.type === param)
-    .map(key => ({ type: key.type, schema: ajv.getSchema(key.$id).schema }));
+    .filter((item) => !param || item.type === param)
+    .map((key) => ({ type: key.type, schema: ajv.getSchema(key.$id).schema }));
 }
 
-const validate = (id, data) => ({ isValid: ajv.validate(id, data), error: ajv.errorsText() });
+const validate = (id, data) => ({
+  isValid: ajv.validate(id, data),
+  error: ajv.errorsText(),
+});
 
 module.exports = {
   register,

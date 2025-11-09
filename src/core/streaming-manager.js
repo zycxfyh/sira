@@ -1,6 +1,6 @@
-const { EventEmitter } = require('events');
-const crypto = require('crypto');
-const WebSocket = require('ws');
+const { EventEmitter } = require("node:events");
+const crypto = require("node:crypto");
+const WebSocket = require("ws");
 
 /**
  * 实时流式响应管理器
@@ -12,7 +12,8 @@ class StreamingManager extends EventEmitter {
     super();
 
     this.configPath =
-      options.configPath || require('path').join(__dirname, '../config/streaming.json');
+      options.configPath ||
+      require("node:path").join(__dirname, "../config/streaming.json");
 
     // 流式配置
     this.maxConnections = options.maxConnections || 1000; // 最大并发连接数
@@ -73,9 +74,11 @@ class StreamingManager extends EventEmitter {
       // 启动保活机制
       this.startKeepAlive();
 
-      console.log(`✅ 流式响应管理器已初始化，最大连接数: ${this.maxConnections}`);
+      console.log(
+        `✅ 流式响应管理器已初始化，最大连接数: ${this.maxConnections}`,
+      );
     } catch (error) {
-      console.error('❌ 流式响应管理器初始化失败:', error.message);
+      console.error("❌ 流式响应管理器初始化失败:", error.message);
       throw error;
     }
   }
@@ -89,25 +92,25 @@ class StreamingManager extends EventEmitter {
 
     // 设置SSE响应头
     res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Cache-Control',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Cache-Control",
     });
 
     // 创建连接信息
     const connection = {
       id: connectionId,
       streamId,
-      type: 'sse',
+      type: "sse",
       req,
       res,
       createdAt: new Date().toISOString(),
       lastActivity: Date.now(),
-      userId: req.headers['x-user-id'] || 'anonymous',
+      userId: req.headers["x-user-id"] || "anonymous",
       clientIP: req.ip,
-      userAgent: req.headers['user-agent'],
+      userAgent: req.headers["user-agent"],
       options,
     };
 
@@ -121,31 +124,33 @@ class StreamingManager extends EventEmitter {
 
     // 设置连接超时
     const timeout = setTimeout(() => {
-      this.closeConnection(connectionId, 'timeout');
+      this.closeConnection(connectionId, "timeout");
     }, this.connectionTimeout);
 
     connection.timeout = timeout;
 
     // 监听连接关闭
-    req.on('close', () => {
-      this.closeConnection(connectionId, 'client_disconnect');
+    req.on("close", () => {
+      this.closeConnection(connectionId, "client_disconnect");
     });
 
-    req.on('error', error => {
+    req.on("error", (error) => {
       console.error(`SSE连接错误 ${connectionId}:`, error.message);
-      this.closeConnection(connectionId, 'connection_error');
+      this.closeConnection(connectionId, "connection_error");
     });
 
     // 发送初始连接事件
-    this.sendSSEEvent(res, 'connection', {
+    this.sendSSEEvent(res, "connection", {
       connectionId,
       streamId,
       timestamp: new Date().toISOString(),
     });
 
-    console.log(`📡 SSE连接已建立: ${connectionId} (${this.activeConnections.size} 活跃连接)`);
+    console.log(
+      `📡 SSE连接已建立: ${connectionId} (${this.activeConnections.size} 活跃连接)`,
+    );
 
-    this.emit('sseConnectionCreated', connection);
+    this.emit("sseConnectionCreated", connection);
 
     return { connectionId, streamId };
   }
@@ -161,14 +166,14 @@ class StreamingManager extends EventEmitter {
     const connection = {
       id: connectionId,
       streamId,
-      type: 'websocket',
+      type: "websocket",
       ws,
       req,
       createdAt: new Date().toISOString(),
       lastActivity: Date.now(),
-      userId: req.headers['x-user-id'] || 'anonymous',
+      userId: req.headers["x-user-id"] || "anonymous",
       clientIP: req.ip,
-      userAgent: req.headers['user-agent'],
+      userAgent: req.headers["user-agent"],
       options,
     };
 
@@ -181,35 +186,37 @@ class StreamingManager extends EventEmitter {
     this.performanceStats.activeConnections = this.activeConnections.size;
 
     // WebSocket事件处理
-    ws.on('message', data => {
+    ws.on("message", (data) => {
       this.handleWebSocketMessage(connectionId, data);
     });
 
-    ws.on('close', (code, reason) => {
+    ws.on("close", (code, _reason) => {
       this.closeConnection(connectionId, `websocket_close_${code}`);
     });
 
-    ws.on('error', error => {
+    ws.on("error", (error) => {
       console.error(`WebSocket连接错误 ${connectionId}:`, error.message);
-      this.closeConnection(connectionId, 'websocket_error');
+      this.closeConnection(connectionId, "websocket_error");
     });
 
-    ws.on('ping', () => {
+    ws.on("ping", () => {
       connection.lastActivity = Date.now();
       ws.pong();
     });
 
     // 发送欢迎消息
-    this.sendWebSocketMessage(ws, 'connection', {
+    this.sendWebSocketMessage(ws, "connection", {
       connectionId,
       streamId,
       timestamp: new Date().toISOString(),
-      message: 'WebSocket connection established',
+      message: "WebSocket connection established",
     });
 
-    console.log(`🔌 WebSocket连接已建立: ${connectionId} (${this.wsConnections.size} 活跃连接)`);
+    console.log(
+      `🔌 WebSocket连接已建立: ${connectionId} (${this.wsConnections.size} 活跃连接)`,
+    );
 
-    this.emit('wsConnectionCreated', connection);
+    this.emit("wsConnectionCreated", connection);
 
     return { connectionId, streamId };
   }
@@ -223,7 +230,7 @@ class StreamingManager extends EventEmitter {
       throw new Error(`流 ${streamId} 不存在`);
     }
 
-    const { eventType = 'data', metadata = {} } = options;
+    const { eventType = "data", metadata = {} } = options;
 
     // 更新流统计
     stream.messageCount = (stream.messageCount || 0) + 1;
@@ -235,9 +242,9 @@ class StreamingManager extends EventEmitter {
       if (!connection) continue;
 
       try {
-        if (connection.type === 'sse') {
+        if (connection.type === "sse") {
           this.sendSSEEvent(connection.res, eventType, data, metadata);
-        } else if (connection.type === 'websocket') {
+        } else if (connection.type === "websocket") {
           this.sendWebSocketMessage(connection.ws, eventType, data, metadata);
         }
 
@@ -245,7 +252,7 @@ class StreamingManager extends EventEmitter {
         connection.lastActivity = Date.now();
       } catch (error) {
         console.error(`发送流数据失败 ${connectionId}:`, error.message);
-        this.closeConnection(connectionId, 'send_error');
+        this.closeConnection(connectionId, "send_error");
       }
     }
 
@@ -254,7 +261,7 @@ class StreamingManager extends EventEmitter {
     const dataSize = JSON.stringify(data).length;
     this.performanceStats.bytesTransferred += dataSize;
 
-    this.emit('streamDataSent', { streamId, data, options });
+    this.emit("streamDataSent", { streamId, data, options });
   }
 
   /**
@@ -270,7 +277,7 @@ class StreamingManager extends EventEmitter {
       lastActivity: Date.now(),
       connections: new Set(),
       messageCount: 0,
-      status: 'active',
+      status: "active",
       options: {
         maxConnections: options.maxConnections || 10,
         timeout: options.timeout || this.connectionTimeout,
@@ -284,7 +291,7 @@ class StreamingManager extends EventEmitter {
 
     console.log(`🌊 流式会话已创建: ${streamId}`);
 
-    this.emit('streamCreated', stream);
+    this.emit("streamCreated", stream);
 
     return stream;
   }
@@ -311,7 +318,7 @@ class StreamingManager extends EventEmitter {
 
     // 检查用户权限
     if (stream.userId !== connection.userId) {
-      throw new Error('无权加入此流');
+      throw new Error("无权加入此流");
     }
 
     stream.connections.add(connectionId);
@@ -319,7 +326,7 @@ class StreamingManager extends EventEmitter {
 
     console.log(`🔗 连接已加入流: ${connectionId} -> ${streamId}`);
 
-    this.emit('connectionJoinedStream', { streamId, connectionId });
+    this.emit("connectionJoinedStream", { streamId, connectionId });
 
     return { streamId, connectionId };
   }
@@ -340,13 +347,13 @@ class StreamingManager extends EventEmitter {
 
     console.log(`🔌 连接已离开流: ${connectionId} <- ${streamId}`);
 
-    this.emit('connectionLeftStream', { streamId, connectionId });
+    this.emit("connectionLeftStream", { streamId, connectionId });
   }
 
   /**
    * 关闭流
    */
-  closeStream(streamId, reason = 'manual') {
+  closeStream(streamId, reason = "manual") {
     const stream = this.activeStreams.get(streamId);
     if (!stream) return;
 
@@ -355,7 +362,7 @@ class StreamingManager extends EventEmitter {
       this.closeConnection(connectionId, `stream_closed_${reason}`);
     }
 
-    stream.status = 'closed';
+    stream.status = "closed";
     stream.closedAt = new Date().toISOString();
     stream.closeReason = reason;
 
@@ -364,7 +371,7 @@ class StreamingManager extends EventEmitter {
 
     console.log(`🏁 流已关闭: ${streamId} (${reason})`);
 
-    this.emit('streamClosed', { streamId, reason });
+    this.emit("streamClosed", { streamId, reason });
   }
 
   /**
@@ -388,7 +395,7 @@ class StreamingManager extends EventEmitter {
         res.flush();
       }
     } catch (error) {
-      console.error('发送SSE事件失败:', error.message);
+      console.error("发送SSE事件失败:", error.message);
     }
   }
 
@@ -406,7 +413,7 @@ class StreamingManager extends EventEmitter {
 
       ws.send(JSON.stringify(message));
     } catch (error) {
-      console.error('发送WebSocket消息失败:', error.message);
+      console.error("发送WebSocket消息失败:", error.message);
     }
   }
 
@@ -425,31 +432,34 @@ class StreamingManager extends EventEmitter {
 
       // 处理不同类型的消息
       switch (message.type) {
-        case 'ping':
-          this.sendWebSocketMessage(connection.ws, 'pong', { timestamp: Date.now() });
+        case "ping":
+          this.sendWebSocketMessage(connection.ws, "pong", {
+            timestamp: Date.now(),
+          });
           break;
 
-        case 'join_stream':
+        case "join_stream":
           if (message.streamId) {
             this.joinStream(message.streamId, connectionId);
           }
           break;
 
-        case 'leave_stream':
+        case "leave_stream":
           if (connection.streamId) {
             this.leaveStream(connection.streamId, connectionId);
           }
           break;
 
-        case 'heartbeat':
-          this.sendWebSocketMessage(connection.ws, 'heartbeat', {
+        case "heartbeat":
+          this.sendWebSocketMessage(connection.ws, "heartbeat", {
             serverTime: Date.now(),
-            connectionAge: Date.now() - new Date(connection.createdAt).getTime(),
+            connectionAge:
+              Date.now() - new Date(connection.createdAt).getTime(),
           });
           break;
 
         default:
-          this.emit('wsMessageReceived', { connectionId, message });
+          this.emit("wsMessageReceived", { connectionId, message });
       }
     } catch (error) {
       console.error(`处理WebSocket消息失败 ${connectionId}:`, error.message);
@@ -460,34 +470,41 @@ class StreamingManager extends EventEmitter {
    * 广播消息到所有连接
    */
   broadcast(message, options = {}) {
-    const { userId, eventType = 'broadcast', metadata = {} } = options;
+    const { userId, eventType = "broadcast", metadata = {} } = options;
 
     let connections = Array.from(this.activeConnections.values());
 
     // 如果指定了用户，只广播给该用户的连接
     if (userId) {
-      connections = connections.filter(conn => conn.userId === userId);
+      connections = connections.filter((conn) => conn.userId === userId);
     }
 
     for (const connection of connections) {
       try {
-        if (connection.type === 'sse') {
+        if (connection.type === "sse") {
           this.sendSSEEvent(connection.res, eventType, message, metadata);
-        } else if (connection.type === 'websocket') {
-          this.sendWebSocketMessage(connection.ws, eventType, message, metadata);
+        } else if (connection.type === "websocket") {
+          this.sendWebSocketMessage(
+            connection.ws,
+            eventType,
+            message,
+            metadata,
+          );
         }
       } catch (error) {
         console.error(`广播消息失败 ${connection.id}:`, error.message);
       }
     }
 
-    console.log(`📢 广播消息已发送: ${eventType} (${connections.length} 个连接)`);
+    console.log(
+      `📢 广播消息已发送: ${eventType} (${connections.length} 个连接)`,
+    );
   }
 
   /**
    * 关闭连接
    */
-  closeConnection(connectionId, reason = 'manual') {
+  closeConnection(connectionId, reason = "manual") {
     const connection = this.activeConnections.get(connectionId);
     if (!connection) return;
 
@@ -498,13 +515,13 @@ class StreamingManager extends EventEmitter {
       }
 
       // 关闭连接
-      if (connection.type === 'sse') {
+      if (connection.type === "sse") {
         if (!connection.res.finished) {
-          this.sendSSEEvent(connection.res, 'close', { reason });
+          this.sendSSEEvent(connection.res, "close", { reason });
           connection.res.end();
         }
         this.sseConnections.delete(connectionId);
-      } else if (connection.type === 'websocket') {
+      } else if (connection.type === "websocket") {
         if (connection.ws.readyState === WebSocket.OPEN) {
           connection.ws.close(1000, reason);
         }
@@ -521,7 +538,7 @@ class StreamingManager extends EventEmitter {
 
       console.log(`🔌 连接已关闭: ${connectionId} (${reason})`);
 
-      this.emit('connectionClosed', { connectionId, reason });
+      this.emit("connectionClosed", { connectionId, reason });
     } catch (error) {
       console.error(`关闭连接失败 ${connectionId}:`, error.message);
     }
@@ -583,7 +600,9 @@ class StreamingManager extends EventEmitter {
     }
 
     stats.avgConnectionAge =
-      connections.length > 0 ? Math.round(totalAge / connections.length / 1000) : 0;
+      connections.length > 0
+        ? Math.round(totalAge / connections.length / 1000)
+        : 0;
 
     return stats;
   }
@@ -641,14 +660,14 @@ class StreamingManager extends EventEmitter {
    * 生成连接ID
    */
   generateConnectionId() {
-    return `conn_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `conn_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 生成流ID
    */
   generateStreamId() {
-    return `stream_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `stream_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
@@ -662,7 +681,7 @@ class StreamingManager extends EventEmitter {
 
       for (const [connectionId, connection] of this.activeConnections) {
         if (connection.lastActivity < timeoutThreshold) {
-          this.closeConnection(connectionId, 'cleanup_timeout');
+          this.closeConnection(connectionId, "cleanup_timeout");
         }
       }
     }, 60000);
@@ -674,7 +693,7 @@ class StreamingManager extends EventEmitter {
   startPerformanceMonitoring() {
     // 每30秒更新性能统计
     setInterval(() => {
-      this.emit('performanceStats', this.performanceStats);
+      this.emit("performanceStats", this.performanceStats);
     }, 30000);
   }
 
@@ -690,10 +709,10 @@ class StreamingManager extends EventEmitter {
       for (const [connectionId, connection] of this.sseConnections) {
         if (connection.res && !connection.res.finished) {
           try {
-            this.sendSSEEvent(connection.res, 'ping', { timestamp: now });
+            this.sendSSEEvent(connection.res, "ping", { timestamp: now });
             connection.lastActivity = now;
-          } catch (error) {
-            this.closeConnection(connectionId, 'keepalive_error');
+          } catch (_error) {
+            this.closeConnection(connectionId, "keepalive_error");
           }
         }
       }
@@ -704,8 +723,8 @@ class StreamingManager extends EventEmitter {
           try {
             connection.ws.ping();
             connection.lastActivity = now;
-          } catch (error) {
-            this.closeConnection(connectionId, 'keepalive_error');
+          } catch (_error) {
+            this.closeConnection(connectionId, "keepalive_error");
           }
         }
       }
@@ -717,16 +736,19 @@ class StreamingManager extends EventEmitter {
    */
   async loadConfiguration() {
     try {
-      const fs = require('fs').promises;
-      const data = await fs.readFile(this.configPath, 'utf8');
+      const fs = require("node:fs").promises;
+      const data = await fs.readFile(this.configPath, "utf8");
       const config = JSON.parse(data);
 
       if (config.performanceStats) {
-        this.performanceStats = { ...this.performanceStats, ...config.performanceStats };
+        this.performanceStats = {
+          ...this.performanceStats,
+          ...config.performanceStats,
+        };
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载流式响应配置失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载流式响应配置失败:", error.message);
       }
     }
   }
@@ -736,16 +758,18 @@ class StreamingManager extends EventEmitter {
    */
   async saveConfiguration() {
     try {
-      const fs = require('fs').promises;
+      const fs = require("node:fs").promises;
       const config = {
         performanceStats: this.performanceStats,
         lastUpdated: new Date().toISOString(),
       };
 
-      await fs.mkdir(require('path').dirname(this.configPath), { recursive: true });
+      await fs.mkdir(require("node:path").dirname(this.configPath), {
+        recursive: true,
+      });
       await fs.writeFile(this.configPath, JSON.stringify(config, null, 2));
     } catch (error) {
-      console.error('保存流式响应配置失败:', error.message);
+      console.error("保存流式响应配置失败:", error.message);
     }
   }
 

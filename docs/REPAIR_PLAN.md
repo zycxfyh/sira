@@ -1,12 +1,14 @@
 # Sira 项目修复方案
 
 ## 目标概述
+
 - 恢复 API 网关核心功能：确保可成功启动 HTTP/HTTPS 服务并通过健康检查
 - 消除 ESLint 报错与关键代码缺陷，为持续集成奠定基础
 - 整理测试/CLI 设施的断裂点，明确后续迭代优先级
 - 统一日志与运行时配置策略，改善部署体验（Docker、K8s 等）
 
 ## 当前状态快照
+
 - `npm run lint` 触发 **163 个错误、2036 个警告**，CI 无法通过
 - Docker 镜像入口指向 `src/core/index.js`，但该文件只实例化 `ExtensionsManager`，网关并未真正监听端口
 - 大量核心模块缺省依赖或属性未初始化，运行时会抛出 `TypeError`
@@ -14,7 +16,8 @@
 - 多个健康检查/监控文件存在重复键、错误回调等逻辑缺陷
 
 ## 高优先问题与修复路径
-1. **入口与启动流程损坏**  
+
+1. **入口与启动流程损坏**
    - 问题：`package.json`、`Dockerfile`、`scripts` 默认入口均执行 `src/core/index.js`，该文件仅用于扩展管理。
    - 影响：Docker/K8s/本地启动均失败，健康检查端点不可用。
    - 修复建议：
@@ -61,6 +64,7 @@
    - 修复建议：短期内可对测试、脚本目录放宽规则；长期改用 `winston` 或现有 `logger`。
 
 ## 整体修复路线图
+
 1. **阶段一：核心可运行性**
    - [ ] 新建统一入口（如 `src/index.js`）调用 gateway bootstrap。
    - [ ] 调整 `package.json`、`Dockerfile`、`scripts` 的命令指向新入口。
@@ -83,11 +87,13 @@
    - [ ] 建立持续集成流程（lint + unit + integration）。
 
 ## 风险与依赖
+
 - 入口调整涉及 Docker、Compose、K8s、CLI，需要同步更新以免出现版本错配。
 - Lint 规则过严可能拖慢修复节奏，可分阶段降级为 warning，再逐步收紧。
 - 测试代码量大，改动需注意 `sinon`、`chai` 断言风格一致性，防止引入新的异步问题。
 
 ## 建议的后续动作
+
 - 建立修复分支，优先完成阶段一，确保基础服务可运行。
 - 设置 CI gate：`npm run lint:check` + `npm run test:unit`。
 - 调整文档与 README 指向新的启动方式，避免新人踩坑。

@@ -1,13 +1,13 @@
-const express = require('express');
+const express = require("express");
 
-module.exports = function ({ config }) {
+module.exports = ({ config }) => {
   const router = express.Router();
 
-  router.get('/', (req, res) => {
+  router.get("/", (_req, res) => {
     res.json(config.gatewayConfig.apiEndpoints);
   });
 
-  router.get('/:name', (req, res) => {
+  router.get("/:name", (req, res) => {
     const entity = config.gatewayConfig.apiEndpoints[req.params.name];
     if (!entity) {
       return res.status(404).send();
@@ -15,10 +15,10 @@ module.exports = function ({ config }) {
     res.json(entity);
   });
 
-  router.put('/:name', (req, res, next) => {
+  router.put("/:name", (req, res, next) => {
     let isUpdate;
     config
-      .updateGatewayConfig(json => {
+      .updateGatewayConfig((json) => {
         json.apiEndpoints = json.apiEndpoints || {};
         isUpdate = req.params.name in json.apiEndpoints;
         json.apiEndpoints[req.params.name] = req.body;
@@ -28,12 +28,12 @@ module.exports = function ({ config }) {
       .catch(next);
   });
 
-  router.delete('/:name', (req, res, next) => {
+  router.delete("/:name", (req, res, next) => {
     if (!config.gatewayConfig.apiEndpoints[req.params.name]) {
       return res.status(404).send();
     }
     config
-      .updateGatewayConfig(json => {
+      .updateGatewayConfig((json) => {
         json.apiEndpoints = json.apiEndpoints || {};
         delete json.apiEndpoints[req.params.name];
         return json;

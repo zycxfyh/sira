@@ -1,33 +1,33 @@
-const request = require('supertest');
-const should = require('should');
-const config = require('../../../src/core/config');
-const gateway = require('../../../src/core/gateway');
-const { findOpenPortNumbers } = require('../../common/server-helper');
+const request = require("supertest");
+const should = require("should");
+const config = require("../../../core/config");
+const gateway = require("../../../core/gateway");
+const { findOpenPortNumbers } = require("../../common/server-helper");
 
 const originalGatewayConfig = config.gatewayConfig;
 
 let backendServerPort;
 
-describe('@modifier policy', () => {
+describe("@modifier policy", () => {
   let app, backendServer;
 
-  before('start HTTP server', done => {
-    findOpenPortNumbers(1).then(ports => {
-      const express = require('express');
+  before("start HTTP server", (done) => {
+    findOpenPortNumbers(1).then((ports) => {
+      const express = require("express");
       const expressApp = express();
 
       backendServerPort = ports[0];
 
-      expressApp.all('*', express.json(), express.urlencoded(), (req, res) => {
-        if (req.header('r-test')) {
-          res.setHeader('r-test', req.header('r-test'));
+      expressApp.all("*", express.json(), express.urlencoded(), (req, res) => {
+        if (req.header("r-test")) {
+          res.setHeader("r-test", req.header("r-test"));
         }
 
         if (req.body) {
-          should(req.body).have.property('hello', 'world');
+          should(req.body).have.property("hello", "world");
         }
 
-        res.setHeader('x-test', 'hello');
+        res.setHeader("x-test", "hello");
         res.status(200).json(Object.assign({ url: req.url }, req.body));
       });
 
@@ -35,45 +35,45 @@ describe('@modifier policy', () => {
     });
   });
 
-  describe('headers and responses modification', () => {
+  describe("headers and responses modification", () => {
     before(() => {
-      return setupGateway().then(apps => {
+      return setupGateway().then((apps) => {
         app = apps.app;
       });
     });
 
-    it('should correctly reshape the request and response', () => {
+    it("should correctly reshape the request and response", () => {
       return request(app)
-        .get('/')
-        .type('json')
+        .get("/")
+        .type("json")
         .send({})
-        .expect(res => {
-          should(res.body).not.have.property('url');
-          should(res.header).not.have.property('x-test');
+        .expect((res) => {
+          should(res.body).not.have.property("url");
+          should(res.header).not.have.property("x-test");
 
-          should(res.body).have.property('hello', 'world');
-          should(res.header).have.property('r-test', 'baffino');
-          should(res.header).have.property('res', 'correct');
+          should(res.body).have.property("hello", "world");
+          should(res.header).have.property("r-test", "baffino");
+          should(res.header).have.property("res", "correct");
         });
     });
 
-    it('should correctly reshape the request and response with url encoded payload', () => {
+    it("should correctly reshape the request and response with url encoded payload", () => {
       return request(app)
-        .post('/')
-        .type('form')
-        .send({ hello: 'world' })
-        .expect(res => {
-          should(res.body).not.have.property('url');
-          should(res.header).not.have.property('x-test');
+        .post("/")
+        .type("form")
+        .send({ hello: "world" })
+        .expect((res) => {
+          should(res.body).not.have.property("url");
+          should(res.header).not.have.property("x-test");
 
-          should(res.body).have.property('hello', 'world');
-          should(res.header).have.property('r-test', 'baffino');
-          should(res.header).have.property('res', 'correct');
+          should(res.body).have.property("hello", "world");
+          should(res.header).have.property("r-test", "baffino");
+          should(res.header).have.property("res", "correct");
         });
     });
   });
 
-  after('clean up', done => {
+  after("clean up", (done) => {
     config.gatewayConfig = originalGatewayConfig;
     backendServer.close(done);
   });
@@ -90,13 +90,13 @@ const setupGateway = () => {
         url: `http://localhost:${backendServerPort}`,
       },
     },
-    policies: ['proxy', 'request-transformer', 'response-transformer'],
+    policies: ["proxy", "request-transformer", "response-transformer"],
     pipelines: {
       pipeline1: {
-        apiEndpoints: ['test'],
+        apiEndpoints: ["test"],
         policies: [
           {
-            'request-transformer': [
+            "request-transformer": [
               {
                 action: {
                   body: {
@@ -106,7 +106,7 @@ const setupGateway = () => {
                   },
                   headers: {
                     add: {
-                      'r-test': '"baffino"',
+                      "r-test": '"baffino"',
                     },
                   },
                 },
@@ -114,20 +114,20 @@ const setupGateway = () => {
             ],
           },
           {
-            'response-transformer': [
+            "response-transformer": [
               {
                 action: {
                   body: {
                     add: {
                       hello: '"world"',
                     },
-                    remove: ['url'],
+                    remove: ["url"],
                   },
                   headers: {
                     add: {
                       res: '"correct"',
                     },
-                    remove: ['x-test'],
+                    remove: ["x-test"],
                   },
                 },
               },
@@ -136,7 +136,7 @@ const setupGateway = () => {
           {
             proxy: [
               {
-                action: { serviceEndpoint: 'backend' },
+                action: { serviceEndpoint: "backend" },
               },
             ],
           },

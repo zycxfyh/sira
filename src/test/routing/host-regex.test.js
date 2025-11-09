@@ -1,30 +1,30 @@
-const testHelper = require('../common/routing.helper');
-const config = require('../../../src/core/config');
+const testHelper = require("../common/routing.helper");
+const config = require("../../../core/config");
 
 describe("When configured to capture hostRegex: '[a-z]{3}.parrots.com'", () => {
   let originalGatewayConfig;
   const helper = testHelper();
-  helper.addPolicy('test', () => (req, res) => {
+  helper.addPolicy("test", () => (req, res) => {
     res.json({
-      result: 'test',
+      result: "test",
       hostname: req.hostname,
       url: req.url,
       apiEndpoint: req.egContext.apiEndpoint,
     });
   });
 
-  before('setup', () => {
+  before("setup", () => {
     originalGatewayConfig = config.gatewayConfig;
 
     config.gatewayConfig = {
       http: { port: 9083 },
       apiEndpoints: {
-        parrots: { hostRegex: '[a-z]{3}.parrots.com' },
+        parrots: { hostRegex: "[a-z]{3}.parrots.com" },
       },
-      policies: ['test'],
+      policies: ["test"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['parrots'],
+          apiEndpoints: ["parrots"],
           policies: { test: [] },
         },
       },
@@ -33,113 +33,113 @@ describe("When configured to capture hostRegex: '[a-z]{3}.parrots.com'", () => {
     return helper.setup();
   });
 
-  after('cleanup', () => {
+  after("cleanup", () => {
     config.gatewayConfig = originalGatewayConfig;
     return helper.cleanup();
   });
 
-  describe('regex host name configuration /[a-z]{3}.parrots.com/', () => {
-    describe('should not load root domain parrots.com', () => {
+  describe("regex host name configuration /[a-z]{3}.parrots.com/", () => {
+    describe("should not load root domain parrots.com", () => {
       it(
-        'parrots.com/',
+        "parrots.com/",
         helper.validate404({
           setup: {
-            host: 'parrots.com',
-            url: '/',
+            host: "parrots.com",
+            url: "/",
           },
-        })
+        }),
       );
       it(
-        'parrots.com',
+        "parrots.com",
         helper.validate404({
           setup: {
-            host: 'parrots.com',
-            url: '',
+            host: "parrots.com",
+            url: "",
           },
-        })
+        }),
       );
       it(
-        'parrots.com/pretty',
+        "parrots.com/pretty",
         helper.validate404({
           setup: {
-            host: 'parrots.com',
-            url: '/pretty',
+            host: "parrots.com",
+            url: "/pretty",
           },
-        })
+        }),
       );
     });
-    describe('should not load subdomain not matching regexp', () => {
+    describe("should not load subdomain not matching regexp", () => {
       it(
-        'parrots.com/',
+        "parrots.com/",
         helper.validate404({
           setup: {
-            host: '1234.parrots.com',
-            url: '/',
+            host: "1234.parrots.com",
+            url: "/",
           },
-        })
+        }),
       );
       it(
-        'parrots.com',
+        "parrots.com",
         helper.validate404({
           setup: {
-            host: '1234.parrots.com',
-            url: '',
+            host: "1234.parrots.com",
+            url: "",
           },
-        })
+        }),
       );
       it(
-        'parrots.com/pretty',
+        "parrots.com/pretty",
         helper.validate404({
           setup: {
-            host: '1234.parrots.com',
-            url: '/pretty',
+            host: "1234.parrots.com",
+            url: "/pretty",
           },
-        })
+        }),
       );
     });
 
-    describe('should load subdomain matching regexp abc.parrots.com', () => {
+    describe("should load subdomain matching regexp abc.parrots.com", () => {
       it(
-        'abc.parrots.com/',
+        "abc.parrots.com/",
         helper.validateSuccess({
           setup: {
-            host: 'abc.parrots.com',
-            url: '/',
+            host: "abc.parrots.com",
+            url: "/",
           },
           test: {
-            host: 'abc.parrots.com',
-            url: '/',
-            result: 'test',
+            host: "abc.parrots.com",
+            url: "/",
+            result: "test",
           },
-        })
+        }),
       );
       it(
-        'abc.parrots.com',
+        "abc.parrots.com",
         helper.validateSuccess({
           setup: {
-            host: 'abc.parrots.com',
-            url: '',
+            host: "abc.parrots.com",
+            url: "",
           },
           test: {
-            host: 'abc.parrots.com',
-            url: '/',
-            result: 'test',
+            host: "abc.parrots.com",
+            url: "/",
+            result: "test",
           },
-        })
+        }),
       );
       it(
-        'abc.parrots.com/pretty',
+        "abc.parrots.com/pretty",
         helper.validateSuccess({
           setup: {
-            host: 'abc.parrots.com',
-            url: '/pretty',
+            host: "abc.parrots.com",
+            url: "/pretty",
           },
           test: {
-            host: 'abc.parrots.com',
-            url: '/pretty',
-            result: 'test',
+            host: "abc.parrots.com",
+            url: "/pretty",
+            result: "test",
           },
-        })
+        }),
       );
     });
   });

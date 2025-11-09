@@ -1,7 +1,9 @@
-const fs = require('fs').promises;
-const path = require('path');
-const { usageAnalytics } = require('./usage-analytics');
-const { performanceBenchmarkManager } = require('./performance-benchmark-manager');
+const fs = require("node:fs").promises;
+const path = require("node:path");
+const { usageAnalytics } = require("./usage-analytics");
+const {
+  performanceBenchmarkManager,
+} = require("./performance-benchmark-manager");
 
 /**
  * 入口统计和报告系统 - 借鉴Grafana、Kibana和DataDog的设计理念
@@ -9,9 +11,12 @@ const { performanceBenchmarkManager } = require('./performance-benchmark-manager
  */
 class ReportGenerator {
   constructor(options = {}) {
-    this.configPath = options.configPath || path.join(__dirname, '../config/reports.json');
-    this.reportsPath = options.reportsPath || path.join(__dirname, '../data/reports');
-    this.templatesPath = options.templatesPath || path.join(__dirname, '../templates/reports');
+    this.configPath =
+      options.configPath || path.join(__dirname, "../config/reports.json");
+    this.reportsPath =
+      options.reportsPath || path.join(__dirname, "../data/reports");
+    this.templatesPath =
+      options.templatesPath || path.join(__dirname, "../templates/reports");
 
     this.customReports = new Map(); // 自定义报告配置
     this.scheduledReports = new Map(); // 定时报告配置
@@ -21,14 +26,14 @@ class ReportGenerator {
 
     // 报告类型映射
     this.reportTypes = {
-      'usage-summary': this.generateUsageSummaryReport.bind(this),
-      'performance-analysis': this.generatePerformanceAnalysisReport.bind(this),
-      'error-analysis': this.generateErrorAnalysisReport.bind(this),
-      'cost-analysis': this.generateCostAnalysisReport.bind(this),
-      'user-behavior': this.generateUserBehaviorReport.bind(this),
-      'provider-comparison': this.generateProviderComparisonReport.bind(this),
-      'trend-analysis': this.generateTrendAnalysisReport.bind(this),
-      'custom-dashboard': this.generateCustomDashboardReport.bind(this),
+      "usage-summary": this.generateUsageSummaryReport.bind(this),
+      "performance-analysis": this.generatePerformanceAnalysisReport.bind(this),
+      "error-analysis": this.generateErrorAnalysisReport.bind(this),
+      "cost-analysis": this.generateCostAnalysisReport.bind(this),
+      "user-behavior": this.generateUserBehaviorReport.bind(this),
+      "provider-comparison": this.generateProviderComparisonReport.bind(this),
+      "trend-analysis": this.generateTrendAnalysisReport.bind(this),
+      "custom-dashboard": this.generateCustomDashboardReport.bind(this),
     };
   }
 
@@ -50,9 +55,11 @@ class ReportGenerator {
       this.startScheduledReportGenerator();
 
       this.initialized = true;
-      console.log(`✅ 报告生成器已初始化，支持 ${Object.keys(this.reportTypes).length} 种报告类型`);
+      console.log(
+        `✅ 报告生成器已初始化，支持 ${Object.keys(this.reportTypes).length} 种报告类型`,
+      );
     } catch (error) {
-      console.error('❌ 报告生成器初始化失败:', error.message);
+      console.error("❌ 报告生成器初始化失败:", error.message);
       throw error;
     }
   }
@@ -62,9 +69,9 @@ class ReportGenerator {
    */
   async generateReport(reportType, options = {}) {
     const {
-      timeRange = '24h',
+      timeRange = "24h",
       filters = {},
-      format = 'json',
+      format = "json",
       includeCharts = true,
       cache = true,
     } = options;
@@ -107,8 +114,8 @@ class ReportGenerator {
         format,
         data: reportData,
         metadata: {
-          version: '1.0',
-          generator: 'Sira Report Engine',
+          version: "1.0",
+          generator: "Sira Report Engine",
           executionTime: Date.now() - Date.now(), // 会被实际执行时间覆盖
         },
       };
@@ -142,7 +149,7 @@ class ReportGenerator {
       id: reportId,
       name: config.name,
       description: config.description,
-      type: 'custom-dashboard',
+      type: "custom-dashboard",
       config: config.config || {},
       schedule: config.schedule || null, // 定时配置
       enabled: config.enabled !== false,
@@ -160,7 +167,7 @@ class ReportGenerator {
   /**
    * 导出报告
    */
-  async exportReport(report, format = 'json', options = {}) {
+  async exportReport(report, format = "json", options = {}) {
     const { filename, includeMetadata = true } = options;
 
     let exportData;
@@ -168,28 +175,28 @@ class ReportGenerator {
     let extension;
 
     switch (format.toLowerCase()) {
-      case 'json':
+      case "json":
         exportData = JSON.stringify(report, null, 2);
-        mimeType = 'application/json';
-        extension = 'json';
+        mimeType = "application/json";
+        extension = "json";
         break;
 
-      case 'csv':
+      case "csv":
         exportData = this.convertToCSV(report);
-        mimeType = 'text/csv';
-        extension = 'csv';
+        mimeType = "text/csv";
+        extension = "csv";
         break;
 
-      case 'html':
+      case "html":
         exportData = this.convertToHTML(report);
-        mimeType = 'text/html';
-        extension = 'html';
+        mimeType = "text/html";
+        extension = "html";
         break;
 
-      case 'pdf':
+      case "pdf":
         exportData = await this.convertToPDF(report);
-        mimeType = 'application/pdf';
-        extension = 'pdf';
+        mimeType = "application/pdf";
+        extension = "pdf";
         break;
 
       default:
@@ -217,8 +224,8 @@ class ReportGenerator {
   /**
    * 获取仪表板数据
    */
-  async getDashboardData(dashboardType = 'overview', options = {}) {
-    const { timeRange = '24h', refresh = false } = options;
+  async getDashboardData(dashboardType = "overview", options = {}) {
+    const { timeRange = "24h", refresh = false } = options;
 
     const cacheKey = `dashboard_${dashboardType}_${timeRange}`;
 
@@ -235,16 +242,16 @@ class ReportGenerator {
     let dashboardData;
 
     switch (dashboardType) {
-      case 'overview':
+      case "overview":
         dashboardData = await this.generateOverviewDashboard(timeFilter);
         break;
-      case 'performance':
+      case "performance":
         dashboardData = await this.generatePerformanceDashboard(timeFilter);
         break;
-      case 'usage':
+      case "usage":
         dashboardData = await this.generateUsageDashboard(timeFilter);
         break;
-      case 'errors':
+      case "errors":
         dashboardData = await this.generateErrorDashboard(timeFilter);
         break;
       default:
@@ -482,7 +489,7 @@ class ReportGenerator {
     const trendData = await usageAnalytics.getTrendAnalysis({
       ...timeFilter,
       ...filters,
-      periods: ['hour', 'day', 'week', 'month'],
+      periods: ["hour", "day", "week", "month"],
     });
 
     return {
@@ -507,10 +514,13 @@ class ReportGenerator {
         confidence: trendData.forecastConfidence,
       },
       correlations: {
-        userVsRevenue: this.calculateCorrelation(trendData.userData, trendData.revenueData),
+        userVsRevenue: this.calculateCorrelation(
+          trendData.userData,
+          trendData.revenueData,
+        ),
         performanceVsUsage: this.calculateCorrelation(
           trendData.performanceData,
-          trendData.usageData
+          trendData.usageData,
         ),
       },
     };
@@ -525,7 +535,7 @@ class ReportGenerator {
     const dashboardConfig = config || {};
 
     // 并发生成多个报告
-    const reportPromises = dashboardConfig.widgets.map(async widget => {
+    const reportPromises = dashboardConfig.widgets.map(async (widget) => {
       const widgetData = await this.generateReport(widget.type, {
         timeRange: widget.timeRange || options.timeRange,
         filters: { ...filters, ...widget.filters },
@@ -545,10 +555,10 @@ class ReportGenerator {
     const widgets = await Promise.all(reportPromises);
 
     return {
-      title: dashboardConfig.title || '自定义仪表板',
+      title: dashboardConfig.title || "自定义仪表板",
       description: dashboardConfig.description,
       widgets,
-      layout: dashboardConfig.layout || 'grid',
+      layout: dashboardConfig.layout || "grid",
       refreshInterval: dashboardConfig.refreshInterval || 300000, // 5分钟
     };
   }
@@ -582,7 +592,9 @@ class ReportGenerator {
   }
 
   async generatePerformanceDashboard(timeFilter) {
-    const performance = await this.generatePerformanceAnalysisReport({ timeFilter });
+    const performance = await this.generatePerformanceAnalysisReport({
+      timeFilter,
+    });
 
     return {
       metrics: {
@@ -610,7 +622,8 @@ class ReportGenerator {
         totalRequests: usage.summary.totalRequests,
         totalUsers: usage.summary.totalUsers,
         totalCost: usage.summary.totalCost,
-        avgCostPerRequest: usage.summary.totalCost / usage.summary.totalRequests,
+        avgCostPerRequest:
+          usage.summary.totalCost / usage.summary.totalRequests,
       },
       charts: {
         requestsByProvider: usage.breakdowns.byProvider,
@@ -658,20 +671,20 @@ class ReportGenerator {
       throw new Error(`无效的时间范围格式: ${timeRange}`);
     }
 
-    const value = parseInt(match[1]);
+    const value = parseInt(match[1], 10);
     const unit = match[2];
 
     switch (unit) {
-      case 'h': // 小时
+      case "h": // 小时
         startTime = new Date(now.getTime() - value * 60 * 60 * 1000);
         break;
-      case 'd': // 天
+      case "d": // 天
         startTime = new Date(now.getTime() - value * 24 * 60 * 60 * 1000);
         break;
-      case 'w': // 周
+      case "w": // 周
         startTime = new Date(now.getTime() - value * 7 * 24 * 60 * 60 * 1000);
         break;
-      case 'm': // 月
+      case "m": // 月
         startTime = new Date(now.getTime() - value * 30 * 24 * 60 * 60 * 1000);
         break;
       default:
@@ -691,8 +704,8 @@ class ReportGenerator {
   calculateTrend(dataPoints) {
     if (!dataPoints || dataPoints.length < 2) return null;
 
-    const values = dataPoints.map(p => p.value);
-    const times = dataPoints.map(p => new Date(p.timestamp).getTime());
+    const values = dataPoints.map((p) => p.value);
+    const times = dataPoints.map((p) => new Date(p.timestamp).getTime());
 
     // 简单线性回归
     const n = values.length;
@@ -704,7 +717,8 @@ class ReportGenerator {
     const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
     const intercept = (sumY - slope * sumX) / n;
 
-    const trend = slope > 0 ? 'increasing' : slope < 0 ? 'decreasing' : 'stable';
+    const trend =
+      slope > 0 ? "increasing" : slope < 0 ? "decreasing" : "stable";
     const changePercent = ((values[n - 1] - values[0]) / values[0]) * 100;
 
     return {
@@ -743,7 +757,9 @@ class ReportGenerator {
     const sum12 = data1.reduce((sum, val, i) => sum + val * data2[i], 0);
 
     const numerator = n * sum12 - sum1 * sum2;
-    const denominator = Math.sqrt((n * sum1Sq - sum1 * sum1) * (n * sum2Sq - sum2 * sum2));
+    const denominator = Math.sqrt(
+      (n * sum1Sq - sum1 * sum1) * (n * sum2Sq - sum2 * sum2),
+    );
 
     return denominator === 0 ? 0 : numerator / denominator;
   }
@@ -757,22 +773,22 @@ class ReportGenerator {
     // 响应时间告警
     if (performance.responseTime.p95 > 5000) {
       alerts.push({
-        level: 'warning',
-        type: 'performance',
-        message: 'P95响应时间过高',
+        level: "warning",
+        type: "performance",
+        message: "P95响应时间过高",
         value: `${performance.responseTime.p95}ms`,
-        threshold: '5000ms',
+        threshold: "5000ms",
       });
     }
 
     // 错误率告警
     if (errors.summary.errorRate > 5) {
       alerts.push({
-        level: 'error',
-        type: 'reliability',
-        message: '错误率过高',
+        level: "error",
+        type: "reliability",
+        message: "错误率过高",
         value: `${errors.summary.errorRate}%`,
-        threshold: '5%',
+        threshold: "5%",
       });
     }
 
@@ -780,11 +796,11 @@ class ReportGenerator {
     const costTrend = usage.trends.cost;
     if (costTrend && Math.abs(costTrend.changePercent) > 50) {
       alerts.push({
-        level: 'warning',
-        type: 'cost',
-        message: '成本变化异常',
+        level: "warning",
+        type: "cost",
+        message: "成本变化异常",
         value: `${costTrend.changePercent}%`,
-        threshold: '±50%',
+        threshold: "±50%",
       });
     }
 
@@ -799,27 +815,31 @@ class ReportGenerator {
       responseTime: {
         value: performance.responseTime.avg,
         target: 2000,
-        status: performance.responseTime.avg <= 2000 ? 'good' : 'warning',
+        status: performance.responseTime.avg <= 2000 ? "good" : "warning",
       },
       errorRate: {
         value: errors.summary.errorRate,
         target: 1,
         status:
           errors.summary.errorRate <= 1
-            ? 'good'
+            ? "good"
             : errors.summary.errorRate <= 5
-              ? 'warning'
-              : 'error',
+              ? "warning"
+              : "error",
       },
       throughput: {
         value: performance.throughput.requestsPerSecond,
         target: 100,
-        status: performance.throughput.requestsPerSecond >= 100 ? 'good' : 'warning',
+        status:
+          performance.throughput.requestsPerSecond >= 100 ? "good" : "warning",
       },
       costEfficiency: {
         value: usage.summary.totalCost / usage.summary.totalRequests,
         target: 0.01,
-        status: usage.summary.totalCost / usage.summary.totalRequests <= 0.01 ? 'good' : 'warning',
+        status:
+          usage.summary.totalCost / usage.summary.totalRequests <= 0.01
+            ? "good"
+            : "warning",
       },
     };
   }
@@ -829,10 +849,10 @@ class ReportGenerator {
    */
   convertToCSV(report) {
     // 简化的CSV转换，实际实现会更复杂
-    const lines = ['Type,Generated At,Time Range'];
+    const lines = ["Type,Generated At,Time Range"];
     lines.push(`${report.type},${report.generatedAt},${report.timeRange}`);
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   /**
@@ -867,9 +887,9 @@ class ReportGenerator {
   /**
    * 转换为PDF格式 (占位符)
    */
-  async convertToPDF(report) {
+  async convertToPDF(_report) {
     // 需要安装pdf生成库，如puppeteer
-    throw new Error('PDF导出功能暂未实现');
+    throw new Error("PDF导出功能暂未实现");
   }
 
   /**
@@ -888,7 +908,7 @@ class ReportGenerator {
       () => {
         this.processScheduledReports();
       },
-      60 * 60 * 1000
+      60 * 60 * 1000,
     ); // 1小时
   }
 
@@ -907,15 +927,15 @@ class ReportGenerator {
           console.log(`📅 生成定时报告: ${reportId}`);
 
           const reportData = await this.generateReport(report.type, {
-            timeRange: report.schedule.timeRange || '24h',
+            timeRange: report.schedule.timeRange || "24h",
             filters: report.schedule.filters || {},
-            format: report.schedule.format || 'json',
+            format: report.schedule.format || "json",
           });
 
           // 保存或发送报告
           if (report.schedule.export) {
             await this.exportReport(reportData, report.schedule.format, {
-              filename: `${reportId}_${now.toISOString().split('T')[0]}`,
+              filename: `${reportId}_${now.toISOString().split("T")[0]}`,
             });
           }
 
@@ -939,13 +959,16 @@ class ReportGenerator {
     const { schedule } = report;
 
     switch (schedule.frequency) {
-      case 'hourly':
+      case "hourly":
         return now.getTime() - lastGenerated.getTime() >= 60 * 60 * 1000;
-      case 'daily':
+      case "daily":
         return now.getDate() !== lastGenerated.getDate();
-      case 'weekly':
-        return now.getDay() === schedule.dayOfWeek && now.getDate() !== lastGenerated.getDate();
-      case 'monthly':
+      case "weekly":
+        return (
+          now.getDay() === schedule.dayOfWeek &&
+          now.getDate() !== lastGenerated.getDate()
+        );
+      case "monthly":
         return now.getDate() === 1 && lastGenerated.getDate() !== 1;
       default:
         return false;
@@ -957,7 +980,7 @@ class ReportGenerator {
    */
   async loadReportConfigurations() {
     try {
-      const data = await fs.readFile(this.configPath, 'utf8');
+      const data = await fs.readFile(this.configPath, "utf8");
       const config = JSON.parse(data);
 
       if (config.customReports) {
@@ -966,8 +989,8 @@ class ReportGenerator {
         }
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载报告配置失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载报告配置失败:", error.message);
       }
     }
   }

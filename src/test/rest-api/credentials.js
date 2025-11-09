@@ -1,7 +1,7 @@
-const should = require('should');
-const adminHelper = require('../common/admin-helper')();
+const should = require("should");
+const adminHelper = require("../common/admin-helper")();
 
-describe('REST: Credentials', () => {
+describe("REST: Credentials", () => {
   before(() =>
     adminHelper.start({
       config: {
@@ -10,16 +10,18 @@ describe('REST: Credentials', () => {
           pipelines: null,
         },
       },
-    })
+    }),
   );
 
   afterEach(() => adminHelper.reset());
   after(() => adminHelper.stop());
 
-  describe('Insert test', () => {
-    it('should not insert a credential when the consumer does not exist', () =>
-      should(adminHelper.admin.credentials.create('IDoNotExist', 'key-auth', {})).be.rejectedWith({
-        response: { error: { text: 'No consumer found with id: IDoNotExist' } },
+  describe("Insert test", () => {
+    it("should not insert a credential when the consumer does not exist", () =>
+      should(
+        adminHelper.admin.credentials.create("IDoNotExist", "key-auth", {}),
+      ).be.rejectedWith({
+        response: { error: { text: "No consumer found with id: IDoNotExist" } },
       }));
   });
 });

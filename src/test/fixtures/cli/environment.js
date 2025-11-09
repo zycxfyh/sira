@@ -4,10 +4,10 @@
 const defaultEg = {
   exit() {},
   get config() {
-    return require('../../../src/core/config');
+    return require("../../../core/config");
   },
   get services() {
-    return require('../../../src/core/services');
+    return require("../../../core/services");
   },
 };
 
@@ -17,7 +17,7 @@ exports.bootstrap = (eg, adapter) => {
 
   const { program, env } = environment.bootstrap(eg, adapter);
 
-  if (!Object.prototype.hasOwnProperty.call(env, '_originalCreate')) {
+  if (!Object.hasOwn(env, "_originalCreate")) {
     env._originalCreate = env.create;
   }
 

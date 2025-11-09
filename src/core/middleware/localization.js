@@ -1,4 +1,4 @@
-const { MultilingualManager } = require('../multilingual-manager');
+const { MultilingualManager } = require("../multilingual-manager");
 
 let multilingualManager = null;
 
@@ -18,9 +18,9 @@ function localizationMiddleware(options = {}) {
     try {
       // 检测用户语言
       const languageDetection = multilingualManager.detectLanguage(req, {
-        userId: req.headers['x-user-id'] || req.query.userId,
+        userId: req.headers["x-user-id"] || req.query.userId,
         ip: req.ip,
-        sessionId: req.headers['x-session-id'],
+        sessionId: req.headers["x-session-id"],
       });
 
       // 将语言信息添加到请求对象
@@ -29,26 +29,30 @@ function localizationMiddleware(options = {}) {
       req.languageDetectionMethod = languageDetection.method;
 
       // 添加语言信息到响应头
-      res.setHeader('X-Language', req.language);
-      res.setHeader('X-Language-Confidence', req.languageConfidence);
-      res.setHeader('X-Language-Detection-Method', req.languageDetectionMethod);
+      res.setHeader("X-Language", req.language);
+      res.setHeader("X-Language-Confidence", req.languageConfidence);
+      res.setHeader("X-Language-Detection-Method", req.languageDetectionMethod);
 
       // 保存原始的json方法
       const originalJson = res.json.bind(res);
 
       // 重写json方法以支持本地化
-      res.json = async function (data) {
+      res.json = async (data) => {
         try {
           // 检查是否需要本地化
           const shouldLocalize = shouldLocalizeResponse(req, res, data);
 
           if (shouldLocalize) {
             // 本地化响应数据
-            const localizedData = await multilingualManager.localizeResponse(data, req.language, {
-              userId: req.headers['x-user-id'],
-              requestId: req.headers['x-request-id'],
-              endpoint: req.path,
-            });
+            const localizedData = await multilingualManager.localizeResponse(
+              data,
+              req.language,
+              {
+                userId: req.headers["x-user-id"],
+                requestId: req.headers["x-request-id"],
+                endpoint: req.path,
+              },
+            );
 
             // 添加本地化元数据
             if (options.includeMetadata !== false) {
@@ -65,7 +69,7 @@ function localizationMiddleware(options = {}) {
             return originalJson(data);
           }
         } catch (error) {
-          console.error('响应本地化失败:', error);
+          console.error("响应本地化失败:", error);
           // 本地化失败时返回原始数据
           return originalJson(data);
         }
@@ -75,18 +79,22 @@ function localizationMiddleware(options = {}) {
       const originalSend = res.send.bind(res);
 
       // 重写send方法以支持本地化
-      res.send = async function (data) {
+      res.send = async (data) => {
         try {
           // 如果是JSON数据，尝试本地化
-          if (typeof data === 'object' && data !== null) {
+          if (typeof data === "object" && data !== null) {
             const shouldLocalize = shouldLocalizeResponse(req, res, data);
 
             if (shouldLocalize) {
-              const localizedData = await multilingualManager.localizeResponse(data, req.language, {
-                userId: req.headers['x-user-id'],
-                requestId: req.headers['x-request-id'],
-                endpoint: req.path,
-              });
+              const localizedData = await multilingualManager.localizeResponse(
+                data,
+                req.language,
+                {
+                  userId: req.headers["x-user-id"],
+                  requestId: req.headers["x-request-id"],
+                  endpoint: req.path,
+                },
+              );
 
               return originalSend(JSON.stringify(localizedData));
             }
@@ -94,23 +102,31 @@ function localizationMiddleware(options = {}) {
 
           return originalSend(data);
         } catch (error) {
-          console.error('响应本地化失败:', error);
+          console.error("响应本地化失败:", error);
           return originalSend(data);
         }
       };
 
       // 添加本地化助手方法到响应对象
-      res.localize = async (text, fromLanguage = 'en-US') => {
-        return await multilingualManager.translate(text, fromLanguage, req.language);
+      res.localize = async (text, fromLanguage = "en-US") => {
+        return await multilingualManager.translate(
+          text,
+          fromLanguage,
+          req.language,
+        );
       };
 
-      res.getLocalizedResource = async (key, namespace = 'common') => {
-        return await multilingualManager.getLocalizedResource(key, req.language, namespace);
+      res.getLocalizedResource = async (key, namespace = "common") => {
+        return await multilingualManager.getLocalizedResource(
+          key,
+          req.language,
+          namespace,
+        );
       };
 
       next();
     } catch (error) {
-      console.error('本地化中间件错误:', error);
+      console.error("本地化中间件错误:", error);
       // 中间件错误不应该阻塞请求处理
       next();
     }
@@ -122,39 +138,39 @@ function localizationMiddleware(options = {}) {
  */
 function shouldLocalizeResponse(req, res, data) {
   // 检查是否为API响应
-  if (!req.path.startsWith('/api') && !req.path.startsWith('/v1')) {
+  if (!req.path.startsWith("/api") && !req.path.startsWith("/v1")) {
     return false;
   }
 
   // 检查是否为JSON响应
-  const contentType = res.getHeader('content-type');
-  if (!contentType || !contentType.includes('application/json')) {
+  const contentType = res.getHeader("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
     return false;
   }
 
   // 检查是否为成功响应
-  if (data && typeof data === 'object' && data.success === false) {
+  if (data && typeof data === "object" && data.success === false) {
     // 错误响应也需要本地化错误消息
     return true;
   }
 
   // 检查请求头是否明确要求本地化
-  if (req.headers['x-localize'] === 'true' || req.query.localize === 'true') {
+  if (req.headers["x-localize"] === "true" || req.query.localize === "true") {
     return true;
   }
 
   // 检查请求头是否明确禁用本地化
-  if (req.headers['x-localize'] === 'false' || req.query.localize === 'false') {
+  if (req.headers["x-localize"] === "false" || req.query.localize === "false") {
     return false;
   }
 
   // 检查用户语言是否不是默认语言
-  if (req.language && req.language !== 'en-US') {
+  if (req.language && req.language !== "en-US") {
     return true;
   }
 
   // 检查响应数据是否包含需要翻译的文本
-  if (data && typeof data === 'object') {
+  if (data && typeof data === "object") {
     return containsTranslatableText(data);
   }
 
@@ -172,31 +188,35 @@ function containsTranslatableText(obj, depth = 0) {
     // 跳过不需要翻译的字段
     if (
       [
-        'id',
-        'userId',
-        'email',
-        'phone',
-        'url',
-        'code',
-        'status',
-        'timestamp',
-        'createdAt',
-        'updatedAt',
-        'version',
+        "id",
+        "userId",
+        "email",
+        "phone",
+        "url",
+        "code",
+        "status",
+        "timestamp",
+        "createdAt",
+        "updatedAt",
+        "version",
       ].includes(key)
     ) {
       continue;
     }
 
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       // 检查是否包含英文字符且不是纯数字/布尔值
-      if (/[a-zA-Z]/.test(value) && !/^\d+$/.test(value) && !/^true|false$/i.test(value)) {
+      if (
+        /[a-zA-Z]/.test(value) &&
+        !/^\d+$/.test(value) &&
+        !/^true|false$/i.test(value)
+      ) {
         // 检查是否是较长的文本（避免翻译短的API字段名）
         if (value.length > 3) {
           return true;
         }
       }
-    } else if (typeof value === 'object' && value !== null) {
+    } else if (typeof value === "object" && value !== null) {
       if (containsTranslatableText(value, depth + 1)) {
         return true;
       }

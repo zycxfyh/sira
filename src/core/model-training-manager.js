@@ -1,7 +1,7 @@
-const crypto = require('crypto');
-const fs = require('fs').promises;
-const path = require('path');
-const { EventEmitter } = require('events');
+const crypto = require("node:crypto");
+const fs = require("node:fs").promises;
+const path = require("node:path");
+const { EventEmitter } = require("node:events");
 
 /**
  * 模型训练接口系统 - 借鉴Hugging Face、OpenAI Fine-tuning的设计理念
@@ -11,10 +11,15 @@ class ModelTrainingManager extends EventEmitter {
   constructor(options = {}) {
     super();
 
-    this.configPath = options.configPath || path.join(__dirname, '../config/model-training.json');
-    this.datasetsPath = options.datasetsPath || path.join(__dirname, '../data/datasets');
-    this.modelsPath = options.modelsPath || path.join(__dirname, '../data/models');
-    this.jobsPath = options.jobsPath || path.join(__dirname, '../data/training-jobs');
+    this.configPath =
+      options.configPath ||
+      path.join(__dirname, "../config/model-training.json");
+    this.datasetsPath =
+      options.datasetsPath || path.join(__dirname, "../data/datasets");
+    this.modelsPath =
+      options.modelsPath || path.join(__dirname, "../data/models");
+    this.jobsPath =
+      options.jobsPath || path.join(__dirname, "../data/training-jobs");
 
     this.trainingJobs = new Map(); // jobId -> training job
     this.datasets = new Map(); // datasetId -> dataset info
@@ -26,46 +31,46 @@ class ModelTrainingManager extends EventEmitter {
     // 默认训练提供商配置
     this.defaultProviders = {
       openai: {
-        name: 'OpenAI',
-        supportedModels: ['gpt-3.5-turbo', 'gpt-4'],
+        name: "OpenAI",
+        supportedModels: ["gpt-3.5-turbo", "gpt-4"],
         maxDatasetSize: 100000, // 最大数据集大小 (条目)
-        supportedFormats: ['jsonl'],
+        supportedFormats: ["jsonl"],
         pricing: {
-          'gpt-3.5-turbo': 0.008, // 美元/1000 tokens
-          'gpt-4': 0.06,
+          "gpt-3.5-turbo": 0.008, // 美元/1000 tokens
+          "gpt-4": 0.06,
         },
       },
       huggingface: {
-        name: 'Hugging Face',
-        supportedModels: ['bert-base', 'gpt2', 't5-small'],
+        name: "Hugging Face",
+        supportedModels: ["bert-base", "gpt2", "t5-small"],
         maxDatasetSize: 1000000,
-        supportedFormats: ['json', 'csv', 'txt'],
+        supportedFormats: ["json", "csv", "txt"],
         pricing: {
-          'bert-base': 0.001,
+          "bert-base": 0.001,
           gpt2: 0.002,
-          't5-small': 0.003,
+          "t5-small": 0.003,
         },
       },
       anthropic: {
-        name: 'Anthropic',
-        supportedModels: ['claude-2'],
+        name: "Anthropic",
+        supportedModels: ["claude-2"],
         maxDatasetSize: 50000,
-        supportedFormats: ['jsonl'],
+        supportedFormats: ["jsonl"],
         pricing: {
-          'claude-2': 0.016,
+          "claude-2": 0.016,
         },
       },
     };
 
     // 训练状态
     this.jobStatuses = {
-      queued: 'queued',
-      preparing: 'preparing',
-      training: 'training',
-      validating: 'validating',
-      completed: 'completed',
-      failed: 'failed',
-      cancelled: 'cancelled',
+      queued: "queued",
+      preparing: "preparing",
+      training: "training",
+      validating: "validating",
+      completed: "completed",
+      failed: "failed",
+      cancelled: "cancelled",
     };
   }
 
@@ -93,9 +98,11 @@ class ModelTrainingManager extends EventEmitter {
       this.startJobMonitor();
 
       this.initialized = true;
-      console.log(`✅ 模型训练管理器已初始化，支持 ${this.providers.size} 个训练提供商`);
+      console.log(
+        `✅ 模型训练管理器已初始化，支持 ${this.providers.size} 个训练提供商`,
+      );
     } catch (error) {
-      console.error('❌ 模型训练管理器初始化失败:', error.message);
+      console.error("❌ 模型训练管理器初始化失败:", error.message);
       throw error;
     }
   }
@@ -120,8 +127,8 @@ class ModelTrainingManager extends EventEmitter {
       userId: jobConfig.userId,
       datasetId: jobConfig.datasetId,
       baseModel: jobConfig.baseModel,
-      provider: jobConfig.provider || 'openai',
-      status: 'queued',
+      provider: jobConfig.provider || "openai",
+      status: "queued",
       progress: 0,
 
       // 训练配置
@@ -136,10 +143,10 @@ class ModelTrainingManager extends EventEmitter {
 
       // 资源配置
       resources: {
-        gpuType: jobConfig.gpuType || 'auto',
+        gpuType: jobConfig.gpuType || "auto",
         gpuCount: jobConfig.gpuCount || 1,
         maxHours: jobConfig.maxHours || 24,
-        priority: jobConfig.priority || 'normal',
+        priority: jobConfig.priority || "normal",
         ...jobConfig.resources,
       },
 
@@ -169,7 +176,7 @@ class ModelTrainingManager extends EventEmitter {
     await this.saveConfigurations();
 
     console.log(`✅ 创建训练作业: ${jobId} - ${job.name}`);
-    this.emit('jobCreated', job);
+    this.emit("jobCreated", job);
 
     return job;
   }
@@ -189,8 +196,8 @@ class ModelTrainingManager extends EventEmitter {
     await fs.mkdir(datasetDir, { recursive: true });
 
     // 保存文件
-    const filePath = path.join(datasetDir, 'data.jsonl');
-    const fileHandle = await fs.open(filePath, 'w');
+    const filePath = path.join(datasetDir, "data.jsonl");
+    const fileHandle = await fs.open(filePath, "w");
     let totalRecords = 0;
     let totalSize = 0;
 
@@ -202,22 +209,25 @@ class ModelTrainingManager extends EventEmitter {
       // 简单估算记录数 (JSON Lines格式)
       const lines = chunk
         .toString()
-        .split('\n')
-        .filter(line => line.trim());
+        .split("\n")
+        .filter((line) => line.trim());
       totalRecords += lines.length;
     }
 
     await fileHandle.close();
 
     // 验证数据集
-    const validation = await this.validateDataset(filePath, datasetConfig.format || 'jsonl');
+    const validation = await this.validateDataset(
+      filePath,
+      datasetConfig.format || "jsonl",
+    );
 
     const dataset = {
       id: datasetId,
       name: datasetConfig.name,
       description: datasetConfig.description,
       userId: datasetConfig.userId,
-      format: datasetConfig.format || 'jsonl',
+      format: datasetConfig.format || "jsonl",
       size: totalSize,
       recordCount: totalRecords,
       filePath,
@@ -236,7 +246,7 @@ class ModelTrainingManager extends EventEmitter {
     await this.saveConfigurations();
 
     console.log(`✅ 上传数据集: ${datasetId} - ${dataset.recordCount} 条记录`);
-    this.emit('datasetUploaded', dataset);
+    this.emit("datasetUploaded", dataset);
 
     return dataset;
   }
@@ -250,7 +260,7 @@ class ModelTrainingManager extends EventEmitter {
       throw new Error(`训练作业 ${jobId} 不存在`);
     }
 
-    if (job.status !== 'queued') {
+    if (job.status !== "queued") {
       throw new Error(`作业状态不允许启动: ${job.status}`);
     }
 
@@ -260,23 +270,23 @@ class ModelTrainingManager extends EventEmitter {
     }
 
     // 更新作业状态
-    job.status = 'preparing';
+    job.status = "preparing";
     job.monitoring.startTime = new Date().toISOString();
     job.metadata.updatedAt = new Date().toISOString();
 
     await this.saveConfigurations();
 
     // 异步启动训练
-    this.startTrainingProcess(job).catch(error => {
+    this.startTrainingProcess(job).catch((error) => {
       console.error(`训练作业启动失败: ${jobId} - ${error.message}`);
-      job.status = 'failed';
+      job.status = "failed";
       job.monitoring.endTime = new Date().toISOString();
       job.metadata.updatedAt = new Date().toISOString();
       this.saveConfigurations();
     });
 
     console.log(`🚀 启动训练作业: ${jobId}`);
-    this.emit('jobStarted', job);
+    this.emit("jobStarted", job);
 
     return job;
   }
@@ -284,29 +294,29 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * 停止训练作业
    */
-  async stopTrainingJob(jobId, reason = 'manual') {
+  async stopTrainingJob(jobId, reason = "manual") {
     const job = this.trainingJobs.get(jobId);
     if (!job) {
       throw new Error(`训练作业 ${jobId} 不存在`);
     }
 
-    if (!['training', 'preparing', 'queued'].includes(job.status)) {
+    if (!["training", "preparing", "queued"].includes(job.status)) {
       throw new Error(`作业状态不允许停止: ${job.status}`);
     }
 
-    job.status = 'cancelled';
+    job.status = "cancelled";
     job.monitoring.endTime = new Date().toISOString();
     job.metadata.updatedAt = new Date().toISOString();
 
     // 如果正在训练，调用提供商API停止训练
-    if (job.status === 'training') {
+    if (job.status === "training") {
       await this.stopProviderTraining(job);
     }
 
     await this.saveConfigurations();
 
     console.log(`🛑 停止训练作业: ${jobId} (${reason})`);
-    this.emit('jobStopped', job);
+    this.emit("jobStopped", job);
 
     return job;
   }
@@ -326,7 +336,8 @@ class ModelTrainingManager extends EventEmitter {
       startTime: job.monitoring.startTime,
       estimatedEndTime: job.monitoring.startTime
         ? new Date(
-            new Date(job.monitoring.startTime).getTime() + job.resources.maxHours * 60 * 60 * 1000
+            new Date(job.monitoring.startTime).getTime() +
+              job.resources.maxHours * 60 * 60 * 1000,
           ).toISOString()
         : null,
       currentEpoch: job.monitoring.metrics.currentEpoch || 0,
@@ -351,7 +362,7 @@ class ModelTrainingManager extends EventEmitter {
     let { logs } = job.monitoring;
 
     if (level) {
-      logs = logs.filter(log => log.level === level);
+      logs = logs.filter((log) => log.level === level);
     }
 
     return {
@@ -370,7 +381,7 @@ class ModelTrainingManager extends EventEmitter {
       throw new Error(`训练作业 ${jobId} 不存在`);
     }
 
-    if (job.status !== 'completed') {
+    if (job.status !== "completed") {
       throw new Error(`作业未完成，无法部署: ${job.status}`);
     }
 
@@ -383,13 +394,13 @@ class ModelTrainingManager extends EventEmitter {
       baseModel: job.baseModel,
       provider: job.provider,
       userId: job.userId,
-      status: 'deploying',
+      status: "deploying",
 
       // 部署配置
       config: {
         endpoint: deploymentConfig.endpoint,
-        scaling: deploymentConfig.scaling || 'auto',
-        region: deploymentConfig.region || 'auto',
+        scaling: deploymentConfig.scaling || "auto",
+        region: deploymentConfig.region || "auto",
         ...deploymentConfig,
       },
 
@@ -406,16 +417,16 @@ class ModelTrainingManager extends EventEmitter {
         trainingJob: jobId,
         datasetId: job.datasetId,
         createdAt: new Date().toISOString(),
-        tags: [...(job.metadata.tags || []), 'fine-tuned'],
+        tags: [...(job.metadata.tags || []), "fine-tuned"],
       },
     };
 
     this.deployedModels.set(modelId, deployedModel);
 
     // 异步部署模型
-    this.deployModelToProvider(deployedModel).catch(error => {
+    this.deployModelToProvider(deployedModel).catch((error) => {
       console.error(`模型部署失败: ${modelId} - ${error.message}`);
-      deployedModel.status = 'failed';
+      deployedModel.status = "failed";
       deployedModel.metrics.error = error.message;
       this.saveConfigurations();
     });
@@ -423,7 +434,7 @@ class ModelTrainingManager extends EventEmitter {
     await this.saveConfigurations();
 
     console.log(`🚀 开始部署模型: ${modelId}`);
-    this.emit('modelDeploying', deployedModel);
+    this.emit("modelDeploying", deployedModel);
 
     return deployedModel;
   }
@@ -434,7 +445,7 @@ class ModelTrainingManager extends EventEmitter {
   getUserModels(userId) {
     const userModels = [];
 
-    for (const [modelId, model] of this.deployedModels) {
+    for (const [_modelId, model] of this.deployedModels) {
       if (model.userId === userId) {
         userModels.push({
           id: model.id,
@@ -469,7 +480,7 @@ class ModelTrainingManager extends EventEmitter {
     await this.saveConfigurations();
 
     console.log(`🗑️ 删除部署模型: ${modelId}`);
-    this.emit('modelDeleted', model);
+    this.emit("modelDeleted", model);
 
     return model;
   }
@@ -480,46 +491,48 @@ class ModelTrainingManager extends EventEmitter {
    * 生成作业ID
    */
   generateJobId() {
-    return `job_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `job_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 生成数据集ID
    */
   generateDatasetId() {
-    return `ds_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `ds_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 生成模型ID
    */
   generateModelId() {
-    return `model_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `model_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 验证作业配置
    */
   validateJobConfig(config) {
-    if (!config.name) throw new Error('作业名称不能为空');
-    if (!config.datasetId) throw new Error('数据集ID不能为空');
-    if (!config.baseModel) throw new Error('基础模型不能为空');
+    if (!config.name) throw new Error("作业名称不能为空");
+    if (!config.datasetId) throw new Error("数据集ID不能为空");
+    if (!config.baseModel) throw new Error("基础模型不能为空");
 
     // 验证提供商支持
-    const provider = this.providers.get(config.provider || 'openai');
+    const provider = this.providers.get(config.provider || "openai");
     if (!provider) throw new Error(`不支持的提供商: ${config.provider}`);
 
     if (!provider.supportedModels.includes(config.baseModel)) {
-      throw new Error(`提供商 ${config.provider} 不支持模型: ${config.baseModel}`);
+      throw new Error(
+        `提供商 ${config.provider} 不支持模型: ${config.baseModel}`,
+      );
     }
 
     // 验证训练参数
     if (config.epochs && (config.epochs < 1 || config.epochs > 100)) {
-      throw new Error('训练轮数必须在1-100之间');
+      throw new Error("训练轮数必须在1-100之间");
     }
 
     if (config.batchSize && (config.batchSize < 1 || config.batchSize > 256)) {
-      throw new Error('批次大小必须在1-256之间');
+      throw new Error("批次大小必须在1-256之间");
     }
   }
 
@@ -535,29 +548,31 @@ class ModelTrainingManager extends EventEmitter {
     };
 
     try {
-      const content = await fs.readFile(filePath, 'utf8');
-      const lines = content.split('\n').filter(line => line.trim());
+      const content = await fs.readFile(filePath, "utf8");
+      const lines = content.split("\n").filter((line) => line.trim());
 
       validation.recordCount = lines.length;
 
       // 验证格式
-      if (format === 'jsonl') {
+      if (format === "jsonl") {
         for (let i = 0; i < Math.min(lines.length, 10); i++) {
           try {
             JSON.parse(lines[i]);
           } catch (error) {
-            validation.errors.push(`第${i + 1}行JSON格式错误: ${error.message}`);
+            validation.errors.push(
+              `第${i + 1}行JSON格式错误: ${error.message}`,
+            );
           }
         }
       }
 
       // 检查数据集大小
       if (validation.recordCount < 10) {
-        validation.warnings.push('数据集过小，可能影响训练效果');
+        validation.warnings.push("数据集过小，可能影响训练效果");
       }
 
       if (validation.recordCount > 100000) {
-        validation.warnings.push('数据集较大，训练时间可能较长');
+        validation.warnings.push("数据集较大，训练时间可能较长");
       }
 
       validation.isValid = validation.errors.length === 0;
@@ -584,7 +599,12 @@ class ModelTrainingManager extends EventEmitter {
     const estimatedTokens = dataset.recordCount * job.config.maxTokens;
     const trainingMultiplier = 2; // 训练通常需要更多计算
 
-    return (estimatedTokens / 1000) * basePrice * trainingMultiplier * job.config.epochs;
+    return (
+      (estimatedTokens / 1000) *
+      basePrice *
+      trainingMultiplier *
+      job.config.epochs
+    );
   }
 
   /**
@@ -602,7 +622,7 @@ class ModelTrainingManager extends EventEmitter {
    */
   async checkRunningJobs() {
     for (const [jobId, job] of this.trainingJobs) {
-      if (['preparing', 'training', 'validating'].includes(job.status)) {
+      if (["preparing", "training", "validating"].includes(job.status)) {
         try {
           await this.updateJobStatus(job);
         } catch (error) {
@@ -619,7 +639,7 @@ class ModelTrainingManager extends EventEmitter {
     // 模拟训练过程 - 实际实现会调用相应提供商的API
     console.log(`🎯 开始训练作业: ${job.id}`);
 
-    job.status = 'training';
+    job.status = "training";
     await this.saveConfigurations();
 
     // 模拟训练进度
@@ -645,7 +665,7 @@ class ModelTrainingManager extends EventEmitter {
         // 10%概率添加日志
         job.monitoring.logs.push({
           timestamp: new Date().toISOString(),
-          level: 'info',
+          level: "info",
           message: `Epoch ${currentEpoch}/${job.config.epochs}, Loss: ${job.monitoring.metrics.loss.toFixed(4)}, Accuracy: ${(job.monitoring.metrics.accuracy * 100).toFixed(2)}%`,
         });
       }
@@ -655,26 +675,27 @@ class ModelTrainingManager extends EventEmitter {
       // 检查是否完成
       if (progress >= 100) {
         clearInterval(trainingInterval);
-        job.status = 'completed';
+        job.status = "completed";
         job.monitoring.endTime = new Date().toISOString();
-        job.monitoring.actualCost = job.monitoring.estimatedCost * (0.8 + Math.random() * 0.4); // 实际成本在80%-120%之间
+        job.monitoring.actualCost =
+          job.monitoring.estimatedCost * (0.8 + Math.random() * 0.4); // 实际成本在80%-120%之间
 
         await this.saveConfigurations();
 
         console.log(`✅ 训练作业完成: ${job.id}`);
-        this.emit('jobCompleted', job);
+        this.emit("jobCompleted", job);
       }
     }, 5000); // 每5秒更新一次
 
     // 设置超时检查
     setTimeout(
       async () => {
-        if (job.status === 'training') {
+        if (job.status === "training") {
           clearInterval(trainingInterval);
-          await this.stopTrainingJob(job.id, 'timeout');
+          await this.stopTrainingJob(job.id, "timeout");
         }
       },
-      job.resources.maxHours * 60 * 60 * 1000
+      job.resources.maxHours * 60 * 60 * 1000,
     );
   }
 
@@ -693,14 +714,14 @@ class ModelTrainingManager extends EventEmitter {
   async deployModelToProvider(model) {
     // 模拟部署过程
     setTimeout(async () => {
-      model.status = 'deployed';
+      model.status = "deployed";
       model.config.endpoint = `https://api.sira.ai/models/${model.id}`;
       model.metrics.deployedAt = new Date().toISOString();
 
       await this.saveConfigurations();
 
       console.log(`✅ 模型部署完成: ${model.id}`);
-      this.emit('modelDeployed', model);
+      this.emit("modelDeployed", model);
     }, 10000); // 10秒后部署完成
   }
 
@@ -725,7 +746,7 @@ class ModelTrainingManager extends EventEmitter {
    */
   async loadConfigurations() {
     try {
-      const data = await fs.readFile(this.configPath, 'utf8');
+      const data = await fs.readFile(this.configPath, "utf8");
       const config = JSON.parse(data);
 
       if (config.trainingJobs) {
@@ -746,8 +767,8 @@ class ModelTrainingManager extends EventEmitter {
         }
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载训练配置失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载训练配置失败:", error.message);
       }
     }
   }

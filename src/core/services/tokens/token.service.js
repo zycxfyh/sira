@@ -1,10 +1,10 @@
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const uuidv4 = require('uuid/v4');
+const jwt = require("jsonwebtoken");
+const fs = require("node:fs");
+const uuidv4 = require("uuid/v4");
 
-const tokenDao = require('./token.dao.js');
-const utils = require('../utils');
-const config = require('../../config');
+const tokenDao = require("./token.dao.js");
+const utils = require("../utils");
+const config = require("../../config");
 
 function getSecret() {
   if (!this._secret) {
@@ -17,27 +17,37 @@ function getSecret() {
 
 const s = {};
 
-s.save = function (tokenObj, options = {}) {
+s.save = (tokenObj, options = {}) => {
   let rt;
 
   if (!tokenObj.consumerId) {
-    return Promise.reject(new Error('invalid token args'));
+    return Promise.reject(new Error("invalid token args"));
   }
 
   if (options.refreshTokenOnly) {
-    const rt = createInternalToken(tokenObj, newUuid(), newUuid(), 'refresh_token');
+    const rt = createInternalToken(
+      tokenObj,
+      newUuid(),
+      newUuid(),
+      "refresh_token",
+    );
 
-    return tokenDao.save(rt, { type: 'refresh_token' }).then(() => {
+    return tokenDao.save(rt, { type: "refresh_token" }).then(() => {
       return { refresh_token: formExternalToken(rt) };
     });
   }
 
-  const at = createInternalToken(tokenObj, newUuid(), newUuid(), 'access_token');
+  const at = createInternalToken(
+    tokenObj,
+    newUuid(),
+    newUuid(),
+    "access_token",
+  );
   const tokenSavePromises = [tokenDao.save(at)];
 
   if (options.includeRefreshToken) {
-    rt = createInternalToken(tokenObj, newUuid(), newUuid(), 'refresh_token');
-    tokenSavePromises.push(tokenDao.save(rt, { type: 'refresh_token' }));
+    rt = createInternalToken(tokenObj, newUuid(), newUuid(), "refresh_token");
+    tokenSavePromises.push(tokenDao.save(rt, { type: "refresh_token" }));
   }
 
   return Promise.all(tokenSavePromises).then(() => {
@@ -49,10 +59,10 @@ s.save = function (tokenObj, options = {}) {
 };
 
 s.findOrSave = function (tokenObj, options = {}) {
-  return this.find(tokenObj, options).then(tokens => {
+  return this.find(tokenObj, options).then((tokens) => {
     if (tokens.access_token) {
       if (options.includeRefreshToken && !tokens.refresh_token) {
-        return this.save(tokenObj, { refreshTokenOnly: true }).then(rt => {
+        return this.save(tokenObj, { refreshTokenOnly: true }).then((rt) => {
           tokens.refresh_token = rt.refresh_token;
           return tokens;
         });
@@ -60,7 +70,7 @@ s.findOrSave = function (tokenObj, options = {}) {
     }
 
     if (tokens.refresh_token) {
-      return this.save(tokenObj).then(at => {
+      return this.save(tokenObj).then((at) => {
         tokens.access_token = at.access_token;
         return tokens;
       });
@@ -70,17 +80,21 @@ s.findOrSave = function (tokenObj, options = {}) {
   });
 };
 
-s.find = function (tokenObj, options = {}) {
+s.find = (tokenObj, options = {}) => {
   const tokenQueryCriteria = Object.assign({}, tokenObj);
 
   if (tokenQueryCriteria.scopes && Array.isArray(tokenQueryCriteria.scopes)) {
-    tokenQueryCriteria.scopes = JSON.stringify(tokenQueryCriteria.scopes.sort());
+    tokenQueryCriteria.scopes = JSON.stringify(
+      tokenQueryCriteria.scopes.sort(),
+    );
   }
 
   const findQueries = [tokenDao.find(tokenQueryCriteria)];
 
   if (options.includeRefreshToken) {
-    findQueries.push(tokenDao.find(tokenQueryCriteria, { type: 'refresh_token' }));
+    findQueries.push(
+      tokenDao.find(tokenQueryCriteria, { type: "refresh_token" }),
+    );
   }
 
   return Promise.all(findQueries).then(([accessToken, refreshToken]) => {
@@ -91,10 +105,10 @@ s.find = function (tokenObj, options = {}) {
   });
 };
 
-s.get = function (_token, options = {}) {
-  const tokenId = _token.split('|')[0];
+s.get = (_token, options = {}) => {
+  const tokenId = _token.split("|")[0];
 
-  return tokenDao.get(tokenId, options).then(token => {
+  return tokenDao.get(tokenId, options).then((token) => {
     if (!token) {
       return null;
     }
@@ -111,7 +125,7 @@ s.get = function (_token, options = {}) {
 };
 
 s.getTokenObject = function (refreshToken) {
-  return this.get(refreshToken, { type: 'refresh_token' }).then(rtObj => {
+  return this.get(refreshToken, { type: "refresh_token" }).then((rtObj) => {
     if (!rtObj) {
       return null;
     }
@@ -127,22 +141,21 @@ s.getTokenObject = function (refreshToken) {
   });
 };
 
-s.getTokensByConsumer = function (id, options) {
-  return tokenDao.getTokensByConsumer(id, options);
-};
+s.getTokensByConsumer = (id, options) =>
+  tokenDao.getTokensByConsumer(id, options);
 
 s.revoke = function (accessToken) {
-  return this.get(accessToken).then(token => {
+  return this.get(accessToken).then((token) => {
     if (!token) {
-      throw new Error('Token not found ' + token);
+      throw new Error(`Token not found ${token}`);
     }
 
     return tokenDao.revoke(token);
   });
 };
 
-s.createJWT = function (payload) {
-  return new Promise((resolve, reject) => {
+s.createJWT = (payload) =>
+  new Promise((resolve, reject) => {
     jwt.sign(
       payload,
       getSecret(),
@@ -158,15 +171,14 @@ s.createJWT = function (payload) {
           return reject(err);
         }
         return resolve(jwt);
-      }
+      },
     );
   });
-};
 
 const createInternalToken = (criteria, id, token, type) => {
   let timeToExpiry;
 
-  if (type === 'access_token') {
+  if (type === "access_token") {
     timeToExpiry = config.systemConfig.accessTokens.timeToExpiry;
   } else timeToExpiry = config.systemConfig.refreshTokens.timeToExpiry;
 
@@ -176,7 +188,7 @@ const createInternalToken = (criteria, id, token, type) => {
       tokenEncrypted: utils.encrypt(token),
       expiresAt: Date.now() + timeToExpiry,
     },
-    criteria
+    criteria,
   );
 
   if (internalTokenObj.scopes && Array.isArray(internalTokenObj.scopes)) {
@@ -187,13 +199,13 @@ const createInternalToken = (criteria, id, token, type) => {
   return internalTokenObj;
 };
 
-const formExternalToken = tokenObj => {
+const formExternalToken = (tokenObj) => {
   if (!tokenObj) return null;
-  return tokenObj.id.concat('|', utils.decrypt(tokenObj.tokenEncrypted));
+  return tokenObj.id.concat("|", utils.decrypt(tokenObj.tokenEncrypted));
 };
 
 const newUuid = () => {
-  return uuidv4().replace(new RegExp('-', 'g'), '');
+  return uuidv4().replace(/-/g, "");
 };
 
 module.exports = s;

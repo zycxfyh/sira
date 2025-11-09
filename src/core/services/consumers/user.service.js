@@ -1,37 +1,36 @@
-const uuidv4 = require('uuid/v4');
-const { validate } = require('../../schemas');
-const userDao = require('./user.dao.js');
-const applicationService = require('./application.service.js');
-const credentialService = require('../credentials/credential.service.js');
-const config = require('../../config');
-const utils = require('../utils');
+const uuidv4 = require("uuid/v4");
+const { validate } = require("../../schemas");
+const userDao = require("./user.dao.js");
+const applicationService = require("./application.service.js");
+const credentialService = require("../credentials/credential.service.js");
+const config = require("../../config");
+const utils = require("../utils");
 
-const SCHEMA = 'http://express-gateway.io/models/users.json';
+const SCHEMA = "http://express-gateway.io/models/users.json";
 
 const s = {};
 
-s.insert = function (user) {
-  return validateAndCreateUser(user).then(newUser => {
-    return userDao.insert(newUser).then(success => {
+s.insert = (user) =>
+  validateAndCreateUser(user).then((newUser) => {
+    return userDao.insert(newUser).then((success) => {
       if (success) {
-        newUser.isActive = newUser.isActive === 'true';
+        newUser.isActive = newUser.isActive === "true";
         return newUser;
-      } else return Promise.reject(new Error('insert user failed')); // TODO: replace with server error
+      } else return Promise.reject(new Error("insert user failed")); // TODO: replace with server error
     });
   });
-};
 
-s.get = function (userId, options) {
-  if (!userId || !typeof userId === 'string') {
+s.get = (userId, options) => {
+  if (!userId || !typeof userId === "string") {
     return false;
   }
 
-  return userDao.getUserById(userId).then(user => {
+  return userDao.getUserById(userId).then((user) => {
     if (!user) {
       return false;
     }
 
-    user.isActive = user.isActive === 'true';
+    user.isActive = user.isActive === "true";
     if (!options || !options.includePassword) {
       delete user.password;
     }
@@ -39,55 +38,55 @@ s.get = function (userId, options) {
   });
 };
 
-s.findAll = function (query) {
-  return userDao.findAll(query).then(data => {
+s.findAll = (query) =>
+  userDao.findAll(query).then((data) => {
     data.users = data.users || [];
-    data.users.forEach(u => {
-      u.isActive = u.isActive === 'true';
+    data.users.forEach((u) => {
+      u.isActive = u.isActive === "true";
     });
     return data;
   });
-};
 
 s.find = function (username, options) {
-  if (!username || !typeof username === 'string') {
-    return Promise.reject(new Error('invalid username')); // TODO: replace with validation error
+  if (!username || !typeof username === "string") {
+    return Promise.reject(new Error("invalid username")); // TODO: replace with validation error
   }
 
-  return userDao.find(username).then(userId => {
+  return userDao.find(username).then((userId) => {
     return userId ? this.get(userId, options) : false;
   });
 };
 
-s.findByUsernameOrId = function (value) {
-  return s.find(value).then(user => {
+s.findByUsernameOrId = (value) =>
+  s.find(value).then((user) => {
     if (user) {
       return user;
     }
     return s.get(value);
   });
-};
 
 s.update = function (userId, _props) {
   if (!_props || !userId) {
-    return Promise.reject(new Error('invalid user id')); // TODO: replace with validation error
+    return Promise.reject(new Error("invalid user id")); // TODO: replace with validation error
   }
   return this.get(userId) // validate user exists
-    .then(user => {
+    .then((user) => {
       if (!user) {
         return false;
       } // user does not exist
 
       delete _props.username;
       return validateUpdateToUserProperties(_props)
-        .then(updatedUserProperties => {
+        .then((updatedUserProperties) => {
           if (updatedUserProperties) {
             utils.appendUpdatedAt(updatedUserProperties);
             return userDao.update(userId, updatedUserProperties);
           } else return true; // there are no properties to update
         })
-        .then(updated => {
-          return updated ? true : Promise.reject(new Error('user update failed')); // TODO: replace with server error
+        .then((updated) => {
+          return updated
+            ? true
+            : Promise.reject(new Error("user update failed")); // TODO: replace with server error
         });
     });
 };
@@ -95,10 +94,12 @@ s.update = function (userId, _props) {
 s.deactivate = function (id) {
   return this.get(id) // make sure user exists
     .then(() => {
-      return userDao.deactivate(id).then(() => applicationService.deactivateAll(id)); // Cascade deactivate all applications associated with the user
+      return userDao
+        .deactivate(id)
+        .then(() => applicationService.deactivateAll(id)); // Cascade deactivate all applications associated with the user
     })
     .then(() => true)
-    .catch(() => Promise.reject(new Error('failed to deactivate user')));
+    .catch(() => Promise.reject(new Error("failed to deactivate user")));
 };
 
 s.activate = function (id) {
@@ -107,17 +108,17 @@ s.activate = function (id) {
       return userDao.activate(id);
     })
     .then(() => true)
-    .catch(() => Promise.reject(new Error('failed to activate user')));
+    .catch(() => Promise.reject(new Error("failed to activate user")));
 };
 
 s.remove = function (userId) {
   return this.get(userId) // validate user exists
-    .then(user => Promise.all([user, !user ? false : userDao.remove(userId)]))
+    .then((user) => Promise.all([user, !user ? false : userDao.remove(userId)]))
     .then(([user, userDeleted]) => {
       if (!user) {
         return false;
       } else if (user && !userDeleted) {
-        throw new Error('user delete failed');
+        throw new Error("user delete failed");
       } else {
         return Promise.all([
           applicationService.removeAll(userId), // Cascade delete all apps associated with user
@@ -137,14 +138,18 @@ function validateAndCreateUser(_user) {
 
   return s
     .find(_user.username) // Ensure username is unique
-    .then(exists => {
+    .then((exists) => {
       if (exists) {
-        throw new Error('username already exists');
+        throw new Error("username already exists");
       }
       return _user;
     })
-    .then(newUser => {
-      const baseUserProps = { isActive: 'true', username: _user.username, id: uuidv4() };
+    .then((newUser) => {
+      const baseUserProps = {
+        isActive: "true",
+        username: _user.username,
+        id: uuidv4(),
+      };
       if (newUser) {
         user = Object.assign(baseUserProps, newUser);
       } else user = baseUserProps;
@@ -161,16 +166,17 @@ function validateUpdateToUserProperties(userProperties) {
 
   if (
     !Object.keys(userProperties).every(
-      key => typeof key === 'string' && config.models.users.properties[key]
+      (key) => typeof key === "string" && config.models.users.properties[key],
     )
   ) {
-    return Promise.reject(new Error('one or more properties is invalid')); // TODO: replace with validation error
+    return Promise.reject(new Error("one or more properties is invalid")); // TODO: replace with validation error
   }
 
   for (const prop in userProperties) {
     if (config.models.users.properties[prop].isMutable !== false) {
       updatedUserProperties[prop] = userProperties[prop];
-    } else return Promise.reject(new Error('one or more properties is immutable')); // TODO: replace with validation error
+    } else
+      return Promise.reject(new Error("one or more properties is immutable")); // TODO: replace with validation error
   }
 
   return Object.keys(updatedUserProperties).length > 0

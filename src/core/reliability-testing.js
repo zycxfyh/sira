@@ -4,8 +4,8 @@
  * 测试系统在长时间运行下的稳定性和可靠性
  */
 
-const EventEmitter = require('events');
-const { performance } = require('perf_hooks');
+const EventEmitter = require("node:events");
+const { performance } = require("node:perf_hooks");
 
 /**
  * 可靠性测试工具
@@ -59,7 +59,7 @@ class ReliabilityTestingTool extends EventEmitter {
    * 初始化可靠性测试工具
    */
   async initialize() {
-    console.log('🔧 初始化可靠性测试工具');
+    console.log("🔧 初始化可靠性测试工具");
     await this.sloMonitor.initialize();
     await this.failureDetector.initialize();
     await this.recoveryTester.initialize();
@@ -71,12 +71,12 @@ class ReliabilityTestingTool extends EventEmitter {
   async runReliabilityTest(config = {}) {
     const {
       duration = this.options.testDuration,
-      scenarios = ['basic_health', 'load_sustained', 'failure_recovery'],
-      intensity = 'medium',
+      scenarios = ["basic_health", "load_sustained", "failure_recovery"],
+      intensity = "medium",
     } = config;
 
     if (this.isRunning) {
-      throw new Error('可靠性测试已在运行中');
+      throw new Error("可靠性测试已在运行中");
     }
 
     this.isRunning = true;
@@ -84,7 +84,7 @@ class ReliabilityTestingTool extends EventEmitter {
 
     console.log(`🔄 开始可靠性测试: ${duration / (24 * 60 * 60 * 1000)}天`);
 
-    this.emit('testStart', {
+    this.emit("testStart", {
       duration,
       scenarios,
       intensity,
@@ -92,8 +92,8 @@ class ReliabilityTestingTool extends EventEmitter {
 
     try {
       // 并行运行多个可靠性测试场景
-      const testPromises = scenarios.map(scenario =>
-        this.runReliabilityScenario(scenario, intensity, duration)
+      const testPromises = scenarios.map((scenario) =>
+        this.runReliabilityScenario(scenario, intensity, duration),
       );
 
       // 添加持续监控任务
@@ -103,12 +103,12 @@ class ReliabilityTestingTool extends EventEmitter {
 
       const results = this.generateReliabilityReport();
 
-      this.emit('testComplete', results);
+      this.emit("testComplete", results);
 
       return results;
     } catch (error) {
-      console.error('可靠性测试失败:', error.message);
-      this.emit('testError', error);
+      console.error("可靠性测试失败:", error.message);
+      this.emit("testError", error);
       throw error;
     } finally {
       await this.cleanup();
@@ -123,15 +123,15 @@ class ReliabilityTestingTool extends EventEmitter {
     console.log(`📋 运行可靠性场景: ${scenario} (${intensity})`);
 
     switch (scenario) {
-      case 'basic_health':
+      case "basic_health":
         return this.runBasicHealthTest(duration);
-      case 'load_sustained':
+      case "load_sustained":
         return this.runSustainedLoadTest(intensity, duration);
-      case 'failure_recovery':
+      case "failure_recovery":
         return this.runFailureRecoveryTest(duration);
-      case 'resource_leak':
+      case "resource_leak":
         return this.runResourceLeakTest(duration);
-      case 'network_stability':
+      case "network_stability":
         return this.runNetworkStabilityTest(duration);
       default:
         console.warn(`未知可靠性场景: ${scenario}`);
@@ -143,7 +143,7 @@ class ReliabilityTestingTool extends EventEmitter {
    * 基础健康测试
    */
   async runBasicHealthTest(duration) {
-    console.log('🏥 运行基础健康测试');
+    console.log("🏥 运行基础健康测试");
 
     const endTime = Date.now() + duration;
     const { checkInterval } = this.options;
@@ -153,13 +153,13 @@ class ReliabilityTestingTool extends EventEmitter {
       this.testStats.healthChecks.push(healthResult);
 
       if (!healthResult.healthy) {
-        this.recordOutage('health_check_failed', healthResult.error);
+        this.recordOutage("health_check_failed", healthResult.error);
       }
 
       await this.sleep(checkInterval);
     }
 
-    console.log('🏥 基础健康测试完成');
+    console.log("🏥 基础健康测试完成");
   }
 
   /**
@@ -194,14 +194,14 @@ class ReliabilityTestingTool extends EventEmitter {
       await this.sleep(interval);
     }
 
-    console.log('📊 持续负载测试完成');
+    console.log("📊 持续负载测试完成");
   }
 
   /**
    * 故障恢复测试
    */
   async runFailureRecoveryTest(duration) {
-    console.log('🔄 运行故障恢复测试');
+    console.log("🔄 运行故障恢复测试");
 
     const endTime = Date.now() + duration;
     const failureInterval = 5 * 60 * 1000; // 5分钟注入一次故障
@@ -221,7 +221,7 @@ class ReliabilityTestingTool extends EventEmitter {
         // 检查恢复状态
         const recoveryResult = await this.checkRecovery();
         if (!recoveryResult.recovered) {
-          this.recordOutage('recovery_failed', recoveryResult.error);
+          this.recordOutage("recovery_failed", recoveryResult.error);
         }
       }
 
@@ -230,14 +230,14 @@ class ReliabilityTestingTool extends EventEmitter {
       await this.sleep(this.options.checkInterval);
     }
 
-    console.log('🔄 故障恢复测试完成');
+    console.log("🔄 故障恢复测试完成");
   }
 
   /**
    * 资源泄漏测试
    */
   async runResourceLeakTest(duration) {
-    console.log('🧠 运行资源泄漏测试');
+    console.log("🧠 运行资源泄漏测试");
 
     const endTime = Date.now() + duration;
     const checkInterval = 2 * 60 * 1000; // 2分钟检查一次
@@ -262,8 +262,10 @@ class ReliabilityTestingTool extends EventEmitter {
 
       // 检查内存泄漏 (每2分钟增长超过10MB)
       if (memoryGrowth > 10 * 1024 * 1024) {
-        console.warn(`⚠️ 检测到潜在内存泄漏: +${(memoryGrowth / 1024 / 1024).toFixed(2)}MB`);
-        this.emit('potentialMemoryLeak', {
+        console.warn(
+          `⚠️ 检测到潜在内存泄漏: +${(memoryGrowth / 1024 / 1024).toFixed(2)}MB`,
+        );
+        this.emit("potentialMemoryLeak", {
           growth: memoryGrowth,
           timestamp: Date.now(),
         });
@@ -272,14 +274,14 @@ class ReliabilityTestingTool extends EventEmitter {
       lastMemoryCheck = currentMemory;
     }
 
-    console.log('🧠 资源泄漏测试完成');
+    console.log("🧠 资源泄漏测试完成");
   }
 
   /**
    * 网络稳定性测试
    */
   async runNetworkStabilityTest(duration) {
-    console.log('🌐 运行网络稳定性测试');
+    console.log("🌐 运行网络稳定性测试");
 
     const endTime = Date.now() + duration;
     const checkInterval = 30000; // 30秒检查一次
@@ -288,7 +290,7 @@ class ReliabilityTestingTool extends EventEmitter {
       const networkResult = await this.testNetworkConnectivity();
 
       if (!networkResult.stable) {
-        this.recordOutage('network_unstable', networkResult.error);
+        this.recordOutage("network_unstable", networkResult.error);
       }
 
       // 测试网络延迟
@@ -301,14 +303,14 @@ class ReliabilityTestingTool extends EventEmitter {
       await this.sleep(checkInterval);
     }
 
-    console.log('🌐 网络稳定性测试完成');
+    console.log("🌐 网络稳定性测试完成");
   }
 
   /**
    * 持续监控
    */
   async continuousMonitoring(duration) {
-    console.log('📊 开始持续监控');
+    console.log("📊 开始持续监控");
 
     const endTime = Date.now() + duration;
     const monitorInterval = 10000; // 10秒
@@ -320,25 +322,25 @@ class ReliabilityTestingTool extends EventEmitter {
       // 检查SLO违规
       const sloViolations = this.sloMonitor.checkViolations();
       if (sloViolations.length > 0) {
-        sloViolations.forEach(violation => {
+        sloViolations.forEach((violation) => {
           console.warn(`⚠️ SLO违规: ${violation.metric} - ${violation.message}`);
-          this.emit('sloViolation', violation);
+          this.emit("sloViolation", violation);
         });
       }
 
       // 故障检测
       const failures = await this.failureDetector.detectFailures();
       if (failures.length > 0) {
-        failures.forEach(failure => {
+        failures.forEach((failure) => {
           this.recordOutage(failure.type, failure.details);
-          this.emit('failureDetected', failure);
+          this.emit("failureDetected", failure);
         });
       }
 
       await this.sleep(monitorInterval);
     }
 
-    console.log('📊 持续监控完成');
+    console.log("📊 持续监控完成");
   }
 
   /**
@@ -346,8 +348,10 @@ class ReliabilityTestingTool extends EventEmitter {
    */
   async performHealthCheck() {
     try {
-      const axios = require('axios');
-      const response = await axios.get('http://localhost:8080/health', { timeout: 5000 });
+      const axios = require("axios");
+      const response = await axios.get("http://localhost:8080/health", {
+        timeout: 5000,
+      });
 
       const healthy = response.status === 200 && response.data.success;
 
@@ -373,18 +377,18 @@ class ReliabilityTestingTool extends EventEmitter {
    */
   async performAPICall() {
     try {
-      const axios = require('axios');
+      const axios = require("axios");
       const response = await axios.post(
-        'http://localhost:8080/chat/completions',
+        "http://localhost:8080/chat/completions",
         {
-          model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Hello' }],
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: "Hello" }],
           max_tokens: 50,
         },
         {
-          headers: { Authorization: 'Bearer test-key' },
+          headers: { Authorization: "Bearer test-key" },
           timeout: 30000,
-        }
+        },
       );
 
       return {
@@ -406,8 +410,10 @@ class ReliabilityTestingTool extends EventEmitter {
    */
   async testNetworkConnectivity() {
     try {
-      const axios = require('axios');
-      const response = await axios.get('https://httpbin.org/status/200', { timeout: 10000 });
+      const axios = require("axios");
+      const response = await axios.get("https://httpbin.org/status/200", {
+        timeout: 10000,
+      });
 
       return {
         stable: response.status === 200,
@@ -425,11 +431,11 @@ class ReliabilityTestingTool extends EventEmitter {
    * 测量网络延迟
    */
   async measureNetworkLatency() {
-    const axios = require('axios');
+    const axios = require("axios");
     const startTime = performance.now();
 
     try {
-      await axios.get('https://httpbin.org/delay/0.1', { timeout: 5000 });
+      await axios.get("https://httpbin.org/delay/0.1", { timeout: 5000 });
       const latency = performance.now() - startTime;
 
       return { latency };
@@ -442,14 +448,19 @@ class ReliabilityTestingTool extends EventEmitter {
    * 注入随机故障
    */
   async injectRandomFailure() {
-    const failures = ['network_timeout', 'service_restart', 'memory_pressure', 'cpu_overload'];
+    const failures = [
+      "network_timeout",
+      "service_restart",
+      "memory_pressure",
+      "cpu_overload",
+    ];
 
     const randomFailure = failures[Math.floor(Math.random() * failures.length)];
     console.log(`💣 注入故障: ${randomFailure}`);
 
     // 这里可以实现具体的故障注入逻辑
     // 为了演示，我们只是记录故障
-    this.recordOutage(`injected_${randomFailure}`, '测试故障注入');
+    this.recordOutage(`injected_${randomFailure}`, "测试故障注入");
   }
 
   /**
@@ -485,7 +496,7 @@ class ReliabilityTestingTool extends EventEmitter {
     const errorType = this.categorizeError(error);
     this.testStats.errorPatterns.set(
       errorType,
-      (this.testStats.errorPatterns.get(errorType) || 0) + 1
+      (this.testStats.errorPatterns.get(errorType) || 0) + 1,
     );
   }
 
@@ -497,7 +508,8 @@ class ReliabilityTestingTool extends EventEmitter {
       // 结束当前中断
       this.testStats.currentOutage.endTime = Date.now();
       this.testStats.currentOutage.duration =
-        this.testStats.currentOutage.endTime - this.testStats.currentOutage.startTime;
+        this.testStats.currentOutage.endTime -
+        this.testStats.currentOutage.startTime;
       this.testStats.outages.push(this.testStats.currentOutage);
     }
 
@@ -511,19 +523,19 @@ class ReliabilityTestingTool extends EventEmitter {
     };
 
     console.warn(`⚠️ 系统中断: ${type} - ${details}`);
-    this.emit('outageRecorded', this.testStats.currentOutage);
+    this.emit("outageRecorded", this.testStats.currentOutage);
   }
 
   /**
    * 分类错误
    */
   categorizeError(error) {
-    if (error.message.includes('timeout')) return 'timeout';
-    if (error.message.includes('ECONNREFUSED')) return 'connection_refused';
-    if (error.message.includes('ENOTFOUND')) return 'dns_error';
-    if (error.response?.status >= 500) return 'server_error';
-    if (error.response?.status >= 400) return 'client_error';
-    return 'unknown';
+    if (error.message.includes("timeout")) return "timeout";
+    if (error.message.includes("ECONNREFUSED")) return "connection_refused";
+    if (error.message.includes("ENOTFOUND")) return "dns_error";
+    if (error.response?.status >= 500) return "server_error";
+    if (error.response?.status >= 400) return "client_error";
+    return "unknown";
   }
 
   /**
@@ -531,13 +543,13 @@ class ReliabilityTestingTool extends EventEmitter {
    */
   getIntensityRPS(intensity) {
     switch (intensity) {
-      case 'low':
+      case "low":
         return 1;
-      case 'medium':
+      case "medium":
         return 5;
-      case 'high':
+      case "high":
         return 10;
-      case 'extreme':
+      case "extreme":
         return 20;
       default:
         return 5;
@@ -550,7 +562,10 @@ class ReliabilityTestingTool extends EventEmitter {
   generateReliabilityReport() {
     const duration = (Date.now() - this.startTime) / 1000; // 秒
     const totalDowntime =
-      this.testStats.outages.reduce((sum, outage) => sum + (outage.duration || 0), 0) / 1000; // 秒
+      this.testStats.outages.reduce(
+        (sum, outage) => sum + (outage.duration || 0),
+        0,
+      ) / 1000; // 秒
     const uptime = ((duration - totalDowntime) / duration) * 100;
 
     const errorRate =
@@ -586,7 +601,7 @@ class ReliabilityTestingTool extends EventEmitter {
         uptime,
         errorRate,
         avgResponseTime,
-        sloStatus
+        sloStatus,
       ),
     };
   }
@@ -594,33 +609,42 @@ class ReliabilityTestingTool extends EventEmitter {
   /**
    * 生成可靠性建议
    */
-  generateReliabilityRecommendations(uptime, errorRate, avgResponseTime, sloStatus) {
+  generateReliabilityRecommendations(
+    uptime,
+    errorRate,
+    avgResponseTime,
+    sloStatus,
+  ) {
     const recommendations = [];
 
     if (uptime < this.options.uptimeTarget) {
       recommendations.push(
-        `可用性未达到目标 ${this.options.uptimeTarget}%，当前: ${uptime.toFixed(2)}%。建议加强系统稳定性。`
+        `可用性未达到目标 ${this.options.uptimeTarget}%，当前: ${uptime.toFixed(2)}%。建议加强系统稳定性。`,
       );
     }
 
     if (errorRate > this.options.errorRateTarget) {
       recommendations.push(
-        `错误率超过目标 ${this.options.errorRateTarget}%，当前: ${errorRate.toFixed(2)}%。建议改进错误处理。`
+        `错误率超过目标 ${this.options.errorRateTarget}%，当前: ${errorRate.toFixed(2)}%。建议改进错误处理。`,
       );
     }
 
     if (avgResponseTime > this.options.responseTimeTarget) {
       recommendations.push(
-        `平均响应时间超过目标 ${this.options.responseTimeTarget}ms，当前: ${avgResponseTime.toFixed(2)}ms。建议优化性能。`
+        `平均响应时间超过目标 ${this.options.responseTimeTarget}ms，当前: ${avgResponseTime.toFixed(2)}ms。建议优化性能。`,
       );
     }
 
     if (this.testStats.outages.length > 5) {
-      recommendations.push('系统中断次数过多，建议检查系统架构和故障恢复机制。');
+      recommendations.push(
+        "系统中断次数过多，建议检查系统架构和故障恢复机制。",
+      );
     }
 
     if (sloStatus.violations > 0) {
-      recommendations.push(`存在 ${sloStatus.violations} 个SLO违规，建议立即采取纠正措施。`);
+      recommendations.push(
+        `存在 ${sloStatus.violations} 个SLO违规，建议立即采取纠正措施。`,
+      );
     }
 
     return recommendations;
@@ -630,21 +654,22 @@ class ReliabilityTestingTool extends EventEmitter {
    * 休眠工具函数
    */
   async sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
    * 清理测试环境
    */
   async cleanup() {
-    console.log('🧹 清理可靠性测试环境');
+    console.log("🧹 清理可靠性测试环境");
     this.isRunning = false;
 
     // 结束当前中断记录
     if (this.testStats.currentOutage) {
       this.testStats.currentOutage.endTime = Date.now();
       this.testStats.currentOutage.duration =
-        this.testStats.currentOutage.endTime - this.testStats.currentOutage.startTime;
+        this.testStats.currentOutage.endTime -
+        this.testStats.currentOutage.startTime;
       this.testStats.outages.push(this.testStats.currentOutage);
       this.testStats.currentOutage = null;
     }
@@ -657,9 +682,10 @@ class ReliabilityTestingTool extends EventEmitter {
     const duration = this.startTime ? Date.now() - this.startTime : 0;
     const totalDowntime = this.testStats.outages.reduce(
       (sum, outage) => sum + (outage.duration || 0),
-      0
+      0,
     );
-    const uptime = duration > 0 ? ((duration - totalDowntime) / duration) * 100 : 100;
+    const uptime =
+      duration > 0 ? ((duration - totalDowntime) / duration) * 100 : 100;
 
     return {
       isRunning: this.isRunning,
@@ -679,8 +705,8 @@ class ReliabilityTestingTool extends EventEmitter {
    */
   stop() {
     this.isRunning = false;
-    console.log('🛑 可靠性测试已停止');
-    this.emit('testStopped');
+    console.log("🛑 可靠性测试已停止");
+    this.emit("testStopped");
   }
 }
 
@@ -700,7 +726,7 @@ class SLOMonitor {
   }
 
   async initialize() {
-    console.log('🔧 初始化SLO监控器');
+    console.log("🔧 初始化SLO监控器");
   }
 
   async updateMetrics(stats) {
@@ -709,13 +735,19 @@ class SLOMonitor {
     const failedRequests = stats.failedRequests || 0;
     const totalResponseTime = stats.totalResponseTime || 0;
 
-    this.metrics.errorRate = totalRequests > 0 ? (failedRequests / totalRequests) * 100 : 0;
-    this.metrics.responseTime = totalRequests > 0 ? totalResponseTime / totalRequests : 0;
+    this.metrics.errorRate =
+      totalRequests > 0 ? (failedRequests / totalRequests) * 100 : 0;
+    this.metrics.responseTime =
+      totalRequests > 0 ? totalResponseTime / totalRequests : 0;
 
     // 计算可用性
     const totalTime = stats.startTime ? Date.now() - stats.startTime : 0;
-    const downtime = stats.outages.reduce((sum, outage) => sum + (outage.duration || 0), 0);
-    this.metrics.availability = totalTime > 0 ? ((totalTime - downtime) / totalTime) * 100 : 100;
+    const downtime = stats.outages.reduce(
+      (sum, outage) => sum + (outage.duration || 0),
+      0,
+    );
+    this.metrics.availability =
+      totalTime > 0 ? ((totalTime - downtime) / totalTime) * 100 : 100;
   }
 
   checkViolations() {
@@ -723,7 +755,7 @@ class SLOMonitor {
 
     if (this.metrics.availability < this.options.uptimeTarget) {
       violations.push({
-        metric: 'availability',
+        metric: "availability",
         target: this.options.uptimeTarget,
         current: this.metrics.availability,
         message: `可用性未达到目标: ${this.metrics.availability.toFixed(2)}% < ${this.options.uptimeTarget}%`,
@@ -732,7 +764,7 @@ class SLOMonitor {
 
     if (this.metrics.errorRate > this.options.errorRateTarget) {
       violations.push({
-        metric: 'error_rate',
+        metric: "error_rate",
         target: this.options.errorRateTarget,
         current: this.metrics.errorRate,
         message: `错误率超过目标: ${this.metrics.errorRate.toFixed(2)}% > ${this.options.errorRateTarget}%`,
@@ -741,7 +773,7 @@ class SLOMonitor {
 
     if (this.metrics.responseTime > this.options.responseTimeTarget) {
       violations.push({
-        metric: 'response_time',
+        metric: "response_time",
         target: this.options.responseTimeTarget,
         current: this.metrics.responseTime,
         message: `响应时间超过目标: ${this.metrics.responseTime.toFixed(2)}ms > ${this.options.responseTimeTarget}ms`,
@@ -766,16 +798,16 @@ class SLOMonitor {
 class FailureDetector {
   constructor() {
     this.failurePatterns = [
-      { type: 'response_time_spike', threshold: 5000, window: 60000 },
-      { type: 'error_rate_spike', threshold: 0.5, window: 300000 },
-      { type: 'memory_leak', threshold: 100 * 1024 * 1024, window: 3600000 },
-      { type: 'cpu_overload', threshold: 95, window: 300000 },
+      { type: "response_time_spike", threshold: 5000, window: 60000 },
+      { type: "error_rate_spike", threshold: 0.5, window: 300000 },
+      { type: "memory_leak", threshold: 100 * 1024 * 1024, window: 3600000 },
+      { type: "cpu_overload", threshold: 95, window: 300000 },
     ];
     this.history = new Map();
   }
 
   async initialize() {
-    console.log('🔧 初始化故障检测器');
+    console.log("🔧 初始化故障检测器");
   }
 
   async detectFailures() {
@@ -800,18 +832,18 @@ class FailureDetector {
     return failures;
   }
 
-  getRecentData(type, windowStart) {
+  getRecentData(_type, _windowStart) {
     // 这里应该从实际监控数据获取
     // 为了演示，返回模拟数据
     return [];
   }
 
-  checkThreshold(pattern, data) {
+  checkThreshold(_pattern, _data) {
     // 阈值检查逻辑
     return false; // 简化实现
   }
 
-  getActualValue(pattern, data) {
+  getActualValue(_pattern, _data) {
     // 获取实际值逻辑
     return 0; // 简化实现
   }
@@ -826,14 +858,14 @@ class RecoveryTester {
   }
 
   async initialize() {
-    console.log('🔧 初始化恢复测试器');
+    console.log("🔧 初始化恢复测试器");
   }
 
   async testRecovery() {
     // 恢复测试逻辑
     const test = {
       timestamp: Date.now(),
-      type: 'recovery_test',
+      type: "recovery_test",
       passed: true,
     };
 
@@ -841,14 +873,21 @@ class RecoveryTester {
   }
 
   getStats() {
-    const passed = this.recoveryTests.filter(t => t.passed).length;
+    const passed = this.recoveryTests.filter((t) => t.passed).length;
     return {
       totalTests: this.recoveryTests.length,
       passed,
       successRate:
-        this.recoveryTests.length > 0 ? ((passed / this.recoveryTests.length) * 100).toFixed(2) : 0,
+        this.recoveryTests.length > 0
+          ? ((passed / this.recoveryTests.length) * 100).toFixed(2)
+          : 0,
     };
   }
 }
 
-module.exports = { ReliabilityTestingTool, SLOMonitor, FailureDetector, RecoveryTester };
+module.exports = {
+  ReliabilityTestingTool,
+  SLOMonitor,
+  FailureDetector,
+  RecoveryTester,
+};

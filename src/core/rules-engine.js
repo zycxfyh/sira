@@ -1,7 +1,7 @@
-const crypto = require('crypto');
-const fs = require('fs').promises;
-const path = require('path');
-const vm = require('vm');
+const crypto = require("node:crypto");
+const fs = require("node:fs").promises;
+const path = require("node:path");
+const vm = require("node:vm");
 
 /**
  * 自定义规则引擎 - 借鉴Drools和Node Rules的设计理念
@@ -9,7 +9,8 @@ const vm = require('vm');
  */
 class RulesEngine {
   constructor(options = {}) {
-    this.configPath = options.configPath || path.join(__dirname, '../config/rules.json');
+    this.configPath =
+      options.configPath || path.join(__dirname, "../config/rules.json");
     this.rules = new Map(); // ruleId -> rule配置
     this.ruleSets = new Map(); // ruleSetId -> ruleSet配置
     this.executionHistory = new Map(); // ruleId -> 执行历史
@@ -39,10 +40,10 @@ class RulesEngine {
 
       this.initialized = true;
       console.log(
-        `✅ 规则引擎已初始化，加载了 ${this.rules.size} 个规则和 ${this.ruleSets.size} 个规则集`
+        `✅ 规则引擎已初始化，加载了 ${this.rules.size} 个规则和 ${this.ruleSets.size} 个规则集`,
       );
     } catch (error) {
-      console.error('❌ 规则引擎初始化失败:', error.message);
+      console.error("❌ 规则引擎初始化失败:", error.message);
       throw error;
     }
   }
@@ -104,7 +105,7 @@ class RulesEngine {
       name: ruleSetConfig.name,
       description: ruleSetConfig.description,
       rules: ruleSetConfig.rules || [], // 规则ID列表
-      executionMode: ruleSetConfig.executionMode || 'firstMatch', // firstMatch, allMatches, priority
+      executionMode: ruleSetConfig.executionMode || "firstMatch", // firstMatch, allMatches, priority
       enabled: ruleSetConfig.enabled !== false,
       tags: ruleSetConfig.tags || [],
       metadata: ruleSetConfig.metadata || {},
@@ -145,7 +146,11 @@ class RulesEngine {
       // 执行指定的规则集
       const ruleSet = this.ruleSets.get(ruleSetId);
       if (!ruleSet || !ruleSet.enabled) {
-        return { matched: false, results: [], executionTime: Date.now() - startTime };
+        return {
+          matched: false,
+          results: [],
+          executionTime: Date.now() - startTime,
+        };
       }
 
       // 根据规则集的执行模式获取规则
@@ -153,7 +158,7 @@ class RulesEngine {
     } else {
       // 执行所有启用的规则
       rulesToExecute = Array.from(this.rules.values())
-        .filter(rule => rule.enabled)
+        .filter((rule) => rule.enabled)
         .sort((a, b) => b.priority - a.priority); // 按优先级降序排序
     }
 
@@ -188,7 +193,11 @@ class RulesEngine {
           // 执行规则动作
           let actionResults = [];
           if (!dryRun) {
-            actionResults = await this.executeRuleActions(rule, context, matchResult);
+            actionResults = await this.executeRuleActions(
+              rule,
+              context,
+              matchResult,
+            );
           }
 
           results.push({
@@ -203,7 +212,7 @@ class RulesEngine {
           // 根据执行模式决定是否继续
           if (ruleSetId) {
             const ruleSet = this.ruleSets.get(ruleSetId);
-            if (ruleSet.executionMode === 'firstMatch') {
+            if (ruleSet.executionMode === "firstMatch") {
               break;
             }
           }
@@ -227,7 +236,8 @@ class RulesEngine {
     }
 
     const totalExecutionTime = Date.now() - startTime;
-    this.stats.averageExecutionTime = (this.stats.averageExecutionTime + totalExecutionTime) / 2;
+    this.stats.averageExecutionTime =
+      (this.stats.averageExecutionTime + totalExecutionTime) / 2;
     this.stats.lastExecutionTime = new Date().toISOString();
 
     // 保存统计信息
@@ -252,9 +262,15 @@ class RulesEngine {
     }
 
     // 不允许更新关键字段
-    const restrictedFields = ['id', 'createdAt', 'executionCount', 'successCount', 'failureCount'];
-    restrictedFields.forEach(field => {
-      if (updates.hasOwnProperty(field)) {
+    const restrictedFields = [
+      "id",
+      "createdAt",
+      "executionCount",
+      "successCount",
+      "failureCount",
+    ];
+    restrictedFields.forEach((field) => {
+      if (Object.hasOwn(updates, field)) {
         delete updates[field];
       }
     });
@@ -341,7 +357,7 @@ class RulesEngine {
     // 返回所有规则的统计
     const allStats = [];
     for (const [id, rule] of this.rules) {
-      const history = this.executionHistory.get(id) || [];
+      const _history = this.executionHistory.get(id) || [];
       allStats.push({
         ruleId: id,
         name: rule.name,
@@ -387,43 +403,44 @@ class RulesEngine {
    * 生成规则ID
    */
   generateRuleId() {
-    return `rule_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `rule_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 生成规则集ID
    */
   generateRuleSetId() {
-    return `ruleset_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `ruleset_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 验证规则配置
    */
   validateRuleConfig(rule) {
-    if (!rule.name) throw new Error('规则名称不能为空');
-    if (!Array.isArray(rule.conditions)) throw new Error('conditions必须是数组');
-    if (!Array.isArray(rule.actions)) throw new Error('actions必须是数组');
+    if (!rule.name) throw new Error("规则名称不能为空");
+    if (!Array.isArray(rule.conditions))
+      throw new Error("conditions必须是数组");
+    if (!Array.isArray(rule.actions)) throw new Error("actions必须是数组");
 
     if (rule.conditions.length === 0) {
-      throw new Error('至少需要一个条件');
+      throw new Error("至少需要一个条件");
     }
 
     if (rule.actions.length === 0) {
-      throw new Error('至少需要一个动作');
+      throw new Error("至少需要一个动作");
     }
 
     // 验证条件格式
     for (const condition of rule.conditions) {
       if (!condition.type || !condition.field) {
-        throw new Error('条件必须包含type和field字段');
+        throw new Error("条件必须包含type和field字段");
       }
     }
 
     // 验证动作格式
     for (const action of rule.actions) {
       if (!action.type) {
-        throw new Error('动作必须包含type字段');
+        throw new Error("动作必须包含type字段");
       }
     }
   }
@@ -432,7 +449,7 @@ class RulesEngine {
    * 编译条件表达式
    */
   compileConditions(conditions) {
-    return conditions.map(condition => {
+    return conditions.map((condition) => {
       try {
         return this.compileCondition(condition);
       } catch (error) {
@@ -448,11 +465,11 @@ class RulesEngine {
     const { type, field, operator, value, options = {} } = condition;
 
     switch (type) {
-      case 'field':
+      case "field":
         return this.compileFieldCondition(field, operator, value, options);
-      case 'expression':
+      case "expression":
         return this.compileExpressionCondition(field, options);
-      case 'script':
+      case "script":
         return this.compileScriptCondition(field, options);
       default:
         throw new Error(`不支持的条件类型: ${type}`);
@@ -463,7 +480,7 @@ class RulesEngine {
    * 编译字段条件
    */
   compileFieldCondition(field, operator, value, options) {
-    return context => {
+    return (context) => {
       const fieldValue = this.getFieldValue(context, field);
       return this.evaluateOperator(fieldValue, operator, value, options);
     };
@@ -472,9 +489,9 @@ class RulesEngine {
   /**
    * 编译表达式条件
    */
-  compileExpressionCondition(expression, options) {
+  compileExpressionCondition(expression, _options) {
     // 简化的表达式解析器，支持基本的比较和逻辑运算
-    return context => {
+    return (context) => {
       try {
         // 这里可以实现更复杂的表达式解析
         // 目前只支持简单的字段比较
@@ -490,7 +507,7 @@ class RulesEngine {
    * 编译脚本条件
    */
   compileScriptCondition(script, options) {
-    return context => {
+    return (_context) => {
       try {
         // 创建安全的执行环境
         const sandbox = {
@@ -504,7 +521,7 @@ class RulesEngine {
           ...sandbox,
           console,
           require: () => {
-            throw new Error('require() not allowed in sandbox');
+            throw new Error("require() not allowed in sandbox");
           },
         });
 
@@ -561,7 +578,11 @@ class RulesEngine {
 
     for (const action of rule.actions) {
       try {
-        const actionResult = await this.executeAction(action, context, matchResult);
+        const actionResult = await this.executeAction(
+          action,
+          context,
+          matchResult,
+        );
         results.push({
           type: action.type,
           success: true,
@@ -589,17 +610,17 @@ class RulesEngine {
     const { type, params = {} } = action;
 
     switch (type) {
-      case 'setField':
+      case "setField":
         return this.executeSetFieldAction(params, context);
-      case 'transform':
+      case "transform":
         return this.executeTransformAction(params, context);
-      case 'log':
+      case "log":
         return this.executeLogAction(params, context, matchResult);
-      case 'webhook':
+      case "webhook":
         return this.executeWebhookAction(params, context, matchResult);
-      case 'modifyRequest':
+      case "modifyRequest":
         return this.executeModifyRequestAction(params, context);
-      case 'custom':
+      case "custom":
         return this.executeCustomAction(params, context, matchResult);
       default:
         throw new Error(`不支持的动作类型: ${type}`);
@@ -610,11 +631,11 @@ class RulesEngine {
    * 获取字段值
    */
   getFieldValue(context, fieldPath) {
-    const parts = fieldPath.split('.');
+    const parts = fieldPath.split(".");
     let value = context;
 
     for (const part of parts) {
-      if (value && typeof value === 'object') {
+      if (value && typeof value === "object") {
         value = value[part];
       } else {
         return undefined;
@@ -627,51 +648,59 @@ class RulesEngine {
   /**
    * 评估操作符
    */
-  evaluateOperator(fieldValue, operator, expectedValue, options) {
+  evaluateOperator(fieldValue, operator, expectedValue, _options) {
     switch (operator) {
-      case 'equals':
-      case 'eq':
+      case "equals":
+      case "eq":
         return fieldValue === expectedValue;
-      case 'notEquals':
-      case 'ne':
+      case "notEquals":
+      case "ne":
         return fieldValue !== expectedValue;
-      case 'greaterThan':
-      case 'gt':
+      case "greaterThan":
+      case "gt":
         return fieldValue > expectedValue;
-      case 'greaterThanOrEqual':
-      case 'gte':
+      case "greaterThanOrEqual":
+      case "gte":
         return fieldValue >= expectedValue;
-      case 'lessThan':
-      case 'lt':
+      case "lessThan":
+      case "lt":
         return fieldValue < expectedValue;
-      case 'lessThanOrEqual':
-      case 'lte':
+      case "lessThanOrEqual":
+      case "lte":
         return fieldValue <= expectedValue;
-      case 'contains':
+      case "contains":
         return Array.isArray(fieldValue)
           ? fieldValue.includes(expectedValue)
-          : typeof fieldValue === 'string'
+          : typeof fieldValue === "string"
             ? fieldValue.includes(expectedValue)
             : false;
-      case 'notContains':
+      case "notContains":
         return Array.isArray(fieldValue)
           ? !fieldValue.includes(expectedValue)
-          : typeof fieldValue === 'string'
+          : typeof fieldValue === "string"
             ? !fieldValue.includes(expectedValue)
             : true;
-      case 'startsWith':
-        return typeof fieldValue === 'string' && fieldValue.startsWith(expectedValue);
-      case 'endsWith':
-        return typeof fieldValue === 'string' && fieldValue.endsWith(expectedValue);
-      case 'matches':
+      case "startsWith":
+        return (
+          typeof fieldValue === "string" && fieldValue.startsWith(expectedValue)
+        );
+      case "endsWith":
+        return (
+          typeof fieldValue === "string" && fieldValue.endsWith(expectedValue)
+        );
+      case "matches":
         return new RegExp(expectedValue).test(fieldValue);
-      case 'in':
-        return Array.isArray(expectedValue) && expectedValue.includes(fieldValue);
-      case 'notIn':
-        return Array.isArray(expectedValue) && !expectedValue.includes(fieldValue);
-      case 'exists':
+      case "in":
+        return (
+          Array.isArray(expectedValue) && expectedValue.includes(fieldValue)
+        );
+      case "notIn":
+        return (
+          Array.isArray(expectedValue) && !expectedValue.includes(fieldValue)
+        );
+      case "exists":
         return fieldValue !== undefined && fieldValue !== null;
-      case 'notExists':
+      case "notExists":
         return fieldValue === undefined || fieldValue === null;
       default:
         throw new Error(`不支持的操作符: ${operator}`);
@@ -681,11 +710,13 @@ class RulesEngine {
   /**
    * 评估简单表达式
    */
-  evaluateSimpleExpression(expression, context) {
+  evaluateSimpleExpression(expression, _context) {
     // 简化的表达式解析，实际应用中可以使用更强大的表达式引擎
     // 支持形如: user.tier == 'premium' && request.model == 'gpt-4'
-    const sanitizedExpression = expression.replace(/(\w+)/g, match => {
-      if (['&&', '||', '==', '!=', '>', '<', '>=', '<=', '(', ')'].includes(match)) {
+    const sanitizedExpression = expression.replace(/(\w+)/g, (match) => {
+      if (
+        ["&&", "||", "==", "!=", ">", "<", ">=", "<=", "(", ")"].includes(match)
+      ) {
         return match;
       }
       return `context.${match}`;
@@ -697,7 +728,7 @@ class RulesEngine {
         ...context,
         console,
         require: () => {
-          throw new Error('require() not allowed in expression');
+          throw new Error("require() not allowed in expression");
         },
       });
 
@@ -712,11 +743,11 @@ class RulesEngine {
    */
   getRulesFromRuleSet(ruleSet) {
     const rules = ruleSet.rules
-      .map(ruleId => this.rules.get(ruleId))
-      .filter(rule => rule && rule.enabled);
+      .map((ruleId) => this.rules.get(ruleId))
+      .filter((rule) => rule?.enabled);
 
     // 根据执行模式排序
-    if (ruleSet.executionMode === 'priority') {
+    if (ruleSet.executionMode === "priority") {
       rules.sort((a, b) => b.priority - a.priority);
     }
 
@@ -741,9 +772,9 @@ class RulesEngine {
    * 生成上下文指纹
    */
   generateContextFingerprint(context) {
-    const hash = crypto.createHash('md5');
+    const hash = crypto.createHash("md5");
     hash.update(JSON.stringify(context));
-    return hash.digest('hex').substring(0, 8);
+    return hash.digest("hex").substring(0, 8);
   }
 
   /**
@@ -778,7 +809,7 @@ class RulesEngine {
   }
 
   executeLogAction(params, context, matchResult) {
-    const { level = 'info', message, includeContext = false } = params;
+    const { level = "info", message, includeContext = false } = params;
     const logData = {
       message,
       ruleId: matchResult.metadata.ruleId,
@@ -790,12 +821,12 @@ class RulesEngine {
   }
 
   async executeWebhookAction(params, context, matchResult) {
-    const { url, method = 'POST', headers = {}, body } = params;
+    const { url, method = "POST", headers = {}, body } = params;
 
     // 触发webhook事件
     if (global.webhookManager) {
       await global.webhookManager.triggerEvent(
-        'rule.executed',
+        "rule.executed",
         {
           ruleId: matchResult.metadata.ruleId,
           ruleName: matchResult.metadata.ruleName,
@@ -803,8 +834,8 @@ class RulesEngine {
           result: matchResult,
         },
         {
-          source: 'rules-engine',
-        }
+          source: "rules-engine",
+        },
       );
     }
 
@@ -815,11 +846,14 @@ class RulesEngine {
     const { modifications } = params;
 
     for (const mod of modifications) {
-      if (mod.type === 'set') {
+      if (mod.type === "set") {
         this.setFieldValue(context, mod.field, mod.value);
-      } else if (mod.type === 'transform') {
+      } else if (mod.type === "transform") {
         const originalValue = this.getFieldValue(context, mod.field);
-        const transformedValue = this.applyTransform(originalValue, mod.transform);
+        const transformedValue = this.applyTransform(
+          originalValue,
+          mod.transform,
+        );
         this.setFieldValue(context, mod.field, transformedValue);
       }
     }
@@ -830,22 +864,22 @@ class RulesEngine {
   async executeCustomAction(params, context, matchResult) {
     const { function: func, args = [] } = params;
 
-    if (typeof func === 'function') {
+    if (typeof func === "function") {
       return await func(context, matchResult, ...args);
     }
 
-    throw new Error('自定义动作函数无效');
+    throw new Error("自定义动作函数无效");
   }
 
   // ==================== 工具方法 ====================
 
   setFieldValue(obj, fieldPath, value) {
-    const parts = fieldPath.split('.');
+    const parts = fieldPath.split(".");
     const lastPart = parts.pop();
     let current = obj;
 
     for (const part of parts) {
-      if (!current[part] || typeof current[part] !== 'object') {
+      if (!current[part] || typeof current[part] !== "object") {
         current[part] = {};
       }
       current = current[part];
@@ -858,20 +892,25 @@ class RulesEngine {
     const { type, params = {} } = transform;
 
     switch (type) {
-      case 'toLowerCase':
-        return typeof value === 'string' ? value.toLowerCase() : value;
-      case 'toUpperCase':
-        return typeof value === 'string' ? value.toUpperCase() : value;
-      case 'substring':
-        return typeof value === 'string' ? value.substring(params.start || 0, params.end) : value;
-      case 'replace':
-        return typeof value === 'string'
-          ? value.replace(new RegExp(params.pattern, 'g'), params.replacement || '')
+      case "toLowerCase":
+        return typeof value === "string" ? value.toLowerCase() : value;
+      case "toUpperCase":
+        return typeof value === "string" ? value.toUpperCase() : value;
+      case "substring":
+        return typeof value === "string"
+          ? value.substring(params.start || 0, params.end)
           : value;
-      case 'multiply':
-        return typeof value === 'number' ? value * (params.factor || 1) : value;
-      case 'add':
-        return typeof value === 'number' ? value + (params.value || 0) : value;
+      case "replace":
+        return typeof value === "string"
+          ? value.replace(
+              new RegExp(params.pattern, "g"),
+              params.replacement || "",
+            )
+          : value;
+      case "multiply":
+        return typeof value === "number" ? value * (params.factor || 1) : value;
+      case "add":
+        return typeof value === "number" ? value + (params.value || 0) : value;
       default:
         return value;
     }
@@ -881,7 +920,7 @@ class RulesEngine {
 
   async loadRuleConfigurations() {
     try {
-      const data = await fs.readFile(this.configPath, 'utf8');
+      const data = await fs.readFile(this.configPath, "utf8");
       const config = JSON.parse(data);
 
       if (config.rules) {
@@ -900,8 +939,8 @@ class RulesEngine {
         this.stats = { ...this.stats, ...config.stats };
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载规则配置失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载规则配置失败:", error.message);
       }
     }
   }

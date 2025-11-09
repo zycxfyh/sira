@@ -1,30 +1,30 @@
-const testHelper = require('../common/routing.helper');
-const sinon = require('sinon');
-const assert = require('assert');
-const Config = require('../../../src/core/config/config');
+const testHelper = require("../common/routing.helper");
+const sinon = require("sinon");
+const assert = require("node:assert");
+const Config = require("../../../core/config/config");
 const config = new Config();
 
 // there are several configuration ways to listen to all hosts
-describe('default config with multi step (multi action) policy', () => {
+describe("default config with multi step (multi action) policy", () => {
   const helper = testHelper();
   const spy = sinon.spy();
-  const handler = params => (req, res, next) => {
+  const handler = (params) => (_req, _res, next) => {
     spy(params);
     next();
   };
 
-  before('setup', () => {
+  before("setup", () => {
     const plugins = {
       policies: [
         {
-          name: 'test',
+          name: "test",
           policy: handler,
         },
         {
-          name: 'test-return',
+          name: "test-return",
           policy: () => (req, res) => {
             res.json({
-              result: 'test',
+              result: "test",
               hostname: req.hostname,
               url: req.url,
               apiEndpoint: req.egContext.apiEndpoint,
@@ -39,10 +39,10 @@ describe('default config with multi step (multi action) policy', () => {
       apiEndpoints: {
         test_default: {},
       },
-      policies: ['test', 'test-return'],
+      policies: ["test", "test-return"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['test_default'],
+          apiEndpoints: ["test_default"],
           policies: [
             {
               test: [
@@ -57,7 +57,7 @@ describe('default config with multi step (multi action) policy', () => {
                 },
               ],
             },
-            { 'test-return': null },
+            { "test-return": null },
           ],
         },
       },
@@ -65,25 +65,25 @@ describe('default config with multi step (multi action) policy', () => {
     return helper.setup({ config, plugins });
   });
 
-  after('cleanup', helper.cleanup);
+  after("cleanup", helper.cleanup);
 
-  beforeEach('reset', () => {
+  beforeEach("reset", () => {
     spy.resetHistory();
   });
 
-  ['/random/17/3', '/', '/admin'].forEach(url => {
-    it('should execute 2 policy steps for random host/path: ' + url, done => {
+  ["/random/17/3", "/", "/admin"].forEach((url) => {
+    it(`should execute 2 policy steps for random host/path: ${url}`, (done) => {
       helper.validateSuccess({
         setup: {
-          host: 'zu.io',
+          host: "zu.io",
           url,
         },
         test: {
-          host: 'zu.io',
+          host: "zu.io",
           url,
-          result: 'test',
+          result: "test",
         },
-      })(err => {
+      })((err) => {
         assert(spy.calledThrice);
         assert.strictEqual(spy.getCall(0).args[0].param, 1);
         assert.strictEqual(spy.getCall(1).args[0].param, 2);

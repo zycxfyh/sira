@@ -1,19 +1,19 @@
-const url = require('url');
-const should = require('should');
-const express = require('express');
-const request = require('superagent');
-const puppeteer = require('puppeteer');
+const url = require("node:url");
+const should = require("should");
+const express = require("express");
+const request = require("superagent");
+const puppeteer = require("puppeteer");
 
-const cliHelper = require('../common/cli.helper');
-const gwHelper = require('../common/gateway.helper');
+const cliHelper = require("../common/cli.helper");
+const gwHelper = require("../common/gateway.helper");
 
 let tempPath;
 
-const { findOpenPortNumbers } = require('../common/server-helper');
+const { findOpenPortNumbers } = require("../common/server-helper");
 
-describe('oauth2 authorization code grant type', () => {
-  const username = 'kate';
-  const state = 'ABC123xyz';
+describe("oauth2 authorization code grant type", () => {
+  const username = "kate";
+  const state = "ABC123xyz";
 
   let password = null;
   let clientID = null;
@@ -29,22 +29,22 @@ describe('oauth2 authorization code grant type', () => {
       admin: {},
       apiEndpoints: {
         api: {
-          host: 'localhost',
+          host: "localhost",
         },
         ping: {
-          path: '/not-found',
+          path: "/not-found",
         },
       },
-      policies: ['oauth2', 'proxy'],
+      policies: ["oauth2", "proxy"],
       pipelines: {
         ping: {
-          apiEndpoints: ['ping'],
+          apiEndpoints: ["ping"],
           policies: [
             {
               proxy: [
                 {
                   action: {
-                    serviceEndpoint: 'backend',
+                    serviceEndpoint: "backend",
                     changeOrigin: true,
                   },
                 },
@@ -53,7 +53,7 @@ describe('oauth2 authorization code grant type', () => {
           ],
         },
         default: {
-          apiEndpoints: ['api'],
+          apiEndpoints: ["api"],
           policies: [
             {
               oauth2: null,
@@ -62,7 +62,7 @@ describe('oauth2 authorization code grant type', () => {
               proxy: [
                 {
                   action: {
-                    serviceEndpoint: 'backend',
+                    serviceEndpoint: "backend",
                     changeOrigin: true,
                   },
                 },
@@ -78,12 +78,14 @@ describe('oauth2 authorization code grant type', () => {
         redirectPort = port;
         return generateRedirectServer(redirectPort);
       })
-      .then(server => {
+      .then((server) => {
         redirectServer = server;
       })
       .then(cliHelper.bootstrapFolder)
-      .then(dirInfo => gwHelper.startGatewayInstance({ dirInfo, gatewayConfig }))
-      .then(gwInfo => {
+      .then((dirInfo) =>
+        gwHelper.startGatewayInstance({ dirInfo, gatewayConfig }),
+      )
+      .then((gwInfo) => {
         tempPath = gwInfo.dirInfo.configDirectoryPath;
         gatewayProcess = gwInfo.gatewayProcess;
         backendServer = gwInfo.backendServers[0];
@@ -91,53 +93,60 @@ describe('oauth2 authorization code grant type', () => {
         adminPort = gwInfo.adminPort;
       })
       .then(() => {
-        const args = ['-p', `username=${username}`, '-p', 'firstname=Kate', '-p', 'lastname=Smith'];
+        const args = [
+          "-p",
+          `username=${username}`,
+          "-p",
+          "firstname=Kate",
+          "-p",
+          "lastname=Smith",
+        ];
 
         return createUser(args);
       })
       .then(() => {
-        const args = ['-c', username, '-t', 'basic-auth'];
+        const args = ["-c", username, "-t", "basic-auth"];
 
         return createCredential(args);
       })
-      .then(credentials => {
+      .then((credentials) => {
         password = credentials.password;
 
         const args = [
-          '-u',
+          "-u",
           username,
-          '-p',
-          'name=apptastic',
-          '-p',
+          "-p",
+          "name=apptastic",
+          "-p",
           `redirectUri=http://localhost:${redirectPort}/cb`,
         ];
 
         return createApp(args);
       })
-      .then(app => {
-        const args = ['-c', app.id, '-t', 'oauth2'];
+      .then((app) => {
+        const args = ["-c", app.id, "-t", "oauth2"];
 
         return createCredential(args);
       })
-      .then(credential => {
+      .then((credential) => {
         clientID = credential.id;
         clientSecret = credential.secret;
       });
   });
 
-  after(done => {
+  after((done) => {
     gatewayProcess.kill();
     backendServer.close(() => redirectServer.close(done));
   });
 
-  it('authorizes a valid user', () => {
+  it("authorizes a valid user", () => {
     const authURL = url.format({
-      protocol: 'http',
-      hostname: 'localhost',
+      protocol: "http",
+      hostname: "localhost",
       port: gatewayPort,
-      pathname: '/oauth2/authorize',
+      pathname: "/oauth2/authorize",
       query: {
-        response_type: 'code',
+        response_type: "code",
         client_id: clientID,
         state,
         redirect_uri: `http://localhost:${redirectPort}/cb`,
@@ -146,7 +155,7 @@ describe('oauth2 authorization code grant type', () => {
 
     const checkUnauthorized = new Promise((resolve, reject) => {
       request.get(`http://localhost:${gatewayPort}`).end((err, res) => {
-        if (!err) reject(new Error('Error should be defined'));
+        if (!err) reject(new Error("Error should be defined"));
         should(err).not.be.undefined();
         should(res.unauthorized).not.be.undefined();
         should(res.statusCode).be.eql(401);
@@ -156,24 +165,30 @@ describe('oauth2 authorization code grant type', () => {
 
     return checkUnauthorized
       .then(() => puppeteer.launch())
-      .then(browser => Promise.all([browser, browser.pages()]))
-      .then(([browser, [page]]) => Promise.all([browser, page, page.goto(authURL)]))
-      .then(([browser, page]) =>
-        Promise.all([browser, page, page.type('[name="username"]', username)])
+      .then((browser) => Promise.all([browser, browser.pages()]))
+      .then(([browser, [page]]) =>
+        Promise.all([browser, page, page.goto(authURL)]),
       )
       .then(([browser, page]) =>
-        Promise.all([browser, page, page.type('[name="password"]', password)])
+        Promise.all([browser, page, page.type('[name="username"]', username)]),
       )
-      .then(([browser, page]) => Promise.all([browser, page, page.click('[type="submit"]')]))
-      .then(([browser, page]) => Promise.all([browser, page, page.click('#allow')]))
+      .then(([browser, page]) =>
+        Promise.all([browser, page, page.type('[name="password"]', password)]),
+      )
+      .then(([browser, page]) =>
+        Promise.all([browser, page, page.click('[type="submit"]')]),
+      )
+      .then(([browser, page]) =>
+        Promise.all([browser, page, page.click("#allow")]),
+      )
       .then(([browser, page]) => Promise.all([page.url(), browser.close()]))
       .then(([pageUrl]) => {
         const parsedPageUrl = new URL(pageUrl);
         const urlParams = new URLSearchParams(parsedPageUrl.search);
-        const code = urlParams.get('code');
+        const code = urlParams.get("code");
 
         const params = {
-          grant_type: 'authorization_code',
+          grant_type: "authorization_code",
           client_id: clientID,
           client_secret: clientSecret,
           code,
@@ -183,19 +198,19 @@ describe('oauth2 authorization code grant type', () => {
         return request
           .post(`http://localhost:${gatewayPort}/oauth2/token`)
           .send(params)
-          .then(res => res.body.access_token);
+          .then((res) => res.body.access_token);
       })
-      .then(accessToken => {
+      .then((accessToken) => {
         return request
           .get(`http://localhost:${gatewayPort}`)
-          .set('Authorization', `Bearer ${accessToken}`);
+          .set("Authorization", `Bearer ${accessToken}`);
       })
-      .then(res => should(res.statusCode).be.eql(200));
+      .then((res) => should(res.statusCode).be.eql(200));
   });
 
   function createUser(args) {
     return cliHelper.runCLICommand({
-      cliArgs: ['users', 'create'].concat(args),
+      cliArgs: ["users", "create"].concat(args),
       adminPort,
       configDirectoryPath: tempPath,
     });
@@ -203,7 +218,7 @@ describe('oauth2 authorization code grant type', () => {
 
   function createCredential(args) {
     return cliHelper.runCLICommand({
-      cliArgs: ['credentials', 'create'].concat(args),
+      cliArgs: ["credentials", "create"].concat(args),
       adminPort,
       configDirectoryPath: tempPath,
     });
@@ -211,7 +226,7 @@ describe('oauth2 authorization code grant type', () => {
 
   function createApp(args) {
     return cliHelper.runCLICommand({
-      cliArgs: ['apps', 'create'].concat(args),
+      cliArgs: ["apps", "create"].concat(args),
       adminPort,
       configDirectoryPath: tempPath,
     });
@@ -220,9 +235,9 @@ describe('oauth2 authorization code grant type', () => {
   function generateRedirectServer(port) {
     const app = express();
 
-    app.get('/cb', (req, res) => res.sendStatus(200));
+    app.get("/cb", (_req, res) => res.sendStatus(200));
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const runningApp = app.listen(port, () => {
         resolve(runningApp);
       });

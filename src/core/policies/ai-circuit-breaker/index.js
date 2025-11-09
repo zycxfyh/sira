@@ -1,4 +1,4 @@
 module.exports = {
-  policy: require('./ai-circuit-breaker'),
-  schema: require('./schema.json'),
+  policy: require("./ai-circuit-breaker"),
+  schema: require("./schema.json"),
 };

@@ -6,17 +6,17 @@ metadata:
     app: sira-ai-gateway
 data:
   # Gateway configuration
-  EG_HTTP_PORT: "9090"
-  EG_ADMIN_PORT: "9999"
-  NODE_ENV: "production"
+  EG_HTTP_PORT: '9090'
+  EG_ADMIN_PORT: '9999'
+  NODE_ENV: 'production'
 
   # Redis configuration
-  EG_REDIS_HOST: "redis-service"
-  EG_REDIS_PORT: "6379"
+  EG_REDIS_HOST: 'redis-service'
+  EG_REDIS_PORT: '6379'
 
   # Security (these should be in secrets in production)
-  EG_CRYPTO_CIPHER_KEY: "your-production-cipher-key"
-  EG_SESSION_SECRET: "your-production-session-secret"
+  EG_CRYPTO_CIPHER_KEY: 'your-production-cipher-key'
+  EG_SESSION_SECRET: 'your-production-session-secret'
 
   # AI Provider configurations (should be in secrets)
   # OPENAI_API_KEY: "your-openai-key"

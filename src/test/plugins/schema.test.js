@@ -1,24 +1,24 @@
-const path = require('path');
-const should = require('should');
+const path = require("node:path");
+const should = require("should");
 
-const pluginsLoader = require('../../../src/core/plugins');
+const pluginsLoader = require("../../../core/plugins");
 
 // Caching fixture plugin, but redefining its properties for testing plugin load.
-const pluginName = 'express-gateway-plugin-test';
-const pluginDirectory = path.join(__dirname, '../fixtures', pluginName);
+const pluginName = "express-gateway-plugin-test";
+const pluginDirectory = path.join(__dirname, "../fixtures", pluginName);
 const testPlugin = require(pluginDirectory);
 
 testPlugin.schema = {
   $id: `http://express-gateway.io/schemas/plugin/${pluginName}.json`,
-  required: ['schema-test-param'],
+  required: ["schema-test-param"],
 };
 
-testPlugin.init = pluginContext => {
-  pluginContext.registerPolicy('schema-test-policy');
+testPlugin.init = (pluginContext) => {
+  pluginContext.registerPolicy("schema-test-policy");
 };
 
-describe('Plugin schema validation on load', () => {
-  it('fails loading when parameter undefined', () => {
+describe("Plugin schema validation on load", () => {
+  it("fails loading when parameter undefined", () => {
     const missingParameterConfig = {
       config: {
         systemConfig: {
@@ -32,17 +32,17 @@ describe('Plugin schema validation on load', () => {
     };
 
     const loadedPlugins = pluginsLoader.load(missingParameterConfig);
-    should(loadedPlugins).have.property('policies').empty();
+    should(loadedPlugins).have.property("policies").empty();
   });
 
-  it('loads plugin and registers policy successfully', () => {
+  it("loads plugin and registers policy successfully", () => {
     const config = {
       config: {
         systemConfig: {
           plugins: {
             test: {
               package: pluginDirectory,
-              'schema-test-param': 'defined',
+              "schema-test-param": "defined",
             },
           },
         },
@@ -50,6 +50,6 @@ describe('Plugin schema validation on load', () => {
     };
 
     const loadedPlugins = pluginsLoader.load(config);
-    should(loadedPlugins).have.property('policies', ['schema-test-policy']);
+    should(loadedPlugins).have.property("policies", ["schema-test-policy"]);
   });
 });

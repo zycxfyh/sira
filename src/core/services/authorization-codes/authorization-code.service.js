@@ -1,18 +1,18 @@
-const authCodeDao = require('./authorization-code.dao.js');
-const utils = require('../utils');
-const uuidv4 = require('uuid/v4');
-const config = require('../../config');
+const authCodeDao = require("./authorization-code.dao.js");
+const utils = require("../utils");
+const uuidv4 = require("uuid/v4");
+const config = require("../../config");
 
 const s = {};
 
-s.save = function (criteria) {
+s.save = (criteria) => {
   if (!criteria || !criteria.consumerId || !criteria.userId) {
-    return Promise.reject(new Error('Invalid arguments'));
+    return Promise.reject(new Error("Invalid arguments"));
   }
 
   let originalScopes;
   const code = {
-    id: uuidv4().replace(new RegExp('-', 'g'), ''),
+    id: uuidv4().replace(/-/g, ""),
     consumerId: criteria.consumerId,
     userId: criteria.userId,
     expiresAt: Date.now() + config.systemConfig.authorizationCodes.timeToExpiry,
@@ -29,9 +29,11 @@ s.save = function (criteria) {
 
   utils.appendCreatedAt(code);
 
-  return authCodeDao.save(code).then(res => {
+  return authCodeDao.save(code).then((res) => {
     if (!res) {
-      return Promise.reject(new Error('Failed to create an authorization code'));
+      return Promise.reject(
+        new Error("Failed to create an authorization code"),
+      );
     }
 
     if (code.scopes) {
@@ -40,14 +42,14 @@ s.save = function (criteria) {
   });
 };
 
-s.find = function (criteria) {
+s.find = (criteria) => {
   const codeQueryCriteria = Object.assign({}, criteria);
 
   if (codeQueryCriteria.scopes && Array.isArray(codeQueryCriteria.scopes)) {
     codeQueryCriteria.scopes = JSON.stringify(codeQueryCriteria.scopes.sort());
   }
 
-  return authCodeDao.find(codeQueryCriteria).then(code => {
+  return authCodeDao.find(codeQueryCriteria).then((code) => {
     if (!code) {
       return null;
     }

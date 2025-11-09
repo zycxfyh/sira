@@ -1,31 +1,31 @@
-const session = require('supertest-session');
-const should = require('should');
-const url = require('url');
-const qs = require('querystring');
+const session = require("supertest-session");
+const should = require("should");
+const _url = require("node:url");
+const qs = require("node:querystring");
 
-const app = require('./bootstrap');
-const services = require('../../../src/core/services');
-const { checkTokenResponse, createOAuthScenario } = require('./testUtils');
+const app = require("./bootstrap");
+const services = require("../../../core/services");
+const { checkTokenResponse, createOAuthScenario } = require("./testUtils");
 
 const tokenService = services.token;
 
-describe('Functional Test Authorization Code grant', () => {
+describe("Functional Test Authorization Code grant", () => {
   let fromDbApp, fromDbUser, refreshToken;
 
   before(() =>
     createOAuthScenario().then(([user, app]) => {
       fromDbUser = user;
       fromDbApp = app;
-    })
+    }),
   );
 
-  it('should grant access token if requesting without scopes', done => {
+  it("should grant access token if requesting without scopes", (done) => {
     const request = session(app);
     request
-      .get('/oauth2/authorize')
+      .get("/oauth2/authorize")
       .query({
         redirect_uri: fromDbApp.redirectUri,
-        response_type: 'code',
+        response_type: "code",
         client_id: fromDbApp.id,
       })
       .redirects(1)
@@ -33,30 +33,30 @@ describe('Functional Test Authorization Code grant', () => {
       .end((err, res) => {
         should.not.exist(err);
         res.redirects.length.should.equal(1);
-        res.redirects[0].should.containEql('/login');
+        res.redirects[0].should.containEql("/login");
         request
-          .post('/login')
+          .post("/login")
           .query({
             username: fromDbUser.username,
-            password: 'user-secret',
+            password: "user-secret",
           })
           .expect(302)
           .end((err, res) => {
             should.not.exist(err);
             should.exist(res.headers.location);
-            res.headers.location.should.containEql('/oauth2/authorize');
+            res.headers.location.should.containEql("/oauth2/authorize");
             request
-              .get('/oauth2/authorize')
+              .get("/oauth2/authorize")
               .query({
                 redirect_uri: fromDbApp.redirectUri,
-                response_type: 'code',
+                response_type: "code",
                 client_id: fromDbApp.id,
               })
               .expect(200)
               .end((err, res) => {
                 should.not.exist(err);
                 request
-                  .post('/oauth2/authorize/decision')
+                  .post("/oauth2/authorize/decision")
                   .query({
                     transaction_id: res.headers.transaction_id,
                   })
@@ -64,17 +64,19 @@ describe('Functional Test Authorization Code grant', () => {
                   .end((err, res) => {
                     should.not.exist(err);
                     should.exist(res.headers.location);
-                    res.headers.location.should.containEql(fromDbApp.redirectUri);
+                    res.headers.location.should.containEql(
+                      fromDbApp.redirectUri,
+                    );
                     const parsedUrl = new URL(res.headers.location);
                     const params = qs.parse(parsedUrl.search.slice(1));
                     should.exist(params.code);
                     request
-                      .post('/oauth2/token')
+                      .post("/oauth2/token")
                       .send({
-                        grant_type: 'authorization_code',
+                        grant_type: "authorization_code",
                         redirect_uri: fromDbApp.redirectUri,
                         client_id: fromDbApp.id,
-                        client_secret: 'app-secret',
+                        client_secret: "app-secret",
                         code: params.code,
                       })
                       .expect(200)
@@ -89,13 +91,13 @@ describe('Functional Test Authorization Code grant', () => {
       });
   });
 
-  it('should grant access token if requesting with scopes and scopes are authorized', done => {
+  it("should grant access token if requesting with scopes and scopes are authorized", (done) => {
     const request = session(app);
     request
-      .get('/oauth2/authorize')
+      .get("/oauth2/authorize")
       .query({
         redirect_uri: fromDbApp.redirectUri,
-        response_type: 'code',
+        response_type: "code",
         client_id: fromDbApp.id,
       })
       .redirects(1)
@@ -103,31 +105,31 @@ describe('Functional Test Authorization Code grant', () => {
       .end((err, res) => {
         should.not.exist(err);
         res.redirects.length.should.equal(1);
-        res.redirects[0].should.containEql('/login');
+        res.redirects[0].should.containEql("/login");
         request
-          .post('/login')
+          .post("/login")
           .query({
             username: fromDbUser.username,
-            password: 'user-secret',
+            password: "user-secret",
           })
           .expect(302)
           .end((err, res) => {
             should.not.exist(err);
             should.exist(res.headers.location);
-            res.headers.location.should.containEql('/oauth2/authorize');
+            res.headers.location.should.containEql("/oauth2/authorize");
             request
-              .get('/oauth2/authorize')
+              .get("/oauth2/authorize")
               .query({
                 redirect_uri: fromDbApp.redirectUri,
-                response_type: 'code',
+                response_type: "code",
                 client_id: fromDbApp.id,
-                scope: 'someScope',
+                scope: "someScope",
               })
               .expect(200)
               .end((err, res) => {
                 should.not.exist(err);
                 request
-                  .post('/oauth2/authorize/decision')
+                  .post("/oauth2/authorize/decision")
                   .query({
                     transaction_id: res.headers.transaction_id,
                   })
@@ -135,32 +137,36 @@ describe('Functional Test Authorization Code grant', () => {
                   .end((err, res) => {
                     should.not.exist(err);
                     should.exist(res.headers.location);
-                    res.headers.location.should.containEql(fromDbApp.redirectUri);
+                    res.headers.location.should.containEql(
+                      fromDbApp.redirectUri,
+                    );
                     const parsedUrl = new URL(res.headers.location);
                     const params = qs.parse(parsedUrl.search.slice(1));
                     should.exist(params.code);
                     request
-                      .post('/oauth2/token')
+                      .post("/oauth2/token")
                       .send({
-                        grant_type: 'authorization_code',
+                        grant_type: "authorization_code",
                         redirect_uri: fromDbApp.redirectUri,
                         client_id: fromDbApp.id,
-                        client_secret: 'app-secret',
+                        client_secret: "app-secret",
                         code: params.code,
                       })
                       .expect(200)
                       .end((err, res) => {
                         if (err) return done(err);
-                        checkTokenResponse(res.body, ['refresh_token']);
+                        checkTokenResponse(res.body, ["refresh_token"]);
                         refreshToken = res.body.refresh_token;
-                        tokenService.get(res.body.access_token).then(token => {
-                          should.exist(token);
-                          token.scopes.should.eql(['someScope']);
-                          [token.id, token.tokenDecrypted].should.eql(
-                            res.body.access_token.split('|')
-                          );
-                          done();
-                        });
+                        tokenService
+                          .get(res.body.access_token)
+                          .then((token) => {
+                            should.exist(token);
+                            token.scopes.should.eql(["someScope"]);
+                            [token.id, token.tokenDecrypted].should.eql(
+                              res.body.access_token.split("|"),
+                            );
+                            done();
+                          });
                       });
                   });
               });
@@ -168,38 +174,40 @@ describe('Functional Test Authorization Code grant', () => {
       });
   });
 
-  it('should grant access token in exchange of refresh token', done => {
+  it("should grant access token in exchange of refresh token", (done) => {
     const request = session(app);
 
     request
-      .post('/oauth2/token')
-      .set('Content-Type', 'application/json')
+      .post("/oauth2/token")
+      .set("Content-Type", "application/json")
       .send({
-        grant_type: 'refresh_token',
+        grant_type: "refresh_token",
         client_id: fromDbApp.id,
-        client_secret: 'app-secret',
+        client_secret: "app-secret",
         refresh_token: refreshToken,
       })
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
         checkTokenResponse(res.body);
-        tokenService.get(res.body.access_token).then(token => {
+        tokenService.get(res.body.access_token).then((token) => {
           should.exist(token);
-          token.scopes.should.eql(['someScope']);
-          [token.id, token.tokenDecrypted].should.eql(res.body.access_token.split('|'));
+          token.scopes.should.eql(["someScope"]);
+          [token.id, token.tokenDecrypted].should.eql(
+            res.body.access_token.split("|"),
+          );
           done();
         });
       });
   });
 
-  it('should not grant access token if consumer is not authorized to requested scopes', done => {
+  it("should not grant access token if consumer is not authorized to requested scopes", (done) => {
     const request = session(app);
     request
-      .get('/oauth2/authorize')
+      .get("/oauth2/authorize")
       .query({
         redirect_uri: fromDbApp.redirectUri,
-        response_type: 'code',
+        response_type: "code",
         client_id: fromDbApp.id,
       })
       .redirects(1)
@@ -207,25 +215,25 @@ describe('Functional Test Authorization Code grant', () => {
       .end((err, res) => {
         should.not.exist(err);
         res.redirects.length.should.equal(1);
-        res.redirects[0].should.containEql('/login');
+        res.redirects[0].should.containEql("/login");
         request
-          .post('/login')
+          .post("/login")
           .query({
             username: fromDbUser.username,
-            password: 'user-secret',
+            password: "user-secret",
           })
           .expect(302)
           .end((err, res) => {
             should.not.exist(err);
             should.exist(res.headers.location);
-            res.headers.location.should.containEql('/oauth2/authorize');
+            res.headers.location.should.containEql("/oauth2/authorize");
             request
-              .get('/oauth2/authorize')
+              .get("/oauth2/authorize")
               .query({
                 redirect_uri: fromDbApp.redirectUri,
-                response_type: 'code',
+                response_type: "code",
                 client_id: fromDbApp.id,
-                scope: 'someScope, unauthorizedScope',
+                scope: "someScope, unauthorizedScope",
               })
               .expect(403)
               .end(done);
@@ -233,15 +241,15 @@ describe('Functional Test Authorization Code grant', () => {
       });
   });
 
-  it('should not grant access token if code is expired', done => {
-    const config = require('../../../src/core/config');
+  it("should not grant access token if code is expired", (done) => {
+    const config = require("../../../core/config");
     config.systemConfig.authorizationCodes.timeToExpiry = 0;
     const request = session(app);
     request
-      .get('/oauth2/authorize')
+      .get("/oauth2/authorize")
       .query({
         redirect_uri: fromDbApp.redirectUri,
-        response_type: 'code',
+        response_type: "code",
         client_id: fromDbApp.id,
       })
       .redirects(1)
@@ -249,30 +257,30 @@ describe('Functional Test Authorization Code grant', () => {
       .end((err, res) => {
         should.not.exist(err);
         res.redirects.length.should.equal(1);
-        res.redirects[0].should.containEql('/login');
+        res.redirects[0].should.containEql("/login");
         request
-          .post('/login')
+          .post("/login")
           .query({
             username: fromDbUser.username,
-            password: 'user-secret',
+            password: "user-secret",
           })
           .expect(302)
           .end((err, res) => {
             should.not.exist(err);
             should.exist(res.headers.location);
-            res.headers.location.should.containEql('/oauth2/authorize');
+            res.headers.location.should.containEql("/oauth2/authorize");
             request
-              .get('/oauth2/authorize')
+              .get("/oauth2/authorize")
               .query({
                 redirect_uri: fromDbApp.redirectUri,
-                response_type: 'code',
+                response_type: "code",
                 client_id: fromDbApp.id,
               })
               .expect(200)
               .end((err, res) => {
                 should.not.exist(err);
                 request
-                  .post('/oauth2/authorize/decision')
+                  .post("/oauth2/authorize/decision")
                   .query({
                     transaction_id: res.headers.transaction_id,
                   })
@@ -280,21 +288,23 @@ describe('Functional Test Authorization Code grant', () => {
                   .end((err, res) => {
                     should.not.exist(err);
                     should.exist(res.headers.location);
-                    res.headers.location.should.containEql(fromDbApp.redirectUri);
+                    res.headers.location.should.containEql(
+                      fromDbApp.redirectUri,
+                    );
                     const parsedUrl = new URL(res.headers.location);
                     const params = qs.parse(parsedUrl.search.slice(1));
                     should.exist(params.code);
                     request
-                      .post('/oauth2/token')
+                      .post("/oauth2/token")
                       .send({
-                        grant_type: 'authorization_code',
+                        grant_type: "authorization_code",
                         redirect_uri: fromDbApp.redirectUri,
                         client_id: fromDbApp.id,
-                        client_secret: 'app-secret',
+                        client_secret: "app-secret",
                         code: params.code,
                       })
                       .expect(403)
-                      .end((err, res) => {
+                      .end((err, _res) => {
                         if (err) return done(err);
                         done();
                       });

@@ -3,28 +3,34 @@
 ## 5分钟内完成AI网关搭建
 
 ### 步骤1: 克隆项目
+
 ```bash
 git clone <repository-url>
 cd sira-ai-gateway
 ```
 
 ### 步骤2: 安装依赖
+
 ```bash
 npm install
 ```
 
 ### 步骤3: 运行配置向导
+
 ```bash
 node scripts/setup-config.js
 ```
+
 按照提示配置你的AI提供商和安全设置。
 
 ### 步骤4: 启动网关
+
 ```bash
 npm start
 ```
 
 ### 步骤5: 测试网关
+
 ```bash
 # 测试健康检查
 curl http://localhost:9090/health
@@ -45,6 +51,7 @@ curl -X POST http://localhost:9090/api/v1/ai/chat/completions \
 ```
 
 ### 步骤6: 访问管理界面
+
 打开浏览器访问: http://localhost:9999
 
 ---
@@ -52,10 +59,12 @@ curl -X POST http://localhost:9090/api/v1/ai/chat/completions \
 ## 🎯 配置选项
 
 ### 必需配置
+
 - **AI提供商**: 至少配置一个AI提供商 (OpenAI, Anthropic, 或 Azure OpenAI)
 - **API密钥**: 用于网关认证的安全密钥
 
 ### 可选配置
+
 - **Redis缓存**: 提高性能和降低成本
 - **监控**: Sentry错误追踪
 - **数据库**: PostgreSQL用于高级功能

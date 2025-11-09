@@ -1,7 +1,7 @@
-const should = require('should');
-const gateway = require('../../../src/core/gateway');
-const Config = require('../../../src/core/config/config');
-const testHelper = require('../common/routing.helper');
+const should = require("should");
+const gateway = require("../../../core/gateway");
+const Config = require("../../../core/config/config");
+const testHelper = require("../common/routing.helper");
 
 const config = new Config();
 config.gatewayConfig = {
@@ -10,17 +10,17 @@ config.gatewayConfig = {
   },
   apiEndpoints: {
     test_default: {
-      host: '*',
-      paths: ['/*'],
+      host: "*",
+      paths: ["/*"],
     },
   },
-  policies: ['test-policy'],
+  policies: ["test-policy"],
   pipelines: {
     pipeline1: {
-      apiEndpoints: ['test_default'],
+      apiEndpoints: ["test_default"],
       policies: [
         {
-          'test-policy': [
+          "test-policy": [
             {
               action: {
                 p1: 42,
@@ -33,85 +33,85 @@ config.gatewayConfig = {
   },
 };
 
-describe('gateway policy with plugins', () => {
+describe("gateway policy with plugins", () => {
   const helper = testHelper();
 
-  before('fires up a new gateway instance', () => {
+  before("fires up a new gateway instance", () => {
     return gateway({
       plugins: {
         policies: [
           {
-            name: 'test-policy',
+            name: "test-policy",
             policy(actionParams) {
-              return (req, res, next) => {
+              return (req, res, _next) => {
                 should(actionParams.p1).be.eql(42);
-                res.json({ hello: 'ok', url: req.url, actionParams });
+                res.json({ hello: "ok", url: req.url, actionParams });
               };
             },
           },
         ],
       },
       config,
-    }).then(srv => {
+    }).then((srv) => {
       helper.setupApp(srv.app);
       return srv;
     });
   });
 
-  after('cleanup', helper.cleanup);
+  after("cleanup", helper.cleanup);
 
   it(
-    'should allow first request for host',
+    "should allow first request for host",
     helper.validateSuccess({
       setup: {
-        url: '/',
+        url: "/",
         preflight: true,
       },
       test: {
-        url: '/',
+        url: "/",
       },
-    })
+    }),
   );
 });
 
-describe('gateway policy schema with plugins', () => {
+describe("gateway policy schema with plugins", () => {
   const helper = testHelper();
 
-  after('cleanup', helper.cleanup);
+  after("cleanup", helper.cleanup);
 
-  it('should setup policy with valid schema', () => {
+  it("should setup policy with valid schema", () => {
     return gateway({
       plugins: {
         policies: [
           {
-            name: 'test-policy',
+            name: "test-policy",
             schema: {
-              $id: 'http://express-gateway.io/schemas/policies/test-policy.json',
-              type: 'object',
+              $id: "http://express-gateway.io/schemas/policies/test-policy.json",
+              type: "object",
               properties: {
-                p1: { type: ['number'] },
+                p1: { type: ["number"] },
               },
-              required: ['p1'],
+              required: ["p1"],
             },
             policy(actionParams) {
-              return (req, res, next) => {
+              return (req, res, _next) => {
                 should(actionParams.p1).be.eql(42);
-                res.json({ hello: 'ok', url: req.url, actionParams });
+                res.json({ hello: "ok", url: req.url, actionParams });
               };
             },
           },
         ],
       },
       config,
-    }).then(srv => {
+    }).then((srv) => {
       helper.setupApp(srv.app);
     });
   });
 
-  it('should throw on policy schema validation', () => {
-    config.gatewayConfig.policies.push('test-policy-2');
+  it("should throw on policy schema validation", () => {
+    config.gatewayConfig.policies.push("test-policy-2");
     config.gatewayConfig.pipelines.pipeline1.policies.push({
-      'test-policy-2': [
+      "test-policy-2": [
         {
           action: {},
         },
@@ -122,13 +122,13 @@ describe('gateway policy schema with plugins', () => {
         plugins: {
           policies: [
             {
-              name: 'test-policy-2',
+              name: "test-policy-2",
               schema: {
-                type: 'object',
+                type: "object",
                 properties: {
-                  p2: { type: ['number'] },
+                  p2: { type: ["number"] },
                 },
-                required: ['p2'],
+                required: ["p2"],
               },
               policy() {
                 should.fail();
@@ -137,7 +137,7 @@ describe('gateway policy schema with plugins', () => {
           ],
         },
         config,
-      })
+      }),
     ).rejected();
   });
 });

@@ -2,7 +2,7 @@
 // Implements circuit breaker pattern for AI provider resilience
 // Uses Redis-backed circuit breaker state for cluster compatibility
 
-const db = require('../../db');
+const db = require("../../db");
 
 // Redis-backed Circuit Breaker implementation
 class RedisCircuitBreaker {
@@ -19,9 +19,9 @@ class RedisCircuitBreaker {
     this.nextAttemptKey = `circuit:${provider}:next_attempt`;
 
     this.states = {
-      CLOSED: 'closed',
-      OPEN: 'open',
-      HALF_OPEN: 'half_open',
+      CLOSED: "closed",
+      OPEN: "open",
+      HALF_OPEN: "half_open",
     };
   }
 
@@ -30,7 +30,10 @@ class RedisCircuitBreaker {
       const state = await db.get(this.stateKey);
       return state || this.states.CLOSED;
     } catch (error) {
-      this.logger.error(`Failed to get circuit state for ${this.provider}:`, error.message);
+      this.logger.error(
+        `Failed to get circuit state for ${this.provider}:`,
+        error.message,
+      );
       return this.states.CLOSED; // Fail closed
     }
   }
@@ -38,9 +41,14 @@ class RedisCircuitBreaker {
   async setState(state) {
     try {
       await db.set(this.stateKey, state);
-      this.logger.info(`Circuit breaker for ${this.provider} changed to ${state}`);
+      this.logger.info(
+        `Circuit breaker for ${this.provider} changed to ${state}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to set circuit state for ${this.provider}:`, error.message);
+      this.logger.error(
+        `Failed to set circuit state for ${this.provider}:`,
+        error.message,
+      );
     }
   }
 
@@ -61,18 +69,22 @@ class RedisCircuitBreaker {
         }
       }
     } catch (error) {
-      this.logger.error(`Failed to record success for ${this.provider}:`, error.message);
+      this.logger.error(
+        `Failed to record success for ${this.provider}:`,
+        error.message,
+      );
     }
   }
 
   async recordFailure() {
     try {
       const failures = await db.incr(this.failuresKey);
-      const successes = parseInt(await db.get(this.successesKey)) || 0;
+      const successes = parseInt(await db.get(this.successesKey), 10) || 0;
 
       // Calculate error rate
       const totalRequests = failures + successes;
-      const errorRate = totalRequests > 0 ? (failures / totalRequests) * 100 : 0;
+      const errorRate =
+        totalRequests > 0 ? (failures / totalRequests) * 100 : 0;
 
       if (errorRate >= this.config.errorThresholdPercentage) {
         // Open the circuit
@@ -80,9 +92,13 @@ class RedisCircuitBreaker {
         await db.setex(
           this.nextAttemptKey,
           Math.ceil(this.config.resetTimeout / 1000),
-          Date.now() + this.config.resetTimeout
+          Date.now() + this.config.resetTimeout,
         );
-        await db.setex(this.lastFailureKey, Math.ceil(this.config.resetTimeout / 1000), Date.now());
+        await db.setex(
+          this.lastFailureKey,
+          Math.ceil(this.config.resetTimeout / 1000),
+          Date.now(),
+        );
 
         this.logger.warn(`Circuit breaker OPENED for ${this.provider}`, {
           errorRate: `${errorRate.toFixed(1)}%`,
@@ -92,7 +108,10 @@ class RedisCircuitBreaker {
         });
       }
     } catch (error) {
-      this.logger.error(`Failed to record failure for ${this.provider}:`, error.message);
+      this.logger.error(
+        `Failed to record failure for ${this.provider}:`,
+        error.message,
+      );
     }
   }
 
@@ -105,7 +124,7 @@ class RedisCircuitBreaker {
 
     if (state === this.states.OPEN) {
       const nextAttempt = await db.get(this.nextAttemptKey);
-      if (nextAttempt && Date.now() >= parseInt(nextAttempt)) {
+      if (nextAttempt && Date.now() >= parseInt(nextAttempt, 10)) {
         // Time to try again - go to half-open
         await this.setState(this.states.HALF_OPEN);
         return true;
@@ -128,18 +147,26 @@ class RedisCircuitBreaker {
 
       return {
         state: state || this.states.CLOSED,
-        failures: parseInt(failures) || 0,
-        successes: parseInt(successes) || 0,
-        lastFailure: lastFailure ? new Date(parseInt(lastFailure)) : null,
+        failures: parseInt(failures, 10) || 0,
+        successes: parseInt(successes, 10) || 0,
+        lastFailure: lastFailure ? new Date(parseInt(lastFailure, 10)) : null,
       };
     } catch (error) {
-      this.logger.error(`Failed to get stats for ${this.provider}:`, error.message);
-      return { state: this.states.CLOSED, failures: 0, successes: 0, lastFailure: null };
+      this.logger.error(
+        `Failed to get stats for ${this.provider}:`,
+        error.message,
+      );
+      return {
+        state: this.states.CLOSED,
+        failures: 0,
+        successes: 0,
+        lastFailure: null,
+      };
     }
   }
 }
 
-module.exports = function (params, config) {
+module.exports = (params, config) => {
   const logger = config.logger || console;
 
   // Circuit breaker configuration
@@ -149,7 +176,7 @@ module.exports = function (params, config) {
     resetTimeout: params.resetTimeout || 30000, // Time to wait before trying again
     rollingCountTimeout: params.rollingCountTimeout || 10000, // Rolling window
     rollingCountBuckets: params.rollingCountBuckets || 10,
-    name: params.name || 'ai-circuit-breaker',
+    name: params.name || "ai-circuit-breaker",
   };
 
   // Circuit breakers for each AI provider (Redis-backed)
@@ -158,18 +185,18 @@ module.exports = function (params, config) {
   // Fallback responses for different failure types
   const fallbacks = {
     timeout: {
-      error: 'Request timeout',
-      code: 'CIRCUIT_TIMEOUT',
+      error: "Request timeout",
+      code: "CIRCUIT_TIMEOUT",
       retryAfter: Math.ceil(circuitConfig.resetTimeout / 1000),
     },
     open: {
-      error: 'Service temporarily unavailable',
-      code: 'CIRCUIT_OPEN',
+      error: "Service temporarily unavailable",
+      code: "CIRCUIT_OPEN",
       retryAfter: Math.ceil(circuitConfig.resetTimeout / 1000),
     },
     halfOpen: {
-      error: 'Service recovering',
-      code: 'CIRCUIT_HALF_OPEN',
+      error: "Service recovering",
+      code: "CIRCUIT_HALF_OPEN",
       retryAfter: 5,
     },
   };
@@ -178,12 +205,12 @@ module.exports = function (params, config) {
     try {
       // Extract provider information from request
       const provider =
-        req.headers['x-ai-provider'] ||
+        req.headers["x-ai-provider"] ||
         req.body?.provider ||
         detectProviderFromModel(req.body?.model);
 
       if (!provider) {
-        logger.debug('No provider detected for circuit breaker');
+        logger.debug("No provider detected for circuit breaker");
         return next();
       }
 
@@ -197,7 +224,13 @@ module.exports = function (params, config) {
       // Check if circuit breaker allows the request
       const allowed = await breaker.shouldAllowRequest();
       if (!allowed) {
-        return handleCircuitOpen(req, res, next, provider, await breaker.getStats());
+        return handleCircuitOpen(
+          req,
+          res,
+          next,
+          provider,
+          await breaker.getStats(),
+        );
       }
 
       // Store original response methods to track completion
@@ -250,7 +283,10 @@ module.exports = function (params, config) {
             }
           }
         } catch (error) {
-          logger.error(`Failed to record circuit breaker event for ${provider}:`, error.message);
+          logger.error(
+            `Failed to record circuit breaker event for ${provider}:`,
+            error.message,
+          );
         }
 
         return originalEnd.call(this, chunk, encoding);
@@ -259,21 +295,21 @@ module.exports = function (params, config) {
       // Continue to next middleware
       next();
     } catch (error) {
-      logger.error('Circuit breaker error:', error.message);
+      logger.error("Circuit breaker error:", error.message);
       // On error, allow request to proceed
       next();
     }
   }
 
   // Handle circuit open state
-  async function handleCircuitOpen(req, res, next, provider, stats) {
+  async function handleCircuitOpen(_req, res, _next, provider, stats) {
     const fallback = fallbacks.open;
 
     res.set({
-      'x-circuit-breaker': 'open',
-      'x-provider': provider,
-      'retry-after': fallback.retryAfter,
-      'cache-control': 'no-cache',
+      "x-circuit-breaker": "open",
+      "x-provider": provider,
+      "retry-after": fallback.retryAfter,
+      "cache-control": "no-cache",
     });
 
     res.status(503).json({
@@ -298,22 +334,22 @@ module.exports = function (params, config) {
     if (!model) return null;
 
     const modelMappings = {
-      gpt: 'openai',
-      claude: 'anthropic',
-      'text-davinci': 'openai',
-      'text-curie': 'openai',
-      'text-babbage': 'openai',
-      'text-ada': 'openai',
-      code: 'openai',
-      'gpt-3': 'openai',
-      'gpt-4': 'openai',
-      palm: 'google',
-      gemini: 'google',
-      bard: 'google',
-      titan: 'amazon',
-      'amazon-q': 'amazon',
-      command: 'cohere',
-      base: 'cohere',
+      gpt: "openai",
+      claude: "anthropic",
+      "text-davinci": "openai",
+      "text-curie": "openai",
+      "text-babbage": "openai",
+      "text-ada": "openai",
+      code: "openai",
+      "gpt-3": "openai",
+      "gpt-4": "openai",
+      palm: "google",
+      gemini: "google",
+      bard: "google",
+      titan: "amazon",
+      "amazon-q": "amazon",
+      command: "cohere",
+      base: "cohere",
     };
 
     const lowerModel = model.toLowerCase();

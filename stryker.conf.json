@@ -10,7 +10,11 @@
   },
   "coverageAnalysis": "perTest",
   "mutate": ["lib/**/*.js", "!lib/config/**/*.json", "!lib/locales/**/*.json"],
-  "mutateFilePatterns": ["!lib/index.js", "!lib/**/*.test.js", "!lib/**/*.spec.js"],
+  "mutateFilePatterns": [
+    "!lib/index.js",
+    "!lib/**/*.test.js",
+    "!lib/**/*.spec.js"
+  ],
   "thresholds": {
     "high": 80,
     "low": 60,

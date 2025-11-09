@@ -1,18 +1,21 @@
-const eg = require('../../eg');
+const eg = require("../../eg");
 
 module.exports = class extends eg.Generator {
   constructor(args, opts) {
     super(args, opts);
 
     this.configureCommand({
-      command: 'list [options]',
-      description: 'List users',
-      builder: yargs =>
+      command: "list [options]",
+      description: "List users",
+      builder: (yargs) =>
         yargs
           .usage(`Usage: $0 ${process.argv[2]} list [options]`)
-          .boolean('a')
-          .alias('a', 'all')
-          .describe('a', 'List all the users instead of stopping to the fist page')
+          .boolean("a")
+          .alias("a", "all")
+          .describe(
+            "a",
+            "List all the users instead of stopping to the fist page",
+          )
           .example(`$0 ${process.argv[2]} list`),
     });
   }
@@ -20,12 +23,12 @@ module.exports = class extends eg.Generator {
   prompting() {
     return this.admin.users
       .list({ all: this.argv.a })
-      .then(data => {
+      .then((data) => {
         const { users } = data;
         if (!users || !users.length) {
-          return this.stdout('You have no users');
+          return this.stdout("You have no users");
         }
-        users.forEach(u => {
+        users.forEach((u) => {
           if (this.argv.q) {
             this.stdout(u.username);
           } else {
@@ -33,7 +36,7 @@ module.exports = class extends eg.Generator {
           }
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.log.error(err.message);
       });
   }

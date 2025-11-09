@@ -1,33 +1,33 @@
-const express = require('express');
-const userSrv = require('../../services').user;
-const applicationsSrv = require('../../services').application;
+const express = require("express");
+const userSrv = require("../../services").user;
+const applicationsSrv = require("../../services").application;
 
-module.exports = function () {
+module.exports = () => {
   const router = express.Router();
 
-  router.get('/', (req, res, next) => {
+  router.get("/", (req, res, next) => {
     applicationsSrv
       .findAll(req.query)
-      .then(apps => res.json(apps))
+      .then((apps) => res.json(apps))
       .catch(next);
   });
 
-  router.post('/', (req, res, next) => {
+  router.post("/", (req, res, next) => {
     const { userId } = req.body;
     delete req.body.userId;
 
     userSrv
       .findByUsernameOrId(userId)
-      .then(user => {
+      .then((user) => {
         if (!user) {
-          throw new Error('The specified user does not exist');
+          throw new Error("The specified user does not exist");
         }
 
         return applicationsSrv.insert(req.body, user.id);
       })
-      .then(app => res.json(app))
-      .catch(err => {
-        if (err.message.indexOf('exist') >= 0) {
+      .then((app) => res.json(app))
+      .catch((err) => {
+        if (err.message.indexOf("exist") >= 0) {
           res.status(409).send(err.message);
         } else {
           next(err);
@@ -35,63 +35,76 @@ module.exports = function () {
       });
   });
 
-  router.get('/:id', (req, res, next) => {
+  router.get("/:id", (req, res, next) => {
     applicationsSrv
       .findByNameOrId(req.params.id)
-      .then(app => {
-        if (!app) return res.status(404).send(`Application not found: ${req.params.id}`);
+      .then((app) => {
+        if (!app)
+          return res
+            .status(404)
+            .send(`Application not found: ${req.params.id}`);
         res.json(app);
       })
       .catch(next);
   });
 
-  router.put('/:id', (req, res, next) => {
+  router.put("/:id", (req, res, next) => {
     applicationsSrv
       .findByNameOrId(req.params.id)
-      .then(app => {
-        if (!app) return res.status(404).send(`Application not found: ${req.params.id}`);
+      .then((app) => {
+        if (!app)
+          return res
+            .status(404)
+            .send(`Application not found: ${req.params.id}`);
         return applicationsSrv.update(app.id, req.body);
       })
-      .then(status => {
+      .then((_status) => {
         return applicationsSrv.findByNameOrId(req.params.id);
       })
-      .then(updatedapp => {
+      .then((updatedapp) => {
         res.json(updatedapp);
       })
       .catch(next);
   });
 
-  router.delete('/:id', (req, res, next) => {
+  router.delete("/:id", (req, res, next) => {
     applicationsSrv
       .findByNameOrId(req.params.id)
-      .then(app => {
-        if (!app) return res.status(404).send(`Application not found: ${req.params.id}`);
-        return applicationsSrv.remove(app.id).then(() => res.status(204).send());
+      .then((app) => {
+        if (!app)
+          return res
+            .status(404)
+            .send(`Application not found: ${req.params.id}`);
+        return applicationsSrv
+          .remove(app.id)
+          .then(() => res.status(204).send());
       })
       .catch(next);
   });
 
-  router.put('/:id/status', (req, res, next) => {
+  router.put("/:id/status", (req, res, next) => {
     let prevStatus;
     applicationsSrv
       .findByNameOrId(req.params.id)
-      .then(app => {
+      .then((app) => {
         if (!app) {
-          return res.status(404).send(`Application not found: ${req.params.id}`);
+          return res
+            .status(404)
+            .send(`Application not found: ${req.params.id}`);
         } else {
           prevStatus = app.isActive;
           if (prevStatus === req.body.status) {
-            return res.json({ status: prevStatus ? 'Active' : 'Inactive' });
+            return res.json({ status: prevStatus ? "Active" : "Inactive" });
           }
         }
         if (req.body.status === true) {
-          return applicationsSrv.activate(app.id).then(status => {
-            res.json({ status: 'Activated' });
+          return applicationsSrv.activate(app.id).then((_status) => {
+            res.json({ status: "Activated" });
           });
         } else {
           return applicationsSrv
             .deactivate(app.id)
-            .then(status => res.json({ status: 'Deactivated' }));
+            .then((_status) => res.json({ status: "Deactivated" }));
         }
       })
 

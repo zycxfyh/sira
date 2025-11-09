@@ -1,116 +1,127 @@
-const express = require('express');
-const services = require('../../services');
-const findConsumer = require('../utils/findConsumer');
+const express = require("express");
+const services = require("../../services");
+const findConsumer = require("../utils/findConsumer");
 
-module.exports = function () {
+module.exports = () => {
   const router = express.Router();
 
-  router.get('/', (req, res, next) => {
+  router.get("/", (_req, res, _next) => {
     Promise.all([services.user.findAll(), services.application.findAll()])
       .then(([{ users }, { apps }]) =>
         Promise.all(
           users
             .concat(apps)
-            .map(consumer =>
+            .map((consumer) =>
               services.credential
                 .getCredentials(consumer.id)
-                .then(credentials =>
-                  credentials.map(c => Object.assign({ consumerId: consumer.id }, c))
-                )
-            )
-        )
+                .then((credentials) =>
+                  credentials.map((c) =>
+                    Object.assign({ consumerId: consumer.id }, c),
+                  ),
+                ),
+            ),
+        ),
       )
-      .then(credentials =>
-        res.json({ credentials: credentials.reduce((acc, element) => acc.concat(element), []) })
+      .then((credentials) =>
+        res.json({
+          credentials: credentials.reduce(
+            (acc, element) => acc.concat(element),
+            [],
+          ),
+        }),
       )
-      .catch(err => res.status(500).send(err.message));
+      .catch((err) => res.status(500).send(err.message));
   });
 
-  router.post('/', (req, res, next) => {
+  router.post("/", (req, res, next) => {
     findConsumer(req.body.consumerId)
-      .then(consumer => {
+      .then((consumer) => {
         if (!consumer) {
-          return res.status(422).send(`No consumer found with id: ${req.body.consumerId}`);
+          return res
+            .status(422)
+            .send(`No consumer found with id: ${req.body.consumerId}`);
         }
 
         return services.credential
           .insertCredential(consumer.id, req.body.type, req.body.credential)
-          .then(data => res.json(data));
+          .then((data) => res.json(data));
       })
       .catch(next);
   });
 
-  router.get('/:type/:id', (req, res, next) => {
+  router.get("/:type/:id", (req, res, next) => {
     const { id, type } = req.params;
     services.credential
       .getCredential(id, type)
-      .then(cred => res.json(cred))
+      .then((cred) => res.json(cred))
       .catch(next);
   });
 
-  router.put('/:type/:id/status', (req, res, next) => {
+  router.put("/:type/:id/status", (req, res, next) => {
     const { id, type } = req.params;
     const { status } = req.body;
 
     services.credential
       .getCredential(id, type)
-      .then(cred => {
+      .then((cred) => {
         if (!cred) {
           return res.status(404).send(`No credential found with id: ${id}`);
         } else {
           if (cred.isActive === status) {
-            return res.json({ status: cred.isActive ? 'Active' : 'Inactive' });
+            return res.json({ status: cred.isActive ? "Active" : "Inactive" });
           }
         }
         if (status === true) {
           return services.credential
             .activateCredential(id, type)
-            .then(status => res.json({ status: 'Activated' }));
+            .then((_status) => res.json({ status: "Activated" }));
         } else {
           return services.credential
             .deactivateCredential(id, type)
-            .then(status => res.json({ status: 'Deactivated' }));
+            .then((_status) => res.json({ status: "Deactivated" }));
         }
       })
       .catch(next);
   });
 
-  router.put('/:type/:id/scopes/:scope', (req, res, next) => {
+  router.put("/:type/:id/scopes/:scope", (req, res, next) => {
     const { id, type, scope } = req.params;
 
     services.credential
       .addScopesToCredential(id, type, [scope])
-      .then(success => res.status(204).send())
+      .then((_success) => res.status(204).send())
       .catch(next);
   });
 
-  router.delete('/:type/:id/scopes/:scope', (req, res, next) => {
+  router.delete("/:type/:id/scopes/:scope", (req, res, next) => {
     const { id, type, scope } = req.params;
     services.credential
       .removeScopesFromCredential(id, type, [scope])
-      .then(success => res.status(204).send())
+      .then((_success) => res.status(204).send())
       .catch(next);
   });
 
-  router.put('/:type/:id/scopes', (req, res, next) => {
+  router.put("/:type/:id/scopes", (req, res, next) => {
     // set entire scopes array for cred
     const { id, type } = req.params;
     services.credential
       .setScopesForCredential(id, type, req.body.scopes)
-      .then(success => res.status(204).send())
+      .then((_success) => res.status(204).send())
       .catch(next);
   });
 
-  router.get('/:consumerId', (req, res, next) => {
+  router.get("/:consumerId", (req, res, next) => {
     findConsumer(req.params.consumerId)
-      .then(consumer => {
+      .then((consumer) => {
         if (!consumer) {
-          return res.status(404).json(new Error('Consumer Not Found: id:' + req.body.consumerId));
+          return res
+            .status(404)
+            .json(new Error(`Consumer Not Found: id:${req.body.consumerId}`));
         }
 
         return services.credential
           .getCredentials(consumer.id)
-          .then(credentials => res.json({ credentials }));
+          .then((credentials) => res.json({ credentials }));
       })
       .catch(next);
   });

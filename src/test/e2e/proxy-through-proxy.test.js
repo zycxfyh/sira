@@ -1,26 +1,26 @@
-const httpProxy = require('http-proxy');
-const http = require('http');
-const assert = require('assert');
-const request = require('superagent');
-const gwHelper = require('../common/gateway.helper');
-const cliHelper = require('../common/cli.helper');
+const httpProxy = require("http-proxy");
+const http = require("node:http");
+const assert = require("node:assert");
+const request = require("superagent");
+const gwHelper = require("../common/gateway.helper");
+const cliHelper = require("../common/cli.helper");
 
-['HTTP_PROXY', 'http_proxy'].forEach(envVariable => {
-  describe('@e2e @proxy through proxy', () => {
+["HTTP_PROXY", "http_proxy"].forEach((envVariable) => {
+  describe("@e2e @proxy through proxy", () => {
     const gatewayConfig = {
       apiEndpoints: {
         api: {
-          path: '/test',
+          path: "/test",
         },
       },
-      policies: ['proxy'],
+      policies: ["proxy"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['api'],
+          apiEndpoints: ["api"],
           policies: [
             {
               proxy: {
-                action: { serviceEndpoint: 'backend' },
+                action: { serviceEndpoint: "backend" },
               },
             },
           ],
@@ -31,8 +31,8 @@ const cliHelper = require('../common/cli.helper');
     const proxiedUrls = {};
     let gw, proxy, srv, bs;
 
-    before('init', done => {
-      cliHelper.bootstrapFolder().then(dirInfo => {
+    beforeAll(async (done) => {
+      cliHelper.bootstrapFolder().then((dirInfo) => {
         proxy = httpProxy.createProxyServer({ changeOrigin: true });
 
         srv = http.createServer((req, res) => {
@@ -40,12 +40,13 @@ const cliHelper = require('../common/cli.helper');
           proxy.web(req, res, { target: req.url });
         });
 
-        const server = srv.listen(0, err => {
+        const server = srv.listen(0, (err) => {
           if (err) {
             return done(err);
           }
 
-          process.env[envVariable] = `http://localhost:${server.address().port}`;
+          process.env[envVariable] =
+            `http://localhost:${server.address().port}`;
           gwHelper
             .startGatewayInstance({ dirInfo, gatewayConfig })
             .then(({ gatewayProcess, backendServers }) => {
@@ -58,22 +59,26 @@ const cliHelper = require('../common/cli.helper');
       });
     });
 
-    after('cleanup', done => {
+    afterAll(async () => {
       delete process.env[envVariable];
       gw.kill();
       proxy.close();
-      srv.close(() => bs.close(done));
+      srv.close(() => bs.close());
     });
 
-    it(`should respect ${envVariable} env var and send through proxy`, () => {
-      return request.get(`http://localhost:${gatewayConfig.http.port}/test`).then(res => {
-        assert.ok(res.text);
-        // we need to ensure that request went through proxy, not directly
-        assert.ok(
-          proxiedUrls[`${gatewayConfig.serviceEndpoints.backend.urls[0]}/test`],
-          'Proxy was not called'
-        );
-      });
+    test(`should respect ${envVariable} env var and send through proxy`, () => {
+      return request
+        .get(`http://localhost:${gatewayConfig.http.port}/test`)
+        .then((res) => {
+          assert.ok(res.text);
+          // we need to ensure that request went through proxy, not directly
+          assert.ok(
+            proxiedUrls[
+              `${gatewayConfig.serviceEndpoints.backend.urls[0]}/test`
+            ],
+            "Proxy was not called",
+          );
+        });
     });
   });
 });

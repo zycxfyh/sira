@@ -1,11 +1,11 @@
-const logger = require('./logger').db;
-const config = require('./config');
-const fs = require('fs');
-const redisOptions = config.systemConfig.db && config.systemConfig.db.redis;
+const logger = require("./logger").db;
+const config = require("./config");
+const fs = require("node:fs");
+const redisOptions = config.systemConfig.db?.redis;
 
 // special mode, will emulate all redis commands.
 // designed for demo and test scenarious to avoid having real Redis instance
-const emulate = process.argv[2] === 'emulate' || redisOptions.emulate;
+const emulate = process.argv[2] === "emulate" || redisOptions.emulate;
 
 if (redisOptions.tls) {
   if (redisOptions.tls.keyFile) {
@@ -21,13 +21,13 @@ if (redisOptions.tls) {
   }
 }
 
-const Redis = require(emulate ? 'ioredis-mock' : 'ioredis');
+const Redis = require(emulate ? "ioredis-mock" : "ioredis");
 const db = new Redis(redisOptions);
 
-db.on('ready', () => {
-  logger.debug('Redis is ready');
+db.on("ready", () => {
+  logger.debug("Redis is ready");
 });
-db.on('error', err => {
+db.on("error", (err) => {
   logger.error(`Error in Redis: ${err}`);
 });
 

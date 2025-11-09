@@ -1,11 +1,11 @@
-const fs = require('fs');
-const uuid = require('uuid/v4');
-const passport = require('passport');
-const JWTStrategy = require('passport-jwt').Strategy;
-const extractors = require('./extractors');
-const services = require('../../services');
+const fs = require("node:fs");
+const uuid = require("uuid/v4");
+const passport = require("passport");
+const JWTStrategy = require("passport-jwt").Strategy;
+const extractors = require("./extractors");
+const services = require("../../services");
 
-module.exports = function (params) {
+module.exports = (params) => {
   const strategyName = `jwt-${uuid()}`;
   const secretOrKey = params.secretOrPublicKeyFile
     ? fs.readFileSync(params.secretOrPublicKeyFile)
@@ -36,37 +36,37 @@ module.exports = function (params) {
         }
 
         services.credential
-          .getCredential(jwtPayload.sub, 'jwt')
-          .then(credential => {
+          .getCredential(jwtPayload.sub, "jwt")
+          .then((credential) => {
             if (!credential || !credential.isActive) {
-              throw new Error('CREDENTIAL_NOT_FOUND');
+              throw new Error("CREDENTIAL_NOT_FOUND");
             }
             return credential.consumerId;
           })
           .then(services.auth.validateConsumer)
-          .then(consumer => {
+          .then((consumer) => {
             if (!consumer) {
               return done(null, false);
             }
 
             return done(null, consumer);
           })
-          .catch(err => {
-            if (err.message === 'CREDENTIAL_NOT_FOUND') {
+          .catch((err) => {
+            if (err.message === "CREDENTIAL_NOT_FOUND") {
               return done(null, false);
             }
             return done(err);
           });
-      }
-    )
+      },
+    ),
   );
 
   params.session = false;
-  return function (req, res, next) {
-    passport.authenticate(strategyName, params, params.getCommonAuthCallback(req, res, next))(
-      req,
-      res,
-      next
-    );
+  return (req, res, next) => {
+    passport.authenticate(
+      strategyName,
+      params,
+      params.getCommonAuthCallback(req, res, next),
+    )(req, res, next);
   };
 };

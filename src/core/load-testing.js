@@ -3,9 +3,9 @@
  * 基于Apache JMeter、Locust、k6的最佳实践，实现高性能负载测试
  */
 
-const EventEmitter = require('events');
-const axios = require('axios');
-const { performance } = require('perf_hooks');
+const EventEmitter = require("node:events");
+const axios = require("axios");
+const { performance } = require("node:perf_hooks");
 
 /**
  * 负载测试工具
@@ -16,7 +16,7 @@ class LoadTestingTool extends EventEmitter {
     super();
 
     this.options = {
-      baseUrl: options.baseUrl || 'http://localhost:8080',
+      baseUrl: options.baseUrl || "http://localhost:8080",
       maxConcurrency: options.maxConcurrency || 100,
       rampUpTime: options.rampUpTime || 60, // 秒
       testDuration: options.testDuration || 300, // 秒
@@ -60,8 +60,8 @@ class LoadTestingTool extends EventEmitter {
       baseURL: this.options.baseUrl,
       timeout: this.options.requestTimeout,
       headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'Sira-Load-Tester/1.0',
+        "Content-Type": "application/json",
+        "User-Agent": "Sira-Load-Tester/1.0",
       },
     });
 
@@ -73,7 +73,7 @@ class LoadTestingTool extends EventEmitter {
    * 初始化负载测试工具
    */
   async initialize() {
-    console.log('🔧 初始化负载测试工具');
+    console.log("🔧 初始化负载测试工具");
     this.setupDefaultScenarios();
   }
 
@@ -82,27 +82,27 @@ class LoadTestingTool extends EventEmitter {
    */
   setupDefaultScenarios() {
     // AI聊天场景
-    this.addScenario('ai_chat', {
-      name: 'AI聊天负载测试',
-      endpoint: '/chat/completions',
-      method: 'POST',
+    this.addScenario("ai_chat", {
+      name: "AI聊天负载测试",
+      endpoint: "/chat/completions",
+      method: "POST",
       payload: {
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: '请写一段关于人工智能的短文' }],
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: "请写一段关于人工智能的短文" }],
         max_tokens: 100,
         temperature: 0.7,
       },
       headers: {
-        Authorization: 'Bearer sk-test-key',
-        'Content-Type': 'application/json',
+        Authorization: "Bearer sk-test-key",
+        "Content-Type": "application/json",
       },
     });
 
     // 参数管理场景
-    this.addScenario('parameter_management', {
-      name: '参数管理负载测试',
-      endpoint: '/parameters/optimize',
-      method: 'POST',
+    this.addScenario("parameter_management", {
+      name: "参数管理负载测试",
+      endpoint: "/parameters/optimize",
+      method: "POST",
       payload: {
         parameters: {
           temperature: 0.8,
@@ -110,31 +110,31 @@ class LoadTestingTool extends EventEmitter {
           frequency_penalty: 0.1,
           presence_penalty: 0.1,
         },
-        task_type: 'creative',
+        task_type: "creative",
       },
     });
 
     // 批量处理场景
-    this.addScenario('batch_processing', {
-      name: '批量处理负载测试',
-      endpoint: '/batch-processing/batches',
-      method: 'POST',
+    this.addScenario("batch_processing", {
+      name: "批量处理负载测试",
+      endpoint: "/batch-processing/batches",
+      method: "POST",
       payload: {
         requests: Array.from({ length: 10 }, (_, i) => ({
           id: `req_${i}`,
-          model: 'gpt-3.5-turbo',
+          model: "gpt-3.5-turbo",
           prompt: `请生成第${i + 1}个测试文本`,
         })),
       },
     });
 
     // 流式响应场景
-    this.addScenario('streaming', {
-      name: '流式响应负载测试',
-      endpoint: '/streaming/streams',
-      method: 'POST',
+    this.addScenario("streaming", {
+      name: "流式响应负载测试",
+      endpoint: "/streaming/streams",
+      method: "POST",
       payload: {
-        userId: 'test_user',
+        userId: "test_user",
         options: {
           maxConnections: 5,
         },
@@ -149,7 +149,7 @@ class LoadTestingTool extends EventEmitter {
     this.testScenarios.set(name, {
       name: config.name || name,
       endpoint: config.endpoint,
-      method: config.method || 'GET',
+      method: config.method || "GET",
       payload: config.payload || {},
       headers: config.headers || {},
       setup: config.setup,
@@ -162,15 +162,15 @@ class LoadTestingTool extends EventEmitter {
    */
   async runLoadTest(config) {
     const {
-      scenario = 'ai_chat',
-      loadProfile = 'ramp',
+      scenario = "ai_chat",
+      loadProfile = "ramp",
       targetRPS = 10,
       duration = this.options.testDuration,
       maxConcurrency = this.options.maxConcurrency,
     } = config;
 
     if (this.isRunning) {
-      throw new Error('负载测试已在运行中');
+      throw new Error("负载测试已在运行中");
     }
 
     this.isRunning = true;
@@ -179,7 +179,7 @@ class LoadTestingTool extends EventEmitter {
 
     console.log(`🚀 开始负载测试: ${scenario} (${loadProfile}模式)`);
 
-    this.emit('testStart', {
+    this.emit("testStart", {
       scenario,
       loadProfile,
       targetRPS,
@@ -210,12 +210,12 @@ class LoadTestingTool extends EventEmitter {
 
       const results = this.generateReport();
 
-      this.emit('testComplete', results);
+      this.emit("testComplete", results);
 
       return results;
     } catch (error) {
-      console.error('负载测试失败:', error.message);
-      this.emit('testError', error);
+      console.error("负载测试失败:", error.message);
+      this.emit("testError", error);
       throw error;
     } finally {
       this.isRunning = false;
@@ -258,8 +258,18 @@ class LoadTestingTool extends EventEmitter {
       const interval = 1000 / currentRPS;
 
       const workers = [];
-      for (let i = 0; i < Math.min(maxConcurrency, Math.ceil(currentRPS)); i++) {
-        workers.push(this.createWorker(scenario, interval, Math.min(endTime, Date.now() + 1000)));
+      for (
+        let i = 0;
+        i < Math.min(maxConcurrency, Math.ceil(currentRPS));
+        i++
+      ) {
+        workers.push(
+          this.createWorker(
+            scenario,
+            interval,
+            Math.min(endTime, Date.now() + 1000),
+          ),
+        );
       }
 
       await Promise.all(workers);
@@ -282,10 +292,17 @@ class LoadTestingTool extends EventEmitter {
       const currentRPS = isSpike ? targetRPS : normalRPS;
       const interval = 1000 / currentRPS;
 
-      const spikeEndTime = Math.min(endTime, Date.now() + (isSpike ? spikeDuration * 1000 : 5000));
+      const spikeEndTime = Math.min(
+        endTime,
+        Date.now() + (isSpike ? spikeDuration * 1000 : 5000),
+      );
 
       const workers = [];
-      for (let i = 0; i < Math.min(maxConcurrency, Math.ceil(currentRPS)); i++) {
+      for (
+        let i = 0;
+        i < Math.min(maxConcurrency, Math.ceil(currentRPS));
+        i++
+      ) {
         workers.push(this.createWorker(scenario, interval, spikeEndTime));
       }
 
@@ -309,8 +326,18 @@ class LoadTestingTool extends EventEmitter {
       const interval = 1000 / currentRPS;
 
       const workers = [];
-      for (let i = 0; i < Math.min(maxConcurrency, Math.ceil(currentRPS)); i++) {
-        workers.push(this.createWorker(scenario, interval, Math.min(endTime, Date.now() + 1000)));
+      for (
+        let i = 0;
+        i < Math.min(maxConcurrency, Math.ceil(currentRPS));
+        i++
+      ) {
+        workers.push(
+          this.createWorker(
+            scenario,
+            interval,
+            Math.min(endTime, Date.now() + 1000),
+          ),
+        );
       }
 
       await Promise.all(workers);
@@ -325,14 +352,22 @@ class LoadTestingTool extends EventEmitter {
     const endTime = Date.now() + duration * 1000;
     let currentConcurrency = 1;
 
-    console.log(`💥 压力测试模式: 递增并发数直到 ${maxConcurrency}, 持续 ${duration} 秒`);
+    console.log(
+      `💥 压力测试模式: 递增并发数直到 ${maxConcurrency}, 持续 ${duration} 秒`,
+    );
 
     while (Date.now() < endTime && currentConcurrency <= maxConcurrency) {
       const interval = 1000 / targetRPS;
 
       const workers = [];
       for (let i = 0; i < currentConcurrency; i++) {
-        workers.push(this.createWorker(scenario, interval, Math.min(endTime, Date.now() + 5000)));
+        workers.push(
+          this.createWorker(
+            scenario,
+            interval,
+            Math.min(endTime, Date.now() + 5000),
+          ),
+        );
       }
 
       await Promise.all(workers);
@@ -346,7 +381,7 @@ class LoadTestingTool extends EventEmitter {
    * 创建工作线程
    */
   createWorker(scenario, interval, endTime) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const timer = setInterval(async () => {
         if (Date.now() >= endTime) {
           clearInterval(timer);
@@ -356,7 +391,7 @@ class LoadTestingTool extends EventEmitter {
 
         try {
           await this.makeRequest(scenario);
-        } catch (error) {
+        } catch (_error) {
           // 静默处理请求错误，继续测试
         }
       }, interval);
@@ -411,7 +446,7 @@ class LoadTestingTool extends EventEmitter {
       responseTime,
     });
 
-    this.emit('requestSuccess', {
+    this.emit("requestSuccess", {
       responseTime,
       statusCode,
       timestamp,
@@ -426,10 +461,13 @@ class LoadTestingTool extends EventEmitter {
     this.stats.failedRequests++;
     this.stats.totalResponseTime += responseTime;
 
-    const errorType = error.code || error.response?.status || 'UNKNOWN';
-    this.stats.errors.set(errorType, (this.stats.errors.get(errorType) || 0) + 1);
+    const errorType = error.code || error.response?.status || "UNKNOWN";
+    this.stats.errors.set(
+      errorType,
+      (this.stats.errors.get(errorType) || 0) + 1,
+    );
 
-    this.emit('requestFailure', {
+    this.emit("requestFailure", {
       responseTime,
       error: error.message,
       type: errorType,
@@ -461,17 +499,22 @@ class LoadTestingTool extends EventEmitter {
   generateReport() {
     const duration = (this.endTime - this.startTime) / 1000; // 秒
     const avgResponseTime =
-      this.stats.totalRequests > 0 ? this.stats.totalResponseTime / this.stats.totalRequests : 0;
+      this.stats.totalRequests > 0
+        ? this.stats.totalResponseTime / this.stats.totalRequests
+        : 0;
     const successRate =
       this.stats.totalRequests > 0
-        ? ((this.stats.successfulRequests / this.stats.totalRequests) * 100).toFixed(2)
+        ? (
+            (this.stats.successfulRequests / this.stats.totalRequests) *
+            100
+          ).toFixed(2)
         : 0;
     const avgRPS = this.stats.totalRequests / duration;
 
     // 计算响应时间分布
     const responseTimePercentiles = this.calculatePercentiles(
       this.stats.responseTimes,
-      [50, 95, 99]
+      [50, 95, 99],
     );
 
     // 计算吞吐量趋势
@@ -487,27 +530,35 @@ class LoadTestingTool extends EventEmitter {
         averageRPS: avgRPS.toFixed(2),
         averageResponseTime: `${avgResponseTime.toFixed(2)}ms`,
         minResponseTime:
-          this.stats.totalRequests > 0 ? `${this.stats.minResponseTime.toFixed(2)}ms` : 'N/A',
+          this.stats.totalRequests > 0
+            ? `${this.stats.minResponseTime.toFixed(2)}ms`
+            : "N/A",
         maxResponseTime:
-          this.stats.totalRequests > 0 ? `${this.stats.maxResponseTime.toFixed(2)}ms` : 'N/A',
+          this.stats.totalRequests > 0
+            ? `${this.stats.maxResponseTime.toFixed(2)}ms`
+            : "N/A",
       },
       responseTimeDistribution: {
         p50:
           responseTimePercentiles[50] !== undefined
             ? `${responseTimePercentiles[50].toFixed(2)}ms`
-            : 'N/A',
+            : "N/A",
         p95:
           responseTimePercentiles[95] !== undefined
             ? `${responseTimePercentiles[95].toFixed(2)}ms`
-            : 'N/A',
+            : "N/A",
         p99:
           responseTimePercentiles[99] !== undefined
             ? `${responseTimePercentiles[99].toFixed(2)}ms`
-            : 'N/A',
+            : "N/A",
       },
       errors: Object.fromEntries(this.stats.errors),
       throughput: throughputTrend,
-      recommendations: this.generateRecommendations(successRate, avgResponseTime, avgRPS),
+      recommendations: this.generateRecommendations(
+        successRate,
+        avgResponseTime,
+        avgRPS,
+      ),
     };
   }
 
@@ -520,7 +571,7 @@ class LoadTestingTool extends EventEmitter {
     const sorted = [...values].sort((a, b) => a - b);
     const result = {};
 
-    percentiles.forEach(p => {
+    percentiles.forEach((p) => {
       const index = Math.ceil((p / 100) * sorted.length) - 1;
       result[p] = sorted[Math.max(0, Math.min(index, sorted.length - 1))];
     });
@@ -538,7 +589,7 @@ class LoadTestingTool extends EventEmitter {
     const windowSize = 5000; // 5秒窗口
     const windows = new Map();
 
-    this.stats.throughput.forEach(point => {
+    this.stats.throughput.forEach((point) => {
       const window = Math.floor(point.timestamp / windowSize) * windowSize;
       if (!windows.has(window)) {
         windows.set(window, { count: 0, totalTime: 0 });
@@ -564,19 +615,21 @@ class LoadTestingTool extends EventEmitter {
     const recommendations = [];
 
     if (parseFloat(successRate) < 95) {
-      recommendations.push('成功率低于95%，建议检查系统稳定性或增加资源');
+      recommendations.push("成功率低于95%，建议检查系统稳定性或增加资源");
     }
 
     if (avgResponseTime > 1000) {
-      recommendations.push('平均响应时间超过1秒，建议优化性能或增加缓存');
+      recommendations.push("平均响应时间超过1秒，建议优化性能或增加缓存");
     }
 
     if (avgRPS < 10) {
-      recommendations.push('平均RPS较低，建议检查系统配置或网络延迟');
+      recommendations.push("平均RPS较低，建议检查系统配置或网络延迟");
     }
 
     if (this.stats.errors.size > 0) {
-      const topError = Array.from(this.stats.errors.entries()).sort(([, a], [, b]) => b - a)[0];
+      const topError = Array.from(this.stats.errors.entries()).sort(
+        ([, a], [, b]) => b - a,
+      )[0];
       recommendations.push(`最常见的错误: ${topError[0]} (${topError[1]}次)`);
     }
 
@@ -588,8 +641,8 @@ class LoadTestingTool extends EventEmitter {
    */
   stop() {
     this.isRunning = false;
-    console.log('🛑 负载测试已停止');
-    this.emit('testStopped');
+    console.log("🛑 负载测试已停止");
+    this.emit("testStopped");
   }
 
   /**

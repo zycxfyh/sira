@@ -1,10 +1,10 @@
-const assert = require('assert');
-const environment = require('../../fixtures/cli/environment');
-const adminHelper = require('../../common/admin-helper')();
-const namespace = 'express-gateway:users:activate';
-const idGen = require('uuid62');
+const assert = require("node:assert");
+const environment = require("../../fixtures/cli/environment");
+const adminHelper = require("../../common/admin-helper")();
+const namespace = "express-gateway:users:activate";
+const idGen = require("uuid62");
 
-describe('eg users activate', () => {
+describe("eg users activate", () => {
   let program, env, userId, userName, userName2;
   before(() => {
     ({ program, env } = environment.bootstrap());
@@ -19,15 +19,15 @@ describe('eg users activate', () => {
     return adminHelper.admin.users
       .create({
         username: userName,
-        firstname: 'La',
-        lastname: 'Deeda',
+        firstname: "La",
+        lastname: "Deeda",
       })
-      .then(user => {
+      .then((user) => {
         userId = user.id;
         return adminHelper.admin.users.create({
           username: userName2,
-          firstname: 'La2',
-          lastname: 'Deeda2',
+          firstname: "La2",
+          lastname: "Deeda2",
         });
       })
       .then(() => adminHelper.admin.users.deactivate(userName))
@@ -39,26 +39,26 @@ describe('eg users activate', () => {
     return adminHelper.reset();
   });
 
-  it('activates a user by username', done => {
-    env.hijack(namespace, generator => {
+  it("activates a user by username", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
       const error = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.users
           .info(userName)
-          .then(user => {
+          .then((user) => {
             assert.strictEqual(user.isActive, true);
-            assert.strictEqual(output, 'Activated ' + userName);
+            assert.strictEqual(output, `Activated ${userName}`);
             assert.strictEqual(error, null);
             done();
           })
@@ -66,29 +66,29 @@ describe('eg users activate', () => {
       });
     });
 
-    env.argv = program.parse('users activate ' + userName);
+    env.argv = program.parse(`users activate ${userName}`);
   });
 
-  it('activates a user by user ID', done => {
-    env.hijack(namespace, generator => {
+  it("activates a user by user ID", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
       let error = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           error = message;
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.users
           .info(userId)
-          .then(user => {
+          .then((user) => {
             assert.strictEqual(user.isActive, true);
-            assert.strictEqual(output, 'Activated ' + userId);
+            assert.strictEqual(output, `Activated ${userId}`);
             assert.strictEqual(error, null);
             done();
           })
@@ -99,29 +99,29 @@ describe('eg users activate', () => {
     env.argv = program.parse(`users activate ${userId}`);
   });
 
-  it('activates multiple users', done => {
-    env.hijack(namespace, generator => {
+  it("activates multiple users", (done) => {
+    env.hijack(namespace, (generator) => {
       const output = {};
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           assert.fail(message);
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output[message] = true; // order is not garanteed, capture as object
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.users
           .list()
-          .then(data => {
+          .then((data) => {
             const { users } = data;
             assert.strictEqual(users[0].isActive, true);
             assert.strictEqual(users[1].isActive, true);
 
-            assert.ok(output['Activated ' + userName]);
-            assert.ok(output['Activated ' + userName2]);
+            assert.ok(output[`Activated ${userName}`]);
+            assert.ok(output[`Activated ${userName2}`]);
             assert.strictEqual(Object.keys(output).length, 2);
             done();
           })
@@ -129,25 +129,25 @@ describe('eg users activate', () => {
       });
     });
 
-    env.argv = program.parse('users activate ' + userName + ' ' + userName2);
+    env.argv = program.parse(`users activate ${userName} ${userName2}`);
   });
-  it('prints only the user id when using the --quiet flag', done => {
-    env.hijack(namespace, generator => {
+  it("prints only the user id when using the --quiet flag", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           assert.fail(message);
         };
-        generator.stdout = message => {
+        generator.stdout = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.users
           .info(userName)
-          .then(user => {
+          .then((user) => {
             assert.strictEqual(user.isActive, true);
             assert.strictEqual(output, userName);
             done();
@@ -156,6 +156,6 @@ describe('eg users activate', () => {
       });
     });
 
-    env.argv = program.parse('users activate ' + userName + ' -q');
+    env.argv = program.parse(`users activate ${userName} -q`);
   });
 });

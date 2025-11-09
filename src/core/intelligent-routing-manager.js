@@ -1,6 +1,6 @@
-const { EventEmitter } = require('events');
-const { ComplexityAnalyzer } = require('./complexity-analyzer');
-const { RoutingDecisionEngine } = require('./routing-decision-engine');
+const { EventEmitter } = require("node:events");
+const { ComplexityAnalyzer } = require("./complexity-analyzer");
+const { RoutingDecisionEngine } = require("./routing-decision-engine");
 
 /**
  * 智能路由管理器
@@ -12,7 +12,11 @@ class IntelligentRoutingManager extends EventEmitter {
     super();
 
     this.configPath =
-      options.configPath || require('path').join(__dirname, '../config/intelligent-routing.json');
+      options.configPath ||
+      require("node:path").join(
+        __dirname,
+        "../config/intelligent-routing.json",
+      );
     this.enableAdaptiveLearning = options.enableAdaptiveLearning !== false;
     this.cacheEnabled = options.cacheEnabled !== false;
     this.cacheTTL = options.cacheTTL || 300000; // 5分钟缓存
@@ -27,29 +31,49 @@ class IntelligentRoutingManager extends EventEmitter {
     // 路由策略
     this.routingStrategies = {
       performance_first: {
-        name: '性能优先',
-        weights: { performance: 0.4, cost: 0.2, quality: 0.3, availability: 0.1 },
+        name: "性能优先",
+        weights: {
+          performance: 0.4,
+          cost: 0.2,
+          quality: 0.3,
+          availability: 0.1,
+        },
       },
       cost_first: {
-        name: '成本优先',
-        weights: { performance: 0.2, cost: 0.4, quality: 0.3, availability: 0.1 },
+        name: "成本优先",
+        weights: {
+          performance: 0.2,
+          cost: 0.4,
+          quality: 0.3,
+          availability: 0.1,
+        },
       },
       quality_first: {
-        name: '质量优先',
-        weights: { performance: 0.2, cost: 0.2, quality: 0.4, availability: 0.2 },
+        name: "质量优先",
+        weights: {
+          performance: 0.2,
+          cost: 0.2,
+          quality: 0.4,
+          availability: 0.2,
+        },
       },
       balanced: {
-        name: '均衡策略',
-        weights: { performance: 0.25, cost: 0.25, quality: 0.25, availability: 0.25 },
+        name: "均衡策略",
+        weights: {
+          performance: 0.25,
+          cost: 0.25,
+          quality: 0.25,
+          availability: 0.25,
+        },
       },
       adaptive: {
-        name: '自适应策略',
+        name: "自适应策略",
         weights: null, // 动态调整
       },
     };
 
     // 当前活跃策略
-    this.activeStrategy = 'balanced';
+    this.activeStrategy = "balanced";
 
     // 路由统计
     this.routingStats = {
@@ -97,10 +121,10 @@ class IntelligentRoutingManager extends EventEmitter {
 
       this.initialized = true;
       console.log(
-        `✅ 智能路由管理器已初始化，当前策略: ${this.routingStrategies[this.activeStrategy].name}`
+        `✅ 智能路由管理器已初始化，当前策略: ${this.routingStrategies[this.activeStrategy].name}`,
       );
     } catch (error) {
-      console.error('❌ 智能路由管理器初始化失败:', error.message);
+      console.error("❌ 智能路由管理器初始化失败:", error.message);
       throw error;
     }
   }
@@ -149,12 +173,13 @@ class IntelligentRoutingManager extends EventEmitter {
 
       // 2. 复杂度分析
       const analysisStart = Date.now();
-      const complexityAnalysis = this.complexityAnalyzer.analyzeComplexity(request);
+      const complexityAnalysis =
+        this.complexityAnalyzer.analyzeComplexity(request);
       const analysisTime = Date.now() - analysisStart;
 
       routingResult.analysis = complexityAnalysis;
       routingResult.reasoning.push(
-        `复杂度分析: ${complexityAnalysis.complexity} (${analysisTime}ms)`
+        `复杂度分析: ${complexityAnalysis.complexity} (${analysisTime}ms)`,
       );
 
       // 更新统计
@@ -173,18 +198,21 @@ class IntelligentRoutingManager extends EventEmitter {
       };
 
       // 如果使用自适应策略，动态调整权重
-      if (this.activeStrategy === 'adaptive') {
-        decisionContext.strategyWeights = this.calculateAdaptiveWeights(context);
+      if (this.activeStrategy === "adaptive") {
+        decisionContext.strategyWeights =
+          this.calculateAdaptiveWeights(context);
       }
 
       const decision = await this.routingDecisionEngine.makeRoutingDecision(
         request,
-        decisionContext
+        decisionContext,
       );
       const decisionTime = Date.now() - decisionStart;
 
       routingResult.decision = decision;
-      routingResult.reasoning.push(`路由决策: ${decision.model} (${decisionTime}ms)`);
+      routingResult.reasoning.push(
+        `路由决策: ${decision.model} (${decisionTime}ms)`,
+      );
 
       // 更新统计
       this.updateDecisionStats(decisionTime, decision.model);
@@ -206,23 +234,23 @@ class IntelligentRoutingManager extends EventEmitter {
           });
         }
       } else {
-        routingResult.reasoning.push('无法确定合适的路由');
+        routingResult.reasoning.push("无法确定合适的路由");
       }
     } catch (error) {
-      console.error('智能路由执行失败:', error);
+      console.error("智能路由执行失败:", error);
       routingResult.reasoning.push(`路由失败: ${error.message}`);
 
       // 失败时使用默认路由
       routingResult.success = true;
-      routingResult.model = 'gpt-3.5-turbo';
-      routingResult.provider = 'openai';
-      routingResult.reasoning.push('使用默认路由 (gpt-3.5-turbo)');
+      routingResult.model = "gpt-3.5-turbo";
+      routingResult.provider = "openai";
+      routingResult.reasoning.push("使用默认路由 (gpt-3.5-turbo)");
     }
 
     routingResult.metadata.processingTime = Date.now() - startTime;
 
     // 触发路由完成事件
-    this.emit('routingCompleted', routingResult);
+    this.emit("routingCompleted", routingResult);
 
     return routingResult;
   }
@@ -242,7 +270,7 @@ class IntelligentRoutingManager extends EventEmitter {
     }
 
     for (const batch of batches) {
-      const batchPromises = batch.map(async request => {
+      const batchPromises = batch.map(async (request) => {
         const requestContext = {
           ...context,
           requestId: request.id || this.generateRequestId(),
@@ -255,7 +283,7 @@ class IntelligentRoutingManager extends EventEmitter {
       const batchResults = await Promise.allSettled(batchPromises);
 
       for (const result of batchResults) {
-        if (result.status === 'fulfilled') {
+        if (result.status === "fulfilled") {
           results.push(result.value);
         } else {
           // 处理失败的请求
@@ -263,7 +291,7 @@ class IntelligentRoutingManager extends EventEmitter {
             success: false,
             error: result.reason.message,
             metadata: {
-              requestId: 'unknown',
+              requestId: "unknown",
               timestamp: new Date().toISOString(),
             },
           });
@@ -294,10 +322,10 @@ class IntelligentRoutingManager extends EventEmitter {
     await this.saveConfiguration();
 
     console.log(
-      `🔄 路由策略已切换: ${this.routingStrategies[oldStrategy].name} -> ${this.routingStrategies[strategyName].name}`
+      `🔄 路由策略已切换: ${this.routingStrategies[oldStrategy].name} -> ${this.routingStrategies[strategyName].name}`,
     );
 
-    this.emit('strategyChanged', {
+    this.emit("strategyChanged", {
       oldStrategy,
       newStrategy: strategyName,
       timestamp: new Date().toISOString(),
@@ -326,8 +354,9 @@ class IntelligentRoutingManager extends EventEmitter {
   /**
    * 获取路由统计信息
    */
-  getRoutingStatistics(timeRange = '1h') {
-    const decisionStats = this.routingDecisionEngine.getDecisionStatistics(timeRange);
+  getRoutingStatistics(timeRange = "1h") {
+    const decisionStats =
+      this.routingDecisionEngine.getDecisionStatistics(timeRange);
 
     return {
       ...this.routingStats,
@@ -346,7 +375,7 @@ class IntelligentRoutingManager extends EventEmitter {
   /**
    * 获取路由建议
    */
-  getRoutingSuggestions(context = {}) {
+  getRoutingSuggestions(_context = {}) {
     const suggestions = [];
 
     // 基于当前统计提供建议
@@ -355,10 +384,10 @@ class IntelligentRoutingManager extends EventEmitter {
     // 缓存命中率建议
     if (stats.cacheHitRate < 0.3) {
       suggestions.push({
-        type: 'cache_optimization',
-        priority: 'medium',
-        message: '缓存命中率较低，考虑调整缓存TTL或启用更智能的缓存策略',
-        action: 'increase_cache_ttl',
+        type: "cache_optimization",
+        priority: "medium",
+        message: "缓存命中率较低，考虑调整缓存TTL或启用更智能的缓存策略",
+        action: "increase_cache_ttl",
       });
     }
 
@@ -367,14 +396,19 @@ class IntelligentRoutingManager extends EventEmitter {
     const { totalDecisions } = stats.decisionStats;
 
     if (totalDecisions > 10) {
-      const mostUsedModel = Object.entries(modelDistribution).sort(([, a], [, b]) => b - a)[0]?.[0];
+      const mostUsedModel = Object.entries(modelDistribution).sort(
+        ([, a], [, b]) => b - a,
+      )[0]?.[0];
 
-      if (mostUsedModel && modelDistribution[mostUsedModel] / totalDecisions > 0.8) {
+      if (
+        mostUsedModel &&
+        modelDistribution[mostUsedModel] / totalDecisions > 0.8
+      ) {
         suggestions.push({
-          type: 'strategy_optimization',
-          priority: 'high',
+          type: "strategy_optimization",
+          priority: "high",
           message: `单个模型(${mostUsedModel})使用率过高，考虑调整路由策略以提高多样性`,
-          action: 'diversify_routing',
+          action: "diversify_routing",
         });
       }
     }
@@ -382,10 +416,10 @@ class IntelligentRoutingManager extends EventEmitter {
     // 性能建议
     if (stats.avgDecisionTime > 500) {
       suggestions.push({
-        type: 'performance_optimization',
-        priority: 'medium',
-        message: '路由决策时间较长，考虑优化复杂度分析算法或启用缓存',
-        action: 'optimize_performance',
+        type: "performance_optimization",
+        priority: "medium",
+        message: "路由决策时间较长，考虑优化复杂度分析算法或启用缓存",
+        action: "optimize_performance",
       });
     }
 
@@ -397,11 +431,12 @@ class IntelligentRoutingManager extends EventEmitter {
    */
   async updateUserPreferences(userId, preferences) {
     if (!this.routingDecisionEngine) {
-      throw new Error('路由决策引擎未初始化');
+      throw new Error("路由决策引擎未初始化");
     }
 
     // 合并现有偏好
-    const existingPrefs = this.routingDecisionEngine.userPreferences.get(userId) || {};
+    const existingPrefs =
+      this.routingDecisionEngine.userPreferences.get(userId) || {};
     const updatedPrefs = { ...existingPrefs, ...preferences };
 
     this.routingDecisionEngine.userPreferences.set(userId, updatedPrefs);
@@ -411,7 +446,7 @@ class IntelligentRoutingManager extends EventEmitter {
 
     console.log(`✅ 用户偏好已更新: ${userId}`);
 
-    this.emit('userPreferencesUpdated', {
+    this.emit("userPreferencesUpdated", {
       userId,
       preferences: updatedPrefs,
       timestamp: new Date().toISOString(),
@@ -432,8 +467,8 @@ class IntelligentRoutingManager extends EventEmitter {
       this.routingDecisionEngine.userPreferences.get(userId) || {
         preferredModels: [],
         budgetLimit: null,
-        speedPreference: 'balanced',
-        qualityPreference: 'balanced',
+        speedPreference: "balanced",
+        qualityPreference: "balanced",
       }
     );
   }
@@ -447,7 +482,7 @@ class IntelligentRoutingManager extends EventEmitter {
 
     console.log(`🧹 路由缓存已清理: ${cacheSize} 条记录`);
 
-    this.emit('cacheCleared', {
+    this.emit("cacheCleared", {
       clearedEntries: cacheSize,
       timestamp: new Date().toISOString(),
     });
@@ -462,14 +497,17 @@ class IntelligentRoutingManager extends EventEmitter {
    */
   setupEventListeners() {
     // 监听决策引擎的事件
-    this.routingDecisionEngine.on('decisionRecorded', decision => {
-      this.emit('decisionRecorded', decision);
+    this.routingDecisionEngine.on("decisionRecorded", (decision) => {
+      this.emit("decisionRecorded", decision);
     });
 
     // 监听复杂度分析事件
-    if (this.complexityAnalyzer && typeof this.complexityAnalyzer.on === 'function') {
-      this.complexityAnalyzer.on('analysisCompleted', analysis => {
-        this.emit('analysisCompleted', analysis);
+    if (
+      this.complexityAnalyzer &&
+      typeof this.complexityAnalyzer.on === "function"
+    ) {
+      this.complexityAnalyzer.on("analysisCompleted", (analysis) => {
+        this.emit("analysisCompleted", analysis);
       });
     }
   }
@@ -480,30 +518,32 @@ class IntelligentRoutingManager extends EventEmitter {
   generateCacheKey(request, context) {
     const keyData = {
       content: this.extractCacheableContent(request),
-      userId: context.userId || 'anonymous',
+      userId: context.userId || "anonymous",
       strategy: this.activeStrategy,
       constraints: context.constraints || {},
     };
 
-    const crypto = require('crypto');
-    const hash = crypto.createHash('md5');
+    const crypto = require("node:crypto");
+    const hash = crypto.createHash("md5");
     hash.update(JSON.stringify(keyData));
-    return hash.digest('hex');
+    return hash.digest("hex");
   }
 
   /**
    * 提取可缓存的内容
    */
   extractCacheableContent(request) {
-    if (typeof request === 'string') {
+    if (typeof request === "string") {
       return request.substring(0, 1000); // 只缓存前1000字符
     }
 
     if (request.messages && Array.isArray(request.messages)) {
       // 只缓存最后一条用户消息
-      const lastUserMessage = request.messages.filter(m => m.role === 'user').pop();
+      const lastUserMessage = request.messages
+        .filter((m) => m.role === "user")
+        .pop();
 
-      return lastUserMessage ? lastUserMessage.content.substring(0, 1000) : '';
+      return lastUserMessage ? lastUserMessage.content.substring(0, 1000) : "";
     }
 
     return JSON.stringify(request).substring(0, 1000);
@@ -561,7 +601,7 @@ class IntelligentRoutingManager extends EventEmitter {
     const weights = { ...this.routingStrategies.balanced.weights };
 
     // 如果用户指定了速度偏好
-    if (context.userPreferences?.speedPreference === 'fast') {
+    if (context.userPreferences?.speedPreference === "fast") {
       weights.performance += 0.1;
       weights.cost -= 0.05;
       weights.quality -= 0.05;
@@ -576,8 +616,8 @@ class IntelligentRoutingManager extends EventEmitter {
 
     // 如果是复杂任务
     if (
-      context.complexityAnalysis?.complexity === 'high' ||
-      context.complexityAnalysis?.complexity === 'very_high'
+      context.complexityAnalysis?.complexity === "high" ||
+      context.complexityAnalysis?.complexity === "very_high"
     ) {
       weights.quality += 0.1;
       weights.performance -= 0.1;
@@ -585,7 +625,7 @@ class IntelligentRoutingManager extends EventEmitter {
 
     // 归一化权重
     const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
-    Object.keys(weights).forEach(key => {
+    Object.keys(weights).forEach((key) => {
       weights[key] = weights[key] / totalWeight;
     });
 
@@ -601,7 +641,7 @@ class IntelligentRoutingManager extends EventEmitter {
       () => {
         this.performAdaptiveLearning();
       },
-      60 * 60 * 1000
+      60 * 60 * 1000,
     ); // 1小时
   }
 
@@ -610,7 +650,7 @@ class IntelligentRoutingManager extends EventEmitter {
    */
   async performAdaptiveLearning() {
     try {
-      const stats = this.getRoutingStatistics('24h'); // 分析过去24小时的数据
+      const stats = this.getRoutingStatistics("24h"); // 分析过去24小时的数据
 
       if (stats.totalRequests < 100) {
         return; // 数据不足，跳过学习
@@ -620,25 +660,27 @@ class IntelligentRoutingManager extends EventEmitter {
       const suggestions = this.getRoutingSuggestions();
 
       // 如果有高优先级建议，自动调整策略
-      const highPrioritySuggestions = suggestions.filter(s => s.priority === 'high');
+      const highPrioritySuggestions = suggestions.filter(
+        (s) => s.priority === "high",
+      );
 
       if (highPrioritySuggestions.length > 0) {
         const suggestion = highPrioritySuggestions[0];
 
-        if (suggestion.action === 'diversify_routing') {
+        if (suggestion.action === "diversify_routing") {
           // 切换到均衡策略以提高多样性
-          await this.setRoutingStrategy('balanced');
-          console.log('🤖 自适应学习: 检测到模型使用过于集中，切换到均衡策略');
+          await this.setRoutingStrategy("balanced");
+          console.log("🤖 自适应学习: 检测到模型使用过于集中，切换到均衡策略");
         }
       }
 
-      this.emit('adaptiveLearningCompleted', {
+      this.emit("adaptiveLearningCompleted", {
         stats,
         suggestions,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.error('自适应学习执行失败:', error);
+      console.error("自适应学习执行失败:", error);
     }
   }
 
@@ -648,7 +690,8 @@ class IntelligentRoutingManager extends EventEmitter {
   updateAnalysisStats(analysisTime) {
     const alpha = 0.1; // 指数移动平均的平滑因子
     this.routingStats.avgComplexityAnalysisTime =
-      this.routingStats.avgComplexityAnalysisTime * (1 - alpha) + analysisTime * alpha;
+      this.routingStats.avgComplexityAnalysisTime * (1 - alpha) +
+      analysisTime * alpha;
   }
 
   /**
@@ -675,28 +718,28 @@ class IntelligentRoutingManager extends EventEmitter {
    */
   getStrategyDescription(strategy) {
     const descriptions = {
-      performance_first: '优先选择响应速度最快的模型',
-      cost_first: '优先选择成本最低的模型',
-      quality_first: '优先选择质量最好的模型',
-      balanced: '在性能、成本、质量之间取得平衡',
-      adaptive: '根据实时数据动态调整路由策略',
+      performance_first: "优先选择响应速度最快的模型",
+      cost_first: "优先选择成本最低的模型",
+      quality_first: "优先选择质量最好的模型",
+      balanced: "在性能、成本、质量之间取得平衡",
+      adaptive: "根据实时数据动态调整路由策略",
     };
 
-    return descriptions[strategy] || '未知策略';
+    return descriptions[strategy] || "未知策略";
   }
 
   /**
    * 生成请求ID
    */
   generateRequestId() {
-    return `req_${Date.now()}_${require('crypto').randomBytes(4).toString('hex')}`;
+    return `req_${Date.now()}_${require("node:crypto").randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 生成批次ID
    */
   generateBatchId() {
-    return `batch_${Date.now()}_${require('crypto').randomBytes(4).toString('hex')}`;
+    return `batch_${Date.now()}_${require("node:crypto").randomBytes(4).toString("hex")}`;
   }
 
   /**
@@ -704,8 +747,8 @@ class IntelligentRoutingManager extends EventEmitter {
    */
   async loadConfiguration() {
     try {
-      const fs = require('fs').promises;
-      const data = await fs.readFile(this.configPath, 'utf8');
+      const fs = require("node:fs").promises;
+      const data = await fs.readFile(this.configPath, "utf8");
       const config = JSON.parse(data);
 
       if (config.activeStrategy) {
@@ -713,11 +756,14 @@ class IntelligentRoutingManager extends EventEmitter {
       }
 
       if (config.routingStrategies) {
-        this.routingStrategies = { ...this.routingStrategies, ...config.routingStrategies };
+        this.routingStrategies = {
+          ...this.routingStrategies,
+          ...config.routingStrategies,
+        };
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载智能路由配置失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载智能路由配置失败:", error.message);
       }
     }
   }
@@ -727,7 +773,7 @@ class IntelligentRoutingManager extends EventEmitter {
    */
   async saveConfiguration() {
     try {
-      const fs = require('fs').promises;
+      const fs = require("node:fs").promises;
       const config = {
         activeStrategy: this.activeStrategy,
         routingStrategies: this.routingStrategies,
@@ -736,7 +782,7 @@ class IntelligentRoutingManager extends EventEmitter {
 
       await fs.writeFile(this.configPath, JSON.stringify(config, null, 2));
     } catch (error) {
-      console.error('保存智能路由配置失败:', error.message);
+      console.error("保存智能路由配置失败:", error.message);
     }
   }
 }

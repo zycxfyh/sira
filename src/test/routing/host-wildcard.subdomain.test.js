@@ -1,29 +1,29 @@
-const testHelper = require('../common/routing.helper');
-const config = require('../../../src/core/config');
+const testHelper = require("../common/routing.helper");
+const config = require("../../../core/config");
 
-describe('exact host name configuration', () => {
+describe("exact host name configuration", () => {
   const helper = testHelper();
   const originalGatewayConfig = config.gatewayConfig;
-  helper.addPolicy('test', () => (req, res) => {
+  helper.addPolicy("test", () => (req, res) => {
     res.json({
-      result: 'test',
+      result: "test",
       hostname: req.hostname,
       url: req.url,
       apiEndpoint: req.egContext.apiEndpoint,
     });
   });
 
-  before('setup', () => {
+  before("setup", () => {
     config.gatewayConfig = {
       http: { port: 9084 },
       apiEndpoints: {
-        test_domain: { host: '*.acme.com' }, // path defaults to *
-        test_second_level_domain: { host: '*.*.example.com' }, // path defaults to *
+        test_domain: { host: "*.acme.com" }, // path defaults to *
+        test_second_level_domain: { host: "*.*.example.com" }, // path defaults to *
       },
-      policies: ['test'],
+      policies: ["test"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['test_domain', 'test_second_level_domain'],
+          apiEndpoints: ["test_domain", "test_second_level_domain"],
           policies: { test: {} },
         },
       },
@@ -32,102 +32,102 @@ describe('exact host name configuration', () => {
     helper.setup();
   });
 
-  after('cleanup', () => {
+  after("cleanup", () => {
     config.gatewayConfig = originalGatewayConfig;
     return helper.cleanup();
   });
 
   it(
-    'abc.acme.com/',
+    "abc.acme.com/",
     helper.validateSuccess({
       setup: {
-        host: 'abc.acme.com',
-        url: '/',
+        host: "abc.acme.com",
+        url: "/",
       },
       test: {
-        host: 'abc.acme.com',
-        url: '/',
-        result: 'test',
+        host: "abc.acme.com",
+        url: "/",
+        result: "test",
       },
-    })
+    }),
   );
 
   it(
-    'abc.acme.com',
+    "abc.acme.com",
     helper.validateSuccess({
       setup: {
-        host: 'abc.acme.com',
-        url: '',
+        host: "abc.acme.com",
+        url: "",
       },
       test: {
-        host: 'abc.acme.com',
-        url: '/',
-        result: 'test',
+        host: "abc.acme.com",
+        url: "/",
+        result: "test",
       },
-    })
+    }),
   );
   it(
-    'sub.abc.example.com',
+    "sub.abc.example.com",
     helper.validateSuccess({
       setup: {
-        host: 'sub.abc.example.com',
-        url: '',
+        host: "sub.abc.example.com",
+        url: "",
       },
       test: {
-        host: 'sub.abc.example.com',
-        url: '/',
-        result: 'test',
+        host: "sub.abc.example.com",
+        url: "/",
+        result: "test",
       },
-    })
+    }),
   );
   it(
-    'should not serve sub.abc.acme.com ',
+    "should not serve sub.abc.acme.com ",
     helper.validate404({
       setup: {
-        host: 'sub.abc.acme.com',
-        url: '',
+        host: "sub.abc.acme.com",
+        url: "",
       },
-    })
+    }),
   );
   it(
-    'should not serve abc.example.com ',
+    "should not serve abc.example.com ",
     helper.validate404({
       setup: {
-        host: 'abc.example.com',
-        url: '',
+        host: "abc.example.com",
+        url: "",
       },
-    })
+    }),
   );
   it(
-    'abc.acme.com/pretty',
+    "abc.acme.com/pretty",
     helper.validateSuccess({
       setup: {
-        host: 'abc.acme.com',
-        url: '/pretty',
+        host: "abc.acme.com",
+        url: "/pretty",
       },
       test: {
-        host: 'abc.acme.com',
-        url: '/pretty',
-        result: 'test',
+        host: "abc.acme.com",
+        url: "/pretty",
+        result: "test",
       },
-    })
+    }),
   );
   it(
-    'should not load root domain acme.com/',
+    "should not load root domain acme.com/",
     helper.validate404({
       setup: {
-        host: 'acme.com',
-        url: '/',
+        host: "acme.com",
+        url: "/",
       },
-    })
+    }),
   );
   it(
-    'should not load deep domain zx.abc.acme.com/',
+    "should not load deep domain zx.abc.acme.com/",
     helper.validate404({
       setup: {
-        host: 'zx.abc.acme.com',
-        url: '/',
+        host: "zx.abc.acme.com",
+        url: "/",
       },
-    })
+    }),
   );
 });

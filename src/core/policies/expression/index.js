@@ -1,15 +1,15 @@
 module.exports = {
-  policy: require('./expression'),
+  policy: require("./expression"),
   schema: {
-    $id: 'http://express-gateway.io/schemas/policies/expression.json',
-    type: 'object',
+    $id: "http://express-gateway.io/schemas/policies/expression.json",
+    type: "object",
     properties: {
       jscode: {
-        type: 'string',
-        description: 'Javascript code to execute against the current egContext',
-        examples: ['req.testValue = 10'],
+        type: "string",
+        description: "Javascript code to execute against the current egContext",
+        examples: ["req.testValue = 10"],
       },
     },
-    required: ['jscode'],
+    required: ["jscode"],
   },
 };

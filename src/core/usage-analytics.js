@@ -3,16 +3,16 @@
  * 收集、分析和报告API使用情况、成本消耗、用户行为等
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const EventEmitter = require('events');
+const fs = require("node:fs").promises;
+const path = require("node:path");
+const EventEmitter = require("node:events");
 
 class UsageAnalytics extends EventEmitter {
   constructor(options = {}) {
     super();
 
     this.options = {
-      dataDir: options.dataDir || path.join(process.cwd(), 'data', 'analytics'),
+      dataDir: options.dataDir || path.join(process.cwd(), "data", "analytics"),
       retentionDays: options.retentionDays || 90,
       enableRealTime: options.enableRealTime !== false,
       enablePersistence: options.enablePersistence !== false,
@@ -40,7 +40,10 @@ class UsageAnalytics extends EventEmitter {
     this.timers = [];
 
     // 初始化（测试环境跳过）
-    if (process.env.NODE_ENV !== 'test' || process.env.DISABLE_USAGE_ANALYTICS !== 'true') {
+    if (
+      process.env.NODE_ENV !== "test" ||
+      process.env.DISABLE_USAGE_ANALYTICS !== "true"
+    ) {
       this.initialize();
     }
   }
@@ -61,11 +64,11 @@ class UsageAnalytics extends EventEmitter {
       // 启动定时任务
       this.startScheduledTasks();
 
-      this.emit('initialized');
-      console.log('✅ 用量统计模块初始化完成');
+      this.emit("initialized");
+      console.log("✅ 用量统计模块初始化完成");
     } catch (error) {
-      console.error('❌ 用量统计模块初始化失败:', error);
-      this.emit('error', error);
+      console.error("❌ 用量统计模块初始化失败:", error);
+      this.emit("error", error);
     }
   }
 
@@ -93,10 +96,10 @@ class UsageAnalytics extends EventEmitter {
     const day = this.getDayKey(timestamp);
 
     // 全局请求统计
-    this.incrementCounter(this.stats.requests, 'total');
+    this.incrementCounter(this.stats.requests, "total");
     this.incrementCounter(this.stats.requests, `status_${statusCode}`);
-    this.addToCounter(this.stats.requests, 'tokens', tokens || 0);
-    this.addToCounter(this.stats.requests, 'cost', cost || 0);
+    this.addToCounter(this.stats.requests, "tokens", tokens || 0);
+    this.addToCounter(this.stats.requests, "cost", cost || 0);
 
     // 用户统计
     if (userId) {
@@ -109,7 +112,11 @@ class UsageAnalytics extends EventEmitter {
     // 供应商统计
     if (provider) {
       this.incrementCounter(this.stats.providers, provider);
-      this.addToCounter(this.stats.providers, `${provider}_tokens`, tokens || 0);
+      this.addToCounter(
+        this.stats.providers,
+        `${provider}_tokens`,
+        tokens || 0,
+      );
       this.addToCounter(this.stats.providers, `${provider}_cost`, cost || 0);
       this.addToCounter(this.stats.providers, `${provider}_requests`, 1);
     }
@@ -153,7 +160,7 @@ class UsageAnalytics extends EventEmitter {
     });
 
     // 触发事件
-    this.emit('request', {
+    this.emit("request", {
       userId,
       provider,
       model,
@@ -267,24 +274,31 @@ class UsageAnalytics extends EventEmitter {
    * 获取统计数据
    */
   getStats(options = {}) {
-    const { userId, provider, model, startDate, endDate, groupBy = 'total' } = options;
+    const {
+      userId,
+      provider,
+      model,
+      startDate,
+      endDate,
+      groupBy = "total",
+    } = options;
 
     let result = {};
 
     switch (groupBy) {
-      case 'user':
+      case "user":
         result = this.getUserStats(userId, startDate, endDate);
         break;
-      case 'provider':
+      case "provider":
         result = this.getProviderStats(provider, startDate, endDate);
         break;
-      case 'model':
+      case "model":
         result = this.getModelStats(model, startDate, endDate);
         break;
-      case 'hourly':
+      case "hourly":
         result = this.getHourlyStats(startDate, endDate);
         break;
-      case 'daily':
+      case "daily":
         result = this.getDailyStats(startDate, endDate);
         break;
       default:
@@ -298,19 +312,37 @@ class UsageAnalytics extends EventEmitter {
    * 获取全局统计
    */
   getGlobalStats(startDate, endDate) {
-    const filteredHourly = this.filterByDateRange(this.stats.hourlyStats, startDate, endDate);
+    const filteredHourly = this.filterByDateRange(
+      this.stats.hourlyStats,
+      startDate,
+      endDate,
+    );
 
     return {
       summary: {
-        totalRequests: Array.from(filteredHourly.values()).reduce((sum, h) => sum + h.requests, 0),
-        totalTokens: Array.from(filteredHourly.values()).reduce((sum, h) => sum + h.tokens, 0),
-        totalCost: Array.from(filteredHourly.values()).reduce((sum, h) => sum + h.cost, 0),
-        totalErrors: Array.from(filteredHourly.values()).reduce((sum, h) => sum + h.errors, 0),
-        uniqueUsers: new Set(Array.from(filteredHourly.values()).map(h => h.users)).size,
+        totalRequests: Array.from(filteredHourly.values()).reduce(
+          (sum, h) => sum + h.requests,
+          0,
+        ),
+        totalTokens: Array.from(filteredHourly.values()).reduce(
+          (sum, h) => sum + h.tokens,
+          0,
+        ),
+        totalCost: Array.from(filteredHourly.values()).reduce(
+          (sum, h) => sum + h.cost,
+          0,
+        ),
+        totalErrors: Array.from(filteredHourly.values()).reduce(
+          (sum, h) => sum + h.errors,
+          0,
+        ),
+        uniqueUsers: new Set(
+          Array.from(filteredHourly.values()).map((h) => h.users),
+        ).size,
       },
-      topUsers: this.getTopItems(this.stats.users, 10, 'requests'),
-      topProviders: this.getTopItems(this.stats.providers, 10, 'requests'),
-      topModels: this.getTopItems(this.stats.models, 10, 'requests'),
+      topUsers: this.getTopItems(this.stats.users, 10, "requests"),
+      topProviders: this.getTopItems(this.stats.providers, 10, "requests"),
+      topModels: this.getTopItems(this.stats.models, 10, "requests"),
       errorRate: this.calculateErrorRate(filteredHourly),
       avgResponseTime: this.calculateAvgResponseTime(),
       costPerToken: this.calculateCostPerToken(),
@@ -320,11 +352,11 @@ class UsageAnalytics extends EventEmitter {
   /**
    * 获取用户统计
    */
-  getUserStats(userId, startDate, endDate) {
+  getUserStats(userId, _startDate, _endDate) {
     if (!userId) {
       return {
         users: Array.from(this.stats.users.entries())
-          .filter(([key]) => !key.includes('_'))
+          .filter(([key]) => !key.includes("_"))
           .map(([userId, count]) => ({
             userId,
             requests: count,
@@ -348,11 +380,11 @@ class UsageAnalytics extends EventEmitter {
   /**
    * 获取供应商统计
    */
-  getProviderStats(provider, startDate, endDate) {
+  getProviderStats(provider, _startDate, _endDate) {
     const providers = {};
 
     for (const [key, value] of this.stats.providers) {
-      if (!key.includes('_')) {
+      if (!key.includes("_")) {
         providers[key] = {
           requests: value,
           tokens: this.stats.providers.get(`${key}_tokens`) || 0,
@@ -372,11 +404,11 @@ class UsageAnalytics extends EventEmitter {
   /**
    * 获取模型统计
    */
-  getModelStats(model, startDate, endDate) {
+  getModelStats(model, _startDate, _endDate) {
     const models = {};
 
     for (const [key, value] of this.stats.models) {
-      if (!key.includes('_')) {
+      if (!key.includes("_")) {
         models[key] = {
           requests: value,
           tokens: this.stats.models.get(`${key}_tokens`) || 0,
@@ -396,9 +428,15 @@ class UsageAnalytics extends EventEmitter {
    * 获取小时统计
    */
   getHourlyStats(startDate, endDate) {
-    const filtered = this.filterByDateRange(this.stats.hourlyStats, startDate, endDate);
+    const filtered = this.filterByDateRange(
+      this.stats.hourlyStats,
+      startDate,
+      endDate,
+    );
     return {
-      hourly: Array.from(filtered.entries()).sort(([a], [b]) => a.localeCompare(b)),
+      hourly: Array.from(filtered.entries()).sort(([a], [b]) =>
+        a.localeCompare(b),
+      ),
     };
   }
 
@@ -406,9 +444,15 @@ class UsageAnalytics extends EventEmitter {
    * 获取日统计
    */
   getDailyStats(startDate, endDate) {
-    const filtered = this.filterByDateRange(this.stats.dailyStats, startDate, endDate);
+    const filtered = this.filterByDateRange(
+      this.stats.dailyStats,
+      startDate,
+      endDate,
+    );
     return {
-      daily: Array.from(filtered.entries()).sort(([a], [b]) => a.localeCompare(b)),
+      daily: Array.from(filtered.entries()).sort(([a], [b]) =>
+        a.localeCompare(b),
+      ),
     };
   }
 
@@ -416,24 +460,30 @@ class UsageAnalytics extends EventEmitter {
    * 生成报告
    */
   async generateReport(options = {}) {
-    const { type = 'summary', format = 'json', startDate, endDate, outputPath } = options;
+    const {
+      type = "summary",
+      format = "json",
+      startDate,
+      endDate,
+      outputPath,
+    } = options;
 
     let report = {};
 
     switch (type) {
-      case 'summary':
+      case "summary":
         report = this.getStats({ startDate, endDate });
         break;
-      case 'users':
-        report = this.getStats({ groupBy: 'user', startDate, endDate });
+      case "users":
+        report = this.getStats({ groupBy: "user", startDate, endDate });
         break;
-      case 'providers':
-        report = this.getStats({ groupBy: 'provider', startDate, endDate });
+      case "providers":
+        report = this.getStats({ groupBy: "provider", startDate, endDate });
         break;
-      case 'models':
-        report = this.getStats({ groupBy: 'model', startDate, endDate });
+      case "models":
+        report = this.getStats({ groupBy: "model", startDate, endDate });
         break;
-      case 'performance':
+      case "performance":
         report = this.getPerformanceReport();
         break;
     }
@@ -443,15 +493,17 @@ class UsageAnalytics extends EventEmitter {
       generatedAt: new Date().toISOString(),
       type,
       dateRange: { startDate, endDate },
-      version: '1.0.0',
+      version: "1.0.0",
     };
 
     // 保存到文件
     if (outputPath) {
       const content =
-        format === 'json' ? JSON.stringify(report, null, 2) : this.formatAsMarkdown(report);
+        format === "json"
+          ? JSON.stringify(report, null, 2)
+          : this.formatAsMarkdown(report);
 
-      await fs.writeFile(outputPath, content, 'utf8');
+      await fs.writeFile(outputPath, content, "utf8");
       console.log(`📄 报告已保存到: ${outputPath}`);
     }
 
@@ -465,7 +517,7 @@ class UsageAnalytics extends EventEmitter {
     const performance = {};
 
     for (const [key, perf] of this.stats.performance) {
-      const [provider, model] = key.split(':');
+      const [provider, model] = key.split(":");
       if (!performance[provider]) {
         performance[provider] = {};
       }
@@ -476,7 +528,9 @@ class UsageAnalytics extends EventEmitter {
         p95ResponseTime: perf.p95Time,
         p99ResponseTime: perf.p99Time,
         successRate:
-          perf.count > 0 ? ((perf.successCount / perf.count) * 100).toFixed(2) + '%' : '0%',
+          perf.count > 0
+            ? `${((perf.successCount / perf.count) * 100).toFixed(2)}%`
+            : "0%",
         totalRequests: perf.count,
       };
     }
@@ -522,9 +576,9 @@ class UsageAnalytics extends EventEmitter {
     return filtered;
   }
 
-  getTopItems(dataMap, limit, sortBy) {
+  getTopItems(dataMap, limit, _sortBy) {
     return Array.from(dataMap.entries())
-      .filter(([key]) => !key.includes('_'))
+      .filter(([key]) => !key.includes("_"))
       .map(([key, count]) => ({
         item: key,
         count,
@@ -536,10 +590,18 @@ class UsageAnalytics extends EventEmitter {
   }
 
   calculateErrorRate(hourlyStats) {
-    const totalRequests = Array.from(hourlyStats.values()).reduce((sum, h) => sum + h.requests, 0);
-    const totalErrors = Array.from(hourlyStats.values()).reduce((sum, h) => sum + h.errors, 0);
+    const totalRequests = Array.from(hourlyStats.values()).reduce(
+      (sum, h) => sum + h.requests,
+      0,
+    );
+    const totalErrors = Array.from(hourlyStats.values()).reduce(
+      (sum, h) => sum + h.errors,
+      0,
+    );
 
-    return totalRequests > 0 ? ((totalErrors / totalRequests) * 100).toFixed(2) + '%' : '0%';
+    return totalRequests > 0
+      ? `${((totalErrors / totalRequests) * 100).toFixed(2)}%`
+      : "0%";
   }
 
   calculateAvgResponseTime() {
@@ -554,9 +616,13 @@ class UsageAnalytics extends EventEmitter {
 
   calculateCostPerToken() {
     const totalTokens =
-      Array.from(this.stats.requests.values()).find((_, key) => key === 'tokens') || 0;
+      Array.from(this.stats.requests.values()).find(
+        (_, key) => key === "tokens",
+      ) || 0;
     const totalCost =
-      Array.from(this.stats.requests.values()).find((_, key) => key === 'cost') || 0;
+      Array.from(this.stats.requests.values()).find(
+        (_, key) => key === "cost",
+      ) || 0;
 
     return totalTokens > 0 ? ((totalCost / totalTokens) * 1000).toFixed(4) : 0;
   }
@@ -568,17 +634,20 @@ class UsageAnalytics extends EventEmitter {
     if (!this.options.enablePersistence) return;
 
     try {
-      const dataPath = path.join(this.options.dataDir, 'usage-stats.json');
+      const dataPath = path.join(this.options.dataDir, "usage-stats.json");
       const data = {
         timestamp: new Date().toISOString(),
         stats: Object.fromEntries(
-          Object.entries(this.stats).map(([key, map]) => [key, Object.fromEntries(map)])
+          Object.entries(this.stats).map(([key, map]) => [
+            key,
+            Object.fromEntries(map),
+          ]),
         ),
       };
 
-      await fs.writeFile(dataPath, JSON.stringify(data, null, 2), 'utf8');
+      await fs.writeFile(dataPath, JSON.stringify(data, null, 2), "utf8");
     } catch (error) {
-      console.error('❌ 统计数据持久化失败:', error);
+      console.error("❌ 统计数据持久化失败:", error);
     }
   }
 
@@ -587,7 +656,7 @@ class UsageAnalytics extends EventEmitter {
    */
   async loadHistoricalData() {
     try {
-      const dataPath = path.join(this.options.dataDir, 'usage-stats.json');
+      const dataPath = path.join(this.options.dataDir, "usage-stats.json");
 
       const exists = await fs
         .access(dataPath)
@@ -595,7 +664,7 @@ class UsageAnalytics extends EventEmitter {
         .catch(() => false);
       if (!exists) return;
 
-      const data = JSON.parse(await fs.readFile(dataPath, 'utf8'));
+      const data = JSON.parse(await fs.readFile(dataPath, "utf8"));
 
       // 恢复统计数据
       for (const [category, categoryData] of Object.entries(data.stats)) {
@@ -604,9 +673,9 @@ class UsageAnalytics extends EventEmitter {
         }
       }
 
-      console.log('✅ 历史统计数据已加载');
+      console.log("✅ 历史统计数据已加载");
     } catch (error) {
-      console.error('❌ 加载历史统计数据失败:', error);
+      console.error("❌ 加载历史统计数据失败:", error);
     }
   }
 
@@ -637,7 +706,10 @@ class UsageAnalytics extends EventEmitter {
    */
   startScheduledTasks() {
     // 测试环境跳过定时任务
-    if (process.env.NODE_ENV === 'test' && process.env.DISABLE_SCHEDULED_TASKS === 'true') {
+    if (
+      process.env.NODE_ENV === "test" &&
+      process.env.DISABLE_SCHEDULED_TASKS === "true"
+    ) {
       return;
     }
 
@@ -646,7 +718,7 @@ class UsageAnalytics extends EventEmitter {
       () => {
         this.persistData();
       },
-      5 * 60 * 1000
+      5 * 60 * 1000,
     );
     this.timers.push(persistTimer);
 
@@ -655,7 +727,7 @@ class UsageAnalytics extends EventEmitter {
       () => {
         this.cleanupOldData();
       },
-      24 * 60 * 60 * 1000
+      24 * 60 * 60 * 1000,
     );
     this.timers.push(cleanupTimer);
 
@@ -664,14 +736,14 @@ class UsageAnalytics extends EventEmitter {
       async () => {
         const reportPath = path.join(
           this.options.dataDir,
-          `summary-${new Date().toISOString().slice(0, 13)}.json`
+          `summary-${new Date().toISOString().slice(0, 13)}.json`,
         );
         await this.generateReport({
-          type: 'summary',
+          type: "summary",
           outputPath: reportPath,
         });
       },
-      60 * 60 * 1000
+      60 * 60 * 1000,
     );
     this.timers.push(reportTimer);
   }
@@ -681,7 +753,7 @@ class UsageAnalytics extends EventEmitter {
    */
   cleanup() {
     // 清理所有定时器
-    this.timers.forEach(timer => {
+    this.timers.forEach((timer) => {
       if (timer) {
         clearInterval(timer);
       }
@@ -699,11 +771,11 @@ class UsageAnalytics extends EventEmitter {
    * 格式化为Markdown
    */
   formatAsMarkdown(report) {
-    let markdown = '# Sira AI网关 - 用量统计报告\n\n';
+    let markdown = "# Sira AI网关 - 用量统计报告\n\n";
     markdown += `**生成时间**: ${report.metadata.generatedAt}\n\n`;
 
     if (report.summary) {
-      markdown += '## 📊 全局统计\n\n';
+      markdown += "## 📊 全局统计\n\n";
       markdown += `- 总请求数: ${report.summary.totalRequests}\n`;
       markdown += `- 总Token数: ${report.summary.totalTokens}\n`;
       markdown += `- 总成本: ¥${report.summary.totalCost.toFixed(2)}\n`;

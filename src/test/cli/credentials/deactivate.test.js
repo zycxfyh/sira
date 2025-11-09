@@ -1,10 +1,10 @@
-const assert = require('assert');
-const environment = require('../../fixtures/cli/environment');
-const adminHelper = require('../../common/admin-helper')();
-const namespace = 'express-gateway:credentials:deactivate';
-const idGen = require('uuid62');
+const assert = require("node:assert");
+const environment = require("../../fixtures/cli/environment");
+const adminHelper = require("../../common/admin-helper")();
+const namespace = "express-gateway:credentials:deactivate";
+const idGen = require("uuid62");
 
-describe('eg credentials deactivate', () => {
+describe("eg credentials deactivate", () => {
   let program, env, user, cred1;
   before(() => {
     ({ program, env } = environment.bootstrap());
@@ -17,14 +17,14 @@ describe('eg credentials deactivate', () => {
     return adminHelper.admin.users
       .create({
         username: idGen.v4(),
-        firstname: 'f',
-        lastname: 'l',
+        firstname: "f",
+        lastname: "l",
       })
-      .then(createdUser => {
+      .then((createdUser) => {
         user = createdUser;
-        return adminHelper.admin.credentials.create(user.id, 'key-auth', {});
+        return adminHelper.admin.credentials.create(user.id, "key-auth", {});
       })
-      .then(createdCred => {
+      .then((createdCred) => {
         cred1 = createdCred;
       });
   });
@@ -34,51 +34,53 @@ describe('eg credentials deactivate', () => {
     return adminHelper.reset();
   });
 
-  it('deactivates a credential', done => {
-    env.hijack(namespace, generator => {
+  it("deactivates a credential", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.credentials
-          .info(cred1.keyId, 'key-auth')
-          .then(cred => {
+          .info(cred1.keyId, "key-auth")
+          .then((cred) => {
             assert.strictEqual(cred.isActive, false);
-            assert.strictEqual(output, 'Deactivated ' + cred1.keyId);
+            assert.strictEqual(output, `Deactivated ${cred1.keyId}`);
             done();
           })
           .catch(done);
       });
     });
 
-    env.argv = program.parse(`credentials deactivate ${cred1.keyId} -t key-auth`);
+    env.argv = program.parse(
+      `credentials deactivate ${cred1.keyId} -t key-auth`,
+    );
   });
 
-  it('prints only the credential id when using the --quiet flag', done => {
-    env.hijack(namespace, generator => {
+  it("prints only the credential id when using the --quiet flag", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.stdout = message => {
+        generator.stdout = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.credentials
-          .info(cred1.keyId, 'key-auth')
-          .then(cred => {
+          .info(cred1.keyId, "key-auth")
+          .then((cred) => {
             assert.strictEqual(cred.isActive, false);
             assert.strictEqual(output[0], cred1.keyId);
             done();
@@ -87,6 +89,8 @@ describe('eg credentials deactivate', () => {
       });
     });
 
-    env.argv = program.parse(`credentials deactivate -t key-auth -q ${cred1.keyId}`);
+    env.argv = program.parse(
+      `credentials deactivate -t key-auth -q ${cred1.keyId}`,
+    );
   });
 });

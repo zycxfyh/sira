@@ -1,6 +1,6 @@
-const logger = require('./instance');
+const logger = require("./instance");
 
-module.exports = params => (req, res, next) => {
+module.exports = (params) => (req, _res, next) => {
   try {
     logger.info(req.egContext.evaluateAsTemplateString(params.message));
   } catch (e) {

@@ -12,9 +12,9 @@
  * - 多维度分析: 按模型、地区、时间等多维度分析
  */
 
-const { EventEmitter } = require('events');
-const fs = require('fs').promises;
-const path = require('path');
+const { EventEmitter } = require("node:events");
+const _fs = require("node:fs").promises;
+const _path = require("node:path");
 
 // 价格监控配置
 const PRICE_CONFIG = {
@@ -23,12 +23,12 @@ const PRICE_CONFIG = {
   priceChangeThreshold: 0.05, // 5%价格变动阈值
   alertCooldown: 60 * 60 * 1000, // 告警冷却1小时
   predictionDays: 30, // 成本预测天数
-  dataDir: './data/price-monitor',
+  dataDir: "./data/price-monitor",
 };
 
 // 价格数据结构
 class PriceData {
-  constructor(provider, model, region = 'global') {
+  constructor(provider, model, region = "global") {
     this.provider = provider;
     this.model = model;
     this.region = region;
@@ -38,8 +38,8 @@ class PriceData {
     this.priceHistory = [];
     this.alerts = [];
     this.metadata = {
-      currency: 'USD',
-      unit: 'per 1K tokens',
+      currency: "USD",
+      unit: "per 1K tokens",
       lastAlertTime: null,
       changeCount: 0,
     };
@@ -56,7 +56,9 @@ class PriceData {
       price: newPrice,
       timestamp,
       changePercent:
-        this.previousPrice > 0 ? (newPrice - this.previousPrice) / this.previousPrice : 0,
+        this.previousPrice > 0
+          ? (newPrice - this.previousPrice) / this.previousPrice
+          : 0,
     });
 
     // 限制历史记录数量
@@ -66,7 +68,9 @@ class PriceData {
 
     // 检测价格变动
     if (this.previousPrice > 0) {
-      const changePercent = Math.abs((newPrice - this.previousPrice) / this.previousPrice);
+      const changePercent = Math.abs(
+        (newPrice - this.previousPrice) / this.previousPrice,
+      );
       if (changePercent >= PRICE_CONFIG.priceChangeThreshold) {
         this.triggerPriceAlert(newPrice, changePercent, timestamp);
       }
@@ -88,12 +92,13 @@ class PriceData {
     }
 
     const alert = {
-      type: newPrice > this.previousPrice ? 'price_increase' : 'price_decrease',
+      type: newPrice > this.previousPrice ? "price_increase" : "price_decrease",
       oldPrice: this.previousPrice,
       newPrice,
       changePercent,
       timestamp,
-      severity: changePercent > 0.2 ? 'high' : changePercent > 0.1 ? 'medium' : 'low',
+      severity:
+        changePercent > 0.2 ? "high" : changePercent > 0.1 ? "medium" : "low",
     };
 
     this.alerts.push(alert);
@@ -110,24 +115,24 @@ class PriceData {
   // 获取价格趋势
   getPriceTrend(hours = 24) {
     const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
-    const recentPrices = this.priceHistory.filter(p => p.timestamp >= cutoff);
+    const recentPrices = this.priceHistory.filter((p) => p.timestamp >= cutoff);
 
-    if (recentPrices.length < 2) return 'stable';
+    if (recentPrices.length < 2) return "stable";
 
     const first = recentPrices[0].price;
     const last = recentPrices[recentPrices.length - 1].price;
     const change = (last - first) / first;
 
-    if (Math.abs(change) < 0.01) return 'stable';
-    return change > 0 ? 'increasing' : 'decreasing';
+    if (Math.abs(change) < 0.01) return "stable";
+    return change > 0 ? "increasing" : "decreasing";
   }
 
   // 获取统计信息
   getStats() {
     if (this.priceHistory.length === 0) return null;
 
-    const prices = this.priceHistory.map(p => p.price);
-    const changes = this.priceHistory.slice(1).map(p => p.changePercent);
+    const prices = this.priceHistory.map((p) => p.price);
+    const changes = this.priceHistory.slice(1).map((p) => p.changePercent);
 
     return {
       currentPrice: this.currentPrice,
@@ -135,7 +140,9 @@ class PriceData {
       maxPrice: Math.max(...prices),
       avgPrice: prices.reduce((a, b) => a + b, 0) / prices.length,
       volatility:
-        changes.length > 0 ? Math.sqrt(changes.reduce((a, b) => a + b * b, 0) / changes.length) : 0,
+        changes.length > 0
+          ? Math.sqrt(changes.reduce((a, b) => a + b * b, 0) / changes.length)
+          : 0,
       totalChanges: this.metadata.changeCount,
       lastUpdate: this.lastUpdate,
       trend: this.getPriceTrend(),
@@ -155,7 +162,7 @@ class PriceCollector {
 
   // 收集价格数据 (抽象方法，需要子类实现)
   async collect() {
-    throw new Error('collect() method must be implemented by subclass');
+    throw new Error("collect() method must be implemented by subclass");
   }
 
   // 重试机制
@@ -172,11 +179,11 @@ class PriceCollector {
         lastError = error;
         this.collectErrors++;
         logWarn(
-          `价格收集失败 ${this.provider} (尝试 ${attempt}/${this.maxRetries}): ${error.message}`
+          `价格收集失败 ${this.provider} (尝试 ${attempt}/${this.maxRetries}): ${error.message}`,
         );
 
         if (attempt < this.maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 递增延迟
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // 递增延迟
         }
       }
     }
@@ -186,18 +193,18 @@ class PriceCollector {
 
   // 验证收集的数据
   validateData(data) {
-    if (!data || typeof data !== 'object') {
-      throw new Error('Invalid price data format');
+    if (!data || typeof data !== "object") {
+      throw new Error("Invalid price data format");
     }
 
     // 检查必需字段
     if (!data.models || !Array.isArray(data.models)) {
-      throw new Error('Price data must contain models array');
+      throw new Error("Price data must contain models array");
     }
 
     // 验证每个模型的价格数据
     for (const model of data.models) {
-      if (!model.name || typeof model.price !== 'number' || model.price < 0) {
+      if (!model.name || typeof model.price !== "number" || model.price < 0) {
         throw new Error(`Invalid model data: ${JSON.stringify(model)}`);
       }
     }
@@ -213,14 +220,14 @@ class OpenAIPriceCollector extends PriceCollector {
     // 暂时返回模拟数据
     const data = {
       models: [
-        { name: 'gpt-3.5-turbo', price: 0.002, unit: 'per 1K tokens' },
-        { name: 'gpt-4', price: 0.03, unit: 'per 1K tokens' },
-        { name: 'gpt-4-turbo', price: 0.01, unit: 'per 1K tokens' },
-        { name: 'dall-e-3', price: 0.04, unit: 'per image' },
-        { name: 'whisper-1', price: 0.006, unit: 'per minute' },
-        { name: 'tts-1', price: 0.000015, unit: 'per character' },
+        { name: "gpt-3.5-turbo", price: 0.002, unit: "per 1K tokens" },
+        { name: "gpt-4", price: 0.03, unit: "per 1K tokens" },
+        { name: "gpt-4-turbo", price: 0.01, unit: "per 1K tokens" },
+        { name: "dall-e-3", price: 0.04, unit: "per image" },
+        { name: "whisper-1", price: 0.006, unit: "per minute" },
+        { name: "tts-1", price: 0.000015, unit: "per character" },
       ],
-      currency: 'USD',
+      currency: "USD",
       lastUpdate: new Date(),
     };
 
@@ -234,11 +241,11 @@ class AnthropicPriceCollector extends PriceCollector {
   async collect() {
     const data = {
       models: [
-        { name: 'claude-3-opus', price: 0.015, unit: 'per 1K tokens' },
-        { name: 'claude-3-sonnet', price: 0.003, unit: 'per 1K tokens' },
-        { name: 'claude-3-haiku', price: 0.00025, unit: 'per 1K tokens' },
+        { name: "claude-3-opus", price: 0.015, unit: "per 1K tokens" },
+        { name: "claude-3-sonnet", price: 0.003, unit: "per 1K tokens" },
+        { name: "claude-3-haiku", price: 0.00025, unit: "per 1K tokens" },
       ],
-      currency: 'USD',
+      currency: "USD",
       lastUpdate: new Date(),
     };
 
@@ -252,11 +259,11 @@ class GooglePriceCollector extends PriceCollector {
   async collect() {
     const data = {
       models: [
-        { name: 'gemini-pro', price: 0.001, unit: 'per 1K tokens' },
-        { name: 'gemini-pro-vision', price: 0.0025, unit: 'per 1K tokens' },
-        { name: 'text-bison', price: 0.001, unit: 'per 1K tokens' },
+        { name: "gemini-pro", price: 0.001, unit: "per 1K tokens" },
+        { name: "gemini-pro-vision", price: 0.0025, unit: "per 1K tokens" },
+        { name: "text-bison", price: 0.001, unit: "per 1K tokens" },
       ],
-      currency: 'USD',
+      currency: "USD",
       lastUpdate: new Date(),
     };
 
@@ -306,7 +313,10 @@ class RouteOptimizer {
 
     // 价格权重
     if (rule.priceWeight > 0) {
-      const price = this.priceMonitor.getCurrentPrice(provider.provider, provider.model);
+      const price = this.priceMonitor.getCurrentPrice(
+        provider.provider,
+        provider.model,
+      );
       score += rule.priceWeight * (price || 1);
     }
 
@@ -327,7 +337,10 @@ class RouteOptimizer {
       score += 1000; // 大幅降低优先级
     }
 
-    if (constraints.requiredRegion && provider.region !== constraints.requiredRegion) {
+    if (
+      constraints.requiredRegion &&
+      provider.region !== constraints.requiredRegion
+    ) {
       score += 500; // 降低优先级
     }
 
@@ -344,7 +357,7 @@ class RouteOptimizer {
   optimizeRoutes() {
     const optimizations = {};
 
-    for (const [modelType, rule] of this.optimizationRules) {
+    for (const [modelType, _rule] of this.optimizationRules) {
       const optimalRoute = this.getOptimalRoute(modelType);
       if (optimalRoute) {
         optimizations[modelType] = optimalRoute;
@@ -364,17 +377,24 @@ class CostPredictor {
   }
 
   // 预测未来成本
-  predictCosts(modelType, days = PRICE_CONFIG.predictionDays, confidence = 0.95) {
+  predictCosts(
+    modelType,
+    days = PRICE_CONFIG.predictionDays,
+    confidence = 0.95,
+  ) {
     const historicalData = this.getHistoricalPriceData(modelType);
     if (historicalData.length < 7) {
-      return { error: 'Insufficient historical data for prediction' };
+      return { error: "Insufficient historical data for prediction" };
     }
 
     // 简单的线性回归预测 (可以扩展为更复杂的算法)
     const predictions = this.linearRegressionPrediction(historicalData, days);
 
     // 计算置信区间
-    const confidenceInterval = this.calculateConfidenceInterval(historicalData, confidence);
+    const confidenceInterval = this.calculateConfidenceInterval(
+      historicalData,
+      confidence,
+    );
 
     return {
       modelType,
@@ -392,15 +412,17 @@ class CostPredictor {
     const allData = [];
 
     for (const provider of providers) {
-      const priceData = this.priceMonitor.priceData.get(`${provider.provider}_${provider.model}`);
+      const priceData = this.priceMonitor.priceData.get(
+        `${provider.provider}_${provider.model}`,
+      );
       if (priceData && priceData.priceHistory.length > 0) {
         allData.push(
-          ...priceData.priceHistory.map(p => ({
+          ...priceData.priceHistory.map((p) => ({
             timestamp: p.timestamp,
             price: p.price,
             provider: provider.provider,
             model: provider.model,
-          }))
+          })),
         );
       }
     }
@@ -408,7 +430,9 @@ class CostPredictor {
     // 按时间排序并返回最近30天的数据
     return allData
       .sort((a, b) => a.timestamp - b.timestamp)
-      .filter(p => p.timestamp >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+      .filter(
+        (p) => p.timestamp >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      );
   }
 
   // 线性回归预测
@@ -435,8 +459,8 @@ class CostPredictor {
 
     // 简单的线性回归
     const n = data.length;
-    const timestamps = data.map(p => p.timestamp.getTime());
-    const prices = data.map(p => p.price);
+    const timestamps = data.map((p) => p.timestamp.getTime());
+    const prices = data.map((p) => p.price);
 
     const sumX = timestamps.reduce((a, b) => a + b, 0);
     const sumY = prices.reduce((a, b) => a + b, 0);
@@ -453,10 +477,11 @@ class CostPredictor {
   calculateConfidenceInterval(data, confidence) {
     if (data.length < 2) return { lower: 0, upper: 0 };
 
-    const prices = data.map(p => p.price);
+    const prices = data.map((p) => p.price);
     const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
     const variance =
-      prices.reduce((sum, price) => sum + Math.pow(price - mean, 2), 0) / (prices.length - 1);
+      prices.reduce((sum, price) => sum + (price - mean) ** 2, 0) /
+      (prices.length - 1);
     const stdDev = Math.sqrt(variance);
 
     // t分布近似 (简化计算)
@@ -492,14 +517,17 @@ class PriceMonitorManager extends EventEmitter {
     // 启动监控循环
     this.startMonitoring();
 
-    logInfo('价格监控管理器初始化完成');
+    logInfo("价格监控管理器初始化完成");
   }
 
   // 初始化价格收集器
   initCollectors() {
-    this.collectors.set('openai', new OpenAIPriceCollector('openai', {}));
-    this.collectors.set('anthropic', new AnthropicPriceCollector('anthropic', {}));
-    this.collectors.set('google', new GooglePriceCollector('google', {}));
+    this.collectors.set("openai", new OpenAIPriceCollector("openai", {}));
+    this.collectors.set(
+      "anthropic",
+      new AnthropicPriceCollector("anthropic", {}),
+    );
+    this.collectors.set("google", new GooglePriceCollector("google", {}));
 
     // 可以继续添加更多收集器
   }
@@ -507,7 +535,7 @@ class PriceMonitorManager extends EventEmitter {
   // 初始化路由优化规则
   initOptimizationRules() {
     // GPT模型优化规则
-    this.routeOptimizer.addRule('gpt', {
+    this.routeOptimizer.addRule("gpt", {
       priceWeight: 0.7,
       performanceWeight: 0.2,
       reliabilityWeight: 0.1,
@@ -515,7 +543,7 @@ class PriceMonitorManager extends EventEmitter {
     });
 
     // Claude模型优化规则
-    this.routeOptimizer.addRule('claude', {
+    this.routeOptimizer.addRule("claude", {
       priceWeight: 0.8,
       performanceWeight: 0.1,
       reliabilityWeight: 0.1,
@@ -523,7 +551,7 @@ class PriceMonitorManager extends EventEmitter {
     });
 
     // 图像生成优化规则
-    this.routeOptimizer.addRule('image', {
+    this.routeOptimizer.addRule("image", {
       priceWeight: 0.9,
       performanceWeight: 0.05,
       reliabilityWeight: 0.05,
@@ -544,7 +572,7 @@ class PriceMonitorManager extends EventEmitter {
 
   // 更新所有价格
   async updatePrices() {
-    logInfo('开始更新价格数据...');
+    logInfo("开始更新价格数据...");
 
     const updatePromises = [];
     for (const [providerName, collector] of this.collectors) {
@@ -553,7 +581,7 @@ class PriceMonitorManager extends EventEmitter {
 
     try {
       await Promise.allSettled(updatePromises);
-      logInfo('价格数据更新完成');
+      logInfo("价格数据更新完成");
 
       // 检查是否需要重新优化路由
       this.checkRouteOptimization();
@@ -580,7 +608,7 @@ class PriceMonitorManager extends EventEmitter {
         priceData.updatePrice(model.price);
 
         // 发出价格更新事件
-        this.emit('priceUpdated', {
+        this.emit("priceUpdated", {
           provider: providerName,
           model: model.name,
           oldPrice,
@@ -592,12 +620,12 @@ class PriceMonitorManager extends EventEmitter {
         const alert = priceData.alerts[priceData.alerts.length - 1];
         if (alert && alert.timestamp > new Date(Date.now() - 60000)) {
           // 最近1分钟的告警
-          this.emit('priceAlert', alert);
+          this.emit("priceAlert", alert);
         }
       }
     } catch (error) {
       logError(`更新 ${providerName} 价格失败: ${error.message}`);
-      this.emit('priceUpdateError', {
+      this.emit("priceUpdateError", {
         provider: providerName,
         error: error.message,
         timestamp: new Date(),
@@ -610,7 +638,7 @@ class PriceMonitorManager extends EventEmitter {
     const optimizations = this.routeOptimizer.optimizeRoutes();
 
     for (const [modelType, route] of Object.entries(optimizations)) {
-      this.emit('routeOptimized', {
+      this.emit("routeOptimized", {
         modelType,
         optimalRoute: route,
         timestamp: new Date(),
@@ -633,7 +661,7 @@ class PriceMonitorManager extends EventEmitter {
     if (!priceData) return [];
 
     const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
-    return priceData.priceHistory.filter(p => p.timestamp >= cutoff);
+    return priceData.priceHistory.filter((p) => p.timestamp >= cutoff);
   }
 
   // 获取支持某个模型的提供商
@@ -642,7 +670,7 @@ class PriceMonitorManager extends EventEmitter {
 
     for (const [key, priceData] of this.priceData) {
       if (priceData.currentPrice > 0) {
-        const [provider, model] = key.split('_');
+        const [provider, model] = key.split("_");
 
         // 检查模型类型匹配
         if (this.isModelTypeMatch(model, modelType)) {
@@ -663,14 +691,14 @@ class PriceMonitorManager extends EventEmitter {
   // 检查模型类型是否匹配
   isModelTypeMatch(model, modelType) {
     const typeMappings = {
-      gpt: ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo'],
-      claude: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
-      gemini: ['gemini-pro', 'gemini-pro-vision'],
-      image: ['dall-e-3', 'midjourney-v5', 'stable-diffusion-xl'],
-      speech: ['whisper-1', 'tts-1'],
+      gpt: ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo"],
+      claude: ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
+      gemini: ["gemini-pro", "gemini-pro-vision"],
+      image: ["dall-e-3", "midjourney-v5", "stable-diffusion-xl"],
+      speech: ["whisper-1", "tts-1"],
     };
 
-    return typeMappings[modelType]?.some(m => model.includes(m)) || false;
+    return typeMappings[modelType]?.some((m) => model.includes(m)) || false;
   }
 
   // 获取价格统计
@@ -678,7 +706,10 @@ class PriceMonitorManager extends EventEmitter {
     const stats = [];
 
     for (const [key, priceData] of this.priceData) {
-      if ((!provider || key.startsWith(`${provider}_`)) && (!model || key.endsWith(`_${model}`))) {
+      if (
+        (!provider || key.startsWith(`${provider}_`)) &&
+        (!model || key.endsWith(`_${model}`))
+      ) {
         const priceStats = priceData.getStats();
         if (priceStats) {
           stats.push({
@@ -698,7 +729,7 @@ class PriceMonitorManager extends EventEmitter {
     const alerts = [];
     const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
 
-    for (const [key, priceData] of this.priceData) {
+    for (const [_key, priceData] of this.priceData) {
       for (const alert of priceData.alerts) {
         if (alert.timestamp >= cutoff) {
           alerts.push({
@@ -724,7 +755,7 @@ class PriceMonitorManager extends EventEmitter {
   }
 
   // 导出价格数据
-  async exportPriceData(format = 'json') {
+  async exportPriceData(format = "json") {
     const data = {
       exportTime: new Date(),
       priceData: Array.from(this.priceData.entries()).map(([key, data]) => ({
@@ -736,7 +767,7 @@ class PriceMonitorManager extends EventEmitter {
       alerts: this.getPriceAlerts(168), // 最近7天的告警
     };
 
-    if (format === 'csv') {
+    if (format === "csv") {
       return this.convertToCSV(data);
     }
 
@@ -746,7 +777,7 @@ class PriceMonitorManager extends EventEmitter {
   // 转换为CSV格式
   convertToCSV(data) {
     const csvLines = [
-      'Provider,Model,Current Price,Min Price,Max Price,Avg Price,Volatility,Changes,Trend,Last Update',
+      "Provider,Model,Current Price,Min Price,Max Price,Avg Price,Volatility,Changes,Trend,Last Update",
     ];
 
     for (const stat of data.stats) {
@@ -762,26 +793,28 @@ class PriceMonitorManager extends EventEmitter {
           stat.totalChanges,
           stat.trend,
           stat.lastUpdate,
-        ].join(',')
+        ].join(","),
       );
     }
 
-    return csvLines.join('\n');
+    return csvLines.join("\n");
   }
 
   // 清理过期数据
   cleanup() {
     const cutoff = new Date(Date.now() - this.config.historyRetention);
 
-    for (const [key, priceData] of this.priceData) {
+    for (const [_key, priceData] of this.priceData) {
       // 清理过期历史记录
-      priceData.priceHistory = priceData.priceHistory.filter(p => p.timestamp >= cutoff);
+      priceData.priceHistory = priceData.priceHistory.filter(
+        (p) => p.timestamp >= cutoff,
+      );
 
       // 清理过期告警
-      priceData.alerts = priceData.alerts.filter(a => a.timestamp >= cutoff);
+      priceData.alerts = priceData.alerts.filter((a) => a.timestamp >= cutoff);
     }
 
-    logInfo('价格监控数据清理完成');
+    logInfo("价格监控数据清理完成");
   }
 }
 
@@ -795,7 +828,9 @@ function logWarn(message) {
 }
 
 function logError(message) {
-  console.error(`[PriceMonitor ERROR] ${new Date().toISOString()} - ${message}`);
+  console.error(
+    `[PriceMonitor ERROR] ${new Date().toISOString()} - ${message}`,
+  );
 }
 
 // 导出单例实例

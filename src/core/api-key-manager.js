@@ -3,8 +3,8 @@
  * 提供完整的API密钥生命周期管理和智能轮换功能
  */
 
-const crypto = require('crypto');
-const EventEmitter = require('events');
+const crypto = require("node:crypto");
+const EventEmitter = require("node:events");
 
 class APIKeyManager extends EventEmitter {
   constructor(options = {}) {
@@ -33,11 +33,15 @@ class APIKeyManager extends EventEmitter {
     this.autoRotationTimer = null;
 
     // 初始化自动轮换（测试环境跳过）
-    if (this.options.enableAutoRotation && (process.env.NODE_ENV !== 'test' || process.env.DISABLE_AUTO_ROTATION !== 'true')) {
+    if (
+      this.options.enableAutoRotation &&
+      (process.env.NODE_ENV !== "test" ||
+        process.env.DISABLE_AUTO_ROTATION !== "true")
+    ) {
       this.startAutoRotation();
     }
 
-    console.log('✅ API密钥管理模块初始化完成');
+    console.log("✅ API密钥管理模块初始化完成");
   }
 
   /**
@@ -52,10 +56,14 @@ class APIKeyManager extends EventEmitter {
    */
   encryptKey(key) {
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv('aes-256-cbc', this.options.encryptionKey, iv);
-    let encrypted = cipher.update(key, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return { encrypted, iv: iv.toString('hex') };
+    const cipher = crypto.createCipheriv(
+      "aes-256-cbc",
+      this.options.encryptionKey,
+      iv,
+    );
+    let encrypted = cipher.update(key, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return { encrypted, iv: iv.toString("hex") };
   }
 
   /**
@@ -63,12 +71,12 @@ class APIKeyManager extends EventEmitter {
    */
   decryptKey(encryptedData) {
     const decipher = crypto.createDecipheriv(
-      'aes-256-cbc',
+      "aes-256-cbc",
       this.options.encryptionKey,
-      Buffer.from(encryptedData.iv, 'hex')
+      Buffer.from(encryptedData.iv, "hex"),
     );
-    let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
+    let decrypted = decipher.update(encryptedData.encrypted, "hex", "utf8");
+    decrypted += decipher.final("utf8");
     return decrypted;
   }
 
@@ -84,7 +92,9 @@ class APIKeyManager extends EventEmitter {
 
     // 检查密钥数量限制
     if (providerKeys.size >= this.options.maxKeysPerProvider) {
-      throw new Error(`供应商 ${provider} 的密钥数量已达到上限 ${this.options.maxKeysPerProvider}`);
+      throw new Error(
+        `供应商 ${provider} 的密钥数量已达到上限 ${this.options.maxKeysPerProvider}`,
+      );
     }
 
     const keyId = this.generateKeyId();
@@ -95,7 +105,7 @@ class APIKeyManager extends EventEmitter {
       provider,
       name: keyData.name || `Key ${keyId.slice(-8)}`,
       encryptedKey,
-      permissions: keyData.permissions || ['read', 'write'],
+      permissions: keyData.permissions || ["read", "write"],
       limits: {
         requestsPerMinute: keyData.requestsPerMinute || 60,
         requestsPerHour: keyData.requestsPerHour || 1000,
@@ -106,11 +116,11 @@ class APIKeyManager extends EventEmitter {
       },
       metadata: {
         createdAt: new Date().toISOString(),
-        createdBy: keyData.createdBy || 'system',
+        createdBy: keyData.createdBy || "system",
         tags: keyData.tags || [],
-        description: keyData.description || '',
+        description: keyData.description || "",
       },
-      status: 'active',
+      status: "active",
       rotation: {
         lastRotated: new Date().toISOString(),
         nextRotation: this.calculateNextRotation(),
@@ -122,7 +132,7 @@ class APIKeyManager extends EventEmitter {
     this.initializeKeyUsage(keyId);
     this.initializeRateLimit(keyId, keyRecord.limits);
 
-    this.emit('keyAdded', { provider, keyId, keyRecord });
+    this.emit("keyAdded", { provider, keyId, keyRecord });
     console.log(`✅ 已添加API密钥: ${provider}/${keyId}`);
 
     return keyId;
@@ -163,7 +173,7 @@ class APIKeyManager extends EventEmitter {
 
     for (const [keyId, keyRecord] of providerKeys) {
       // 检查密钥状态
-      if (keyRecord.status !== 'active') {
+      if (keyRecord.status !== "active") {
         continue;
       }
 
@@ -175,7 +185,9 @@ class APIKeyManager extends EventEmitter {
       // 检查所需权限
       if (
         requiredPermissions.length > 0 &&
-        !requiredPermissions.every(perm => keyRecord.permissions.includes(perm))
+        !requiredPermissions.every((perm) =>
+          keyRecord.permissions.includes(perm),
+        )
       ) {
         continue;
       }
@@ -200,22 +212,30 @@ class APIKeyManager extends EventEmitter {
   /**
    * 选择最佳API密钥
    */
-  selectBestKey(provider, userId = null, requiredPermissions = [], preferences = {}) {
-    const availableKeys = this.getAvailableKeys(provider, userId, requiredPermissions);
+  selectBestKey(
+    provider,
+    userId = null,
+    requiredPermissions = [],
+    preferences = {},
+  ) {
+    const availableKeys = this.getAvailableKeys(
+      provider,
+      userId,
+      requiredPermissions,
+    );
 
     if (availableKeys.length === 0) {
       return null;
     }
 
     // 基于策略选择密钥
-    const strategy = preferences.strategy || 'round_robin';
+    const strategy = preferences.strategy || "round_robin";
 
     switch (strategy) {
-      case 'least_used':
+      case "least_used":
         return this.selectLeastUsedKey(availableKeys);
-      case 'random':
+      case "random":
         return availableKeys[Math.floor(Math.random() * availableKeys.length)];
-      case 'round_robin':
       default:
         return this.selectRoundRobinKey(provider, availableKeys);
     }
@@ -245,9 +265,9 @@ class APIKeyManager extends EventEmitter {
   selectRoundRobinKey(provider, availableKeys) {
     // 简单的轮询实现
     const providerKeys = Array.from(this.keys.get(provider).keys());
-    const activeKeys = providerKeys.filter(keyId => {
+    const activeKeys = providerKeys.filter((keyId) => {
       const record = this.keys.get(provider).get(keyId);
-      return record.status === 'active';
+      return record.status === "active";
     });
 
     if (activeKeys.length === 0) return availableKeys[0];
@@ -256,7 +276,10 @@ class APIKeyManager extends EventEmitter {
     const now = Date.now();
     const index = now % activeKeys.length;
 
-    return availableKeys.find(key => key.id === activeKeys[index]) || availableKeys[0];
+    return (
+      availableKeys.find((key) => key.id === activeKeys[index]) ||
+      availableKeys[0]
+    );
   }
 
   /**
@@ -303,7 +326,11 @@ class APIKeyManager extends EventEmitter {
 
     // 检查是否超过限制
     if (this.checkUsageLimits(keyId, usage)) {
-      this.emit('keyLimitExceeded', { keyId, usage, limits: this.getKeyLimits(keyId) });
+      this.emit("keyLimitExceeded", {
+        keyId,
+        usage,
+        limits: this.getKeyLimits(keyId),
+      });
     }
   }
 
@@ -319,7 +346,10 @@ class APIKeyManager extends EventEmitter {
     const hour = Math.floor(now / 3600000);
     const day = Math.floor(now / 86400000);
 
-    const minuteUsage = usage.minuteCounts.get(minute) || { requests: 0, tokens: 0 };
+    const minuteUsage = usage.minuteCounts.get(minute) || {
+      requests: 0,
+      tokens: 0,
+    };
     const hourUsage = usage.hourCounts.get(hour) || { requests: 0, tokens: 0 };
     const dayUsage = usage.dayCounts.get(day) || { requests: 0, tokens: 0 };
 
@@ -370,9 +400,10 @@ class APIKeyManager extends EventEmitter {
 
     // 更新元数据
     if (newKeyData.name) keyRecord.name = newKeyData.name;
-    if (newKeyData.description) keyRecord.metadata.description = newKeyData.description;
+    if (newKeyData.description)
+      keyRecord.metadata.description = newKeyData.description;
 
-    this.emit('keyRotated', { provider, keyId, oldKey, newKey: keyRecord });
+    this.emit("keyRotated", { provider, keyId, oldKey, newKey: keyRecord });
     console.log(`🔄 已轮换API密钥: ${provider}/${keyId}`);
 
     return keyRecord;
@@ -381,7 +412,7 @@ class APIKeyManager extends EventEmitter {
   /**
    * 禁用API密钥
    */
-  disableKey(provider, keyId, reason = 'manual') {
+  disableKey(provider, keyId, reason = "manual") {
     const providerKeys = this.keys.get(provider);
     if (!providerKeys) {
       throw new Error(`供应商 ${provider} 不存在`);
@@ -392,11 +423,11 @@ class APIKeyManager extends EventEmitter {
       throw new Error(`密钥 ${keyId} 不存在`);
     }
 
-    keyRecord.status = 'disabled';
+    keyRecord.status = "disabled";
     keyRecord.metadata.disabledAt = new Date().toISOString();
     keyRecord.metadata.disabledReason = reason;
 
-    this.emit('keyDisabled', { provider, keyId, reason });
+    this.emit("keyDisabled", { provider, keyId, reason });
     console.log(`🚫 已禁用API密钥: ${provider}/${keyId} (${reason})`);
   }
 
@@ -414,12 +445,12 @@ class APIKeyManager extends EventEmitter {
       throw new Error(`密钥 ${keyId} 不存在`);
     }
 
-    keyRecord.status = 'active';
+    keyRecord.status = "active";
     keyRecord.metadata.enabledAt = new Date().toISOString();
     delete keyRecord.metadata.disabledAt;
     delete keyRecord.metadata.disabledReason;
 
-    this.emit('keyEnabled', { provider, keyId });
+    this.emit("keyEnabled", { provider, keyId });
     console.log(`✅ 已启用API密钥: ${provider}/${keyId}`);
   }
 
@@ -443,7 +474,7 @@ class APIKeyManager extends EventEmitter {
     this.keyUsage.delete(keyId);
     this.rateLimits.delete(keyId);
 
-    this.emit('keyDeleted', { provider, keyId, keyRecord });
+    this.emit("keyDeleted", { provider, keyId, keyRecord });
     console.log(`🗑️ 已删除API密钥: ${provider}/${keyId}`);
   }
 
@@ -452,7 +483,7 @@ class APIKeyManager extends EventEmitter {
    */
   setUserPermissions(userId, permissions) {
     this.permissions.set(userId, permissions);
-    this.emit('permissionsUpdated', { userId, permissions });
+    this.emit("permissionsUpdated", { userId, permissions });
   }
 
   /**
@@ -463,7 +494,10 @@ class APIKeyManager extends EventEmitter {
     if (!userPermissions) return false;
 
     // 检查是否有对该供应商的权限
-    if (userPermissions.providers && !userPermissions.providers.includes(provider)) {
+    if (
+      userPermissions.providers &&
+      !userPermissions.providers.includes(provider)
+    ) {
       return false;
     }
 
@@ -494,8 +528,14 @@ class APIKeyManager extends EventEmitter {
       totalTokens: usage.totalTokens,
       totalCost: usage.totalCost,
       lastUsed: usage.lastUsed,
-      currentMinuteRequests: this.getCurrentWindowUsage(usage.minuteCounts, 60000),
-      currentHourRequests: this.getCurrentWindowUsage(usage.hourCounts, 3600000),
+      currentMinuteRequests: this.getCurrentWindowUsage(
+        usage.minuteCounts,
+        60000,
+      ),
+      currentHourRequests: this.getCurrentWindowUsage(
+        usage.hourCounts,
+        3600000,
+      ),
       currentDayRequests: this.getCurrentWindowUsage(usage.dayCounts, 86400000),
     };
   }
@@ -535,7 +575,7 @@ class APIKeyManager extends EventEmitter {
       };
 
       for (const [keyId, keyRecord] of providerKeys) {
-        if (keyRecord.status === 'active') {
+        if (keyRecord.status === "active") {
           providerStats.activeKeys++;
           overview.activeKeys++;
         } else {
@@ -580,10 +620,10 @@ class APIKeyManager extends EventEmitter {
       () => {
         this.checkAndRotateKeys();
       },
-      60 * 60 * 1000
+      60 * 60 * 1000,
     ); // 1小时
 
-    console.log('🔄 自动密钥轮换已启动');
+    console.log("🔄 自动密钥轮换已启动");
   }
 
   /**
@@ -593,7 +633,7 @@ class APIKeyManager extends EventEmitter {
     if (this.autoRotationTimer) {
       clearInterval(this.autoRotationTimer);
       this.autoRotationTimer = null;
-      console.log('⏹️ 自动密钥轮换已停止');
+      console.log("⏹️ 自动密钥轮换已停止");
     }
   }
 
@@ -608,7 +648,7 @@ class APIKeyManager extends EventEmitter {
     this.permissions.clear();
     this.rateLimits.clear();
     this.rotationSchedule.clear();
-    console.log('🗑️ API密钥管理模块已销毁');
+    console.log("🗑️ API密钥管理模块已销毁");
   }
 
   /**
@@ -619,12 +659,12 @@ class APIKeyManager extends EventEmitter {
 
     for (const [provider, providerKeys] of this.keys) {
       for (const [keyId, keyRecord] of providerKeys) {
-        if (keyRecord.status !== 'active') continue;
+        if (keyRecord.status !== "active") continue;
 
         const nextRotation = new Date(keyRecord.rotation.nextRotation);
         if (now >= nextRotation) {
           // 密钥需要轮换
-          this.emit('keyRotationDue', { provider, keyId, keyRecord });
+          this.emit("keyRotationDue", { provider, keyId, keyRecord });
 
           // 这里可以集成自动生成新密钥的逻辑
           // 现在只是记录事件，实际轮换需要手动操作
@@ -638,7 +678,7 @@ class APIKeyManager extends EventEmitter {
    * 生成密钥ID
    */
   generateKeyId() {
-    return `key_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `key_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
@@ -736,7 +776,7 @@ class APIKeyManager extends EventEmitter {
       }
     }
 
-    console.log('✅ API密钥配置导入完成');
+    console.log("✅ API密钥配置导入完成");
   }
 
   /**

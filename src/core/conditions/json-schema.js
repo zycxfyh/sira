@@ -1,38 +1,39 @@
-const schemas = require('../schemas');
-const logger = require('../logger').gateway;
-const jsonParser = require('express').json();
-const urlEncoded = require('express').urlencoded({ extended: true });
-const { PassThrough } = require('stream');
+const schemas = require("../schemas");
+const logger = require("../logger").gateway;
+const jsonParser = require("express").json();
+const urlEncoded = require("express").urlencoded({ extended: true });
+const { PassThrough } = require("node:stream");
 
 module.exports = {
-  name: 'json-schema',
+  name: "json-schema",
   schema: {
-    $id: 'http://express-gateway.io/schemas/policies/json-schema.json',
-    type: 'object',
+    $id: "http://express-gateway.io/schemas/policies/json-schema.json",
+    type: "object",
     properties: {
       schema: {
-        type: 'object',
-        description: 'Json schema to validate against.',
-        examples: [{ type: 'string' }],
+        type: "object",
+        description: "Json schema to validate against.",
+        examples: [{ type: "string" }],
       },
       logErrors: {
-        type: 'boolean',
+        type: "boolean",
         default: false,
-        description: 'Value istructing the gateway to report the errors on the logger or not',
+        description:
+          "Value istructing the gateway to report the errors on the logger or not",
       },
     },
-    required: ['schema', 'logErrors'],
+    required: ["schema", "logErrors"],
   },
-  handler: config => {
-    return schemas.registerAsync(config.schema).then(validator => {
+  handler: (config) => {
+    return schemas.registerAsync(config.schema).then((validator) => {
       if (config.logErrors) {
-        return req => {
+        return (req) => {
           const { isValid, error } = validator(req.body);
           logger.warn(error);
           return isValid;
         };
       }
-      return req => validator(req.body).isValid;
+      return (req) => validator(req.body).isValid;
     });
   },
   middlewares: [
@@ -40,10 +41,10 @@ module.exports = {
       req.egContext.requestStream = new PassThrough();
       req.pipe(req.egContext.requestStream);
 
-      jsonParser(req, res, err => {
+      jsonParser(req, res, (err) => {
         if (err) return next(err);
 
-        urlEncoded(req, res, err => {
+        urlEncoded(req, res, (err) => {
           if (err) return next(err);
           next();
         });

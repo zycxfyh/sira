@@ -1,23 +1,23 @@
-const fs = require('fs');
-const yaml = require('js-yaml');
+const fs = require("node:fs");
+const yaml = require("js-yaml");
 
 // this module is to abstract saving files in json/yml format
 module.exports = {
   read(path, type) {
     const text = fs.readFileSync(path);
-    if (type === 'json') {
+    if (type === "json") {
       return JSON.parse(text);
     }
-    if (type === 'yml') {
+    if (type === "yml") {
       return yaml.load(text);
     }
   },
 
   save(text, path, type) {
-    if (type === 'json') {
+    if (type === "json") {
       fs.writeFileSync(path, JSON.stringify(text));
     }
-    if (type === 'yml') {
+    if (type === "yml") {
       fs.writeFileSync(path, yaml.dump(text));
     }
   },

@@ -1,20 +1,20 @@
 module.exports = {
-  policy: require('./terminate'),
+  policy: require("./terminate"),
   schema: {
-    $id: 'http://express-gateway.io/schemas/policies/terminate.json',
-    type: 'object',
+    $id: "http://express-gateway.io/schemas/policies/terminate.json",
+    type: "object",
     properties: {
       statusCode: {
-        type: 'number',
+        type: "number",
         default: 400,
-        description: 'HTTP Status Code to return for the request',
+        description: "HTTP Status Code to return for the request",
       },
       message: {
-        type: 'string',
-        default: 'Terminated',
-        description: 'text/plain message to return as a response',
+        type: "string",
+        default: "Terminated",
+        description: "text/plain message to return as a response",
       },
     },
-    required: ['statusCode', 'message'],
+    required: ["statusCode", "message"],
   },
 };

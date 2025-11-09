@@ -3,10 +3,10 @@
  * 生成全面的测试报告，支持多种格式和可视化
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const { exec } = require('child_process');
-const util = require('util');
+const fs = require("node:fs").promises;
+const path = require("node:path");
+const { exec } = require("node:child_process");
+const util = require("node:util");
 const execAsync = util.promisify(exec);
 
 /**
@@ -16,8 +16,9 @@ const execAsync = util.promisify(exec);
 class TestReportGenerator {
   constructor(options = {}) {
     this.options = {
-      reportDir: options.reportDir || path.join(__dirname, '../reports'),
-      templatesDir: options.templatesDir || path.join(__dirname, '../templates'),
+      reportDir: options.reportDir || path.join(__dirname, "../reports"),
+      templatesDir:
+        options.templatesDir || path.join(__dirname, "../templates"),
       enableCharts: options.enableCharts !== false,
       enableTrends: options.enableTrends !== false,
       includeScreenshots: options.includeScreenshots !== false,
@@ -33,7 +34,7 @@ class TestReportGenerator {
    * 初始化报告生成器
    */
   async initialize() {
-    console.log('🔧 初始化测试报告生成器');
+    console.log("🔧 初始化测试报告生成器");
 
     // 创建必要的目录
     await this.ensureDirectories();
@@ -51,13 +52,13 @@ class TestReportGenerator {
   async ensureDirectories() {
     const dirs = [
       this.options.reportDir,
-      path.join(this.options.reportDir, 'html'),
-      path.join(this.options.reportDir, 'json'),
-      path.join(this.options.reportDir, 'xml'),
-      path.join(this.options.reportDir, 'pdf'),
-      path.join(this.options.reportDir, 'charts'),
-      path.join(this.options.reportDir, 'screenshots'),
-      path.join(this.options.reportDir, 'trends'),
+      path.join(this.options.reportDir, "html"),
+      path.join(this.options.reportDir, "json"),
+      path.join(this.options.reportDir, "xml"),
+      path.join(this.options.reportDir, "pdf"),
+      path.join(this.options.reportDir, "charts"),
+      path.join(this.options.reportDir, "screenshots"),
+      path.join(this.options.reportDir, "trends"),
     ];
 
     for (const dir of dirs) {
@@ -74,10 +75,13 @@ class TestReportGenerator {
    */
   async loadReportHistory() {
     try {
-      const historyFile = path.join(this.options.reportDir, 'report-history.json');
-      const data = await fs.readFile(historyFile, 'utf8');
+      const historyFile = path.join(
+        this.options.reportDir,
+        "report-history.json",
+      );
+      const data = await fs.readFile(historyFile, "utf8");
       this.reportHistory = JSON.parse(data);
-    } catch (error) {
+    } catch (_error) {
       // 历史文件不存在，从空开始
       this.reportHistory = [];
     }
@@ -88,20 +92,20 @@ class TestReportGenerator {
    */
   async loadBaselines() {
     try {
-      const baselinesDir = path.join(__dirname, '../baselines');
+      const baselinesDir = path.join(__dirname, "../baselines");
       const files = await fs.readdir(baselinesDir);
 
       for (const file of files) {
-        if (file.endsWith('.json')) {
+        if (file.endsWith(".json")) {
           const filePath = path.join(baselinesDir, file);
-          const data = await fs.readFile(filePath, 'utf8');
+          const data = await fs.readFile(filePath, "utf8");
           const baseline = JSON.parse(data);
-          const testType = path.basename(file, '.json');
+          const testType = path.basename(file, ".json");
           this.baselines.set(testType, baseline);
         }
       }
     } catch (error) {
-      console.warn('加载基准线数据失败:', error.message);
+      console.warn("加载基准线数据失败:", error.message);
     }
   }
 
@@ -110,8 +114,8 @@ class TestReportGenerator {
    */
   async generateReport(testResults, options = {}) {
     const {
-      format = 'html',
-      testType = 'comprehensive',
+      format = "html",
+      testType = "comprehensive",
       includeCharts = this.options.enableCharts,
       includeTrends = this.options.enableTrends,
       includeScreenshots = this.options.includeScreenshots,
@@ -125,7 +129,10 @@ class TestReportGenerator {
 
     // 比较基准线
     if (compareWithBaseline) {
-      reportData.baselineComparison = this.compareWithBaseline(reportData, testType);
+      reportData.baselineComparison = this.compareWithBaseline(
+        reportData,
+        testType,
+      );
     }
 
     // 生成趋势分析
@@ -136,19 +143,23 @@ class TestReportGenerator {
     // 生成不同格式的报告
     const reports = {};
 
-    if (format === 'all' || format === 'html') {
-      reports.html = await this.generateHTMLReport(reportData, includeCharts, includeScreenshots);
+    if (format === "all" || format === "html") {
+      reports.html = await this.generateHTMLReport(
+        reportData,
+        includeCharts,
+        includeScreenshots,
+      );
     }
 
-    if (format === 'all' || format === 'json') {
+    if (format === "all" || format === "json") {
       reports.json = await this.generateJSONReport(reportData);
     }
 
-    if (format === 'all' || format === 'xml') {
+    if (format === "all" || format === "xml") {
       reports.xml = await this.generateXMLReport(reportData);
     }
 
-    if (format === 'all' || format === 'pdf') {
+    if (format === "all" || format === "pdf") {
       reports.pdf = await this.generatePDFReport(reportData);
     }
 
@@ -170,8 +181,8 @@ class TestReportGenerator {
       metadata: {
         generatedAt: new Date().toISOString(),
         testType,
-        framework: 'Sira Industrial Testing Framework',
-        version: '1.0.0',
+        framework: "Sira Industrial Testing Framework",
+        version: "1.0.0",
         environment: this.getEnvironmentInfo(),
       },
       summary: this.calculateSummary(testResults),
@@ -182,22 +193,22 @@ class TestReportGenerator {
 
     // 根据测试类型添加特定数据
     switch (testType) {
-      case 'e2e':
+      case "e2e":
         reportData.userJourneys = this.analyzeUserJourneys(testResults);
         break;
-      case 'performance':
+      case "performance":
         reportData.performance = this.analyzePerformance(testResults);
         break;
-      case 'load':
+      case "load":
         reportData.load = this.analyzeLoad(testResults);
         break;
-      case 'stress':
+      case "stress":
         reportData.stress = this.analyzeStress(testResults);
         break;
-      case 'reliability':
+      case "reliability":
         reportData.reliability = this.analyzeReliability(testResults);
         break;
-      case 'security':
+      case "security":
         reportData.security = this.analyzeSecurity(testResults);
         break;
     }
@@ -215,18 +226,22 @@ class TestReportGenerator {
         passedTests: testResults.success ? 1 : 0,
         failedTests: testResults.success ? 0 : 1,
         skippedTests: 0,
-        successRate: testResults.success ? '100.00%' : '0.00%',
+        successRate: testResults.success ? "100.00%" : "0.00%",
         totalDuration: testResults.duration || 0,
         averageDuration: testResults.duration || 0,
       };
     }
 
     const totalTests = testResults.length;
-    const passedTests = testResults.filter(r => r.success || r.passed).length;
+    const passedTests = testResults.filter((r) => r.success || r.passed).length;
     const failedTests = totalTests - passedTests;
-    const successRate = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(2) : '0.00';
+    const successRate =
+      totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(2) : "0.00";
 
-    const totalDuration = testResults.reduce((sum, r) => sum + (r.duration || 0), 0);
+    const totalDuration = testResults.reduce(
+      (sum, r) => sum + (r.duration || 0),
+      0,
+    );
     const averageDuration = totalTests > 0 ? totalDuration / totalTests : 0;
 
     return {
@@ -252,37 +267,50 @@ class TestReportGenerator {
     };
 
     // 聚合响应时间
-    testResults.forEach(result => {
+    testResults.forEach((result) => {
       if (result.responseTime) {
         metrics.responseTime.values.push(result.responseTime);
-        metrics.responseTime.min = Math.min(metrics.responseTime.min, result.responseTime);
-        metrics.responseTime.max = Math.max(metrics.responseTime.max, result.responseTime);
+        metrics.responseTime.min = Math.min(
+          metrics.responseTime.min,
+          result.responseTime,
+        );
+        metrics.responseTime.max = Math.max(
+          metrics.responseTime.max,
+          result.responseTime,
+        );
       }
     });
 
     if (metrics.responseTime.values.length > 0) {
       metrics.responseTime.avg =
-        metrics.responseTime.values.reduce((a, b) => a + b, 0) / metrics.responseTime.values.length;
+        metrics.responseTime.values.reduce((a, b) => a + b, 0) /
+        metrics.responseTime.values.length;
     } else {
       metrics.responseTime.min = 0;
     }
 
     // 聚合错误统计
-    testResults.forEach(result => {
+    testResults.forEach((result) => {
       if (!result.success && !result.passed) {
         metrics.errorRate.count++;
-        const errorType = result.error?.split(':')[0] || 'unknown';
-        metrics.errorRate.types.set(errorType, (metrics.errorRate.types.get(errorType) || 0) + 1);
+        const errorType = result.error?.split(":")[0] || "unknown";
+        metrics.errorRate.types.set(
+          errorType,
+          (metrics.errorRate.types.get(errorType) || 0) + 1,
+        );
       }
     });
 
     const totalTests = testResults.length;
     metrics.errorRate.rate =
-      totalTests > 0 ? ((metrics.errorRate.count / totalTests) * 100).toFixed(2) : '0.00';
+      totalTests > 0
+        ? ((metrics.errorRate.count / totalTests) * 100).toFixed(2)
+        : "0.00";
 
     // 聚合吞吐量
     if (testResults.length > 0 && testResults[0].duration) {
-      const totalDuration = testResults.reduce((sum, r) => sum + (r.duration || 0), 0) / 1000; // 秒
+      const totalDuration =
+        testResults.reduce((sum, r) => sum + (r.duration || 0), 0) / 1000; // 秒
       metrics.throughput.avg = totalTests / Math.max(totalDuration, 1);
     }
 
@@ -299,36 +327,42 @@ class TestReportGenerator {
     // 通用建议
     if (parseFloat(summary.successRate) < 95) {
       recommendations.push({
-        priority: 'high',
-        category: 'reliability',
+        priority: "high",
+        category: "reliability",
         message: `测试成功率仅为 ${summary.successRate}，低于95%阈值，需要重点关注失败的测试用例`,
       });
     }
 
     if (summary.averageDuration > 5000) {
       recommendations.push({
-        priority: 'medium',
-        category: 'performance',
-        message: '平均测试执行时间过长，建议优化测试代码或增加并行执行',
+        priority: "medium",
+        category: "performance",
+        message: "平均测试执行时间过长，建议优化测试代码或增加并行执行",
       });
     }
 
     // 根据测试类型生成特定建议
     switch (testType) {
-      case 'e2e':
+      case "e2e":
         recommendations.push(...this.generateE2ERecommendations(testResults));
         break;
-      case 'performance':
-        recommendations.push(...this.generatePerformanceRecommendations(testResults));
+      case "performance":
+        recommendations.push(
+          ...this.generatePerformanceRecommendations(testResults),
+        );
         break;
-      case 'load':
+      case "load":
         recommendations.push(...this.generateLoadRecommendations(testResults));
         break;
-      case 'stress':
-        recommendations.push(...this.generateStressRecommendations(testResults));
+      case "stress":
+        recommendations.push(
+          ...this.generateStressRecommendations(testResults),
+        );
         break;
-      case 'security':
-        recommendations.push(...this.generateSecurityRecommendations(testResults));
+      case "security":
+        recommendations.push(
+          ...this.generateSecurityRecommendations(testResults),
+        );
         break;
     }
 
@@ -341,20 +375,20 @@ class TestReportGenerator {
   generateE2ERecommendations(testResults) {
     const recommendations = [];
 
-    const failedJourneys = testResults.filter(r => !r.success);
+    const failedJourneys = testResults.filter((r) => !r.success);
     if (failedJourneys.length > 0) {
       recommendations.push({
-        priority: 'high',
-        category: 'ui/ux',
+        priority: "high",
+        category: "ui/ux",
         message: `${failedJourneys.length} 个用户旅程失败，可能存在严重的用户体验问题`,
       });
     }
 
-    const slowJourneys = testResults.filter(r => r.duration > 30000);
+    const slowJourneys = testResults.filter((r) => r.duration > 30000);
     if (slowJourneys.length > 0) {
       recommendations.push({
-        priority: 'medium',
-        category: 'performance',
+        priority: "medium",
+        category: "performance",
         message: `${slowJourneys.length} 个用户旅程执行过慢，需要优化页面加载和交互性能`,
       });
     }
@@ -371,16 +405,16 @@ class TestReportGenerator {
 
     if (metrics.responseTime.avg > 2000) {
       recommendations.push({
-        priority: 'high',
-        category: 'performance',
+        priority: "high",
+        category: "performance",
         message: `平均响应时间 ${metrics.responseTime.avg.toFixed(2)}ms 过高，建议优化API性能`,
       });
     }
 
     if (parseFloat(metrics.errorRate.rate) > 5) {
       recommendations.push({
-        priority: 'high',
-        category: 'reliability',
+        priority: "high",
+        category: "reliability",
         message: `错误率 ${metrics.errorRate.rate}% 过高，系统稳定性不足`,
       });
     }
@@ -397,8 +431,8 @@ class TestReportGenerator {
 
     if (metrics.throughput.avg < 50) {
       recommendations.push({
-        priority: 'medium',
-        category: 'scalability',
+        priority: "medium",
+        category: "scalability",
         message: `平均吞吐量 ${metrics.throughput.avg.toFixed(2)} RPS 较低，建议优化系统架构`,
       });
     }
@@ -414,13 +448,13 @@ class TestReportGenerator {
 
     // 分析资源使用峰值
     const highResourceUsage = testResults.filter(
-      r => r.resourceUsage?.cpu > 90 || r.resourceUsage?.memory > 90
+      (r) => r.resourceUsage?.cpu > 90 || r.resourceUsage?.memory > 90,
     );
 
     if (highResourceUsage.length > 0) {
       recommendations.push({
-        priority: 'high',
-        category: 'resource_management',
+        priority: "high",
+        category: "resource_management",
         message: `${highResourceUsage.length} 次测试中出现资源使用过高的情况，建议优化资源管理`,
       });
     }
@@ -434,12 +468,14 @@ class TestReportGenerator {
   generateSecurityRecommendations(testResults) {
     const recommendations = [];
 
-    const securityFailures = testResults.filter(r => r.category === 'security' && !r.success);
+    const securityFailures = testResults.filter(
+      (r) => r.category === "security" && !r.success,
+    );
 
     if (securityFailures.length > 0) {
       recommendations.push({
-        priority: 'critical',
-        category: 'security',
+        priority: "critical",
+        category: "security",
         message: `发现 ${securityFailures.length} 个安全漏洞，需要立即修复`,
       });
     }
@@ -453,34 +489,37 @@ class TestReportGenerator {
   analyzeUserJourneys(testResults) {
     const journeyStats = {
       totalJourneys: testResults.length,
-      completedJourneys: testResults.filter(r => r.success).length,
-      failedJourneys: testResults.filter(r => !r.success).length,
+      completedJourneys: testResults.filter((r) => r.success).length,
+      failedJourneys: testResults.filter((r) => !r.success).length,
       averageCompletionTime: 0,
       mostFailedStep: null,
       slowestJourney: null,
     };
 
     // 计算平均完成时间
-    const completedJourneys = testResults.filter(r => r.success);
+    const completedJourneys = testResults.filter((r) => r.success);
     if (completedJourneys.length > 0) {
       journeyStats.averageCompletionTime =
-        completedJourneys.reduce((sum, r) => sum + r.duration, 0) / completedJourneys.length;
+        completedJourneys.reduce((sum, r) => sum + r.duration, 0) /
+        completedJourneys.length;
     }
 
     // 找出最常失败的步骤
     const failedSteps = {};
-    testResults.forEach(result => {
+    testResults.forEach((result) => {
       if (!result.success && result.steps) {
         result.steps
-          .filter(step => !step.success)
-          .forEach(step => {
+          .filter((step) => !step.success)
+          .forEach((step) => {
             failedSteps[step.name] = (failedSteps[step.name] || 0) + 1;
           });
       }
     });
 
     if (Object.keys(failedSteps).length > 0) {
-      const mostFailed = Object.entries(failedSteps).sort(([, a], [, b]) => b - a)[0];
+      const mostFailed = Object.entries(failedSteps).sort(
+        ([, a], [, b]) => b - a,
+      )[0];
       journeyStats.mostFailedStep = {
         name: mostFailed[0],
         count: mostFailed[1],
@@ -512,8 +551,8 @@ class TestReportGenerator {
 
     // 响应时间分布分析
     const responseTimes = testResults
-      .filter(r => r.responseTime)
-      .map(r => r.responseTime)
+      .filter((r) => r.responseTime)
+      .map((r) => r.responseTime)
       .sort((a, b) => a - b);
 
     if (responseTimes.length > 0) {
@@ -533,7 +572,7 @@ class TestReportGenerator {
   /**
    * 分析负载数据
    */
-  analyzeLoad(testResults) {
+  analyzeLoad(_testResults) {
     return {
       scalabilityMetrics: {},
       resourceUtilization: {},
@@ -544,7 +583,7 @@ class TestReportGenerator {
   /**
    * 分析压力数据
    */
-  analyzeStress(testResults) {
+  analyzeStress(_testResults) {
     return {
       breakingPoint: null,
       resourceLimits: {},
@@ -555,9 +594,9 @@ class TestReportGenerator {
   /**
    * 分析可靠性数据
    */
-  analyzeReliability(testResults) {
+  analyzeReliability(_testResults) {
     return {
-      uptime: '99.99%',
+      uptime: "99.99%",
       mttr: 0,
       mtbf: 0,
       sloCompliance: {},
@@ -567,7 +606,7 @@ class TestReportGenerator {
   /**
    * 分析安全数据
    */
-  analyzeSecurity(testResults) {
+  analyzeSecurity(_testResults) {
     return {
       vulnerabilityCount: 0,
       riskLevels: {},
@@ -589,8 +628,8 @@ class TestReportGenerator {
     };
 
     // 比较关键指标
-    const metrics = ['successRate', 'averageDuration', 'errorRate'];
-    metrics.forEach(metric => {
+    const metrics = ["successRate", "averageDuration", "errorRate"];
+    metrics.forEach((metric) => {
       const current = reportData.summary[metric];
       const base = baseline.summary?.[metric];
 
@@ -598,7 +637,7 @@ class TestReportGenerator {
         const currentNum = parseFloat(current);
         const baseNum = parseFloat(base);
 
-        if (metric === 'errorRate' || metric === 'averageDuration') {
+        if (metric === "errorRate" || metric === "averageDuration") {
           // 这些指标降低是改进
           if (currentNum < baseNum) {
             comparison.improvements.push({
@@ -648,25 +687,33 @@ class TestReportGenerator {
    */
   generateTrendAnalysis(testType) {
     const recentReports = this.reportHistory
-      .filter(r => r.testType === testType)
+      .filter((r) => r.testType === testType)
       .sort((a, b) => new Date(b.generatedAt) - new Date(a.generatedAt))
       .slice(0, 10);
 
     if (recentReports.length < 2) return null;
 
     const trends = {
-      successRate: this.calculateTrend(recentReports.map(r => parseFloat(r.summary.successRate))),
-      averageDuration: this.calculateTrend(recentReports.map(r => r.summary.averageDuration)),
-      errorRate: this.calculateTrend(recentReports.map(r => parseFloat(r.summary.errorRate))),
-      direction: 'stable',
+      successRate: this.calculateTrend(
+        recentReports.map((r) => parseFloat(r.summary.successRate)),
+      ),
+      averageDuration: this.calculateTrend(
+        recentReports.map((r) => r.summary.averageDuration),
+      ),
+      errorRate: this.calculateTrend(
+        recentReports.map((r) => parseFloat(r.summary.errorRate)),
+      ),
+      direction: "stable",
     };
 
     // 确定整体趋势方向
-    const improving = trends.successRate === 'improving' && trends.errorRate === 'improving';
-    const degrading = trends.successRate === 'degrading' || trends.errorRate === 'degrading';
+    const improving =
+      trends.successRate === "improving" && trends.errorRate === "improving";
+    const degrading =
+      trends.successRate === "degrading" || trends.errorRate === "degrading";
 
-    if (improving) trends.direction = 'improving';
-    else if (degrading) trends.direction = 'degrading';
+    if (improving) trends.direction = "improving";
+    else if (degrading) trends.direction = "degrading";
 
     return trends;
   }
@@ -675,32 +722,36 @@ class TestReportGenerator {
    * 计算趋势
    */
   calculateTrend(values) {
-    if (values.length < 3) return 'insufficient_data';
+    if (values.length < 3) return "insufficient_data";
 
     const recent = values.slice(-3);
     const older = values.slice(0, -3).slice(-3);
 
-    if (older.length === 0) return 'insufficient_data';
+    if (older.length === 0) return "insufficient_data";
 
     const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
     const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
 
     const threshold = Math.abs(olderAvg * 0.05); // 5%阈值
 
-    if (Math.abs(recentAvg - olderAvg) < threshold) return 'stable';
-    if (recentAvg > olderAvg) return 'improving'; // 对于成功率是改进
-    return 'degrading';
+    if (Math.abs(recentAvg - olderAvg) < threshold) return "stable";
+    if (recentAvg > olderAvg) return "improving"; // 对于成功率是改进
+    return "degrading";
   }
 
   /**
    * 生成HTML报告
    */
   async generateHTMLReport(reportData, includeCharts, includeScreenshots) {
-    const htmlContent = this.buildHTMLReport(reportData, includeCharts, includeScreenshots);
+    const htmlContent = this.buildHTMLReport(
+      reportData,
+      includeCharts,
+      includeScreenshots,
+    );
     const fileName = `test-report-${Date.now()}.html`;
-    const filePath = path.join(this.options.reportDir, 'html', fileName);
+    const filePath = path.join(this.options.reportDir, "html", fileName);
 
-    await fs.writeFile(filePath, htmlContent, 'utf8');
+    await fs.writeFile(filePath, htmlContent, "utf8");
 
     console.log(`📊 HTML报告已生成: ${filePath}`);
 
@@ -716,9 +767,9 @@ class TestReportGenerator {
    */
   async generateJSONReport(reportData) {
     const fileName = `test-report-${Date.now()}.json`;
-    const filePath = path.join(this.options.reportDir, 'json', fileName);
+    const filePath = path.join(this.options.reportDir, "json", fileName);
 
-    await fs.writeFile(filePath, JSON.stringify(reportData, null, 2), 'utf8');
+    await fs.writeFile(filePath, JSON.stringify(reportData, null, 2), "utf8");
 
     console.log(`📊 JSON报告已生成: ${filePath}`);
 
@@ -734,9 +785,9 @@ class TestReportGenerator {
   async generateXMLReport(reportData) {
     const xmlContent = this.buildXMLReport(reportData);
     const fileName = `test-report-${Date.now()}.xml`;
-    const filePath = path.join(this.options.reportDir, 'xml', fileName);
+    const filePath = path.join(this.options.reportDir, "xml", fileName);
 
-    await fs.writeFile(filePath, xmlContent, 'utf8');
+    await fs.writeFile(filePath, xmlContent, "utf8");
 
     console.log(`📊 XML报告已生成: ${filePath}`);
 
@@ -753,7 +804,7 @@ class TestReportGenerator {
     // 这里可以集成PDF生成库，如puppeteer或pdfkit
     // 暂时生成简化版本
     const htmlReport = await this.generateHTMLReport(reportData, false, false);
-    const pdfPath = htmlReport.path.replace('.html', '.pdf');
+    const pdfPath = htmlReport.path.replace(".html", ".pdf");
 
     try {
       // 使用系统命令转换HTML到PDF (需要wkhtmltopdf或类似工具)
@@ -764,7 +815,7 @@ class TestReportGenerator {
         size: (await fs.stat(pdfPath)).size,
       };
     } catch (error) {
-      console.warn('PDF生成失败，使用HTML替代:', error.message);
+      console.warn("PDF生成失败，使用HTML替代:", error.message);
       return htmlReport;
     }
   }
@@ -772,7 +823,7 @@ class TestReportGenerator {
   /**
    * 构建HTML报告内容
    */
-  buildHTMLReport(reportData, includeCharts, includeScreenshots) {
+  buildHTMLReport(reportData, _includeCharts, _includeScreenshots) {
     const { summary } = reportData;
 
     return `
@@ -820,7 +871,7 @@ class TestReportGenerator {
     <div class="container">
         <div class="header">
             <h1>🧪 Sira AI网关 - 工业级测试报告</h1>
-            <p>测试类型: ${reportData.metadata.testType} | 生成时间: ${new Date(reportData.metadata.generatedAt).toLocaleString('zh-CN')}</p>
+            <p>测试类型: ${reportData.metadata.testType} | 生成时间: ${new Date(reportData.metadata.generatedAt).toLocaleString("zh-CN")}</p>
         </div>
 
         <div class="content">
@@ -833,11 +884,11 @@ class TestReportGenerator {
                     <div class="metric-label">通过测试</div>
                     <div class="metric-value">${summary.passedTests}</div>
                 </div>
-                <div class="metric-card ${summary.failedTests > 0 ? 'error' : 'success'}">
+                <div class="metric-card ${summary.failedTests > 0 ? "error" : "success"}">
                     <div class="metric-label">失败测试</div>
                     <div class="metric-value">${summary.failedTests}</div>
                 </div>
-                <div class="metric-card ${parseFloat(summary.successRate) >= 95 ? 'success' : parseFloat(summary.successRate) >= 80 ? 'warning' : 'error'}">
+                <div class="metric-card ${parseFloat(summary.successRate) >= 95 ? "success" : parseFloat(summary.successRate) >= 80 ? "warning" : "error"}">
                     <div class="metric-label">成功率</div>
                     <div class="metric-value">${summary.successRate}</div>
                 </div>
@@ -849,30 +900,31 @@ class TestReportGenerator {
                     <tr><th>指标</th><th>值</th><th>状态</th></tr>
                     <tr><td>总执行时间</td><td>${Math.round(summary.totalDuration / 1000)}秒</td><td>-</td></tr>
                     <tr><td>平均执行时间</td><td>${Math.round(summary.averageDuration)}ms</td><td>-</td></tr>
-                    <tr><td>测试成功率</td><td>${summary.successRate}</td><td class="${parseFloat(summary.successRate) >= 95 ? 'status-passed' : 'status-failed'}">${parseFloat(summary.successRate) >= 95 ? '优秀' : '需要改进'}</td></tr>
+                    <tr><td>测试成功率</td><td>${summary.successRate}</td><td class="${parseFloat(summary.successRate) >= 95 ? "status-passed" : "status-failed"}">${parseFloat(summary.successRate) >= 95 ? "优秀" : "需要改进"}</td></tr>
                 </table>
             </div>
 
             ${
-              reportData.recommendations && reportData.recommendations.length > 0
+              reportData.recommendations &&
+              reportData.recommendations.length > 0
                 ? `
             <div class="section">
                 <h2>💡 改进建议</h2>
                 <div class="recommendations">
                     ${reportData.recommendations
                       .map(
-                        rec => `
+                        (rec) => `
                         <div class="recommendation-item ${rec.priority}">
                             <span class="recommendation-priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
                             <strong>${rec.category}:</strong> ${rec.message}
                         </div>
-                    `
+                    `,
                       )
-                      .join('')}
+                      .join("")}
                 </div>
             </div>
             `
-                : ''
+                : ""
             }
 
             <div class="section">
@@ -884,17 +936,17 @@ class TestReportGenerator {
                         ? reportData.results
                             .slice(0, 50)
                             .map(
-                              result => `
+                              (result) => `
                             <tr>
-                                <td>${result.name || result.journey || '未知'}</td>
-                                <td class="${result.success || result.passed ? 'status-passed' : 'status-failed'}">${result.success || result.passed ? '通过' : '失败'}</td>
+                                <td>${result.name || result.journey || "未知"}</td>
+                                <td class="${result.success || result.passed ? "status-passed" : "status-failed"}">${result.success || result.passed ? "通过" : "失败"}</td>
                                 <td>${result.duration || 0}ms</td>
-                                <td>${result.error || '无'}</td>
+                                <td>${result.error || "无"}</td>
                             </tr>
-                        `
+                        `,
                             )
-                            .join('')
-                        : `<tr><td>${reportData.results.name || '单个测试'}</td><td class="${reportData.results.success ? 'status-passed' : 'status-failed'}">${reportData.results.success ? '通过' : '失败'}</td><td>${reportData.results.duration || 0}ms</td><td>${reportData.results.error || '无'}</td></tr>`
+                            .join("")
+                        : `<tr><td>${reportData.results.name || "单个测试"}</td><td class="${reportData.results.success ? "status-passed" : "status-failed"}">${reportData.results.success ? "通过" : "失败"}</td><td>${reportData.results.duration || 0}ms</td><td>${reportData.results.error || "无"}</td></tr>`
                     }
                 </table>
             </div>
@@ -933,14 +985,14 @@ class TestReportGenerator {
           Array.isArray(reportData.results)
             ? reportData.results
                 .map(
-                  result => `
-        <test name="${result.name || result.journey || 'unknown'}" success="${result.success || result.passed}" duration="${result.duration || 0}">
-            <error>${result.error || ''}</error>
-        </test>`
+                  (result) => `
+        <test name="${result.name || result.journey || "unknown"}" success="${result.success || result.passed}" duration="${result.duration || 0}">
+            <error>${result.error || ""}</error>
+        </test>`,
                 )
-                .join('')
-            : `<test name="${reportData.results.name || 'single-test'}" success="${reportData.results.success}" duration="${reportData.results.duration || 0}">
-                <error>${reportData.results.error || ''}</error>
+                .join("")
+            : `<test name="${reportData.results.name || "single-test"}" success="${reportData.results.success}" duration="${reportData.results.duration || 0}">
+                <error>${reportData.results.error || ""}</error>
             </test>`
         }
     </results>
@@ -950,14 +1002,14 @@ class TestReportGenerator {
     <recommendations>
         ${reportData.recommendations
           .map(
-            rec => `
+            (rec) => `
         <recommendation priority="${rec.priority}" category="${rec.category}">
             ${rec.message}
-        </recommendation>`
+        </recommendation>`,
           )
-          .join('')}
+          .join("")}
     </recommendations>`
-        : ''
+        : ""
     }
 </test-report>`;
   }
@@ -981,8 +1033,15 @@ class TestReportGenerator {
       this.reportHistory = this.reportHistory.slice(-100);
     }
 
-    const historyFile = path.join(this.options.reportDir, 'report-history.json');
-    await fs.writeFile(historyFile, JSON.stringify(this.reportHistory, null, 2), 'utf8');
+    const historyFile = path.join(
+      this.options.reportDir,
+      "report-history.json",
+    );
+    await fs.writeFile(
+      historyFile,
+      JSON.stringify(this.reportHistory, null, 2),
+      "utf8",
+    );
   }
 
   /**
@@ -994,7 +1053,8 @@ class TestReportGenerator {
       successRate: reportData.summary.successRate,
       totalDuration: Math.round(reportData.summary.totalDuration / 1000),
       recommendationsCount: reportData.recommendations?.length || 0,
-      status: parseFloat(reportData.summary.successRate) >= 95 ? 'passed' : 'failed',
+      status:
+        parseFloat(reportData.summary.successRate) >= 95 ? "passed" : "failed",
     };
   }
 
@@ -1006,9 +1066,9 @@ class TestReportGenerator {
       nodeVersion: process.version,
       platform: process.platform,
       arch: process.arch,
-      cpus: require('os').cpus().length,
-      totalMemory: require('os').totalmem(),
-      freeMemory: require('os').freemem(),
+      cpus: require("node:os").cpus().length,
+      totalMemory: require("node:os").totalmem(),
+      freeMemory: require("node:os").freemem(),
     };
   }
 }

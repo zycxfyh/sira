@@ -1,33 +1,44 @@
-const express = require('express');
-const { performanceBenchmarkManager } = require('../../performance-benchmark-manager');
-const { testCases, testSuites, getTestCase, getTestSuite } = require('../../benchmark-test-cases');
+const express = require("express");
+const {
+  performanceBenchmarkManager,
+} = require("../../performance-benchmark-manager");
+const {
+  testCases,
+  testSuites,
+  getTestCase,
+  getTestSuite,
+} = require("../../benchmark-test-cases");
 
 /**
  * Performance Benchmark API Routes
  * 提供性能基准测试相关的API接口
  */
 
-module.exports = function ({ logger }) {
+module.exports = ({ logger }) => {
   const router = express.Router();
   /**
    * GET /benchmark/test-cases
    * 获取所有测试用例
    */
-  router.get('/benchmark/test-cases', async (req, res) => {
+  router.get("/benchmark/test-cases", async (req, res) => {
     try {
       const { category, difficulty, search, limit = 50 } = req.query;
 
       let results = [];
 
       if (category) {
-        results = getTestCase(category) ? [{ id: category, ...getTestCase(category) }] : [];
+        results = getTestCase(category)
+          ? [{ id: category, ...getTestCase(category) }]
+          : [];
       } else if (difficulty) {
         // 这里需要从benchmark-test-cases.js中获取对应难度等级的测试用例
-        const { difficultyLevels } = require('../../benchmark-test-cases');
+        const { difficultyLevels } = require("../../benchmark-test-cases");
         const taskIds = difficultyLevels[difficulty] || [];
-        results = taskIds.map(id => ({ id, ...getTestCase(id) })).filter(Boolean);
+        results = taskIds
+          .map((id) => ({ id, ...getTestCase(id) }))
+          .filter(Boolean);
       } else if (search) {
-        const { searchTestCases } = require('../../benchmark-test-cases');
+        const { searchTestCases } = require("../../benchmark-test-cases");
         results = searchTestCases(search);
       } else {
         results = Object.entries(testCases).map(([id, testCase]) => ({
@@ -37,7 +48,7 @@ module.exports = function ({ logger }) {
       }
 
       // 限制返回数量
-      results = results.slice(0, parseInt(limit));
+      results = results.slice(0, parseInt(limit, 10));
 
       res.json({
         success: true,
@@ -49,10 +60,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取测试用例失败:', error);
+      logger.error("获取测试用例失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取测试用例失败',
+        error: "获取测试用例失败",
         message: error.message,
       });
     }
@@ -62,7 +73,7 @@ module.exports = function ({ logger }) {
    * GET /benchmark/test-cases/:taskId
    * 获取特定测试用例详情
    */
-  router.get('/benchmark/test-cases/:taskId', async (req, res) => {
+  router.get("/benchmark/test-cases/:taskId", async (req, res) => {
     try {
       const { taskId } = req.params;
       const testCase = getTestCase(taskId);
@@ -70,7 +81,7 @@ module.exports = function ({ logger }) {
       if (!testCase) {
         return res.status(404).json({
           success: false,
-          error: '测试用例不存在',
+          error: "测试用例不存在",
           message: `测试用例 '${taskId}' 不存在`,
         });
       }
@@ -83,10 +94,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取测试用例详情失败:', error);
+      logger.error("获取测试用例详情失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取测试用例详情失败',
+        error: "获取测试用例详情失败",
         message: error.message,
       });
     }
@@ -96,7 +107,7 @@ module.exports = function ({ logger }) {
    * GET /benchmark/suites
    * 获取所有测试套件
    */
-  router.get('/benchmark/suites', async (req, res) => {
+  router.get("/benchmark/suites", async (_req, res) => {
     try {
       res.json({
         success: true,
@@ -107,10 +118,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取测试套件失败:', error);
+      logger.error("获取测试套件失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取测试套件失败',
+        error: "获取测试套件失败",
         message: error.message,
       });
     }
@@ -120,7 +131,7 @@ module.exports = function ({ logger }) {
    * GET /benchmark/suites/:suiteId
    * 获取特定测试套件详情
    */
-  router.get('/benchmark/suites/:suiteId', async (req, res) => {
+  router.get("/benchmark/suites/:suiteId", async (req, res) => {
     try {
       const { suiteId } = req.params;
       const suite = getTestSuite(suiteId);
@@ -128,7 +139,7 @@ module.exports = function ({ logger }) {
       if (!suite) {
         return res.status(404).json({
           success: false,
-          error: '测试套件不存在',
+          error: "测试套件不存在",
           message: `测试套件 '${suiteId}' 不存在`,
         });
       }
@@ -141,10 +152,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取测试套件详情失败:', error);
+      logger.error("获取测试套件详情失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取测试套件详情失败',
+        error: "获取测试套件详情失败",
         message: error.message,
       });
     }
@@ -154,16 +165,16 @@ module.exports = function ({ logger }) {
    * POST /benchmark/run
    * 运行基准测试
    */
-  router.post('/benchmark/run', async (req, res) => {
+  router.post("/benchmark/run", async (req, res) => {
     try {
       const config = req.body;
 
       // 验证请求参数
-      if (!config || typeof config !== 'object') {
+      if (!config || typeof config !== "object") {
         return res.status(400).json({
           success: false,
-          error: '请求参数无效',
-          message: '请提供有效的测试配置',
+          error: "请求参数无效",
+          message: "请提供有效的测试配置",
         });
       }
 
@@ -171,13 +182,13 @@ module.exports = function ({ logger }) {
       const testPromise = performanceBenchmarkManager.runBenchmark(config);
 
       // 对于长时间运行的测试，返回任务ID
-      const timeout = setTimeout(async () => {
+      const _timeout = setTimeout(async () => {
         try {
           const result = await testPromise;
           // 这里可以实现结果通知机制
           logger.info(`基准测试完成: ${result.testId}`);
         } catch (error) {
-          logger.error('基准测试失败:', error);
+          logger.error("基准测试失败:", error);
         }
       }, 100); // 短暂延迟后继续处理
 
@@ -185,25 +196,25 @@ module.exports = function ({ logger }) {
       res.json({
         success: true,
         data: {
-          message: '基准测试已启动',
-          status: 'running',
-          estimated_duration: '根据配置而定，可能需要几分钟',
+          message: "基准测试已启动",
+          status: "running",
+          estimated_duration: "根据配置而定，可能需要几分钟",
         },
         timestamp: new Date().toISOString(),
       });
 
       // 等待测试完成
       try {
-        const result = await testPromise;
+        const _result = await testPromise;
         // 测试完成后可以发送通知或更新状态
-      } catch (error) {
+      } catch (_error) {
         // 错误已经在manager中处理
       }
     } catch (error) {
-      logger.error('启动基准测试失败:', error);
+      logger.error("启动基准测试失败:", error);
       res.status(500).json({
         success: false,
-        error: '启动基准测试失败',
+        error: "启动基准测试失败",
         message: error.message,
       });
     }
@@ -213,9 +224,9 @@ module.exports = function ({ logger }) {
    * GET /benchmark/results
    * 获取基准测试结果
    */
-  router.get('/benchmark/results', async (req, res) => {
+  router.get("/benchmark/results", async (req, res) => {
     try {
-      const { testId, limit = 10, format = 'summary' } = req.query;
+      const { testId, limit = 10, format = "summary" } = req.query;
 
       let results;
 
@@ -224,24 +235,25 @@ module.exports = function ({ logger }) {
         if (!results) {
           return res.status(404).json({
             success: false,
-            error: '测试结果不存在',
+            error: "测试结果不存在",
             message: `测试ID '${testId}' 的结果不存在`,
           });
         }
         results = [results];
       } else {
-        results = performanceBenchmarkManager.getLatestResults(parseInt(limit));
+        results = performanceBenchmarkManager.getLatestResults(
+          parseInt(limit, 10),
+        );
       }
 
       // 根据格式处理结果
       let processedResults;
       switch (format) {
-        case 'detailed':
+        case "detailed":
           processedResults = results;
           break;
-        case 'summary':
         default:
-          processedResults = results.map(result => ({
+          processedResults = results.map((result) => ({
             testId: result.testId,
             config: result.config,
             summary: result.analysis,
@@ -259,10 +271,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取基准测试结果失败:', error);
+      logger.error("获取基准测试结果失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取基准测试结果失败',
+        error: "获取基准测试结果失败",
         message: error.message,
       });
     }
@@ -272,7 +284,7 @@ module.exports = function ({ logger }) {
    * GET /benchmark/results/:testId
    * 获取特定测试的详细结果
    */
-  router.get('/benchmark/results/:testId', async (req, res) => {
+  router.get("/benchmark/results/:testId", async (req, res) => {
     try {
       const { testId } = req.params;
       const result = performanceBenchmarkManager.getResults(testId);
@@ -280,7 +292,7 @@ module.exports = function ({ logger }) {
       if (!result) {
         return res.status(404).json({
           success: false,
-          error: '测试结果不存在',
+          error: "测试结果不存在",
           message: `测试ID '${testId}' 的结果不存在`,
         });
       }
@@ -293,10 +305,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取测试详细结果失败:', error);
+      logger.error("获取测试详细结果失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取测试详细结果失败',
+        error: "获取测试详细结果失败",
         message: error.message,
       });
     }
@@ -306,19 +318,22 @@ module.exports = function ({ logger }) {
    * POST /benchmark/compare
    * 比较模型性能
    */
-  router.post('/benchmark/compare', async (req, res) => {
+  router.post("/benchmark/compare", async (req, res) => {
     try {
-      const { models, metric = 'response_time' } = req.body;
+      const { models, metric = "response_time" } = req.body;
 
       if (!models || !Array.isArray(models) || models.length < 2) {
         return res.status(400).json({
           success: false,
-          error: '参数无效',
-          message: '至少需要提供2个模型进行比较',
+          error: "参数无效",
+          message: "至少需要提供2个模型进行比较",
         });
       }
 
-      const comparison = performanceBenchmarkManager.compareModels(models, metric);
+      const comparison = performanceBenchmarkManager.compareModels(
+        models,
+        metric,
+      );
 
       res.json({
         success: true,
@@ -330,10 +345,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('模型性能比较失败:', error);
+      logger.error("模型性能比较失败:", error);
       res.status(500).json({
         success: false,
-        error: '模型性能比较失败',
+        error: "模型性能比较失败",
         message: error.message,
       });
     }
@@ -343,7 +358,7 @@ module.exports = function ({ logger }) {
    * GET /benchmark/status
    * 获取基准测试状态
    */
-  router.get('/benchmark/status', async (req, res) => {
+  router.get("/benchmark/status", async (_req, res) => {
     try {
       const activeTests = Array.from(performanceBenchmarkManager.activeTests);
       const latestResults = performanceBenchmarkManager.getLatestResults(5);
@@ -358,17 +373,17 @@ module.exports = function ({ logger }) {
             ? {
                 testId: latestResults[0].testId,
                 startTime: latestResults[0].metadata.startTime,
-                status: 'completed',
+                status: "completed",
               }
             : null,
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取基准测试状态失败:', error);
+      logger.error("获取基准测试状态失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取基准测试状态失败',
+        error: "获取基准测试状态失败",
         message: error.message,
       });
     }
@@ -378,21 +393,21 @@ module.exports = function ({ logger }) {
    * POST /benchmark/quick-test
    * 运行快速测试
    */
-  router.post('/benchmark/quick-test', async (req, res) => {
+  router.post("/benchmark/quick-test", async (req, res) => {
     try {
-      const { models, tasks = ['simple_qa', 'math_calculation'] } = req.body;
+      const { models, tasks = ["simple_qa", "math_calculation"] } = req.body;
 
       if (!models || !Array.isArray(models)) {
         return res.status(400).json({
           success: false,
-          error: '参数无效',
-          message: '请提供有效的模型列表',
+          error: "参数无效",
+          message: "请提供有效的模型列表",
         });
       }
 
       // 创建快速测试配置
       const quickConfig = {
-        name: '快速性能测试',
+        name: "快速性能测试",
         models,
         tasks,
         iterations: 3,
@@ -403,22 +418,23 @@ module.exports = function ({ logger }) {
       };
 
       // 运行测试
-      const result = await performanceBenchmarkManager.runBenchmark(quickConfig);
+      const result =
+        await performanceBenchmarkManager.runBenchmark(quickConfig);
 
       res.json({
         success: true,
         data: {
           testId: result.testId,
           summary: result.analysis,
-          message: '快速测试完成',
+          message: "快速测试完成",
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('快速测试失败:', error);
+      logger.error("快速测试失败:", error);
       res.status(500).json({
         success: false,
-        error: '快速测试失败',
+        error: "快速测试失败",
         message: error.message,
       });
     }
@@ -428,7 +444,7 @@ module.exports = function ({ logger }) {
    * DELETE /benchmark/results/:testId
    * 删除测试结果
    */
-  router.delete('/benchmark/results/:testId', async (req, res) => {
+  router.delete("/benchmark/results/:testId", async (req, res) => {
     try {
       const { testId } = req.params;
 
@@ -436,14 +452,14 @@ module.exports = function ({ logger }) {
       // 由于当前实现没有删除方法，我们返回不支持的响应
       res.status(501).json({
         success: false,
-        error: '功能暂未实现',
-        message: '删除测试结果功能暂未实现',
+        error: "功能暂未实现",
+        message: "删除测试结果功能暂未实现",
       });
     } catch (error) {
-      logger.error('删除测试结果失败:', error);
+      logger.error("删除测试结果失败:", error);
       res.status(500).json({
         success: false,
-        error: '删除测试结果失败',
+        error: "删除测试结果失败",
         message: error.message,
       });
     }
@@ -453,43 +469,49 @@ module.exports = function ({ logger }) {
    * GET /benchmark/export
    * 导出测试结果
    */
-  router.get('/benchmark/export', async (req, res) => {
+  router.get("/benchmark/export", async (req, res) => {
     try {
-      const { format = 'json', testId } = req.query;
+      const { format = "json", testId } = req.query;
 
-      let dataToExport;
+      let _dataToExport;
 
       if (testId) {
         const result = performanceBenchmarkManager.getResults(testId);
         if (!result) {
           return res.status(404).json({
             success: false,
-            error: '测试结果不存在',
+            error: "测试结果不存在",
             message: `测试ID '${testId}' 的结果不存在`,
           });
         }
-        dataToExport = [result];
+        _dataToExport = [result];
       } else {
-        dataToExport = performanceBenchmarkManager.getResults();
+        _dataToExport = performanceBenchmarkManager.getResults();
       }
 
       const exportedData = performanceBenchmarkManager.exportResults(format);
 
       // 设置响应头
       const mimeTypes = {
-        json: 'application/json',
-        csv: 'text/csv',
+        json: "application/json",
+        csv: "text/csv",
       };
 
-      res.setHeader('Content-Type', mimeTypes[format] || 'application/octet-stream');
-      res.setHeader('Content-Disposition', `attachment; filename="benchmark_results.${format}"`);
+      res.setHeader(
+        "Content-Type",
+        mimeTypes[format] || "application/octet-stream",
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="benchmark_results.${format}"`,
+      );
 
       res.send(exportedData);
     } catch (error) {
-      logger.error('导出测试结果失败:', error);
+      logger.error("导出测试结果失败:", error);
       res.status(500).json({
         success: false,
-        error: '导出测试结果失败',
+        error: "导出测试结果失败",
         message: error.message,
       });
     }
@@ -499,7 +521,7 @@ module.exports = function ({ logger }) {
    * POST /benchmark/suite/:suiteId/run
    * 运行测试套件
    */
-  router.post('/benchmark/suite/:suiteId/run', async (req, res) => {
+  router.post("/benchmark/suite/:suiteId/run", async (req, res) => {
     try {
       const { suiteId } = req.params;
       const suite = getTestSuite(suiteId);
@@ -507,7 +529,7 @@ module.exports = function ({ logger }) {
       if (!suite) {
         return res.status(404).json({
           success: false,
-          error: '测试套件不存在',
+          error: "测试套件不存在",
           message: `测试套件 '${suiteId}' 不存在`,
         });
       }
@@ -533,15 +555,15 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('运行测试套件失败:', error);
+      logger.error("运行测试套件失败:", error);
       res.status(500).json({
         success: false,
-        error: '运行测试套件失败',
+        error: "运行测试套件失败",
         message: error.message,
       });
     }
   });
 
-  logger.info('Performance Benchmark API routes loaded');
+  logger.info("Performance Benchmark API routes loaded");
   return router;
 };

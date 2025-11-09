@@ -1,19 +1,19 @@
 module.exports = {
-  version: '1.0.0',
-  description: 'A test plugin',
-  init(pluginContext) {},
-  policies: ['policy1', 'policy2'],
+  version: "1.0.0",
+  description: "A test plugin",
+  init(_pluginContext) {},
+  policies: ["policy1", "policy2"],
   options: {
     foo: {
-      title: 'Foo',
-      description: 'the foo to initialize',
-      type: 'string',
+      title: "Foo",
+      description: "the foo to initialize",
+      type: "string",
       required: true,
     },
     baz: {
-      title: 'Baz',
-      description: 'the starting baz value',
-      type: 'number',
+      title: "Baz",
+      description: "the starting baz value",
+      type: "number",
     },
   },
 };

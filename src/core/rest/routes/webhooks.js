@@ -1,5 +1,5 @@
-const express = require('express');
-const { WebhookManager } = require('../../webhook-manager');
+const express = require("express");
+const { WebhookManager } = require("../../webhook-manager");
 
 let webhookManager = null;
 
@@ -22,13 +22,13 @@ function webhooksRoutes() {
    * GET /webhooks
    * 获取所有webhooks
    */
-  router.get('/', async (req, res) => {
+  router.get("/", async (req, res) => {
     try {
-      const userId = req.headers['x-user-id'] || req.query.userId;
+      const userId = req.headers["x-user-id"] || req.query.userId;
 
       const webhooks = Array.from(webhookManager.webhooks.values())
-        .filter(webhook => !userId || webhook.userId === userId)
-        .map(webhook => ({
+        .filter((webhook) => !userId || webhook.userId === userId)
+        .map((webhook) => ({
           id: webhook.id,
           url: webhook.url,
           events: webhook.events,
@@ -46,10 +46,10 @@ function webhooksRoutes() {
         total: webhooks.length,
       });
     } catch (error) {
-      console.error('获取webhooks失败:', error);
+      console.error("获取webhooks失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取webhooks失败',
+        error: "获取webhooks失败",
         message: error.message,
       });
     }
@@ -59,21 +59,22 @@ function webhooksRoutes() {
    * POST /webhooks
    * 注册新webhook
    */
-  router.post('/', async (req, res) => {
+  router.post("/", async (req, res) => {
     try {
       const webhookConfig = req.body;
 
       if (!webhookConfig.url) {
         return res.status(400).json({
           success: false,
-          error: '缺少必需参数',
-          required: ['url'],
+          error: "缺少必需参数",
+          required: ["url"],
         });
       }
 
       // 设置用户ID（如果未提供）
       if (!webhookConfig.userId) {
-        webhookConfig.userId = req.headers['x-user-id'] || req.ip || 'anonymous';
+        webhookConfig.userId =
+          req.headers["x-user-id"] || req.ip || "anonymous";
       }
 
       const webhook = await webhookManager.registerWebhook(webhookConfig);
@@ -88,13 +89,13 @@ function webhooksRoutes() {
           status: webhook.status,
           createdAt: webhook.createdAt,
         },
-        message: 'Webhook注册成功',
+        message: "Webhook注册成功",
       });
     } catch (error) {
-      console.error('注册webhook失败:', error);
+      console.error("注册webhook失败:", error);
       res.status(400).json({
         success: false,
-        error: '注册webhook失败',
+        error: "注册webhook失败",
         message: error.message,
       });
     }
@@ -104,7 +105,7 @@ function webhooksRoutes() {
    * GET /webhooks/:webhookId
    * 获取webhook详情
    */
-  router.get('/:webhookId', async (req, res) => {
+  router.get("/:webhookId", async (req, res) => {
     try {
       const { webhookId } = req.params;
       const webhook = webhookManager.webhooks.get(webhookId);
@@ -112,16 +113,16 @@ function webhooksRoutes() {
       if (!webhook) {
         return res.status(404).json({
           success: false,
-          error: 'Webhook不存在',
+          error: "Webhook不存在",
         });
       }
 
       // 检查权限（用户只能查看自己的webhook）
-      const userId = req.headers['x-user-id'];
+      const userId = req.headers["x-user-id"];
       if (userId && webhook.userId !== userId) {
         return res.status(403).json({
           success: false,
-          error: '无权访问此webhook',
+          error: "无权访问此webhook",
         });
       }
 
@@ -130,10 +131,10 @@ function webhooksRoutes() {
         data: webhook,
       });
     } catch (error) {
-      console.error('获取webhook详情失败:', error);
+      console.error("获取webhook详情失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取webhook详情失败',
+        error: "获取webhook详情失败",
         message: error.message,
       });
     }
@@ -143,17 +144,17 @@ function webhooksRoutes() {
    * PUT /webhooks/:webhookId
    * 更新webhook配置
    */
-  router.put('/:webhookId', async (req, res) => {
+  router.put("/:webhookId", async (req, res) => {
     try {
       const { webhookId } = req.params;
       const updates = req.body;
-      const userId = req.headers['x-user-id'];
+      const userId = req.headers["x-user-id"];
 
       const webhook = webhookManager.webhooks.get(webhookId);
       if (!webhook) {
         return res.status(404).json({
           success: false,
-          error: 'Webhook不存在',
+          error: "Webhook不存在",
         });
       }
 
@@ -161,22 +162,25 @@ function webhooksRoutes() {
       if (userId && webhook.userId !== userId) {
         return res.status(403).json({
           success: false,
-          error: '无权修改此webhook',
+          error: "无权修改此webhook",
         });
       }
 
-      const updatedWebhook = await webhookManager.updateWebhook(webhookId, updates);
+      const updatedWebhook = await webhookManager.updateWebhook(
+        webhookId,
+        updates,
+      );
 
       res.json({
         success: true,
         data: updatedWebhook,
-        message: 'Webhook更新成功',
+        message: "Webhook更新成功",
       });
     } catch (error) {
-      console.error('更新webhook失败:', error);
+      console.error("更新webhook失败:", error);
       res.status(400).json({
         success: false,
-        error: '更新webhook失败',
+        error: "更新webhook失败",
         message: error.message,
       });
     }
@@ -186,16 +190,16 @@ function webhooksRoutes() {
    * DELETE /webhooks/:webhookId
    * 删除webhook
    */
-  router.delete('/:webhookId', async (req, res) => {
+  router.delete("/:webhookId", async (req, res) => {
     try {
       const { webhookId } = req.params;
-      const userId = req.headers['x-user-id'];
+      const userId = req.headers["x-user-id"];
 
       const webhook = webhookManager.webhooks.get(webhookId);
       if (!webhook) {
         return res.status(404).json({
           success: false,
-          error: 'Webhook不存在',
+          error: "Webhook不存在",
         });
       }
 
@@ -203,7 +207,7 @@ function webhooksRoutes() {
       if (userId && webhook.userId !== userId) {
         return res.status(403).json({
           success: false,
-          error: '无权删除此webhook',
+          error: "无权删除此webhook",
         });
       }
 
@@ -211,13 +215,13 @@ function webhooksRoutes() {
 
       res.json({
         success: true,
-        message: 'Webhook删除成功',
+        message: "Webhook删除成功",
       });
     } catch (error) {
-      console.error('删除webhook失败:', error);
+      console.error("删除webhook失败:", error);
       res.status(400).json({
         success: false,
-        error: '删除webhook失败',
+        error: "删除webhook失败",
         message: error.message,
       });
     }
@@ -229,16 +233,16 @@ function webhooksRoutes() {
    * POST /webhooks/:webhookId/test
    * 测试webhook连接
    */
-  router.post('/:webhookId/test', async (req, res) => {
+  router.post("/:webhookId/test", async (req, res) => {
     try {
       const { webhookId } = req.params;
-      const userId = req.headers['x-user-id'];
+      const userId = req.headers["x-user-id"];
 
       const webhook = webhookManager.webhooks.get(webhookId);
       if (!webhook) {
         return res.status(404).json({
           success: false,
-          error: 'Webhook不存在',
+          error: "Webhook不存在",
         });
       }
 
@@ -246,7 +250,7 @@ function webhooksRoutes() {
       if (userId && webhook.userId !== userId) {
         return res.status(403).json({
           success: false,
-          error: '无权测试此webhook',
+          error: "无权测试此webhook",
         });
       }
 
@@ -258,10 +262,10 @@ function webhooksRoutes() {
         data: result,
       });
     } catch (error) {
-      console.error('测试webhook失败:', error);
+      console.error("测试webhook失败:", error);
       res.status(500).json({
         success: false,
-        error: '测试webhook失败',
+        error: "测试webhook失败",
         message: error.message,
       });
     }
@@ -271,16 +275,16 @@ function webhooksRoutes() {
    * POST /webhooks/:webhookId/retry
    * 重试失败的投递
    */
-  router.post('/:webhookId/retry', async (req, res) => {
+  router.post("/:webhookId/retry", async (req, res) => {
     try {
       const { webhookId } = req.params;
-      const userId = req.headers['x-user-id'];
+      const userId = req.headers["x-user-id"];
 
       const webhook = webhookManager.webhooks.get(webhookId);
       if (!webhook) {
         return res.status(404).json({
           success: false,
-          error: 'Webhook不存在',
+          error: "Webhook不存在",
         });
       }
 
@@ -288,7 +292,7 @@ function webhooksRoutes() {
       if (userId && webhook.userId !== userId) {
         return res.status(403).json({
           success: false,
-          error: '无权操作此webhook',
+          error: "无权操作此webhook",
         });
       }
 
@@ -300,10 +304,10 @@ function webhooksRoutes() {
         data: { retryCount },
       });
     } catch (error) {
-      console.error('重试webhook投递失败:', error);
+      console.error("重试webhook投递失败:", error);
       res.status(500).json({
         success: false,
-        error: '重试webhook投递失败',
+        error: "重试webhook投递失败",
         message: error.message,
       });
     }
@@ -315,22 +319,22 @@ function webhooksRoutes() {
    * POST /webhooks/trigger
    * 手动触发webhook事件（管理员功能）
    */
-  router.post('/trigger', async (req, res) => {
+  router.post("/trigger", async (req, res) => {
     try {
       const { eventType, eventData, userId, source } = req.body;
 
       if (!eventType || !eventData) {
         return res.status(400).json({
           success: false,
-          error: '缺少必需参数',
-          required: ['eventType', 'eventData'],
+          error: "缺少必需参数",
+          required: ["eventType", "eventData"],
         });
       }
 
       const result = await webhookManager.triggerEvent(eventType, eventData, {
         userId,
-        source: source || req.headers['x-source'] || 'manual',
-        requestId: req.headers['x-request-id'],
+        source: source || req.headers["x-source"] || "manual",
+        requestId: req.headers["x-request-id"],
       });
 
       res.json({
@@ -339,10 +343,10 @@ function webhooksRoutes() {
         message: `事件已触发，投递至 ${result.delivered}/${result.total} 个webhook`,
       });
     } catch (error) {
-      console.error('触发webhook事件失败:', error);
+      console.error("触发webhook事件失败:", error);
       res.status(500).json({
         success: false,
-        error: '触发webhook事件失败',
+        error: "触发webhook事件失败",
         message: error.message,
       });
     }
@@ -354,17 +358,17 @@ function webhooksRoutes() {
    * GET /webhooks/stats
    * 获取webhook统计信息
    */
-  router.get('/stats/:webhookId?', async (req, res) => {
+  router.get("/stats/:webhookId?", async (req, res) => {
     try {
       const { webhookId } = req.params;
-      const userId = req.headers['x-user-id'];
+      const userId = req.headers["x-user-id"];
 
       const stats = webhookManager.getWebhookStats(webhookId);
 
       if (webhookId && !stats) {
         return res.status(404).json({
           success: false,
-          error: 'Webhook不存在',
+          error: "Webhook不存在",
         });
       }
 
@@ -374,7 +378,7 @@ function webhooksRoutes() {
         if (webhook && webhook.userId !== userId) {
           return res.status(403).json({
             success: false,
-            error: '无权查看此webhook统计',
+            error: "无权查看此webhook统计",
           });
         }
       }
@@ -382,10 +386,12 @@ function webhooksRoutes() {
       // 如果没有指定webhookId，只返回当前用户的统计
       if (!webhookId && userId) {
         const userWebhooks = Array.from(webhookManager.webhooks.values())
-          .filter(webhook => webhook.userId === userId)
-          .map(webhook => webhook.id);
+          .filter((webhook) => webhook.userId === userId)
+          .map((webhook) => webhook.id);
 
-        const userStats = stats.filter(stat => userWebhooks.includes(stat.webhookId));
+        const userStats = stats.filter((stat) =>
+          userWebhooks.includes(stat.webhookId),
+        );
         return res.json({
           success: true,
           data: userStats,
@@ -397,10 +403,10 @@ function webhooksRoutes() {
         data: stats,
       });
     } catch (error) {
-      console.error('获取webhook统计失败:', error);
+      console.error("获取webhook统计失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取webhook统计失败',
+        error: "获取webhook统计失败",
         message: error.message,
       });
     }
@@ -412,15 +418,15 @@ function webhooksRoutes() {
    * POST /webhooks/batch/test
    * 批量测试webhooks
    */
-  router.post('/batch/test', async (req, res) => {
+  router.post("/batch/test", async (req, res) => {
     try {
       const { webhookIds } = req.body;
-      const userId = req.headers['x-user-id'];
+      const userId = req.headers["x-user-id"];
 
       if (!Array.isArray(webhookIds)) {
         return res.status(400).json({
           success: false,
-          error: 'webhookIds必须是数组',
+          error: "webhookIds必须是数组",
         });
       }
 
@@ -434,7 +440,7 @@ function webhooksRoutes() {
             results.push({
               webhookId,
               success: false,
-              error: '无权访问此webhook',
+              error: "无权访问此webhook",
             });
             continue;
           }
@@ -454,7 +460,7 @@ function webhooksRoutes() {
         }
       }
 
-      const successCount = results.filter(r => r.success).length;
+      const successCount = results.filter((r) => r.success).length;
 
       res.json({
         success: true,
@@ -462,10 +468,10 @@ function webhooksRoutes() {
         message: `批量测试完成，成功: ${successCount}，失败: ${results.length - successCount}`,
       });
     } catch (error) {
-      console.error('批量测试webhooks失败:', error);
+      console.error("批量测试webhooks失败:", error);
       res.status(500).json({
         success: false,
-        error: '批量测试webhooks失败',
+        error: "批量测试webhooks失败",
         message: error.message,
       });
     }
@@ -475,15 +481,15 @@ function webhooksRoutes() {
    * POST /webhooks/batch/retry
    * 批量重试失败的投递
    */
-  router.post('/batch/retry', async (req, res) => {
+  router.post("/batch/retry", async (req, res) => {
     try {
       const { webhookIds } = req.body;
-      const userId = req.headers['x-user-id'];
+      const userId = req.headers["x-user-id"];
 
       if (!Array.isArray(webhookIds)) {
         return res.status(400).json({
           success: false,
-          error: 'webhookIds必须是数组',
+          error: "webhookIds必须是数组",
         });
       }
 
@@ -499,12 +505,13 @@ function webhooksRoutes() {
             results.push({
               webhookId,
               success: false,
-              error: '无权访问此webhook',
+              error: "无权访问此webhook",
             });
             continue;
           }
 
-          const retryCount = await webhookManager.retryFailedDeliveries(webhookId);
+          const retryCount =
+            await webhookManager.retryFailedDeliveries(webhookId);
           totalRetries += retryCount;
 
           results.push({
@@ -527,10 +534,10 @@ function webhooksRoutes() {
         message: `批量重试完成，共安排 ${totalRetries} 个投递重试`,
       });
     } catch (error) {
-      console.error('批量重试webhooks失败:', error);
+      console.error("批量重试webhooks失败:", error);
       res.status(500).json({
         success: false,
-        error: '批量重试webhooks失败',
+        error: "批量重试webhooks失败",
         message: error.message,
       });
     }

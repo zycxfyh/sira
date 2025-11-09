@@ -1,19 +1,19 @@
-const schemas = require('../../schemas');
-const jwtSchema = require('../jwt').schema;
+const schemas = require("../../schemas");
+const jwtSchema = require("../jwt").schema;
 
-schemas.register('policy', 'jwt', jwtSchema);
+schemas.register("policy", "jwt", jwtSchema);
 
 module.exports = {
-  policy: require('./oauth2'),
-  routes: require('./oauth2-routes'),
+  policy: require("./oauth2"),
+  routes: require("./oauth2-routes"),
   schema: {
-    $id: 'http://express-gateway.io/schemas/policies/oauth2.json',
+    $id: "http://express-gateway.io/schemas/policies/oauth2.json",
     allOf: [
-      { $ref: 'http://express-gateway.io/schemas/base/auth.json' },
+      { $ref: "http://express-gateway.io/schemas/base/auth.json" },
       {
-        type: 'object',
+        type: "object",
         properties: {
-          jwt: { $ref: 'jwt.json' },
+          jwt: { $ref: "jwt.json" },
         },
       },
     ],

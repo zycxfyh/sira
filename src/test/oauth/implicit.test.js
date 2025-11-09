@@ -1,30 +1,30 @@
-const session = require('supertest-session');
-const should = require('should');
-const url = require('url');
-const qs = require('querystring');
-const app = require('./bootstrap');
+const session = require("supertest-session");
+const should = require("should");
+const _url = require("node:url");
+const qs = require("node:querystring");
+const app = require("./bootstrap");
 
-const services = require('../../../src/core/services');
-const { createOAuthScenario } = require('./testUtils');
+const services = require("../../../core/services");
+const { createOAuthScenario } = require("./testUtils");
 const tokenService = services.token;
 
-describe('Functional Test Implicit grant', () => {
+describe("Functional Test Implicit grant", () => {
   let fromDbApp, fromDbUser;
 
   before(() =>
     createOAuthScenario().then(([user, app]) => {
       fromDbUser = user;
       fromDbApp = app;
-    })
+    }),
   );
 
-  it('should grant access token when requesting without scopes', done => {
+  it("should grant access token when requesting without scopes", (done) => {
     const request = session(app);
     request
-      .get('/oauth2/authorize')
+      .get("/oauth2/authorize")
       .query({
         redirect_uri: fromDbApp.redirectUri,
-        response_type: 'token',
+        response_type: "token",
         client_id: fromDbApp.id,
       })
       .redirects(1)
@@ -32,30 +32,30 @@ describe('Functional Test Implicit grant', () => {
       .end((err, res) => {
         should.not.exist(err);
         res.redirects.length.should.equal(1);
-        res.redirects[0].should.containEql('/login');
+        res.redirects[0].should.containEql("/login");
         request
-          .post('/login')
+          .post("/login")
           .query({
             username: fromDbUser.username,
-            password: 'user-secret',
+            password: "user-secret",
           })
           .expect(302)
           .end((err, res) => {
             should.not.exist(err);
             should.exist(res.headers.location);
-            res.headers.location.should.containEql('/oauth2/authorize');
+            res.headers.location.should.containEql("/oauth2/authorize");
             request
-              .get('/oauth2/authorize')
+              .get("/oauth2/authorize")
               .query({
                 redirect_uri: fromDbApp.redirectUri,
-                response_type: 'token',
+                response_type: "token",
                 client_id: fromDbApp.id,
               })
               .expect(200)
               .end((err, res) => {
                 should.not.exist(err);
                 request
-                  .post('/oauth2/authorize/decision')
+                  .post("/oauth2/authorize/decision")
                   .query({
                     transaction_id: res.headers.transaction_id,
                   })
@@ -63,16 +63,20 @@ describe('Functional Test Implicit grant', () => {
                   .end((err, res) => {
                     should.not.exist(err);
                     should.exist(res.headers.location);
-                    res.headers.location.should.containEql(fromDbApp.redirectUri);
+                    res.headers.location.should.containEql(
+                      fromDbApp.redirectUri,
+                    );
                     const parsedUrl = new URL(res.headers.location);
                     const params = qs.parse(parsedUrl.hash.slice(1));
                     should.exist(params.access_token);
                     should.exist(params.token_type);
 
-                    tokenService.get(params.access_token).then(token => {
+                    tokenService.get(params.access_token).then((token) => {
                       should.exist(token);
                       should.not.exist(token.scopes);
-                      [token.id, token.tokenDecrypted].should.eql(params.access_token.split('|'));
+                      [token.id, token.tokenDecrypted].should.eql(
+                        params.access_token.split("|"),
+                      );
                       done();
                     });
                   });
@@ -81,13 +85,13 @@ describe('Functional Test Implicit grant', () => {
       });
   });
 
-  it('should grant access token with requesting with scopes and scopes are authorized', done => {
+  it("should grant access token with requesting with scopes and scopes are authorized", (done) => {
     const request = session(app);
     request
-      .get('/oauth2/authorize')
+      .get("/oauth2/authorize")
       .query({
         redirect_uri: fromDbApp.redirectUri,
-        response_type: 'token',
+        response_type: "token",
         client_id: fromDbApp.id,
       })
       .redirects(1)
@@ -95,31 +99,31 @@ describe('Functional Test Implicit grant', () => {
       .end((err, res) => {
         should.not.exist(err);
         res.redirects.length.should.equal(1);
-        res.redirects[0].should.containEql('/login');
+        res.redirects[0].should.containEql("/login");
         request
-          .post('/login')
+          .post("/login")
           .query({
             username: fromDbUser.username,
-            password: 'user-secret',
+            password: "user-secret",
           })
           .expect(302)
           .end((err, res) => {
             should.not.exist(err);
             should.exist(res.headers.location);
-            res.headers.location.should.containEql('/oauth2/authorize');
+            res.headers.location.should.containEql("/oauth2/authorize");
             request
-              .get('/oauth2/authorize')
+              .get("/oauth2/authorize")
               .query({
                 redirect_uri: fromDbApp.redirectUri,
-                response_type: 'token',
+                response_type: "token",
                 client_id: fromDbApp.id,
-                scope: 'someScope',
+                scope: "someScope",
               })
               .expect(200)
               .end((err, res) => {
                 should.not.exist(err);
                 request
-                  .post('/oauth2/authorize/decision')
+                  .post("/oauth2/authorize/decision")
                   .query({
                     transaction_id: res.headers.transaction_id,
                   })
@@ -127,15 +131,19 @@ describe('Functional Test Implicit grant', () => {
                   .end((err, res) => {
                     should.not.exist(err);
                     should.exist(res.headers.location);
-                    res.headers.location.should.containEql(fromDbApp.redirectUri);
+                    res.headers.location.should.containEql(
+                      fromDbApp.redirectUri,
+                    );
                     const parsedUrl = new URL(res.headers.location);
                     const params = qs.parse(parsedUrl.hash.slice(1));
                     should.exist(params.access_token);
                     should.exist(params.token_type);
-                    tokenService.get(params.access_token).then(token => {
+                    tokenService.get(params.access_token).then((token) => {
                       should.exist(token);
-                      token.scopes.should.eql(['someScope']);
-                      [token.id, token.tokenDecrypted].should.eql(params.access_token.split('|'));
+                      token.scopes.should.eql(["someScope"]);
+                      [token.id, token.tokenDecrypted].should.eql(
+                        params.access_token.split("|"),
+                      );
                       done();
                     });
                   });
@@ -144,13 +152,13 @@ describe('Functional Test Implicit grant', () => {
       });
   });
 
-  it('should not grant access token with requesting with scopes and scopes are unauthorized', done => {
+  it("should not grant access token with requesting with scopes and scopes are unauthorized", (done) => {
     const request = session(app);
     request
-      .get('/oauth2/authorize')
+      .get("/oauth2/authorize")
       .query({
         redirect_uri: fromDbApp.redirectUri,
-        response_type: 'token',
+        response_type: "token",
         client_id: fromDbApp.id,
       })
       .redirects(1)
@@ -158,25 +166,25 @@ describe('Functional Test Implicit grant', () => {
       .end((err, res) => {
         should.not.exist(err);
         res.redirects.length.should.equal(1);
-        res.redirects[0].should.containEql('/login');
+        res.redirects[0].should.containEql("/login");
         request
-          .post('/login')
+          .post("/login")
           .query({
             username: fromDbUser.username,
-            password: 'user-secret',
+            password: "user-secret",
           })
           .expect(302)
           .end((err, res) => {
             should.not.exist(err);
             should.exist(res.headers.location);
-            res.headers.location.should.containEql('/oauth2/authorize');
+            res.headers.location.should.containEql("/oauth2/authorize");
             request
-              .get('/oauth2/authorize')
+              .get("/oauth2/authorize")
               .query({
                 redirect_uri: fromDbApp.redirectUri,
-                response_type: 'token',
+                response_type: "token",
                 client_id: fromDbApp.id,
-                scope: 'someScope, someUnauthorizedScope',
+                scope: "someScope, someUnauthorizedScope",
               })
               .expect(403)
               .end(done);

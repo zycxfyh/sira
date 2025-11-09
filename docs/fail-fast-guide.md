@@ -7,12 +7,14 @@
 ## 🎯 快速失败原则
 
 ### 核心原则
+
 1. **Fail Fast**: 遇到错误立即停止，而不是继续执行
 2. **Fail Loud**: 清晰地报告错误原因
 3. **Fail Early**: 在问题变得复杂之前检测到问题
 4. **Fail Safe**: 确保系统处于安全状态
 
 ### 实施层次
+
 1. **启动时验证**: 模块加载时的前置条件检查
 2. **配置验证**: 构造函数参数和配置的有效性检查
 3. **运行时验证**: 方法调用时的参数和状态验证
@@ -36,7 +38,9 @@
 // 快速失败：验证Node.js版本
 const requiredNodeVersion = 18;
 if (parseInt(process.versions.node.split('.')[0]) < requiredNodeVersion) {
-  console.error(`❌ 需要Node.js ${requiredNodeVersion}+，当前版本: ${process.versions.node}`);
+  console.error(
+    `❌ 需要Node.js ${requiredNodeVersion}+，当前版本: ${process.versions.node}`
+  );
   process.exit(1);
 }
 ```
@@ -114,7 +118,7 @@ module.exports = function (params, config) {
     throw error;
   }
   // ...
-}
+};
 ```
 
 **验证**: 确保函数接收到正确类型的参数。
@@ -124,6 +128,7 @@ module.exports = function (params, config) {
 ### 核心模块
 
 #### `src/core/index.js` - 扩展管理器
+
 - ✅ Node.js版本验证
 - ✅ 环境变量验证
 - ✅ 模块依赖验证
@@ -131,6 +136,7 @@ module.exports = function (params, config) {
 - ✅ 组件初始化验证
 
 #### `src/core/policies/ai-router/ai-router.js` - AI路由器
+
 - ✅ Node.js版本验证
 - ✅ 外部依赖验证 (axios)
 - ✅ 内部模块依赖验证
@@ -138,24 +144,28 @@ module.exports = function (params, config) {
 - ✅ 配置属性验证
 
 #### `src/core/cache-manager.js` - 缓存管理器
+
 - ✅ Node.js版本验证
 - ✅ 核心模块验证 (events, crypto)
 - ✅ 构造函数参数验证
 - ✅ 配置参数类型验证
 
 #### `src/core/health-check.js` - 健康检查服务
+
 - ✅ Node.js版本验证
 - ✅ 核心模块验证 (os, fs)
 - ✅ 构造函数参数验证
 - ✅ 配置参数范围验证
 
 #### `src/core/template-engine.js` - 模板引擎
+
 - ✅ Node.js版本验证
 - ✅ 核心模块验证 (fs, path)
 - ✅ 外部依赖验证 (handlebars)
 - ✅ 构造函数参数验证
 
 #### `src/core/i18n-manager.js` - 国际化管理器
+
 - ✅ Node.js版本验证
 - ✅ 核心模块验证 (fs, path, events)
 - ✅ 构造函数参数验证
@@ -164,6 +174,7 @@ module.exports = function (params, config) {
 ## 🧪 验证机制
 
 ### 启动时验证
+
 ```bash
 npm start
 # 如果缺少环境变量，会立即退出并显示错误
@@ -188,7 +199,7 @@ module.exports = {
     performance: { bail: false }, // 性能测试不禁用快速失败
     accessibility: { bail: false }, // 可访问性测试不禁用快速失败
     visual: { bail: false }, // 视觉回归测试不禁用快速失败
-  }
+  },
 };
 ```
 
@@ -238,12 +249,12 @@ module.exports = defineConfig({
 
 #### 环境变量控制
 
-| 环境变量 | 描述 | 默认值 |
-|---------|------|--------|
-| `CI` | 在CI环境中强制启用严格快速失败 | `false` |
-| `TEST_TYPE` | 指定测试类型以应用相应策略 | `unit` |
-| `JEST_BAIL` | 控制Jest快速失败，设为`false`可禁用 | `true` (CI) / `false` (本地) |
-| `PLAYWRIGHT_BAIL` | 控制Playwright失败次数阈值 | `1` (CI) / `0` (本地) |
+| 环境变量          | 描述                                | 默认值                       |
+| ----------------- | ----------------------------------- | ---------------------------- |
+| `CI`              | 在CI环境中强制启用严格快速失败      | `false`                      |
+| `TEST_TYPE`       | 指定测试类型以应用相应策略          | `unit`                       |
+| `JEST_BAIL`       | 控制Jest快速失败，设为`false`可禁用 | `true` (CI) / `false` (本地) |
+| `PLAYWRIGHT_BAIL` | 控制Playwright失败次数阈值          | `1` (CI) / `0` (本地)        |
 
 #### CI/CD集成
 
@@ -251,16 +262,17 @@ module.exports = defineConfig({
 
 ```yaml
 - name: Run Unit Tests
-  run: npm run test:ci  # TEST_TYPE=unit, CI=true, 立即失败
+  run: npm run test:ci # TEST_TYPE=unit, CI=true, 立即失败
 
 - name: Run Integration Tests
-  run: npm run test:integration  # TEST_TYPE=integration, CI=true, 允许1个失败
+  run: npm run test:integration # TEST_TYPE=integration, CI=true, 允许1个失败
 
 - name: Run E2E Tests
-  run: npm run test:e2e  # TEST_TYPE=e2e, CI=true, 立即失败
+  run: npm run test:e2e # TEST_TYPE=e2e, CI=true, 立即失败
 ```
 
 ### 单元测试验证
+
 ```javascript
 describe('快速失败测试', () => {
   test('应该在无效参数时立即失败', () => {
@@ -268,7 +280,9 @@ describe('快速失败测试', () => {
   });
 
   test('应该在无效配置时立即失败', () => {
-    expect(() => new CacheManager({ defaultTTL: -1 })).toThrow('defaultTTL必须是正数');
+    expect(() => new CacheManager({ defaultTTL: -1 })).toThrow(
+      'defaultTTL必须是正数'
+    );
   });
 });
 ```
@@ -276,12 +290,14 @@ describe('快速失败测试', () => {
 ## 🚨 错误处理模式
 
 ### 错误消息格式
+
 ```
 ❌ [组件名称] 错误描述
 详细信息...
 ```
 
 ### 错误代码
+
 - `MODULE_NOT_FOUND`: 模块加载失败
 - `INVALID_CONFIG`: 配置参数无效
 - `MISSING_DEPENDENCY`: 缺少必需依赖
@@ -290,13 +306,17 @@ describe('快速失败测试', () => {
 ## 📊 监控和告警
 
 ### 启动失败告警
+
 系统启动失败时会：
+
 1. 输出清晰的错误信息到控制台
 2. 使用`process.exit(1)`立即终止进程
 3. 提供解决建议
 
 ### 运行时失败告警
+
 运行时检测到问题时会：
+
 1. 记录详细的错误日志
 2. 抛出带有上下文信息的异常
 3. 避免继续执行可能导致更大问题的代码
@@ -304,11 +324,13 @@ describe('快速失败测试', () => {
 ## 🔒 安全考虑
 
 ### 敏感信息保护
+
 - 不在错误消息中暴露敏感配置
 - 使用占位符隐藏API密钥等信息
 - 验证输入以防止注入攻击
 
 ### 资源清理
+
 - 确保在失败时正确清理资源
 - 避免资源泄漏
 - 提供优雅的关闭机制
@@ -316,11 +338,13 @@ describe('快速失败测试', () => {
 ## 📈 性能影响
 
 ### 最小开销
+
 - 验证代码只在启动和初始化时执行
 - 运行时验证使用轻量级检查
 - 缓存验证结果以提高性能
 
 ### 基准测试
+
 ```javascript
 // 验证性能影响
 console.time('快速失败验证');
@@ -332,12 +356,14 @@ console.timeEnd('快速失败验证');
 ## 🎯 最佳实践
 
 ### 开发时的快速失败
+
 1. **及早验证**: 在函数开始处验证所有输入
 2. **清晰错误**: 提供具体的错误信息和解决建议
 3. **安全默认**: 使用安全的默认值
 4. **测试覆盖**: 为所有验证逻辑编写测试
 
 ### 生产环境的快速失败
+
 1. **监控告警**: 设置启动失败的告警
 2. **日志记录**: 详细记录失败原因和上下文
 3. **自动恢复**: 实现自动重启机制
@@ -346,11 +372,13 @@ console.timeEnd('快速失败验证');
 ## 🔄 持续改进
 
 ### 定期审查
+
 - 定期审查和更新验证逻辑
 - 添加新的验证场景
 - 优化性能影响
 
 ### 社区贡献
+
 - 欢迎提交改进快速失败机制的PR
 - 报告新的验证场景
 - 分享最佳实践经验
@@ -360,9 +388,10 @@ console.timeEnd('快速失败验证');
 **实施日期**: 2024年11月9日
 **状态**: ✅ 已完成核心模块实施 + ✅ 已完成测试快速失败机制实施
 **覆盖范围**:
+
 - 6个核心模块的快速失败机制
 - Jest测试框架的快速失败配置
 - Playwright端到端测试的快速失败配置
 - 7种测试类型的差异化策略
-**验证状态**: ✅ 通过语法检查和启动测试 + ✅ 通过测试快速失败验证
-**测试覆盖**: ✅ 所有测试脚本均配置TEST_TYPE环境变量
+  **验证状态**: ✅ 通过语法检查和启动测试 + ✅ 通过测试快速失败验证
+  **测试覆盖**: ✅ 所有测试脚本均配置TEST_TYPE环境变量

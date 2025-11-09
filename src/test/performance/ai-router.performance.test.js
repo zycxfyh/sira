@@ -3,11 +3,18 @@
  * 验证路由器的性能表现和基准
  */
 
-const { describe, beforeAll, afterAll, it, expect, jest } = require('@jest/globals');
-const aiRouter = require('../../core/policies/ai-router');
-const { testDataFactory } = require('../utils/test-data-factory');
+const {
+  describe,
+  beforeAll,
+  afterAll,
+  it,
+  expect,
+  jest,
+} = require("@jest/globals");
+const aiRouter = require("../../core/policies/ai-router");
+const { testDataFactory } = require("../utils/test-data-factory");
 
-describe('AI Router Policy - Performance Tests', () => {
+describe("AI Router Policy - Performance Tests", () => {
   let mockConfig;
   let policy;
 
@@ -21,9 +28,9 @@ describe('AI Router Policy - Performance Tests', () => {
         error: jest.fn(),
       },
       serviceEndpoints: {
-        openai: { url: 'https://api.openai.com/v1' },
-        anthropic: { url: 'https://api.anthropic.com/v1' },
-        azure: { url: 'https://azure-openai.openai.azure.com' },
+        openai: { url: "https://api.openai.com/v1" },
+        anthropic: { url: "https://api.anthropic.com/v1" },
+        azure: { url: "https://azure-openai.openai.azure.com" },
       },
     };
 
@@ -34,18 +41,20 @@ describe('AI Router Policy - Performance Tests', () => {
     testDataFactory.cleanup();
   });
 
-  describe('Routing Performance', () => {
-    it('should route requests within acceptable time limits', async () => {
-      const requests = testDataFactory.createBatch(1000, () => testDataFactory.createAIRequest());
+  describe("Routing Performance", () => {
+    it("should route requests within acceptable time limits", async () => {
+      const requests = testDataFactory.createBatch(1000, () =>
+        testDataFactory.createAIRequest(),
+      );
       const startTime = performance.now();
 
       for (const request of requests) {
         const mockReq = {
-          method: 'POST',
-          url: '/api/v1/ai/chat/completions',
+          method: "POST",
+          url: "/api/v1/ai/chat/completions",
           headers: {
-            'content-type': 'application/json',
-            'x-api-key': 'test-key',
+            "content-type": "application/json",
+            "x-api-key": "test-key",
           },
           body: request,
           egContext: {},
@@ -72,26 +81,28 @@ describe('AI Router Policy - Performance Tests', () => {
       expect(totalTime).toBeLessThan(5000); // 1000个请求应在5秒内完成
     });
 
-    it('should maintain performance under load balancing', () => {
+    it("should maintain performance under load balancing", () => {
       const loadBalancingConfig = {
         loadBalancing: {
           enabled: true,
-          strategy: 'round-robin',
+          strategy: "round-robin",
         },
       };
 
       const loadBalancingPolicy = aiRouter(loadBalancingConfig, mockConfig);
-      const requests = testDataFactory.createBatch(500, () => testDataFactory.createAIRequest());
+      const requests = testDataFactory.createBatch(500, () =>
+        testDataFactory.createAIRequest(),
+      );
 
       const startTime = performance.now();
 
       for (const request of requests) {
         const mockReq = {
-          method: 'POST',
-          url: '/api/v1/ai/chat/completions',
+          method: "POST",
+          url: "/api/v1/ai/chat/completions",
           headers: {
-            'content-type': 'application/json',
-            'x-api-key': 'test-key',
+            "content-type": "application/json",
+            "x-api-key": "test-key",
           },
           body: request,
           egContext: {},
@@ -116,19 +127,19 @@ describe('AI Router Policy - Performance Tests', () => {
       expect(avgTime).toBeLessThan(15);
     });
 
-    it('should handle concurrent requests efficiently', async () => {
+    it("should handle concurrent requests efficiently", async () => {
       const concurrentRequests = 100;
       const promises = [];
 
       for (let i = 0; i < concurrentRequests; i++) {
         const request = testDataFactory.createAIRequest();
-        const promise = new Promise(resolve => {
+        const promise = new Promise((resolve) => {
           const mockReq = {
-            method: 'POST',
-            url: '/api/v1/ai/chat/completions',
+            method: "POST",
+            url: "/api/v1/ai/chat/completions",
             headers: {
-              'content-type': 'application/json',
-              'x-api-key': 'test-key',
+              "content-type": "application/json",
+              "x-api-key": "test-key",
             },
             body: request,
             egContext: {},
@@ -158,19 +169,19 @@ describe('AI Router Policy - Performance Tests', () => {
     });
   });
 
-  describe('Memory Usage', () => {
-    it('should not have memory leaks during sustained operation', async () => {
+  describe("Memory Usage", () => {
+    it("should not have memory leaks during sustained operation", async () => {
       const initialMemory = process.memoryUsage();
       const iterations = 10000;
 
       for (let i = 0; i < iterations; i++) {
         const request = testDataFactory.createAIRequest();
         const mockReq = {
-          method: 'POST',
-          url: '/api/v1/ai/chat/completions',
+          method: "POST",
+          url: "/api/v1/ai/chat/completions",
           headers: {
-            'content-type': 'application/json',
-            'x-api-key': 'test-key',
+            "content-type": "application/json",
+            "x-api-key": "test-key",
           },
           body: request,
           egContext: {},
@@ -184,7 +195,8 @@ describe('AI Router Policy - Performance Tests', () => {
         // 每1000次迭代检查一次内存
         if (i % 1000 === 0) {
           const currentMemory = process.memoryUsage();
-          const memoryIncrease = currentMemory.heapUsed - initialMemory.heapUsed;
+          const memoryIncrease =
+            currentMemory.heapUsed - initialMemory.heapUsed;
 
           console.log(`Memory check at iteration ${i}:
             Initial heap: ${(initialMemory.heapUsed / 1024 / 1024).toFixed(2)}MB
@@ -209,28 +221,28 @@ describe('AI Router Policy - Performance Tests', () => {
     });
   });
 
-  describe('Scalability Benchmarks', () => {
+  describe("Scalability Benchmarks", () => {
     const benchmarks = [
-      { name: 'Small Load', requests: 100 },
-      { name: 'Medium Load', requests: 1000 },
-      { name: 'Large Load', requests: 10000 },
+      { name: "Small Load", requests: 100 },
+      { name: "Medium Load", requests: 1000 },
+      { name: "Large Load", requests: 10000 },
     ];
 
     it.each(benchmarks)(
-      'should scale efficiently - $name ($requests requests)',
+      "should scale efficiently - $name ($requests requests)",
       ({ name, requests }) => {
         const testRequests = testDataFactory.createBatch(requests, () =>
-          testDataFactory.createAIRequest()
+          testDataFactory.createAIRequest(),
         );
         const startTime = performance.now();
 
         for (const request of testRequests) {
           const mockReq = {
-            method: 'POST',
-            url: '/api/v1/ai/chat/completions',
+            method: "POST",
+            url: "/api/v1/ai/chat/completions",
             headers: {
-              'content-type': 'application/json',
-              'x-api-key': 'test-key',
+              "content-type": "application/json",
+              "x-api-key": "test-key",
             },
             body: request,
             egContext: {},
@@ -256,22 +268,24 @@ describe('AI Router Policy - Performance Tests', () => {
         // 吞吐量基准
         expect(throughput).toBeGreaterThan(1000); // 至少1000 req/sec
         expect(avgTime).toBeLessThan(20); // 平均延迟小于20ms
-      }
+      },
     );
   });
 
-  describe('Resource Utilization', () => {
-    it('should maintain CPU usage within limits', async () => {
+  describe("Resource Utilization", () => {
+    it("should maintain CPU usage within limits", async () => {
       const startCpu = process.cpuUsage();
-      const requests = testDataFactory.createBatch(5000, () => testDataFactory.createAIRequest());
+      const requests = testDataFactory.createBatch(5000, () =>
+        testDataFactory.createAIRequest(),
+      );
 
       for (const request of requests) {
         const mockReq = {
-          method: 'POST',
-          url: '/api/v1/ai/chat/completions',
+          method: "POST",
+          url: "/api/v1/ai/chat/completions",
           headers: {
-            'content-type': 'application/json',
-            'x-api-key': 'test-key',
+            "content-type": "application/json",
+            "x-api-key": "test-key",
           },
           body: request,
           egContext: {},
@@ -297,25 +311,25 @@ describe('AI Router Policy - Performance Tests', () => {
     });
   });
 
-  describe('Error Handling Performance', () => {
-    it('should handle errors without performance degradation', () => {
+  describe("Error Handling Performance", () => {
+    it("should handle errors without performance degradation", () => {
       const normalRequests = testDataFactory.createBatch(500, () =>
-        testDataFactory.createAIRequest()
+        testDataFactory.createAIRequest(),
       );
       const errorRequests = testDataFactory.createBatch(500, () => ({
         ...testDataFactory.createAIRequest(),
-        model: 'invalid-model-that-does-not-exist',
+        model: "invalid-model-that-does-not-exist",
       }));
 
       // 测试正常请求性能
       const normalStartTime = performance.now();
       for (const request of normalRequests) {
         const mockReq = {
-          method: 'POST',
-          url: '/api/v1/ai/chat/completions',
+          method: "POST",
+          url: "/api/v1/ai/chat/completions",
           headers: {
-            'content-type': 'application/json',
-            'x-api-key': 'test-key',
+            "content-type": "application/json",
+            "x-api-key": "test-key",
           },
           body: request,
           egContext: {},
@@ -327,17 +341,18 @@ describe('AI Router Policy - Performance Tests', () => {
         policy(mockReq, mockRes, mockNext);
       }
       const normalEndTime = performance.now();
-      const normalAvgTime = (normalEndTime - normalStartTime) / normalRequests.length;
+      const normalAvgTime =
+        (normalEndTime - normalStartTime) / normalRequests.length;
 
       // 测试错误请求性能
       const errorStartTime = performance.now();
       for (const request of errorRequests) {
         const mockReq = {
-          method: 'POST',
-          url: '/api/v1/ai/chat/completions',
+          method: "POST",
+          url: "/api/v1/ai/chat/completions",
           headers: {
-            'content-type': 'application/json',
-            'x-api-key': 'test-key',
+            "content-type": "application/json",
+            "x-api-key": "test-key",
           },
           body: request,
           egContext: {},
@@ -349,7 +364,8 @@ describe('AI Router Policy - Performance Tests', () => {
         policy(mockReq, mockRes, mockNext);
       }
       const errorEndTime = performance.now();
-      const errorAvgTime = (errorEndTime - errorStartTime) / errorRequests.length;
+      const errorAvgTime =
+        (errorEndTime - errorStartTime) / errorRequests.length;
 
       console.log(`Error Handling Performance:
         Normal requests avg time: ${normalAvgTime.toFixed(2)}ms
@@ -361,8 +377,8 @@ describe('AI Router Policy - Performance Tests', () => {
     });
   });
 
-  describe('Memory Leak Detection', () => {
-    it('should not leak memory over time', async () => {
+  describe("Memory Leak Detection", () => {
+    it("should not leak memory over time", async () => {
       // 运行多次GC来获得准确的内存读数
       if (global.gc) {
         global.gc();
@@ -374,11 +390,11 @@ describe('AI Router Policy - Performance Tests', () => {
       for (let i = 0; i < iterations; i++) {
         const request = testDataFactory.createAIRequest();
         const mockReq = {
-          method: 'POST',
-          url: '/api/v1/ai/chat/completions',
+          method: "POST",
+          url: "/api/v1/ai/chat/completions",
           headers: {
-            'content-type': 'application/json',
-            'x-api-key': 'test-key',
+            "content-type": "application/json",
+            "x-api-key": "test-key",
           },
           body: request,
           egContext: {},

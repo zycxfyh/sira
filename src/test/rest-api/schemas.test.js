@@ -1,18 +1,18 @@
-const should = require('should');
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const idGen = require('uuid62');
-const yaml = require('js-yaml');
-const gateway = require('../../../src/core/gateway');
-const adminHelper = require('../common/admin-helper')();
-const Config = require('../../../src/core/config/config');
+const should = require("should");
+const os = require("node:os");
+const fs = require("node:fs");
+const path = require("node:path");
+const idGen = require("uuid62");
+const yaml = require("js-yaml");
+const gateway = require("../../../core/gateway");
+const adminHelper = require("../common/admin-helper")();
+const Config = require("../../../core/config/config");
 
-describe('REST: schemas', () => {
+describe("REST: schemas", () => {
   let config;
   beforeEach(() => {
     config = new Config();
-    config.gatewayConfigPath = path.join(os.tmpdir(), idGen.v4() + 'yml');
+    config.gatewayConfigPath = path.join(os.tmpdir(), `${idGen.v4()}yml`);
   });
 
   afterEach(() => {
@@ -20,18 +20,18 @@ describe('REST: schemas', () => {
   });
 
   let gatewaySrv;
-  before('fires up a new gateway instance', () => {
-    return gateway({ config }).then(srv => {
+  before("fires up a new gateway instance", () => {
+    return gateway({ config }).then((srv) => {
       gatewaySrv = srv.app;
       return srv;
     });
   });
 
-  after('close gateway srv', () => {
+  after("close gateway srv", () => {
     gatewaySrv.close();
   });
 
-  describe('when policies defined', () => {
+  describe("when policies defined", () => {
     beforeEach(() => {
       const initialConfig = {
         admin: { port: 0 },
@@ -41,24 +41,28 @@ describe('REST: schemas', () => {
       return adminHelper.start({ config });
     });
 
-    it('should list all policy schemas', () => {
-      return adminHelper.admin.config.schemas.list('policy').then(schemasResult => {
-        const found = schemasResult.find(schemaResult =>
-          schemaResult.schema.$id.includes('basic-auth')
-        );
-        const other = schemasResult.filter(schemaResult => schemaResult.type !== 'policy');
-        should(found.schema).not.be.undefined();
-        should(found.schema.$id).containEql('basic-auth');
-        should(found.type).be.eql('policy');
-        should(other.length).be.eql(0);
-      });
+    it("should list all policy schemas", () => {
+      return adminHelper.admin.config.schemas
+        .list("policy")
+        .then((schemasResult) => {
+          const found = schemasResult.find((schemaResult) =>
+            schemaResult.schema.$id.includes("basic-auth"),
+          );
+          const other = schemasResult.filter(
+            (schemaResult) => schemaResult.type !== "policy",
+          );
+          should(found.schema).not.be.undefined();
+          should(found.schema.$id).containEql("basic-auth");
+          should(found.type).be.eql("policy");
+          should(other.length).be.eql(0);
+        });
     });
 
-    it('should find basic-auth policy', () => {
+    it("should find basic-auth policy", () => {
       return adminHelper.admin.config.schemas
-        .list('http://express-gateway.io/schemas/policies/basic-auth.json')
-        .then(schema => {
-          should(schema.schema.$id).containEql('basic-auth');
+        .list("http://express-gateway.io/schemas/policies/basic-auth.json")
+        .then((schema) => {
+          should(schema.schema.$id).containEql("basic-auth");
         });
     });
   });

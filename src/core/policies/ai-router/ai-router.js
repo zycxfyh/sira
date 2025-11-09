@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * AI Router Policy
  * Routes AI requests to appropriate providers based on cost, performance, and availability
@@ -7,31 +5,31 @@
 
 // 快速失败：验证Node.js版本
 const requiredNodeVersion = 18;
-if (parseInt(process.versions.node.split('.')[0]) < requiredNodeVersion) {
+if (parseInt(process.versions.node.split(".")[0], 10) < requiredNodeVersion) {
   console.error(
-    `❌ AI路由器需要Node.js ${requiredNodeVersion}+，当前版本: ${process.versions.node}`
+    `❌ AI路由器需要Node.js ${requiredNodeVersion}+，当前版本: ${process.versions.node}`,
   );
   process.exit(1);
 }
 
 // 快速失败：验证核心依赖
 try {
-  require.resolve('axios');
+  require.resolve("axios");
 } catch (error) {
-  console.error('❌ 缺少必需依赖: axios', error.message);
+  console.error("❌ 缺少必需依赖: axios", error.message);
   process.exit(1);
 }
 
-const axios = require('axios');
+const _axios = require("axios");
 
 // 快速失败：验证内部模块依赖
 const requiredInternalModules = [
-  '../../usage-analytics',
-  '../../parameter-manager',
-  '../../prompt-template-manager',
-  '../../api-key-manager',
-  '../../ab-test-manager',
-  '../../rules-engine',
+  "../../usage-analytics",
+  "../../parameter-manager",
+  "../../prompt-template-manager",
+  "../../api-key-manager",
+  "../../ab-test-manager",
+  "../../rules-engine",
 ];
 
 for (const modulePath of requiredInternalModules) {
@@ -39,17 +37,17 @@ for (const modulePath of requiredInternalModules) {
     require.resolve(modulePath);
   } catch (error) {
     console.error(`❌ 无法加载内部模块: ${modulePath}`, error.message);
-    console.error('请确保所有核心模块已正确安装和配置');
+    console.error("请确保所有核心模块已正确安装和配置");
     process.exit(1);
   }
 }
 
-const { usageAnalytics } = require('../../usage-analytics');
-const { parameterManager } = require('../../parameter-manager');
-const { promptTemplateManager } = require('../../prompt-template-manager');
-const { apiKeyManager } = require('../../api-key-manager');
-const { ABTestManager } = require('../../ab-test-manager');
-const { RulesEngine } = require('../../rules-engine');
+const { usageAnalytics } = require("../../usage-analytics");
+const { parameterManager } = require("../../parameter-manager");
+const { promptTemplateManager } = require("../../prompt-template-manager");
+const { apiKeyManager } = require("../../api-key-manager");
+const { ABTestManager } = require("../../ab-test-manager");
+const { RulesEngine } = require("../../rules-engine");
 
 // 快速失败：验证导出对象存在
 if (
@@ -60,40 +58,40 @@ if (
   !ABTestManager ||
   !RulesEngine
 ) {
-  console.error('❌ 核心服务模块加载失败');
+  console.error("❌ 核心服务模块加载失败");
   process.exit(1);
 }
-module.exports = function (params, config) {
+module.exports = (params, config) => {
   // 快速失败：验证必需参数
   if (!params) {
-    throw new Error('AI路由器需要配置参数 (params)');
+    throw new Error("AI路由器需要配置参数 (params)");
   }
 
   if (!config) {
-    throw new Error('AI路由器需要配置对象 (config)');
+    throw new Error("AI路由器需要配置对象 (config)");
   }
 
-  if (!config.logger && typeof console !== 'object') {
-    throw new Error('AI路由器需要有效的日志器 (config.logger 或 console)');
+  if (!config.logger && typeof console !== "object") {
+    throw new Error("AI路由器需要有效的日志器 (config.logger 或 console)");
   }
 
   const logger = config.logger || console;
 
   // 快速失败：验证参数类型
-  if (typeof params !== 'object' || params === null) {
-    const error = new Error('AI路由器参数必须是有效的对象');
+  if (typeof params !== "object" || params === null) {
+    const error = new Error("AI路由器参数必须是有效的对象");
     logger.error(error.message);
     throw error;
   }
 
-  if (typeof config !== 'object' || config === null) {
-    const error = new Error('AI路由器配置必须是有效的对象');
+  if (typeof config !== "object" || config === null) {
+    const error = new Error("AI路由器配置必须是有效的对象");
     logger.error(error.message);
     throw error;
   }
 
   // 快速失败：验证必需的配置属性
-  const requiredConfigKeys = ['serviceEndpoints'];
+  const requiredConfigKeys = ["serviceEndpoints"];
   for (const key of requiredConfigKeys) {
     if (!(key in config)) {
       const error = new Error(`AI路由器配置缺少必需属性: ${key}`);
@@ -106,49 +104,59 @@ module.exports = function (params, config) {
   const validationErrors = validateConfiguration(params);
   if (validationErrors.length > 0) {
     const error = new Error(
-      `AI Router configuration validation failed: ${validationErrors.join(', ')}`
+      `AI Router configuration validation failed: ${validationErrors.join(", ")}`,
     );
     logger.error(error.message);
     throw error;
   }
 
   // Merge with default configuration
-  const finalConfig = Object.assign(
+  const _finalConfig = Object.assign(
     {
       timeout: 30000,
       retryAttempts: 3,
-      routingStrategy: 'cost', // cost, performance, availability
+      routingStrategy: "cost", // cost, performance, availability
       fallbackEnabled: true,
       healthCheckInterval: 60000,
     },
-    params
+    params,
   );
 
   // AI Provider configurations
   const providers = {
     openai: {
-      baseUrl: 'https://api.openai.com/v1',
-      models: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-      costPerToken: { 'gpt-4': 0.03, 'gpt-4-turbo': 0.01, 'gpt-3.5-turbo': 0.002 },
-      authHeader: 'Authorization',
-      authPrefix: 'Bearer',
+      baseUrl: "https://api.openai.com/v1",
+      models: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+      costPerToken: {
+        "gpt-4": 0.03,
+        "gpt-4-turbo": 0.01,
+        "gpt-3.5-turbo": 0.002,
+      },
+      authHeader: "Authorization",
+      authPrefix: "Bearer",
     },
     anthropic: {
-      baseUrl: 'https://api.anthropic.com/v1',
-      models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
-      costPerToken: { 'claude-3-opus': 0.015, 'claude-3-sonnet': 0.003, 'claude-3-haiku': 0.00025 },
-      authHeader: 'x-api-key',
-      authPrefix: '',
+      baseUrl: "https://api.anthropic.com/v1",
+      models: ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
+      costPerToken: {
+        "claude-3-opus": 0.015,
+        "claude-3-sonnet": 0.003,
+        "claude-3-haiku": 0.00025,
+      },
+      authHeader: "x-api-key",
+      authPrefix: "",
     },
     azure: {
-      baseUrl: process.env.AZURE_OPENAI_ENDPOINT || 'https://your-resource.openai.azure.com/',
-      models: ['gpt-4', 'gpt-3.5-turbo'],
-      costPerToken: { 'gpt-4': 0.03, 'gpt-3.5-turbo': 0.002 },
-      authHeader: 'api-key',
-      authPrefix: '',
+      baseUrl:
+        process.env.AZURE_OPENAI_ENDPOINT ||
+        "https://your-resource.openai.azure.com/",
+      models: ["gpt-4", "gpt-3.5-turbo"],
+      costPerToken: { "gpt-4": 0.03, "gpt-3.5-turbo": 0.002 },
+      authHeader: "api-key",
+      authPrefix: "",
       deploymentMap: {
-        'gpt-4': 'gpt-4',
-        'gpt-3.5-turbo': 'gpt-35-turbo',
+        "gpt-4": "gpt-4",
+        "gpt-3.5-turbo": "gpt-35-turbo",
       },
     },
   };
@@ -157,7 +165,7 @@ module.exports = function (params, config) {
   const providerStats = new Map();
 
   // Initialize provider stats
-  Object.keys(providers).forEach(provider => {
+  Object.keys(providers).forEach((provider) => {
     providerStats.set(provider, {
       successCount: 0,
       errorCount: 0,
@@ -171,7 +179,7 @@ module.exports = function (params, config) {
   // Model to provider mapping
   const modelProviders = {};
   Object.entries(providers).forEach(([provider, providerConfig]) => {
-    providerConfig.models.forEach(model => {
+    providerConfig.models.forEach((model) => {
       if (!modelProviders[model]) {
         modelProviders[model] = [];
       }
@@ -183,9 +191,14 @@ module.exports = function (params, config) {
     const startTime = Date.now();
 
     // Extract user ID from headers or generate one
-    const userId = req.headers['x-user-id'] || req.headers['user-id'] || req.ip || 'anonymous';
+    const userId =
+      req.headers["x-user-id"] ||
+      req.headers["user-id"] ||
+      req.ip ||
+      "anonymous";
     const requestId =
-      req.headers['x-request-id'] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      req.headers["x-request-id"] ||
+      `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Initialize rules engine for custom routing rules asynchronously
     const initializeRulesEngine = async () => {
@@ -199,22 +212,28 @@ module.exports = function (params, config) {
         return rulesEngine;
       } catch (error) {
         logger.warn(
-          'Rules engine initialization failed, continuing without custom rules:',
-          error.message
+          "Rules engine initialization failed, continuing without custom rules:",
+          error.message,
         );
         return null;
       }
     };
 
     // Extract AI model from request body
-    let model, parameters, taskType, parameterPreset, promptTemplate, templateVariables;
+    let model,
+      parameters,
+      taskType,
+      parameterPreset,
+      promptTemplate,
+      templateVariables;
     try {
       const { body } = req;
       model = body.model;
       parameters = body.parameters || {};
-      taskType = body.task_type || req.headers['x-task-type'];
-      parameterPreset = body.parameter_preset || req.headers['x-parameter-preset'];
-      promptTemplate = body.prompt_template || req.headers['x-prompt-template'];
+      taskType = body.task_type || req.headers["x-task-type"];
+      parameterPreset =
+        body.parameter_preset || req.headers["x-parameter-preset"];
+      promptTemplate = body.prompt_template || req.headers["x-prompt-template"];
       templateVariables = body.template_variables || {};
 
       if (!model) {
@@ -223,14 +242,14 @@ module.exports = function (params, config) {
           userId,
           requestId,
           statusCode: 400,
-          error: 'MISSING_MODEL',
+          error: "MISSING_MODEL",
           timestamp: new Date(),
           responseTime: Date.now() - startTime,
         });
 
         return res.status(400).json({
-          error: 'Model is required',
-          code: 'MISSING_MODEL',
+          error: "Model is required",
+          code: "MISSING_MODEL",
         });
       }
 
@@ -241,14 +260,14 @@ module.exports = function (params, config) {
           userId,
           requestId,
           statusCode: 400,
-          error: 'UNSUPPORTED_MODEL',
+          error: "UNSUPPORTED_MODEL",
           timestamp: new Date(),
           responseTime: Date.now() - startTime,
         });
 
         return res.status(400).json({
           error: `Unsupported model: ${model}`,
-          code: 'UNSUPPORTED_MODEL',
+          code: "UNSUPPORTED_MODEL",
         });
       }
 
@@ -257,14 +276,23 @@ module.exports = function (params, config) {
         const preset = parameterManager.getParameterPreset(parameterPreset);
         if (preset) {
           parameters = { ...preset.parameters, ...parameters };
-          logger.info(`Applied parameter preset: ${parameterPreset}`, { userId, model });
+          logger.info(`Applied parameter preset: ${parameterPreset}`, {
+            userId,
+            model,
+          });
         } else {
-          logger.warn(`Unknown parameter preset: ${parameterPreset}`, { userId });
+          logger.warn(`Unknown parameter preset: ${parameterPreset}`, {
+            userId,
+          });
         }
       }
 
       // 优化参数
-      parameters = parameterManager.optimizeParameters(parameters, taskType, model);
+      parameters = parameterManager.optimizeParameters(
+        parameters,
+        taskType,
+        model,
+      );
 
       // 验证参数
       const validation = parameterManager.validateParameters(parameters);
@@ -273,14 +301,14 @@ module.exports = function (params, config) {
           userId,
           requestId,
           statusCode: 400,
-          error: 'INVALID_PARAMETERS',
+          error: "INVALID_PARAMETERS",
           timestamp: new Date(),
           responseTime: Date.now() - startTime,
         });
 
         return res.status(400).json({
-          error: 'Invalid parameters',
-          code: 'INVALID_PARAMETERS',
+          error: "Invalid parameters",
+          code: "INVALID_PARAMETERS",
           details: validation.errors,
           warnings: validation.warnings,
         });
@@ -288,7 +316,7 @@ module.exports = function (params, config) {
 
       // 记录参数警告
       if (validation.warnings.length > 0) {
-        logger.warn('Parameter warnings', {
+        logger.warn("Parameter warnings", {
           userId,
           model,
           warnings: validation.warnings,
@@ -296,25 +324,25 @@ module.exports = function (params, config) {
       }
 
       // 处理提示词模板
-      let renderedPrompt = null;
+      let _renderedPrompt = null;
       if (promptTemplate) {
         try {
-          const templateParts = promptTemplate.split('.');
+          const templateParts = promptTemplate.split(".");
           if (templateParts.length === 2) {
             const [category, templateId] = templateParts;
             const renderResult = promptTemplateManager.renderTemplate(
               category,
               templateId,
-              templateVariables
+              templateVariables,
             );
 
             // 将渲染后的提示词替换到messages中
             if (body.messages && Array.isArray(body.messages)) {
               // 找到最后一个用户消息并替换内容
               for (let i = body.messages.length - 1; i >= 0; i--) {
-                if (body.messages[i].role === 'user') {
+                if (body.messages[i].role === "user") {
                   body.messages[i].content = renderResult.rendered;
-                  renderedPrompt = renderResult;
+                  _renderedPrompt = renderResult;
                   break;
                 }
               }
@@ -326,7 +354,9 @@ module.exports = function (params, config) {
               template: renderResult.template.name,
             });
           } else {
-            logger.warn(`Invalid prompt template format: ${promptTemplate}`, { userId });
+            logger.warn(`Invalid prompt template format: ${promptTemplate}`, {
+              userId,
+            });
           }
         } catch (error) {
           logger.warn(`Prompt template rendering failed: ${promptTemplate}`, {
@@ -337,21 +367,21 @@ module.exports = function (params, config) {
         }
       }
     } catch (error) {
-      logger.error('Failed to parse request body:', error);
+      logger.error("Failed to parse request body:", error);
 
       // 记录错误统计
       usageAnalytics.recordRequest({
         userId,
         requestId,
         statusCode: 400,
-        error: 'INVALID_REQUEST',
+        error: "INVALID_REQUEST",
         timestamp: new Date(),
         responseTime: Date.now() - startTime,
       });
 
       return res.status(400).json({
-        error: 'Invalid request body',
-        code: 'INVALID_REQUEST',
+        error: "Invalid request body",
+        code: "INVALID_REQUEST",
       });
     }
 
@@ -359,9 +389,9 @@ module.exports = function (params, config) {
     const routingContext = {
       user: {
         id: userId,
-        tier: req.headers['x-user-tier'] || 'free',
+        tier: req.headers["x-user-tier"] || "free",
         ip: req.ip,
-        userAgent: req.headers['user-agent'],
+        userAgent: req.headers["user-agent"],
       },
       request: {
         id: requestId,
@@ -397,20 +427,23 @@ module.exports = function (params, config) {
       if (rulesEngine) {
         try {
           const ruleResult = await rulesEngine.executeRules(routingContext, {
-            ruleSetId: params.routingRuleSetId || 'routing-rules',
+            ruleSetId: params.routingRuleSetId || "routing-rules",
             maxResults: 5,
             dryRun: false,
           });
 
           if (ruleResult.matched && ruleResult.results.length > 0) {
-            logger.info(`Applied ${ruleResult.results.length} custom routing rules`, {
-              userId,
-              requestId,
-              rulesApplied: ruleResult.results.map(r => r.ruleName),
-            });
+            logger.info(
+              `Applied ${ruleResult.results.length} custom routing rules`,
+              {
+                userId,
+                requestId,
+                rulesApplied: ruleResult.results.map((r) => r.ruleName),
+              },
+            );
 
             // 应用规则执行结果
-            for (const result of ruleResult.results) {
+            for (const _result of ruleResult.results) {
               // 规则执行结果已经通过actions应用到了routingContext中
               if (routingContext.routing.provider) {
                 selectedProvider = routingContext.routing.provider;
@@ -419,20 +452,26 @@ module.exports = function (params, config) {
                 model = routingContext.routing.model;
               }
               if (routingContext.routing.parameters) {
-                parameters = { ...parameters, ...routingContext.routing.parameters };
+                parameters = {
+                  ...parameters,
+                  ...routingContext.routing.parameters,
+                };
               }
             }
           }
         } catch (error) {
-          logger.warn('Custom routing rules execution failed, continuing with default routing:', {
-            userId,
-            requestId,
-            error: error.message,
-          });
+          logger.warn(
+            "Custom routing rules execution failed, continuing with default routing:",
+            {
+              userId,
+              requestId,
+              error: error.message,
+            },
+          );
         }
       }
     } catch (error) {
-      logger.warn('Rules engine execution failed:', error.message);
+      logger.warn("Rules engine execution failed:", error.message);
     }
 
     // A/B测试：检查是否有适用于当前请求的测试
@@ -458,13 +497,17 @@ module.exports = function (params, config) {
 
       // 首先查找provider相关的测试
       const providerTests = Array.from(abTestManager.tests.values()).filter(
-        test => test.status === 'running' && test.target === 'provider'
+        (test) => test.status === "running" && test.target === "provider",
       );
 
       for (const test of providerTests) {
-        const allocation = abTestManager.allocateVariant(test.id, userId, context);
+        const allocation = abTestManager.allocateVariant(
+          test.id,
+          userId,
+          context,
+        );
         if (allocation) {
-          abTestAllocation = { ...allocation, target: 'provider' };
+          abTestAllocation = { ...allocation, target: "provider" };
           break;
         }
       }
@@ -472,13 +515,17 @@ module.exports = function (params, config) {
       // 如果没有provider测试，查找model相关的测试
       if (!abTestAllocation) {
         const modelTests = Array.from(abTestManager.tests.values()).filter(
-          test => test.status === 'running' && test.target === 'model'
+          (test) => test.status === "running" && test.target === "model",
         );
 
         for (const test of modelTests) {
-          const allocation = abTestManager.allocateVariant(test.id, userId, context);
+          const allocation = abTestManager.allocateVariant(
+            test.id,
+            userId,
+            context,
+          );
           if (allocation) {
-            abTestAllocation = { ...allocation, target: 'model' };
+            abTestAllocation = { ...allocation, target: "model" };
             break;
           }
         }
@@ -493,21 +540,21 @@ module.exports = function (params, config) {
             userId,
             requestId,
             variant: variant.name,
-          }
+          },
         );
 
         // 根据测试目标应用变体
-        if (abTestAllocation.target === 'provider') {
+        if (abTestAllocation.target === "provider") {
           // 强制使用测试指定的provider
           selectedProvider = variant.id; // variant.id 存储provider名称
-        } else if (abTestAllocation.target === 'model') {
+        } else if (abTestAllocation.target === "model") {
           // 强制使用测试指定的model
           model = variant.id; // variant.id 存储model名称
         }
         // 其他测试目标可以在这里扩展
       }
     } catch (error) {
-      logger.warn('A/B测试处理失败，继续正常流程', {
+      logger.warn("A/B测试处理失败，继续正常流程", {
         userId,
         requestId,
         error: error.message,
@@ -524,62 +571,72 @@ module.exports = function (params, config) {
         userId,
         requestId,
         statusCode: 503,
-        error: 'NO_AVAILABLE_PROVIDERS',
+        error: "NO_AVAILABLE_PROVIDERS",
         timestamp: new Date(),
         responseTime: Date.now() - startTime,
       });
 
       return res.status(503).json({
-        error: 'No available providers for model',
-        code: 'NO_AVAILABLE_PROVIDERS',
+        error: "No available providers for model",
+        code: "NO_AVAILABLE_PROVIDERS",
       });
     }
 
     // Transform request for the selected provider (包含参数转换)
-    const transformedRequest = transformRequest(req.body, selectedProvider, parameters);
+    const transformedRequest = transformRequest(
+      req.body,
+      selectedProvider,
+      parameters,
+    );
 
     // Get provider configuration and API key
     const providerConfig = providers[selectedProvider];
 
     // 从API密钥管理器获取可用的密钥
-    const availableKeys = apiKeyManager.getAvailableKeys(selectedProvider, userId, [
-      'read',
-      'write',
-    ]);
+    const availableKeys = apiKeyManager.getAvailableKeys(
+      selectedProvider,
+      userId,
+      ["read", "write"],
+    );
     if (availableKeys.length === 0) {
       usageAnalytics.recordRequest({
         userId,
         requestId,
         statusCode: 429,
-        error: 'NO_AVAILABLE_KEYS',
+        error: "NO_AVAILABLE_KEYS",
         timestamp: new Date(),
         responseTime: Date.now() - startTime,
       });
 
       return res.status(429).json({
         error: `No available API keys for provider: ${selectedProvider}`,
-        code: 'NO_AVAILABLE_KEYS',
+        code: "NO_AVAILABLE_KEYS",
       });
     }
 
     // 选择最佳密钥
-    const selectedKey = apiKeyManager.selectBestKey(selectedProvider, userId, ['read', 'write'], {
-      strategy: 'least_used', // 使用最少使用的密钥
-    });
+    const selectedKey = apiKeyManager.selectBestKey(
+      selectedProvider,
+      userId,
+      ["read", "write"],
+      {
+        strategy: "least_used", // 使用最少使用的密钥
+      },
+    );
 
     if (!selectedKey) {
       usageAnalytics.recordRequest({
         userId,
         requestId,
         statusCode: 429,
-        error: 'KEY_SELECTION_FAILED',
+        error: "KEY_SELECTION_FAILED",
         timestamp: new Date(),
         responseTime: Date.now() - startTime,
       });
 
       return res.status(429).json({
-        error: 'Failed to select API key',
-        code: 'KEY_SELECTION_FAILED',
+        error: "Failed to select API key",
+        code: "KEY_SELECTION_FAILED",
       });
     }
 
@@ -590,19 +647,23 @@ module.exports = function (params, config) {
         userId,
         requestId,
         statusCode: 500,
-        error: 'KEY_RETRIEVAL_FAILED',
+        error: "KEY_RETRIEVAL_FAILED",
         timestamp: new Date(),
         responseTime: Date.now() - startTime,
       });
 
       return res.status(500).json({
-        error: 'Failed to retrieve API key',
-        code: 'KEY_RETRIEVAL_FAILED',
+        error: "Failed to retrieve API key",
+        code: "KEY_RETRIEVAL_FAILED",
       });
     }
 
     // Build target URL
-    const targetUrl = buildTargetUrl(providerConfig, req.url, transformedRequest);
+    const targetUrl = buildTargetUrl(
+      providerConfig,
+      req.url,
+      transformedRequest,
+    );
 
     // Prepare headers with API key from key manager
     const headers = buildHeaders(providerConfig, req.headers, keyData);
@@ -616,8 +677,11 @@ module.exports = function (params, config) {
 
     req.egContext.proxy = {
       target: {
-        protocol: 'https:',
-        host: selectedProvider === 'azure' ? 'your-resource.openai.azure.com' : 'api.openai.com',
+        protocol: "https:",
+        host:
+          selectedProvider === "azure"
+            ? "your-resource.openai.azure.com"
+            : "api.openai.com",
         port: 443,
         href: targetUrl,
       },
@@ -642,7 +706,7 @@ module.exports = function (params, config) {
     logger.info(`AI Router: routing to ${selectedProvider} (${model})`, {
       userId,
       requestId,
-      targetUrl: targetUrl.replace(/api[-_]?key=[^&\s]*/gi, 'api-key=***'),
+      targetUrl: targetUrl.replace(/api[-_]?key=[^&\s]*/gi, "api-key=***"),
     });
 
     // Continue to next middleware (proxy policy will handle the actual request)
@@ -650,7 +714,7 @@ module.exports = function (params, config) {
   };
 
   // Select best provider based on cost, performance, and availability
-  function selectBestProvider(model, req) {
+  function selectBestProvider(model, _req) {
     const availableProviders = modelProviders[model];
 
     if (!availableProviders || availableProviders.length === 0) {
@@ -658,7 +722,7 @@ module.exports = function (params, config) {
     }
 
     // Filter out providers with circuit breaker open
-    const healthyProviders = availableProviders.filter(provider => {
+    const healthyProviders = availableProviders.filter((provider) => {
       const stats = providerStats.get(provider);
       return !stats.isCircuitBreakerOpen;
     });
@@ -667,7 +731,11 @@ module.exports = function (params, config) {
       // Reset circuit breaker for provider with oldest failure
       const oldestFailure = availableProviders.reduce((oldest, provider) => {
         const stats = providerStats.get(provider);
-        if (!oldest || (stats.lastFailureTime && stats.lastFailureTime < oldest.lastFailureTime)) {
+        if (
+          !oldest ||
+          (stats.lastFailureTime &&
+            stats.lastFailureTime < oldest.lastFailureTime)
+        ) {
           return { provider, lastFailureTime: stats.lastFailureTime };
         }
         return oldest;
@@ -677,7 +745,9 @@ module.exports = function (params, config) {
         const stats = providerStats.get(oldestFailure.provider);
         stats.isCircuitBreakerOpen = false;
         stats.errorCount = Math.floor(stats.errorCount * 0.5);
-        logger.info(`Circuit breaker reset for provider: ${oldestFailure.provider}`);
+        logger.info(
+          `Circuit breaker reset for provider: ${oldestFailure.provider}`,
+        );
         return oldestFailure.provider;
       }
 
@@ -701,28 +771,35 @@ module.exports = function (params, config) {
       const providerParameters = parameterManager.transformParameters(
         parameters,
         provider,
-        body.model
+        body.model,
       );
       Object.assign(transformed, providerParameters);
     } catch (error) {
-      logger.warn(`Parameter transformation failed for ${provider}:`, error.message);
+      logger.warn(
+        `Parameter transformation failed for ${provider}:`,
+        error.message,
+      );
       // 继续处理，使用原始参数
     }
 
-    if (provider === 'anthropic') {
+    if (provider === "anthropic") {
       // Transform OpenAI format to Anthropic format
       if (transformed.messages) {
         // Extract system message
-        const systemMessage = transformed.messages.find(msg => msg.role === 'system');
+        const systemMessage = transformed.messages.find(
+          (msg) => msg.role === "system",
+        );
         if (systemMessage) {
           transformed.system = systemMessage.content;
-          transformed.messages = transformed.messages.filter(msg => msg.role !== 'system');
+          transformed.messages = transformed.messages.filter(
+            (msg) => msg.role !== "system",
+          );
         }
 
         // Map roles
-        transformed.messages = transformed.messages.map(msg => ({
+        transformed.messages = transformed.messages.map((msg) => ({
           ...msg,
-          role: msg.role === 'assistant' ? 'assistant' : 'user',
+          role: msg.role === "assistant" ? "assistant" : "user",
         }));
 
         // 确保max_tokens参数正确
@@ -731,15 +808,17 @@ module.exports = function (params, config) {
           delete transformed.max_tokens_to_sample;
         }
       }
-    } else if (provider === 'azure') {
+    } else if (provider === "azure") {
       // Azure uses different endpoint structure
-      const deploymentName = providers.azure.deploymentMap[body.model] || body.model;
+      const deploymentName =
+        providers.azure.deploymentMap[body.model] || body.model;
       transformed.model = deploymentName;
-    } else if (provider === 'google_gemini') {
+    } else if (provider === "google_gemini") {
       // Google Gemini format
       if (transformed.messages) {
         // Convert messages to Gemini format
-        const lastMessage = transformed.messages[transformed.messages.length - 1];
+        const lastMessage =
+          transformed.messages[transformed.messages.length - 1];
         transformed.contents = [
           {
             parts: [{ text: lastMessage.content }],
@@ -750,12 +829,17 @@ module.exports = function (params, config) {
     }
 
     // 清理不支持的参数
-    const providerMapping = parameterManager.parameterMappings.providers[provider];
+    const providerMapping =
+      parameterManager.parameterMappings.providers[provider];
     if (providerMapping) {
-      for (const [commonParam, providerParam] of Object.entries(providerMapping)) {
+      for (const [commonParam, providerParam] of Object.entries(
+        providerMapping,
+      )) {
         if (providerParam === null && transformed[commonParam] !== undefined) {
           delete transformed[commonParam];
-          logger.debug(`Removed unsupported parameter: ${commonParam} for ${provider}`);
+          logger.debug(
+            `Removed unsupported parameter: ${commonParam} for ${provider}`,
+          );
         }
       }
     }
@@ -764,28 +848,29 @@ module.exports = function (params, config) {
   }
 
   // Transform response to unified format
-  function transformResponse(data, provider) {
-    if (provider === 'anthropic') {
+  function _transformResponse(data, provider) {
+    if (provider === "anthropic") {
       // Transform Anthropic response to OpenAI-like format
       return {
         id: data.id || `anthropic-${Date.now()}`,
-        object: 'chat.completion',
+        object: "chat.completion",
         created: Math.floor(Date.now() / 1000),
         model: data.model,
         choices: [
           {
             index: 0,
             message: {
-              role: 'assistant',
-              content: data.content?.[0]?.text || '',
+              role: "assistant",
+              content: data.content?.[0]?.text || "",
             },
-            finish_reason: data.stop_reason || 'stop',
+            finish_reason: data.stop_reason || "stop",
           },
         ],
         usage: {
           prompt_tokens: data.usage?.input_tokens || 0,
           completion_tokens: data.usage?.output_tokens || 0,
-          total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
+          total_tokens:
+            (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
         },
       };
     }
@@ -794,7 +879,7 @@ module.exports = function (params, config) {
   }
 
   // Extract token usage from response
-  function extractTokenUsage(response, provider) {
+  function _extractTokenUsage(response, _provider) {
     if (!response || !response.usage) {
       return { prompt: 0, completion: 0, total: 0 };
     }
@@ -803,12 +888,14 @@ module.exports = function (params, config) {
     return {
       prompt: usage.prompt_tokens || 0,
       completion: usage.completion_tokens || 0,
-      total: usage.total_tokens || (usage.prompt_tokens || 0) + (usage.completion_tokens || 0),
+      total:
+        usage.total_tokens ||
+        (usage.prompt_tokens || 0) + (usage.completion_tokens || 0),
     };
   }
 
   // Calculate cost based on provider, model and token usage
-  function calculateCost(provider, model, tokens) {
+  function _calculateCost(provider, model, tokens) {
     const providerConfig = providers[provider];
     if (!providerConfig || !providerConfig.costPerToken) {
       return 0;
@@ -824,7 +911,8 @@ module.exports = function (params, config) {
 
     if (providerConfig === providers.azure) {
       // Azure uses deployment-based URLs
-      const deploymentName = providers.azure.deploymentMap[requestBody.model] || requestBody.model;
+      const deploymentName =
+        providers.azure.deploymentMap[requestBody.model] || requestBody.model;
       endpoint = `/openai/deployments/${deploymentName}/chat/completions?api-version=2023-12-01`;
     }
 
@@ -838,25 +926,25 @@ module.exports = function (params, config) {
     // Remove hop-by-hop headers
     delete headers.host;
     delete headers.connection;
-    delete headers['keep-alive'];
-    delete headers['proxy-authenticate'];
-    delete headers['proxy-authorization'];
+    delete headers["keep-alive"];
+    delete headers["proxy-authenticate"];
+    delete headers["proxy-authorization"];
     delete headers.te;
     delete headers.trailers;
-    delete headers['transfer-encoding'];
+    delete headers["transfer-encoding"];
     delete headers.upgrade;
 
     // Set content type
-    headers['content-type'] = 'application/json';
+    headers["content-type"] = "application/json";
 
     // Add provider-specific authentication using key from key manager
-    if (keyData && keyData.key) {
-      if (selectedProvider === 'openai' || selectedProvider === 'azure') {
+    if (keyData?.key) {
+      if (selectedProvider === "openai" || selectedProvider === "azure") {
         headers.Authorization = `Bearer ${keyData.key}`;
-      } else if (selectedProvider === 'anthropic') {
-        headers['x-api-key'] = keyData.key;
-      } else if (selectedProvider === 'google_gemini') {
-        headers['x-goog-api-key'] = keyData.key;
+      } else if (selectedProvider === "anthropic") {
+        headers["x-api-key"] = keyData.key;
+      } else if (selectedProvider === "google_gemini") {
+        headers["x-goog-api-key"] = keyData.key;
       } else {
         // For other providers, use Bearer token by default
         headers.Authorization = `Bearer ${keyData.key}`;
@@ -866,7 +954,8 @@ module.exports = function (params, config) {
       const apiKey = getApiKey(providerConfig);
       if (apiKey) {
         if (providerConfig.authPrefix) {
-          headers[providerConfig.authHeader] = `${providerConfig.authPrefix} ${apiKey}`;
+          headers[providerConfig.authHeader] =
+            `${providerConfig.authPrefix} ${apiKey}`;
         } else {
           headers[providerConfig.authHeader] = apiKey;
         }
@@ -886,12 +975,13 @@ module.exports = function (params, config) {
     };
 
     return keyMap[
-      providerConfig.name || Object.keys(providers).find(key => providers[key] === providerConfig)
+      providerConfig.name ||
+        Object.keys(providers).find((key) => providers[key] === providerConfig)
     ];
   }
 
   // Record provider performance
-  function recordProviderPerformance(provider, success, responseTime) {
+  function _recordProviderPerformance(provider, success, responseTime) {
     const stats = providerStats.get(provider);
     if (!stats) return;
 
@@ -899,7 +989,8 @@ module.exports = function (params, config) {
     if (success) {
       stats.successCount++;
       stats.avgResponseTime =
-        (stats.avgResponseTime * (stats.totalRequests - 1) + responseTime) / stats.totalRequests;
+        (stats.avgResponseTime * (stats.totalRequests - 1) + responseTime) /
+        stats.totalRequests;
     } else {
       stats.errorCount++;
       stats.lastFailureTime = Date.now();
@@ -924,44 +1015,59 @@ function validateConfiguration(params) {
   const errors = [];
 
   if (!params) {
-    errors.push('Configuration object is required');
+    errors.push("Configuration object is required");
     return errors;
   }
 
   // Validate timeout
   if (params.timeout !== undefined) {
-    if (typeof params.timeout !== 'number' || params.timeout < 1000 || params.timeout > 300000) {
-      errors.push('timeout must be a number between 1000 and 300000 milliseconds');
+    if (
+      typeof params.timeout !== "number" ||
+      params.timeout < 1000 ||
+      params.timeout > 300000
+    ) {
+      errors.push(
+        "timeout must be a number between 1000 and 300000 milliseconds",
+      );
     }
   }
 
   // Validate retry attempts
   if (params.retryAttempts !== undefined) {
     if (
-      typeof params.retryAttempts !== 'number' ||
+      typeof params.retryAttempts !== "number" ||
       params.retryAttempts < 0 ||
       params.retryAttempts > 10
     ) {
-      errors.push('retryAttempts must be a number between 0 and 10');
+      errors.push("retryAttempts must be a number between 0 and 10");
     }
   }
 
   // Validate routing strategy
   if (params.routingStrategy !== undefined) {
-    const validStrategies = ['cost', 'performance', 'availability', 'round-robin'];
+    const validStrategies = [
+      "cost",
+      "performance",
+      "availability",
+      "round-robin",
+    ];
     if (!validStrategies.includes(params.routingStrategy)) {
-      errors.push(`routingStrategy must be one of: ${validStrategies.join(', ')}`);
+      errors.push(
+        `routingStrategy must be one of: ${validStrategies.join(", ")}`,
+      );
     }
   }
 
   // Validate health check interval
   if (params.healthCheckInterval !== undefined) {
     if (
-      typeof params.healthCheckInterval !== 'number' ||
+      typeof params.healthCheckInterval !== "number" ||
       params.healthCheckInterval < 10000 ||
       params.healthCheckInterval > 3600000
     ) {
-      errors.push('healthCheckInterval must be a number between 10000 and 3600000 milliseconds');
+      errors.push(
+        "healthCheckInterval must be a number between 10000 and 3600000 milliseconds",
+      );
     }
   }
 
@@ -975,19 +1081,23 @@ function validateConfiguration(params) {
  * @param {string} model - 使用的模型
  * @returns {number} 质量评分 (0-100)
  */
-function calculateQualityScore(response, model) {
+function _calculateQualityScore(response, model) {
   try {
-    if (!response || typeof response !== 'object') {
+    if (!response || typeof response !== "object") {
       return 0;
     }
 
     let score = 50; // 基础分数
 
     // 检查响应结构
-    if (response.choices && Array.isArray(response.choices) && response.choices.length > 0) {
+    if (
+      response.choices &&
+      Array.isArray(response.choices) &&
+      response.choices.length > 0
+    ) {
       const choice = response.choices[0];
 
-      if (choice.message && choice.message.content) {
+      if (choice.message?.content) {
         const { content } = choice.message;
 
         // 内容长度评分 (10分)
@@ -1013,26 +1123,26 @@ function calculateQualityScore(response, model) {
         else if (diversityRatio > 0.4) score += 5;
 
         // 格式规范性评分 (10分)
-        if (content.includes('\n\n')) score += 5; // 有段落分隔
+        if (content.includes("\n\n")) score += 5; // 有段落分隔
         if (/^[A-Z]/.test(content)) score += 5; // 首字母大写
       }
 
       // 完成状态评分 (10分)
-      if (choice.finish_reason === 'stop') score += 10;
-      else if (choice.finish_reason === 'length') score += 5;
+      if (choice.finish_reason === "stop") score += 10;
+      else if (choice.finish_reason === "length") score += 5;
     }
 
     // 模型特定评分调整
-    if (model.includes('gpt-4')) {
+    if (model.includes("gpt-4")) {
       score += 5; // GPT-4 基础分数更高
-    } else if (model.includes('claude')) {
+    } else if (model.includes("claude")) {
       score += 3; // Claude 基础分数较高
     }
 
     // 确保分数在0-100范围内
     return Math.max(0, Math.min(100, Math.round(score)));
   } catch (error) {
-    console.warn('质量评分计算失败:', error.message);
+    console.warn("质量评分计算失败:", error.message);
     return 50; // 默认中等分数
   }
 }
@@ -1044,17 +1154,17 @@ function calculateEstimatedCost(model, parameters) {
 
     // 简化的成本估算，实际应用中应该基于历史数据和更精确的模型
     const costPerThousandTokens = {
-      'gpt-4': 0.03,
-      'gpt-4-turbo': 0.01,
-      'gpt-3.5-turbo': 0.002,
-      'claude-3-opus': 0.015,
-      'claude-3-sonnet': 0.003,
-      'claude-3-haiku': 0.00025,
+      "gpt-4": 0.03,
+      "gpt-4-turbo": 0.01,
+      "gpt-3.5-turbo": 0.002,
+      "claude-3-opus": 0.015,
+      "claude-3-sonnet": 0.003,
+      "claude-3-haiku": 0.00025,
     };
 
     const costPerToken = costPerThousandTokens[model] || 0.01;
     return (max_tokens / 1000) * costPerToken;
-  } catch (error) {
+  } catch (_error) {
     return 0.01; // 默认预估成本
   }
 }

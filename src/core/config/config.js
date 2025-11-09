@@ -1,14 +1,14 @@
-const fs = require('fs');
-const chalk = require('chalk');
-const util = require('util');
+const fs = require("node:fs");
+const chalk = require("chalk");
+const util = require("node:util");
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
-const path = require('path');
-const log = require('../logger').config;
-const chokidar = require('chokidar');
-const yamlOrJson = require('js-yaml');
-const eventBus = require('../eventBus');
-const schemas = require('../schemas');
+const path = require("node:path");
+const log = require("../logger").config;
+const chokidar = require("chokidar");
+const yamlOrJson = require("js-yaml");
+const eventBus = require("../eventBus");
+const schemas = require("../schemas");
 
 class Config {
   constructor() {
@@ -16,24 +16,24 @@ class Config {
 
     this.configTypes = {
       system: {
-        baseFilename: 'system.config',
+        baseFilename: "system.config",
         validator: schemas.register(
-          'config',
-          'system.config',
-          require('./schemas/system.config.json')
+          "config",
+          "system.config",
+          require("./schemas/system.config.json"),
         ),
-        pathProperty: 'systemConfigPath',
-        configProperty: 'systemConfig',
+        pathProperty: "systemConfigPath",
+        configProperty: "systemConfig",
       },
       gateway: {
-        baseFilename: 'gateway.config',
+        baseFilename: "gateway.config",
         validator: schemas.register(
-          'config',
-          'gateway.config',
-          require('./schemas/gateway.config.json')
+          "config",
+          "gateway.config",
+          require("./schemas/gateway.config.json"),
         ),
-        pathProperty: 'gatewayConfigPath',
-        configProperty: 'gatewayConfig',
+        pathProperty: "gatewayConfigPath",
+        configProperty: "gatewayConfig",
       },
     };
   }
@@ -47,13 +47,20 @@ class Config {
 
     try {
       fs.accessSync(configPath, fs.constants.R_OK);
-    } catch (e) {
-      log.verbose(`Unable to access ${configPath} file. Trying with the json counterpart.`);
-      configPath = path.join(process.env.EG_CONFIG_DIR, `${configType.baseFilename}.json`);
+    } catch (_e) {
+      log.verbose(
+        `Unable to access ${configPath} file. Trying with the json counterpart.`,
+      );
+      configPath = path.join(
+        process.env.EG_CONFIG_DIR,
+        `${configType.baseFilename}.json`,
+      );
     }
 
     try {
-      config = yamlOrJson.load(envReplace(fs.readFileSync(configPath, 'utf8'), process.env));
+      config = yamlOrJson.load(
+        envReplace(fs.readFileSync(configPath, "utf8"), process.env),
+      );
     } catch (err) {
       log.error(`failed to (re)load ${type} config: ${err}`);
       throw err;
@@ -70,47 +77,55 @@ class Config {
     log.debug(`ConfigPath: ${configPath}`);
 
     // Security validation for system config
-    if (type === 'system') {
+    if (type === "system") {
       this._validateSecuritySettings(config);
     }
   }
 
   loadGatewayConfig() {
-    this.loadConfig('gateway');
+    this.loadConfig("gateway");
   }
 
   loadModels() {
-    ['users.json', 'credentials.json', 'applications.json'].forEach(model => {
-      const module = path.resolve(process.env.EG_CONFIG_DIR, 'models', model);
-      const name = path.basename(module, '.json');
+    ["users.json", "credentials.json", "applications.json"].forEach((model) => {
+      const module = path.resolve(process.env.EG_CONFIG_DIR, "models", model);
+      const name = path.basename(module, ".json");
       this.models[name] = require(module);
-      schemas.register('model', name, this.models[name]);
+      schemas.register("model", name, this.models[name]);
       log.verbose(`Registered schema for ${chalk.green(name)} model.`);
     });
   }
 
   watch() {
-    if (typeof this.systemConfigPath !== 'string' || typeof this.gatewayConfigPath !== 'string') {
+    if (
+      typeof this.systemConfigPath !== "string" ||
+      typeof this.gatewayConfigPath !== "string"
+    ) {
       return;
     }
 
-    const watchEvents = ['add', 'change'];
+    const watchEvents = ["add", "change"];
 
     const watchOptions = {
       awaitWriteFinish: true,
       ignoreInitial: true,
     };
 
-    this.watcher = chokidar.watch([this.systemConfigPath, this.gatewayConfigPath], watchOptions);
+    this.watcher = chokidar.watch(
+      [this.systemConfigPath, this.gatewayConfigPath],
+      watchOptions,
+    );
 
-    watchEvents.forEach(watchEvent => {
-      this.watcher.on(watchEvent, name => {
-        const type = name === this.systemConfigPath ? 'system' : 'gateway';
-        log.info(`${watchEvent} event on ${name} file. Reloading ${type} config file`);
+    watchEvents.forEach((watchEvent) => {
+      this.watcher.on(watchEvent, (name) => {
+        const type = name === this.systemConfigPath ? "system" : "gateway";
+        log.info(
+          `${watchEvent} event on ${name} file. Reloading ${type} config file`,
+        );
 
         try {
           this.loadConfig(type);
-          eventBus.emit('hot-reload', { type, config: this });
+          eventBus.emit("hot-reload", { type, config: this });
         } catch (e) {
           log.debug(`Failed hot reload of system config: ${e}`);
         }
@@ -119,25 +134,25 @@ class Config {
   }
 
   unwatch() {
-    this.watcher && this.watcher.close();
+    this.watcher?.close();
   }
 
   updateGatewayConfig(modifier) {
-    return this._updateConfigFile('gateway', modifier);
+    return this._updateConfigFile("gateway", modifier);
   }
 
   _validateSecuritySettings(config) {
     const requiredKeys = {
-      'crypto.cipherKey': 'EG_CRYPTO_CIPHER_KEY',
-      'session.secret': 'EG_SESSION_SECRET',
+      "crypto.cipherKey": "EG_CRYPTO_CIPHER_KEY",
+      "session.secret": "EG_SESSION_SECRET",
     };
 
-    const isProduction = process.env.NODE_ENV === 'production';
+    const _isProduction = process.env.NODE_ENV === "production";
     const errors = [];
 
     // Check for missing required security configurations
     for (const [key, envVar] of Object.entries(requiredKeys)) {
-      const keys = key.split('.');
+      const keys = key.split(".");
       let current = config;
 
       // Navigate to the nested property
@@ -150,8 +165,10 @@ class Config {
       // Check if value is missing, empty, or insecure
       if (
         !currentValue ||
-        currentValue.trim() === '' ||
-        ['change-me-in-production', 'keyboard cat', 'sensitiveKey'].includes(currentValue)
+        currentValue.trim() === "" ||
+        ["change-me-in-production", "keyboard cat", "sensitiveKey"].includes(
+          currentValue,
+        )
       ) {
         const error =
           `SECURITY ERROR: ${key} is not properly configured. ` +
@@ -161,7 +178,7 @@ class Config {
     }
 
     if (errors.length > 0) {
-      const errorMessage = errors.join('\n');
+      const errorMessage = errors.join("\n");
       // Always fail if security settings are not properly configured
       throw new Error(`Security validation failed:\n${errorMessage}`);
     }
@@ -171,17 +188,19 @@ class Config {
     const configType = this.configTypes[type];
     const path = this[configType.pathProperty];
 
-    return readFile(path, 'utf8').then(data => {
+    return readFile(path, "utf8").then((data) => {
       const json = yamlOrJson.load(data);
       const result = modifier(json);
       const text = yamlOrJson.dump(result);
-      const candidateConfiguration = yamlOrJson.load(envReplace(String(text), process.env));
+      const candidateConfiguration = yamlOrJson.load(
+        envReplace(String(text), process.env),
+      );
 
       const { isValid, error } = configType.validator(candidateConfiguration);
 
       if (!isValid) {
         const e = new Error(error);
-        e.code = 'INVALID_CONFIG';
+        e.code = "INVALID_CONFIG";
         throw e;
       }
 
@@ -190,11 +209,11 @@ class Config {
           This is really bad. It means we have circular dependencies that's a code smell, no matter what. This needs
           to be refactored as soon as possible.
         */
-        const { policies } = require('../policies');
+        const { policies } = require("../policies");
         for (const pipelineName in candidateConfiguration.pipelines) {
           const pipeline = candidateConfiguration.pipelines[pipelineName];
 
-          pipeline.policies.forEach(policy => {
+          pipeline.policies.forEach((policy) => {
             const policyName = Object.keys(policy)[0];
             const policyDefinition = policies[policyName];
 
@@ -209,7 +228,7 @@ class Config {
             for (const step of policySteps) {
               const { isValid, error } = schemas.validate(
                 policyDefinition.schema.$id,
-                step.action || {}
+                step.action || {},
               );
               if (!isValid) {
                 throw new Error(error);
@@ -221,7 +240,7 @@ class Config {
         return writeFile(path, text);
       } catch (err) {
         log.error(`Invalid pipelines configuration: ${err}`);
-        err.code = 'INVALID_CONFIG';
+        err.code = "INVALID_CONFIG";
 
         throw err;
       }
@@ -233,24 +252,29 @@ class Config {
 // Thanks a lot guys 🙌
 
 function envReplace(str, vars) {
-  return str.replace(/\$?\$\{([A-Za-z0-9_]+)(:-(.*?))?\}/g, (varStr, varName, _, defValue) => {
-    // Handle escaping:
-    if (varStr.indexOf('$$') === 0) {
-      return varStr;
-    }
-    // Handle simple variable replacement:
-    if (Object.prototype.hasOwnProperty.call(vars, varName)) {
-      log.debug(`${varName} replaced in configuration file`);
-      return vars[varName];
-    }
-    // Handle default values:
-    if (defValue) {
-      log.debug(`${varName} replaced with default value in configuration file`);
-      return defValue;
-    }
-    log.warn(`Unknown variable: ${varName}. Returning null.`);
-    return null;
-  });
+  return str.replace(
+    /\$?\$\{([A-Za-z0-9_]+)(:-(.*?))?\}/g,
+    (varStr, varName, _, defValue) => {
+      // Handle escaping:
+      if (varStr.indexOf("$$") === 0) {
+        return varStr;
+      }
+      // Handle simple variable replacement:
+      if (Object.hasOwn(vars, varName)) {
+        log.debug(`${varName} replaced in configuration file`);
+        return vars[varName];
+      }
+      // Handle default values:
+      if (defValue) {
+        log.debug(
+          `${varName} replaced with default value in configuration file`,
+        );
+        return defValue;
+      }
+      log.warn(`Unknown variable: ${varName}. Returning null.`);
+      return null;
+    },
+  );
 }
 
 module.exports = Config;

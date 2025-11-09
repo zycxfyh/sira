@@ -1,13 +1,13 @@
-const assert = require('assert');
-const request = require('supertest');
-const app = require('../../oauth/bootstrap');
-const environment = require('../../fixtures/cli/environment');
-const adminHelper = require('../../common/admin-helper')();
-const namespace = 'express-gateway:tokens:revoke';
-const idGen = require('uuid62');
-const authService = require('../../../src/core/services').auth;
+const assert = require("node:assert");
+const request = require("supertest");
+const app = require("../../oauth/bootstrap");
+const environment = require("../../fixtures/cli/environment");
+const adminHelper = require("../../common/admin-helper")();
+const namespace = "express-gateway:tokens:revoke";
+const idGen = require("uuid62");
+const authService = require("../../../core/services").auth;
 
-describe('eg tokens revoke', () => {
+describe("eg tokens revoke", () => {
   let program, env, user, accessToken;
   before(() => {
     ({ program, env } = environment.bootstrap());
@@ -20,41 +20,41 @@ describe('eg tokens revoke', () => {
     return adminHelper.admin.users
       .create({
         username: idGen.v4(),
-        firstname: 'f',
-        lastname: 'l',
+        firstname: "f",
+        lastname: "l",
       })
-      .then(createdUser => {
+      .then((createdUser) => {
         user = createdUser;
         return Promise.all([
-          adminHelper.admin.credentials.create(user.username, 'oauth2'),
-          adminHelper.admin.credentials.create(user.username, 'basic-auth'),
+          adminHelper.admin.credentials.create(user.username, "oauth2"),
+          adminHelper.admin.credentials.create(user.username, "basic-auth"),
         ]);
       })
       .then(([oauthCredentials, basicCredentials]) => {
         const base64Credentials = Buffer.from(
-          `${oauthCredentials.id}:${oauthCredentials.secret}`
-        ).toString('base64');
+          `${oauthCredentials.id}:${oauthCredentials.secret}`,
+        ).toString("base64");
         return request(app)
-          .post('/oauth2/token')
-          .set('Authorization', `basic ${base64Credentials}`)
-          .set('content-type', 'application/x-www-form-urlencoded')
-          .type('form')
+          .post("/oauth2/token")
+          .set("Authorization", `basic ${base64Credentials}`)
+          .set("content-type", "application/x-www-form-urlencoded")
+          .type("form")
           .send({
-            grant_type: 'password',
+            grant_type: "password",
             username: basicCredentials.id,
             password: basicCredentials.password,
           })
           .expect(200);
       })
-      .then(res => {
+      .then((res) => {
         const token = res.body;
         assert.ok(token);
         assert.ok(token.access_token);
         accessToken = token.access_token;
-        assert.strictEqual(token.token_type, 'Bearer');
+        assert.strictEqual(token.token_type, "Bearer");
         return authService.authenticateToken(accessToken);
       })
-      .then(res => {
+      .then((res) => {
         assert.strictEqual(res.consumer.username, user.username);
       });
   });
@@ -64,24 +64,27 @@ describe('eg tokens revoke', () => {
     return adminHelper.reset();
   });
 
-  it('revokes token', done => {
-    env.hijack(namespace, generator => {
+  it("revokes token", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.ok = message => {
+      generator.once("run", () => {
+        generator.log.ok = (message) => {
           output = message;
         };
-        generator.log.error = message => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
       });
 
-      generator.once('end', () => {
-        assert.strictEqual(output, 'Access token has been revoked: ' + accessToken);
+      generator.once("end", () => {
+        assert.strictEqual(
+          output,
+          `Access token has been revoked: ${accessToken}`,
+        );
         return authService
           .authenticateToken(accessToken)
-          .then(r => {
+          .then((r) => {
             assert.ok(!r); // authentication failed
             done();
           })
@@ -89,26 +92,26 @@ describe('eg tokens revoke', () => {
       });
     });
 
-    env.argv = program.parse('tokens revoke ' + accessToken);
+    env.argv = program.parse(`tokens revoke ${accessToken}`);
   });
-  it('revokes token -q', done => {
-    env.hijack(namespace, generator => {
+  it("revokes token -q", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.stdout = message => {
+      generator.once("run", () => {
+        generator.stdout = (message) => {
           output = message;
         };
-        generator.log.error = message => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         assert.strictEqual(output, accessToken);
         return authService
           .authenticateToken(accessToken)
-          .then(r => {
+          .then((r) => {
             assert.ok(!r); // authentication failed
             done();
           })
@@ -116,6 +119,6 @@ describe('eg tokens revoke', () => {
       });
     });
 
-    env.argv = program.parse('tokens revoke -q ' + accessToken);
+    env.argv = program.parse(`tokens revoke -q ${accessToken}`);
   });
 });

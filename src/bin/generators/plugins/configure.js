@@ -1,7 +1,7 @@
-const path = require('path');
-const parentRequire = require('parent-require');
-const eg = require('../../eg');
-const PluginInstaller = require('../../../lib/plugin-installer');
+const path = require("node:path");
+const parentRequire = require("parent-require");
+const eg = require("../../eg");
+const PluginInstaller = require("../../../lib/plugin-installer");
 
 module.exports = class extends eg.Generator {
   constructor(args, opts) {
@@ -11,9 +11,9 @@ module.exports = class extends eg.Generator {
     this.pluginOptions = null;
 
     this.configureCommand({
-      command: 'configure <package>',
-      description: 'Configure a plugin',
-      builder: yargs =>
+      command: "configure <package>",
+      description: "Configure a plugin",
+      builder: (yargs) =>
         yargs
           .usage(`Usage: $0 ${process.argv[2]} configure <package>`)
           .example(`$0 ${process.argv[2]} configure url-rewrite`),
@@ -45,7 +45,7 @@ module.exports = class extends eg.Generator {
 
     // Well, we gave it our best shot.
     if (!this.pluginManifest) {
-      this.log.error('Plugin not installed:', this.packageName);
+      this.log.error("Plugin not installed:", this.packageName);
       return;
     }
 
@@ -65,19 +65,20 @@ module.exports = class extends eg.Generator {
 
     const previousPluginOptions = this.installer.existingPluginOptions;
 
-    const pluginQuestions = keys.map(key => {
+    const pluginQuestions = keys.map((key) => {
       const schema = optionsMeta[key];
       return {
-        type: 'input',
+        type: "input",
         name: `pluginOption${key}`,
         message: `Set value for ${key}:`,
         default: previousPluginOptions[key],
-        validate: input => {
+        validate: (input) => {
           const { type } = schema;
 
-          if (['string', 'boolean', 'number'].indexOf(type) === -1) {
+          if (["string", "boolean", "number"].indexOf(type) === -1) {
             this.log.error(
-              `Invalid plugin option: ${key}. Type must be string, boolean, ` + 'or number.'
+              `Invalid plugin option: ${key}. Type must be string, boolean, ` +
+                "or number.",
             );
 
             return false;
@@ -87,11 +88,11 @@ module.exports = class extends eg.Generator {
             return false;
           }
 
-          if (type === 'number' && isNaN(input)) {
+          if (type === "number" && Number.isNaN(input)) {
             return false;
           }
 
-          if (type === 'boolean' && !(input === 'true' || input === 'false')) {
+          if (type === "boolean" && !(input === "true" || input === "false")) {
             return false;
           }
 
@@ -100,21 +101,21 @@ module.exports = class extends eg.Generator {
       };
     });
 
-    return this.prompt(pluginQuestions).then(answers => {
+    return this.prompt(pluginQuestions).then((answers) => {
       this.pluginOptions = {};
 
-      const keys = pluginQuestions.map(opt => opt.name);
+      const keys = pluginQuestions.map((opt) => opt.name);
 
-      keys.forEach(key => {
+      keys.forEach((key) => {
         let answer = answers[key];
-        const stripped = key.substr('pluginOption'.length);
+        const stripped = key.substr("pluginOption".length);
         const optionMeta = optionsMeta[stripped];
 
-        if (optionMeta && optionMeta.type && answer) {
+        if (optionMeta?.type && answer) {
           const { type } = optionMeta;
-          if (type === 'number') {
+          if (type === "number") {
             answer = Number(answer);
-          } else if (type === 'boolean') {
+          } else if (type === "boolean") {
             answer = Boolean(answer);
           }
         }
@@ -139,7 +140,7 @@ module.exports = class extends eg.Generator {
   _getPluginManifest(packageName) {
     let pluginManifest;
 
-    const pluginPath = path.join(this.env.cwd, 'node_modules', packageName);
+    const pluginPath = path.join(this.env.cwd, "node_modules", packageName);
 
     try {
       pluginManifest = require(pluginPath);
@@ -155,6 +156,6 @@ module.exports = class extends eg.Generator {
       return;
     }
 
-    this.stdout('Plugin configured!');
+    this.stdout("Plugin configured!");
   }
 };

@@ -1,26 +1,26 @@
-const expressionPolicy = require('../../../src/core/policies/expression').policy;
-const EgContextBase = require('../../../src/core/gateway/context');
-const assert = require('assert');
+const expressionPolicy = require("../../../core/policies/expression").policy;
+const EgContextBase = require("../../../core/gateway/context");
+const assert = require("node:assert");
 
-describe('expression action', () => {
+describe("expression action", () => {
   const res = {
-    test: 'text',
+    test: "text",
   };
   const req = {
-    url: '/test',
-    method: 'GET',
+    url: "/test",
+    method: "GET",
     egContext: Object.create(new EgContextBase()),
   };
   req.egContext.req = req;
   req.egContext.res = res;
-  it('should execute code against eg context', done => {
+  it("should execute code against eg context", (done) => {
     const expressionMiddleware = expressionPolicy({
       jscode: 'req.url = req.url + "/67" ; res.test = res.test + 68;',
     });
 
     expressionMiddleware(req, res, () => {
-      assert.strictEqual(req.url, '/test/67');
-      assert.strictEqual(res.test, 'text68');
+      assert.strictEqual(req.url, "/test/67");
+      assert.strictEqual(res.test, "text68");
       done();
     });
   });

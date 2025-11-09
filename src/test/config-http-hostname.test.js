@@ -1,14 +1,14 @@
-const supertest = require('supertest');
-const should = require('should');
-const dns = require('dns');
-const os = require('os');
-const config = require('../../src/core/config');
-const testHelper = require('./common/routing.helper');
+const supertest = require("supertest");
+const should = require("should");
+const dns = require("node:dns");
+const os = require("node:os");
+const config = require("../../core/config");
+const testHelper = require("./common/routing.helper");
 
-describe('hostname', () => {
+describe("hostname", () => {
   let helper, address;
 
-  before('setup', done => {
+  before("setup", (done) => {
     dns.lookup(os.hostname(), (err, add) => {
       address = add;
       if (err) {
@@ -16,9 +16,9 @@ describe('hostname', () => {
       }
 
       helper = testHelper();
-      helper.addPolicy('test', () => (req, res) => {
+      helper.addPolicy("test", () => (req, res) => {
         res.json({
-          result: 'test',
+          result: "test",
           hostname: req.hostname,
           url: req.url,
           apiEndpoint: req.egContext.apiEndpoint,
@@ -31,10 +31,10 @@ describe('hostname', () => {
           hostname: add,
         },
         apiEndpoints: { test: {} },
-        policies: ['test'],
+        policies: ["test"],
         pipelines: {
           pipeline1: {
-            apiEndpoint: 'test',
+            apiEndpoint: "test",
             policies: { test: {} },
           },
         },
@@ -42,21 +42,21 @@ describe('hostname', () => {
       helper
         .setup()
         .then(() => done())
-        .catch(err => done(err));
+        .catch((err) => done(err));
     });
   });
 
-  it('should not answer on localhost', done => {
-    supertest('http://localhost:10441')
-      .get('/')
-      .end(err => {
-        should(err.message).containEql('ECONNREFUSED');
+  it("should not answer on localhost", (done) => {
+    supertest("http://localhost:10441")
+      .get("/")
+      .end((err) => {
+        should(err.message).containEql("ECONNREFUSED");
         done();
       });
   });
 
-  it('should answer on the provided interface', () => {
-    return supertest(`http://${address}:10441`).get('/').expect(200);
+  it("should answer on the provided interface", () => {
+    return supertest(`http://${address}:10441`).get("/").expect(200);
   });
 
   after(() => helper.cleanup());

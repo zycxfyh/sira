@@ -1,4 +1,4 @@
-const { EventEmitter } = require('events');
+const { EventEmitter } = require("node:events");
 
 /**
  * 路由决策引擎
@@ -10,7 +10,8 @@ class RoutingDecisionEngine extends EventEmitter {
     super();
 
     this.configPath =
-      options.configPath || require('path').join(__dirname, '../config/routing-decision.json');
+      options.configPath ||
+      require("node:path").join(__dirname, "../config/routing-decision.json");
     this.decisionHistory = [];
     this.maxHistorySize = options.maxHistorySize || 1000;
 
@@ -24,58 +25,58 @@ class RoutingDecisionEngine extends EventEmitter {
 
     // 模型能力矩阵
     this.modelCapabilities = {
-      'gpt-4': {
+      "gpt-4": {
         maxTokens: 8192,
-        strengths: ['reasoning', 'coding', 'analysis', 'math', 'creative'],
-        weaknesses: ['speed'],
+        strengths: ["reasoning", "coding", "analysis", "math", "creative"],
+        weaknesses: ["speed"],
         costPerToken: 0.06,
         avgResponseTime: 3000, // ms
         successRate: 0.98,
       },
-      'gpt-3.5-turbo': {
+      "gpt-3.5-turbo": {
         maxTokens: 4096,
-        strengths: ['conversational', 'general', 'speed'],
-        weaknesses: ['complex_reasoning', 'advanced_math'],
+        strengths: ["conversational", "general", "speed"],
+        weaknesses: ["complex_reasoning", "advanced_math"],
         costPerToken: 0.002,
         avgResponseTime: 1500,
         successRate: 0.99,
       },
-      'claude-2': {
+      "claude-2": {
         maxTokens: 100000,
-        strengths: ['reasoning', 'creative', 'analysis', 'long_context'],
-        weaknesses: ['coding', 'math'],
+        strengths: ["reasoning", "creative", "analysis", "long_context"],
+        weaknesses: ["coding", "math"],
         costPerToken: 0.008,
         avgResponseTime: 2500,
         successRate: 0.97,
       },
-      'claude-instant': {
+      "claude-instant": {
         maxTokens: 100000,
-        strengths: ['conversational', 'speed', 'long_context'],
-        weaknesses: ['complex_reasoning', 'coding'],
+        strengths: ["conversational", "speed", "long_context"],
+        weaknesses: ["complex_reasoning", "coding"],
         costPerToken: 0.0008,
         avgResponseTime: 1000,
         successRate: 0.98,
       },
-      'gemini-pro': {
+      "gemini-pro": {
         maxTokens: 32768,
-        strengths: ['multimodal', 'analysis', 'general'],
-        weaknesses: ['coding', 'math'],
+        strengths: ["multimodal", "analysis", "general"],
+        weaknesses: ["coding", "math"],
         costPerToken: 0.001,
         avgResponseTime: 2000,
         successRate: 0.96,
       },
-      'codellama-34b': {
+      "codellama-34b": {
         maxTokens: 16384,
-        strengths: ['coding', 'technical', 'analysis'],
-        weaknesses: ['creative', 'general_conversation'],
+        strengths: ["coding", "technical", "analysis"],
+        weaknesses: ["creative", "general_conversation"],
         costPerToken: 0.0008,
         avgResponseTime: 4000,
         successRate: 0.95,
       },
-      'mathstral-7b': {
+      "mathstral-7b": {
         maxTokens: 32768,
-        strengths: ['math', 'reasoning', 'analysis'],
-        weaknesses: ['creative', 'coding'],
+        strengths: ["math", "reasoning", "analysis"],
+        weaknesses: ["creative", "coding"],
         costPerToken: 0.0006,
         avgResponseTime: 3500,
         successRate: 0.94,
@@ -107,10 +108,10 @@ class RoutingDecisionEngine extends EventEmitter {
       this.startPerformanceMonitoring();
 
       console.log(
-        `✅ 路由决策引擎已初始化，支持 ${Object.keys(this.modelCapabilities).length} 个模型`
+        `✅ 路由决策引擎已初始化，支持 ${Object.keys(this.modelCapabilities).length} 个模型`,
       );
     } catch (error) {
-      console.error('❌ 路由决策引擎初始化失败:', error.message);
+      console.error("❌ 路由决策引擎初始化失败:", error.message);
       throw error;
     }
   }
@@ -142,15 +143,21 @@ class RoutingDecisionEngine extends EventEmitter {
       const candidates = this.generateCandidates(decisionContext);
 
       if (candidates.length === 0) {
-        decision.reasoning.push('没有找到合适的候选模型');
+        decision.reasoning.push("没有找到合适的候选模型");
         return decision;
       }
 
       // 3. 评估每个候选者
-      const evaluations = await this.evaluateCandidates(candidates, decisionContext);
+      const evaluations = await this.evaluateCandidates(
+        candidates,
+        decisionContext,
+      );
 
       // 4. 选择最优模型
-      const bestCandidate = this.selectOptimalCandidate(evaluations, decisionContext);
+      const bestCandidate = this.selectOptimalCandidate(
+        evaluations,
+        decisionContext,
+      );
 
       if (bestCandidate) {
         decision.model = bestCandidate.model;
@@ -160,10 +167,10 @@ class RoutingDecisionEngine extends EventEmitter {
 
         // 添加备选方案
         const alternatives = evaluations
-          .filter(e => e.model !== bestCandidate.model)
+          .filter((e) => e.model !== bestCandidate.model)
           .sort((a, b) => b.score - a.score)
           .slice(0, 3)
-          .map(e => ({
+          .map((e) => ({
             model: e.model,
             provider: e.provider,
             score: e.score,
@@ -176,12 +183,12 @@ class RoutingDecisionEngine extends EventEmitter {
       // 5. 记录决策历史
       this.recordDecision(decision, decisionContext);
     } catch (error) {
-      console.error('路由决策失败:', error);
+      console.error("路由决策失败:", error);
       decision.reasoning.push(`决策过程出错: ${error.message}`);
 
       // 出错时使用默认模型
-      decision.model = 'gpt-3.5-turbo';
-      decision.provider = 'openai';
+      decision.model = "gpt-3.5-turbo";
+      decision.provider = "openai";
       decision.confidence = 0.5;
     }
 
@@ -194,10 +201,10 @@ class RoutingDecisionEngine extends EventEmitter {
    */
   async buildDecisionContext(request, context) {
     const decisionContext = {
-      userId: context.userId || 'anonymous',
+      userId: context.userId || "anonymous",
       requestId: context.requestId || this.generateRequestId(),
       complexity: context.complexityAnalysis || {},
-      taskType: context.taskType || 'general',
+      taskType: context.taskType || "general",
       userPreferences: {},
       performanceHistory: {},
       budget: context.budget || {},
@@ -206,24 +213,30 @@ class RoutingDecisionEngine extends EventEmitter {
     };
 
     // 获取用户偏好
-    decisionContext.userPreferences = this.userPreferences.get(decisionContext.userId) || {
+    decisionContext.userPreferences = this.userPreferences.get(
+      decisionContext.userId,
+    ) || {
       preferredModels: [],
       budgetLimit: null,
-      speedPreference: 'balanced',
-      qualityPreference: 'balanced',
+      speedPreference: "balanced",
+      qualityPreference: "balanced",
     };
 
     // 获取性能历史
-    decisionContext.performanceHistory = await this.getPerformanceHistory(decisionContext.userId);
+    decisionContext.performanceHistory = await this.getPerformanceHistory(
+      decisionContext.userId,
+    );
 
     // 检查A/B测试分配
-    decisionContext.abTestAllocation = this.abTestAllocations.get(decisionContext.userId);
+    decisionContext.abTestAllocation = this.abTestAllocations.get(
+      decisionContext.userId,
+    );
 
     // 提取预算约束
     if (context.maxCost || context.budgetLimit) {
       decisionContext.budget = {
         maxCost: context.maxCost || context.budgetLimit,
-        currency: 'USD',
+        currency: "USD",
       };
     }
 
@@ -277,7 +290,10 @@ class RoutingDecisionEngine extends EventEmitter {
       }
 
       // 检查预算约束
-      if (context.budget.maxCost && capability.costPerToken > context.budget.maxCost) {
+      if (
+        context.budget.maxCost &&
+        capability.costPerToken > context.budget.maxCost
+      ) {
         continue;
       }
 
@@ -316,34 +332,53 @@ class RoutingDecisionEngine extends EventEmitter {
 
       try {
         // 1. 性能评分
-        evaluation.scores.performance = await this.scorePerformance(candidate, context);
-        evaluation.reasoning.push(`性能评分: ${evaluation.scores.performance.toFixed(2)}`);
+        evaluation.scores.performance = await this.scorePerformance(
+          candidate,
+          context,
+        );
+        evaluation.reasoning.push(
+          `性能评分: ${evaluation.scores.performance.toFixed(2)}`,
+        );
 
         // 2. 成本评分
         evaluation.scores.cost = this.scoreCost(candidate, context);
-        evaluation.reasoning.push(`成本评分: ${evaluation.scores.cost.toFixed(2)}`);
+        evaluation.reasoning.push(
+          `成本评分: ${evaluation.scores.cost.toFixed(2)}`,
+        );
 
         // 3. 质量评分
         evaluation.scores.quality = this.scoreQuality(candidate, context);
-        evaluation.reasoning.push(`质量评分: ${evaluation.scores.quality.toFixed(2)}`);
+        evaluation.reasoning.push(
+          `质量评分: ${evaluation.scores.quality.toFixed(2)}`,
+        );
 
         // 4. 可用性评分
-        evaluation.scores.availability = await this.scoreAvailability(candidate, context);
-        evaluation.reasoning.push(`可用性评分: ${evaluation.scores.availability.toFixed(2)}`);
+        evaluation.scores.availability = await this.scoreAvailability(
+          candidate,
+          context,
+        );
+        evaluation.reasoning.push(
+          `可用性评分: ${evaluation.scores.availability.toFixed(2)}`,
+        );
 
         // 计算加权总分
         evaluation.totalScore = this.calculateWeightedScore(evaluation.scores);
 
         // 添加用户偏好加成
-        if (context.userPreferences.preferredModels?.includes(candidate.model)) {
+        if (
+          context.userPreferences.preferredModels?.includes(candidate.model)
+        ) {
           evaluation.totalScore += 0.1;
-          evaluation.reasoning.push('用户偏好模型 +0.1');
+          evaluation.reasoning.push("用户偏好模型 +0.1");
         }
 
         // A/B测试强制选择
-        if (context.abTestAllocation && context.abTestAllocation.model === candidate.model) {
+        if (
+          context.abTestAllocation &&
+          context.abTestAllocation.model === candidate.model
+        ) {
           evaluation.totalScore += 1.0;
-          evaluation.reasoning.push('A/B测试指定模型 +1.0');
+          evaluation.reasoning.push("A/B测试指定模型 +1.0");
         }
       } catch (error) {
         console.error(`评估模型 ${candidate.model} 失败:`, error);
@@ -367,9 +402,9 @@ class RoutingDecisionEngine extends EventEmitter {
     // 响应时间评分 (越快越好)
     const responseTime = await this.getCurrentResponseTime(candidate.model);
     const targetTime =
-      context.userPreferences.speedPreference === 'fast'
+      context.userPreferences.speedPreference === "fast"
         ? 2000
-        : context.userPreferences.speedPreference === 'slow'
+        : context.userPreferences.speedPreference === "slow"
           ? 5000
           : 3000;
 
@@ -382,7 +417,10 @@ class RoutingDecisionEngine extends EventEmitter {
     score += capability.successRate * 0.5;
 
     // 历史性能评分
-    const historyScore = await this.getHistoricalPerformanceScore(candidate.model, context.userId);
+    const historyScore = await this.getHistoricalPerformanceScore(
+      candidate.model,
+      context.userId,
+    );
     score += historyScore * 0.3;
 
     return Math.min(1.0, score / 1.8); // 归一化到0-1
@@ -404,7 +442,9 @@ class RoutingDecisionEngine extends EventEmitter {
     }
 
     // 否则基于相对成本打分 (成本越低分数越高)
-    const maxCost = Math.max(...Object.values(this.modelCapabilities).map(c => c.costPerToken));
+    const maxCost = Math.max(
+      ...Object.values(this.modelCapabilities).map((c) => c.costPerToken),
+    );
     const normalizedCost = capability.costPerToken / maxCost;
     return 1.0 - normalizedCost * 0.8; // 保留20%的最低分
   }
@@ -428,8 +468,11 @@ class RoutingDecisionEngine extends EventEmitter {
     }
 
     // 复杂度匹配度
-    const complexity = context.complexity.complexity || 'medium';
-    const complexityMatch = this.assessComplexityMatch(candidate.model, complexity);
+    const complexity = context.complexity.complexity || "medium";
+    const complexityMatch = this.assessComplexityMatch(
+      candidate.model,
+      complexity,
+    );
     score += complexityMatch * 0.4;
 
     return Math.min(1.0, score);
@@ -441,7 +484,10 @@ class RoutingDecisionEngine extends EventEmitter {
   async scoreAvailability(candidate, context) {
     // 检查当前负载和配额状态
     const loadStatus = await this.getProviderLoadStatus(candidate.provider);
-    const quotaStatus = await this.getProviderQuotaStatus(candidate.provider, context.userId);
+    const quotaStatus = await this.getProviderQuotaStatus(
+      candidate.provider,
+      context.userId,
+    );
 
     let score = 1.0;
 
@@ -498,17 +544,19 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 备选候选者选择策略
    */
-  selectFallbackCandidate(evaluations, context) {
+  selectFallbackCandidate(evaluations, _context) {
     // 优先选择最便宜的可用模型
     const cheapest = evaluations.reduce((min, current) =>
-      current.capability.costPerToken < min.capability.costPerToken ? current : min
+      current.capability.costPerToken < min.capability.costPerToken
+        ? current
+        : min,
     );
 
     return {
       model: cheapest.model,
       provider: cheapest.provider,
       score: 0.5,
-      reasoning: ['使用最低成本备选方案'],
+      reasoning: ["使用最低成本备选方案"],
     };
   }
 
@@ -529,13 +577,13 @@ class RoutingDecisionEngine extends EventEmitter {
    */
   getModelTier(model) {
     const tiers = {
-      'gpt-4': 5,
-      'claude-2': 4,
-      'codellama-34b': 4,
-      'mathstral-7b': 4,
-      'gpt-3.5-turbo': 3,
-      'gemini-pro': 3,
-      'claude-instant': 2,
+      "gpt-4": 5,
+      "claude-2": 4,
+      "codellama-34b": 4,
+      "mathstral-7b": 4,
+      "gpt-3.5-turbo": 3,
+      "gemini-pro": 3,
+      "claude-instant": 2,
     };
     return tiers[model] || 1;
   }
@@ -559,15 +607,15 @@ class RoutingDecisionEngine extends EventEmitter {
    */
   getProviderForModel(model) {
     const providerMap = {
-      'gpt-4': 'openai',
-      'gpt-3.5-turbo': 'openai',
-      'claude-2': 'anthropic',
-      'claude-instant': 'anthropic',
-      'gemini-pro': 'google',
-      'codellama-34b': 'meta',
-      'mathstral-7b': 'mistral',
+      "gpt-4": "openai",
+      "gpt-3.5-turbo": "openai",
+      "claude-2": "anthropic",
+      "claude-instant": "anthropic",
+      "gemini-pro": "google",
+      "codellama-34b": "meta",
+      "mathstral-7b": "mistral",
     };
-    return providerMap[model] || 'unknown';
+    return providerMap[model] || "unknown";
   }
 
   /**
@@ -576,7 +624,11 @@ class RoutingDecisionEngine extends EventEmitter {
   async getCurrentResponseTime(model) {
     // 从性能指标中获取，或使用默认值
     const metrics = this.performanceMetrics.get(model);
-    return metrics?.avgResponseTime || this.modelCapabilities[model]?.avgResponseTime || 2000;
+    return (
+      metrics?.avgResponseTime ||
+      this.modelCapabilities[model]?.avgResponseTime ||
+      2000
+    );
   }
 
   /**
@@ -606,7 +658,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取提供商配额状态
    */
-  async getProviderQuotaStatus(provider, userId) {
+  async getProviderQuotaStatus(_provider, _userId) {
     // 模拟配额检测
     return Math.random() * 0.6; // 0-0.6表示配额使用率
   }
@@ -614,7 +666,7 @@ class RoutingDecisionEngine extends EventEmitter {
   /**
    * 获取性能历史
    */
-  async getPerformanceHistory(userId) {
+  async getPerformanceHistory(_userId) {
     // 简化的性能历史
     return {
       avgResponseTime: 2000,
@@ -650,18 +702,18 @@ class RoutingDecisionEngine extends EventEmitter {
     }
 
     // 触发决策记录事件
-    this.emit('decisionRecorded', historyEntry);
+    this.emit("decisionRecorded", historyEntry);
   }
 
   /**
    * 获取决策统计
    */
-  getDecisionStatistics(timeRange = '1h') {
+  getDecisionStatistics(timeRange = "1h") {
     const now = Date.now();
     const rangeMs = this.parseTimeRange(timeRange);
 
     const recentDecisions = this.decisionHistory.filter(
-      d => now - new Date(d.timestamp).getTime() < rangeMs
+      (d) => now - new Date(d.timestamp).getTime() < rangeMs,
     );
 
     const stats = {
@@ -695,7 +747,8 @@ class RoutingDecisionEngine extends EventEmitter {
 
       if (decision.complexity?.complexity) {
         stats.complexityDistribution[decision.complexity.complexity] =
-          (stats.complexityDistribution[decision.complexity.complexity] || 0) + 1;
+          (stats.complexityDistribution[decision.complexity.complexity] || 0) +
+          1;
       }
     }
 
@@ -710,7 +763,7 @@ class RoutingDecisionEngine extends EventEmitter {
    */
   parseTimeRange(range) {
     const unit = range.slice(-1);
-    const value = parseInt(range.slice(0, -1));
+    const value = parseInt(range.slice(0, -1), 10);
 
     const multipliers = {
       s: 1000,
@@ -727,14 +780,14 @@ class RoutingDecisionEngine extends EventEmitter {
    * 生成决策ID
    */
   generateDecisionId() {
-    return `decision_${Date.now()}_${require('crypto').randomBytes(4).toString('hex')}`;
+    return `decision_${Date.now()}_${require("node:crypto").randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 生成请求ID
    */
   generateRequestId() {
-    return `req_${Date.now()}_${require('crypto').randomBytes(4).toString('hex')}`;
+    return `req_${Date.now()}_${require("node:crypto").randomBytes(4).toString("hex")}`;
   }
 
   /**
@@ -746,7 +799,7 @@ class RoutingDecisionEngine extends EventEmitter {
       () => {
         this.updatePerformanceMetrics();
       },
-      5 * 60 * 1000
+      5 * 60 * 1000,
     );
   }
 
@@ -758,7 +811,8 @@ class RoutingDecisionEngine extends EventEmitter {
     // 暂时使用模拟数据
     for (const [model, capability] of Object.entries(this.modelCapabilities)) {
       const currentMetrics = {
-        avgResponseTime: capability.avgResponseTime * (0.8 + Math.random() * 0.4),
+        avgResponseTime:
+          capability.avgResponseTime * (0.8 + Math.random() * 0.4),
         successRate: capability.successRate * (0.95 + Math.random() * 0.05),
         lastUpdated: new Date().toISOString(),
       };
@@ -772,13 +826,13 @@ class RoutingDecisionEngine extends EventEmitter {
    */
   async loadConfiguration() {
     try {
-      const fs = require('fs').promises;
-      const path = require('path');
+      const fs = require("node:fs").promises;
+      const path = require("node:path");
 
       // 确保配置目录存在
       await fs.mkdir(path.dirname(this.configPath), { recursive: true });
 
-      const data = await fs.readFile(this.configPath, 'utf8');
+      const data = await fs.readFile(this.configPath, "utf8");
       const config = JSON.parse(data);
 
       if (config.userPreferences) {
@@ -791,8 +845,8 @@ class RoutingDecisionEngine extends EventEmitter {
         this.weights = { ...this.weights, ...config.weights };
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载路由决策配置失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载路由决策配置失败:", error.message);
       }
       // 使用默认配置
     }
@@ -803,7 +857,7 @@ class RoutingDecisionEngine extends EventEmitter {
    */
   async saveConfiguration() {
     try {
-      const fs = require('fs').promises;
+      const fs = require("node:fs").promises;
       const config = {
         userPreferences: Object.fromEntries(this.userPreferences),
         weights: this.weights,
@@ -812,7 +866,7 @@ class RoutingDecisionEngine extends EventEmitter {
 
       await fs.writeFile(this.configPath, JSON.stringify(config, null, 2));
     } catch (error) {
-      console.error('保存路由决策配置失败:', error.message);
+      console.error("保存路由决策配置失败:", error.message);
     }
   }
 }

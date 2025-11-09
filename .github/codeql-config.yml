@@ -1,0 +1,9 @@
+disable_default_queries: false
+queries:
+  - uses: security-and-quality
+paths_ignore:
+  - node_modules
+  - coverage
+  - dist
+  - build
+  - .github/workflows

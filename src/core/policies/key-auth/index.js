@@ -1,41 +1,45 @@
 module.exports = {
-  policy: require('./key-auth'),
+  policy: require("./key-auth"),
   schema: {
-    $id: 'http://express-gateway.io/schemas/policies/key-auth.json',
+    $id: "http://express-gateway.io/schemas/policies/key-auth.json",
     allOf: [
-      { $ref: 'http://express-gateway.io/schemas/base/auth.json' },
+      { $ref: "http://express-gateway.io/schemas/base/auth.json" },
       {
-        type: 'object',
+        type: "object",
         properties: {
           apiKeyHeader: {
-            type: 'string',
-            default: 'Authorization',
-            description: 'HTTP Header to look for the apiScheme + apiKey string',
+            type: "string",
+            default: "Authorization",
+            description:
+              "HTTP Header to look for the apiScheme + apiKey string",
           },
           apiKeyHeaderScheme: {
-            type: 'string',
-            default: 'apiKey',
-            description: 'HTTP Authorization Scheme to verify before extracting the API Key',
+            type: "string",
+            default: "apiKey",
+            description:
+              "HTTP Authorization Scheme to verify before extracting the API Key",
           },
           apiKeyField: {
-            type: 'string',
-            default: 'apiKey',
-            description: 'Query String parameter name to look for to extract the apiKey',
+            type: "string",
+            default: "apiKey",
+            description:
+              "Query String parameter name to look for to extract the apiKey",
           },
           disableHeaders: {
-            type: 'boolean',
+            type: "boolean",
             default: false,
-            description: 'Entirely disable lookup API Key from the header',
+            description: "Entirely disable lookup API Key from the header",
           },
           disableHeadersScheme: {
-            type: 'boolean',
+            type: "boolean",
             default: false,
-            description: 'Enable or disable apiScheme check',
+            description: "Enable or disable apiScheme check",
           },
           disableQueryParam: {
-            type: 'boolean',
+            type: "boolean",
             default: false,
-            description: 'Entirely disable lookup API Key from the query string',
+            description:
+              "Entirely disable lookup API Key from the query string",
           },
         },
       },

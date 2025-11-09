@@ -1,17 +1,17 @@
-const serverHelper = require('../common/server-helper');
-const should = require('should');
-const config = require('../../../src/core/config');
-const request = require('supertest');
+const serverHelper = require("../common/server-helper");
+const should = require("should");
+const config = require("../../../core/config");
+const request = require("supertest");
 const port1 = 5998;
 const port2 = 5999;
 let app1, app2, appTarget;
 
-const gateway = require('../../../src/core/gateway');
+const gateway = require("../../../core/gateway");
 
-describe('multi step policy ', () => {
+describe("multi step policy ", () => {
   let originalGatewayConfig;
 
-  before('start servers', done => {
+  before("start servers", (done) => {
     originalGatewayConfig = config.gatewayConfig;
 
     config.gatewayConfig = {
@@ -21,26 +21,26 @@ describe('multi step policy ', () => {
       },
       serviceEndpoints: {
         admin: {
-          url: 'http://localhost:' + port1,
+          url: `http://localhost:${port1}`,
         },
         staff: {
-          url: 'http://localhost:' + port2,
+          url: `http://localhost:${port2}`,
         },
       },
-      policies: ['proxy'],
+      policies: ["proxy"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['test'],
+          apiEndpoints: ["test"],
           policies: [
             {
               proxy: [
                 {
-                  condition: { name: 'pathExact', path: '/admin' },
-                  action: { serviceEndpoint: 'admin' },
+                  condition: { name: "pathExact", path: "/admin" },
+                  action: { serviceEndpoint: "admin" },
                 },
                 {
-                  condition: { name: 'pathExact', path: '/staff' },
-                  action: { serviceEndpoint: 'staff' },
+                  condition: { name: "pathExact", path: "/staff" },
+                  action: { serviceEndpoint: "staff" },
                 },
               ],
             },
@@ -51,25 +51,25 @@ describe('multi step policy ', () => {
 
     serverHelper
       .generateBackendServer(port1)
-      .then(apps => {
+      .then((apps) => {
         app1 = apps.app;
         return serverHelper.generateBackendServer(port2);
       })
-      .then(apps => {
+      .then((apps) => {
         app2 = apps.app;
         return gateway();
       })
-      .then(apps => {
+      .then((apps) => {
         appTarget = apps.app;
         done();
       });
   });
 
-  it('should proxy to server on ' + port1, done => {
+  it(`should proxy to server on ${port1}`, (done) => {
     request(appTarget)
-      .get('/admin')
+      .get("/admin")
       .expect(200)
-      .expect('Content-Type', /text/)
+      .expect("Content-Type", /text/)
       .end((error, res) => {
         if (error) {
           done(error);
@@ -79,11 +79,11 @@ describe('multi step policy ', () => {
       });
   });
 
-  it('should proxy to server on ' + port2, done => {
+  it(`should proxy to server on ${port2}`, (done) => {
     request(appTarget)
-      .get('/staff')
+      .get("/staff")
       .expect(200)
-      .expect('Content-Type', /text/)
+      .expect("Content-Type", /text/)
       .end((err, res) => {
         if (err) {
           done(err);

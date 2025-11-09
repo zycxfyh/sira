@@ -3,7 +3,7 @@
  * 处理AI供应商连接错误、API限流、超时等异常情况
  */
 
-const EventEmitter = require('events');
+const EventEmitter = require("node:events");
 
 class AIErrorHandler extends EventEmitter {
   constructor(options = {}) {
@@ -14,18 +14,18 @@ class AIErrorHandler extends EventEmitter {
     this.backoffMultiplier = options.backoffMultiplier || 2;
     this.jitter = options.jitter !== false; // 默认启用抖动
     this.retryableErrors = new Set([
-      'ECONNRESET',
-      'ETIMEDOUT',
-      'ECONNREFUSED',
-      'ENOTFOUND',
-      'EAI_AGAIN',
-      'rate_limit_exceeded',
-      'quota_exceeded',
-      'temporary_server_error',
-      'internal_server_error',
-      'bad_gateway',
-      'service_unavailable',
-      'gateway_timeout',
+      "ECONNRESET",
+      "ETIMEDOUT",
+      "ECONNREFUSED",
+      "ENOTFOUND",
+      "EAI_AGAIN",
+      "rate_limit_exceeded",
+      "quota_exceeded",
+      "temporary_server_error",
+      "internal_server_error",
+      "bad_gateway",
+      "service_unavailable",
+      "gateway_timeout",
     ]);
   }
 
@@ -37,7 +37,7 @@ class AIErrorHandler extends EventEmitter {
    */
   isRetryableError(error, response) {
     // 检查HTTP状态码 - 更精确的重试逻辑
-    if (response && response.status) {
+    if (response?.status) {
       const { status } = response;
 
       // 明确的重试状态码
@@ -65,29 +65,36 @@ class AIErrorHandler extends EventEmitter {
     }
 
     // 检查错误码 - 使用预定义的重试错误集合
-    if (error && error.code) {
+    if (error?.code) {
       if (this.retryableErrors.has(error.code)) return true;
     }
 
     // 检查网络相关错误 - 减少对消息文本的依赖
-    if (error && error.code) {
-      const networkErrors = ['ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN'];
+    if (error?.code) {
+      const networkErrors = [
+        "ECONNRESET",
+        "ETIMEDOUT",
+        "ECONNREFUSED",
+        "ENOTFOUND",
+        "EAI_AGAIN",
+      ];
       if (networkErrors.includes(error.code)) return true;
     }
 
     // 检查API特定的错误类型 - 更结构化的方法
-    if (response && response.error) {
+    if (response?.error) {
       const errorType = response.error.type || response.error.code;
       if (errorType && this.retryableErrors.has(errorType)) return true;
 
       // 检查特定的错误类型
       const retryableTypes = [
-        'rate_limit_error',
-        'timeout_error',
-        'server_overloaded',
-        'temporary_failure',
+        "rate_limit_error",
+        "timeout_error",
+        "server_overloaded",
+        "temporary_failure",
       ];
-      if (errorType && retryableTypes.includes(errorType.toLowerCase())) return true;
+      if (errorType && retryableTypes.includes(errorType.toLowerCase()))
+        return true;
     }
 
     // 对于未知错误，默认不重试 - 更保守的方法
@@ -100,7 +107,7 @@ class AIErrorHandler extends EventEmitter {
    * @returns {number} 延迟时间(毫秒)
    */
   calculateDelay(attempt) {
-    let delay = this.baseDelay * Math.pow(this.backoffMultiplier, attempt - 1);
+    let delay = this.baseDelay * this.backoffMultiplier ** (attempt - 1);
 
     // 应用最大延迟限制
     delay = Math.min(delay, this.maxDelay);
@@ -128,12 +135,12 @@ class AIErrorHandler extends EventEmitter {
 
     for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
       try {
-        this.emit('attempt', { attempt, maxRetries, context });
+        this.emit("attempt", { attempt, maxRetries, context });
 
         const result = await operation();
 
         if (attempt > 1) {
-          this.emit('retrySuccess', { attempt, maxRetries, context, result });
+          this.emit("retrySuccess", { attempt, maxRetries, context, result });
         }
 
         return result;
@@ -141,9 +148,11 @@ class AIErrorHandler extends EventEmitter {
         lastError = error;
 
         // 检查是否可以重试
-        const shouldRetry = attempt <= maxRetries && this.isRetryableError(error, context.response);
+        const shouldRetry =
+          attempt <= maxRetries &&
+          this.isRetryableError(error, context.response);
 
-        this.emit('error', {
+        this.emit("error", {
           attempt,
           maxRetries,
           error,
@@ -157,7 +166,7 @@ class AIErrorHandler extends EventEmitter {
 
         // 计算延迟时间
         const delay = this.calculateDelay(attempt);
-        this.emit('retry', { attempt, maxRetries, delay, context, error });
+        this.emit("retry", { attempt, maxRetries, delay, context, error });
 
         // 等待延迟
         await this.sleep(delay);
@@ -165,7 +174,7 @@ class AIErrorHandler extends EventEmitter {
     }
 
     // 所有重试都失败
-    this.emit('exhausted', { maxRetries, lastError, context });
+    this.emit("exhausted", { maxRetries, lastError, context });
     throw lastError;
   }
 
@@ -174,7 +183,7 @@ class AIErrorHandler extends EventEmitter {
    * @param {number} ms - 睡眠毫秒数
    */
   sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -198,24 +207,28 @@ class AIErrorHandler extends EventEmitter {
         maxRetries: 3,
         baseDelay: 1000,
         retryableErrors: new Set([
-          'rate_limit_exceeded',
-          'internal_server_error',
-          'bad_gateway',
-          'service_unavailable',
+          "rate_limit_exceeded",
+          "internal_server_error",
+          "bad_gateway",
+          "service_unavailable",
         ]),
       },
       anthropic: {
         maxRetries: 3,
         baseDelay: 2000,
-        retryableErrors: new Set(['rate_limit_error', 'overloaded_error', 'internal_error']),
+        retryableErrors: new Set([
+          "rate_limit_error",
+          "overloaded_error",
+          "internal_error",
+        ]),
       },
       deepseek: {
         maxRetries: 3,
         baseDelay: 1000,
         retryableErrors: new Set([
-          'rate_limit_reached',
-          'internal_server_error',
-          'service_unavailable',
+          "rate_limit_reached",
+          "internal_server_error",
+          "service_unavailable",
         ]),
       },
       default: {
@@ -236,8 +249,8 @@ class AIErrorHandler extends EventEmitter {
   formatError(error, context = {}) {
     return {
       timestamp: new Date().toISOString(),
-      provider: context.provider || 'unknown',
-      operation: context.operation || 'unknown',
+      provider: context.provider || "unknown",
+      operation: context.operation || "unknown",
       error: {
         name: error.name,
         message: error.message,
@@ -262,47 +275,46 @@ class AIErrorHandler extends EventEmitter {
    * @param {Object} context - 上下文信息
    * @returns {string} 处理建议
    */
-  getErrorSuggestion(error, context) {
-    const errorCode =
-      error.code || (error.response && error.response.error && error.response.error.code);
-    const statusCode = error.response && error.response.status;
+  getErrorSuggestion(error, _context) {
+    const errorCode = error.code || error.response?.error?.code;
+    const statusCode = error.response?.status;
 
     // API密钥错误
-    if (errorCode === 'invalid_api_key' || errorCode === 'unauthorized') {
-      return '请检查API密钥是否正确配置';
+    if (errorCode === "invalid_api_key" || errorCode === "unauthorized") {
+      return "请检查API密钥是否正确配置";
     }
 
     // 配额不足
-    if (errorCode === 'quota_exceeded' || errorCode === 'insufficient_quota') {
-      return 'API使用配额已耗尽，请充值或升级套餐';
+    if (errorCode === "quota_exceeded" || errorCode === "insufficient_quota") {
+      return "API使用配额已耗尽，请充值或升级套餐";
     }
 
     // 频率限制
-    if (errorCode === 'rate_limit_exceeded' || statusCode === 429) {
-      return '请求频率过高，请稍后重试或降低请求频率';
+    if (errorCode === "rate_limit_exceeded" || statusCode === 429) {
+      return "请求频率过高，请稍后重试或降低请求频率";
     }
 
     // 模型不存在
-    if (errorCode === 'model_not_found' || error.message.includes('model')) {
-      return '指定的模型不存在或不可用，请检查模型名称';
+    if (errorCode === "model_not_found" || error.message.includes("model")) {
+      return "指定的模型不存在或不可用，请检查模型名称";
     }
 
     // 网络错误
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-      return '网络连接失败，请检查网络连接和API端点';
+    if (error.code === "ECONNREFUSED" || error.code === "ENOTFOUND") {
+      return "网络连接失败，请检查网络连接和API端点";
     }
 
     // 超时错误
-    if (error.code === 'ETIMEDOUT' || statusCode === 408) {
-      return '请求超时，请检查网络连接或增加超时时间';
+    if (error.code === "ETIMEDOUT" || statusCode === 408) {
+      return "请求超时，请检查网络连接或增加超时时间";
     }
 
     // 服务器错误
     if (statusCode >= 500) {
-      return '服务器内部错误，请稍后重试或联系供应商支持';
+      return "服务器内部错误，请稍后重试或联系供应商支持";
     }
 
-    return '请查看详细错误信息，或联系技术支持';
+    return "请查看详细错误信息，或联系技术支持";
   }
 
   /**
@@ -310,19 +322,21 @@ class AIErrorHandler extends EventEmitter {
    * @param {Object} formattedError - 格式化的错误信息
    */
   logError(formattedError) {
-    const logLevel = formattedError.retryable ? 'WARN' : 'ERROR';
+    const logLevel = formattedError.retryable ? "WARN" : "ERROR";
 
     console.log(
-      `[${logLevel}] ${formattedError.timestamp} - ${formattedError.provider} ${formattedError.operation}`
+      `[${logLevel}] ${formattedError.timestamp} - ${formattedError.provider} ${formattedError.operation}`,
     );
     console.log(`  错误: ${formattedError.error.message}`);
     console.log(`  建议: ${formattedError.suggestion}`);
 
     if (formattedError.context.attempt > 1) {
-      console.log(`  重试: ${formattedError.context.attempt}/${formattedError.context.maxRetries}`);
+      console.log(
+        `  重试: ${formattedError.context.attempt}/${formattedError.context.maxRetries}`,
+      );
     }
 
-    this.emit('logged', formattedError);
+    this.emit("logged", formattedError);
   }
 }
 

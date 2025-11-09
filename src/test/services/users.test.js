@@ -1,96 +1,102 @@
-const should = require('should');
-const uuid = require('uuid');
-const redisConfig = require('../../../src/core/config').systemConfig.db.redis;
-const services = require('../../../src/core/services');
+const should = require("should");
+const uuid = require("uuid");
+const redisConfig = require("../../core/config").systemConfig.db.redis;
+const services = require("../../core/services");
 const userService = services.user;
 const credentialService = services.credential;
-const db = require('../../../src/core/db');
+const db = require("../../core/db");
 
-describe('User service tests', () => {
-  describe('Insert tests', () => {
-    before(() => db.flushdb());
+describe("User service tests", () => {
+  describe("Insert tests", () => {
+    beforeAll(async () => {
+      await db.flushdb();
+    });
 
-    it('should insert a user', () => {
+    test("should insert a user", () => {
       const user = {
-        username: 'irfanbaqui',
-        firstname: 'irfan',
-        lastname: 'baqui',
-        email: 'irfan@eg.com',
+        username: "irfanbaqui",
+        firstname: "irfan",
+        lastname: "baqui",
+        email: "irfan@eg.com",
       };
 
-      return userService.insert(user).then(newUser => {
+      return userService.insert(user).then((newUser) => {
         const expectedUserProps = [
-          'firstname',
-          'lastname',
-          'email',
-          'isActive',
-          'username',
-          'id',
-          'createdAt',
-          'updatedAt',
+          "firstname",
+          "lastname",
+          "email",
+          "isActive",
+          "username",
+          "id",
+          "createdAt",
+          "updatedAt",
         ];
         should(Object.keys(newUser)).containDeep(expectedUserProps);
         newUser.should.have.properties(user);
         should.ok(newUser.isActive);
         return db
-          .hgetall(redisConfig.namespace.concat('-', 'user').concat(':', newUser.id))
-          .then(userObj => {
-            userObj.isActive = userObj.isActive === 'true';
+          .hgetall(
+            redisConfig.namespace.concat("-", "user").concat(":", newUser.id),
+          )
+          .then((userObj) => {
+            userObj.isActive = userObj.isActive === "true";
             should.deepEqual(userObj, newUser);
           });
       });
     });
 
-    it('should throw an error when inserting a user with missing properties', () => {
+    test("should throw an error when inserting a user with missing properties", () => {
       const user = {
-        username: 'irfanbaqui-1',
-        lastname: 'baqui',
-        email: 'irfan@eg.com',
+        username: "irfanbaqui-1",
+        lastname: "baqui",
+        email: "irfan@eg.com",
       };
 
       return should(userService.insert(user)).be.rejectedWith(
-        "data should have required property 'firstname'"
+        "data should have required property 'firstname'",
       );
     });
 
-    it('should throw an error when inserting a user with existing username', () => {
+    test("should throw an error when inserting a user with existing username", () => {
       const user = {
-        username: 'irfanbaqui',
-        firstname: 'irfan',
-        lastname: 'baqui',
-        email: 'irfan@eg.com',
+        username: "irfanbaqui",
+        firstname: "irfan",
+        lastname: "baqui",
+        email: "irfan@eg.com",
       };
 
-      return should(userService.insert(user)).be.rejectedWith('username already exists');
+      return should(userService.insert(user)).be.rejectedWith(
+        "username already exists",
+      );
     });
   });
 
-  describe('Get and Find User tests', () => {
+  describe("Get and Find User tests", () => {
     let user;
-    before(() =>
+    beforeAll(async () =>
       db
         .flushdb()
         .then(() => {
           user = createRandomUserObject();
           return userService.insert(user);
         })
-        .then(newUser => {
+        .then((newUser) => {
           should.exist(newUser);
           user.id = newUser.id;
-        })
+        }),
     );
 
-    it('should get user by userId', () => {
-      return userService.get(user.id).then(_user => {
+    test("should get user by userId", () => {
+      return userService.get(user.id).then((_user) => {
         const expectedUserProps = [
-          'firstname',
-          'lastname',
-          'email',
-          'isActive',
-          'username',
-          'id',
-          'createdAt',
-          'updatedAt',
+          "firstname",
+          "lastname",
+          "email",
+          "isActive",
+          "username",
+          "id",
+          "createdAt",
+          "updatedAt",
         ];
         should.exist(_user);
         expectedUserProps.sort().should.eql(Object.keys(_user).sort());
@@ -106,21 +112,21 @@ describe('User service tests', () => {
       });
     });
 
-    it('should get user all users', () => {
-      return userService.findAll().then(data => {
+    test("should get user all users", () => {
+      return userService.findAll().then((data) => {
         should.exist(data.users);
         should.exist(data.nextKey);
         data.users.length.should.be.eql(1);
         const _user = data.users[0];
         const expectedUserProps = [
-          'firstname',
-          'lastname',
-          'email',
-          'isActive',
-          'username',
-          'id',
-          'createdAt',
-          'updatedAt',
+          "firstname",
+          "lastname",
+          "email",
+          "isActive",
+          "username",
+          "id",
+          "createdAt",
+          "updatedAt",
         ];
         should.exist(user);
         expectedUserProps.sort().should.eql(Object.keys(_user).sort());
@@ -136,24 +142,24 @@ describe('User service tests', () => {
       });
     });
 
-    it('should not get user by invalid userId', () => {
-      return userService.get(uuid.v4()).then(user => {
+    test("should not get user by invalid userId", () => {
+      return userService.get(uuid.v4()).then((user) => {
         should.exist(user);
         user.should.eql(false);
       });
     });
 
-    it('should find user by username', () => {
-      return userService.find(user.username).then(_user => {
+    test("should find user by username", () => {
+      return userService.find(user.username).then((_user) => {
         const expectedUserProps = [
-          'firstname',
-          'lastname',
-          'email',
-          'isActive',
-          'username',
-          'id',
-          'createdAt',
-          'updatedAt',
+          "firstname",
+          "lastname",
+          "email",
+          "isActive",
+          "username",
+          "id",
+          "createdAt",
+          "updatedAt",
         ];
         should.exist(_user);
         expectedUserProps.sort().should.eql(Object.keys(_user).sort());
@@ -168,20 +174,20 @@ describe('User service tests', () => {
       });
     });
 
-    it('should not find user by invalid username', () => {
-      return userService.find('invalid_username').then(user => {
+    test("should not find user by invalid username", () => {
+      return userService.find("invalid_username").then((user) => {
         should.exist(user);
         user.should.eql(false);
       });
     });
   });
 
-  describe('Update user tests', () => {
+  describe("Update user tests", () => {
     let user, updatedUser;
-    before(() => {
+    beforeAll(async () => {
       return db.flushdb().then(() => {
         user = createRandomUserObject();
-        return userService.insert(user).then(newUser => {
+        return userService.insert(user).then((newUser) => {
           should.exist(newUser);
           user.id = newUser.id;
           user.createdAt = newUser.createdAt;
@@ -189,12 +195,12 @@ describe('User service tests', () => {
       });
     });
 
-    it('should update user', () => {
+    test("should update user", () => {
       updatedUser = createRandomUserObject();
-      return userService.update(user.id, updatedUser).then(res => {
+      return userService.update(user.id, updatedUser).then((res) => {
         should.exist(res);
         res.should.eql(true);
-        return userService.get(user.id).then(_user => {
+        return userService.get(user.id).then((_user) => {
           _user.username.should.eql(user.username); // Cannot update username
           _user.email.should.eql(updatedUser.email);
           _user.firstname.should.eql(updatedUser.firstname);
@@ -204,14 +210,14 @@ describe('User service tests', () => {
       });
     });
 
-    it('should allow update of any single user property user', () => {
+    test("should allow update of any single user property user", () => {
       const anotherUpdatedUser = {
-        email: 'baq@eg.com',
+        email: "baq@eg.com",
       };
 
-      return userService.update(user.id, anotherUpdatedUser).then(res => {
+      return userService.update(user.id, anotherUpdatedUser).then((res) => {
         res.should.eql(true);
-        return userService.get(user.id).then(_user => {
+        return userService.get(user.id).then((_user) => {
           _user.email.should.eql(anotherUpdatedUser.email);
           _user.firstname.should.eql(updatedUser.firstname);
           _user.lastname.should.eql(updatedUser.lastname);
@@ -220,54 +226,54 @@ describe('User service tests', () => {
       });
     });
 
-    it('should not update user with unvalid id', () => {
+    test("should not update user with unvalid id", () => {
       const updatedUser = {
-        username: 'joecamper',
-        firstname: 'Joe',
-        lastname: 'Camper',
-        email: 'joecamper@eg.com',
+        username: "joecamper",
+        firstname: "Joe",
+        lastname: "Camper",
+        email: "joecamper@eg.com",
       };
 
-      return userService.update('invalid_id', updatedUser).then(res => {
+      return userService.update("invalid_id", updatedUser).then((res) => {
         should.exist(res);
         res.should.eql(false);
       });
     });
 
-    it('should not update user with invalid properties', () => {
+    test("should not update user with invalid properties", () => {
       const updatedUser = {
-        username: 'joecamper',
-        invalid_prop: 'xyz111',
+        username: "joecamper",
+        invalid_prop: "xyz111",
       };
 
       return should(userService.update(user.id, updatedUser)).be.rejectedWith(
-        'one or more properties is invalid'
+        "one or more properties is invalid",
       );
     });
   });
 
-  describe('Activate and deactivate user tests', () => {
+  describe("Activate and deactivate user tests", () => {
     let user;
-    before(() =>
+    beforeAll(async () =>
       db
         .flushdb()
         .then(() => {
           return userService.insert(createRandomUserObject());
         })
-        .then(newUser => {
+        .then((newUser) => {
           user = newUser; // update test user
           should.exist(newUser);
           user.id = newUser.id;
-        })
+        }),
     );
 
-    it('should deactivate user', done => {
-      userService.deactivate(user.id).then(res => {
+    test("should deactivate user", (done) => {
+      userService.deactivate(user.id).then((res) => {
         should.exist(res);
         res.should.eql(true);
         return userService
           .get(user.id)
-          .then(_user => {
+          .then((_user) => {
             should.exist(_user.username);
             _user.username.should.eql(user.username);
             should.exist(_user.email);
@@ -287,12 +293,12 @@ describe('User service tests', () => {
       });
     });
 
-    it('should reactivate user', done => {
-      userService.activate(user.id).then(res => {
+    test("should reactivate user", (done) => {
+      userService.activate(user.id).then((res) => {
         res.should.eql(true);
         return userService
           .get(user.id)
-          .then(_user => {
+          .then((_user) => {
             _user.username.should.eql(user.username);
             _user.email.should.eql(user.email);
             _user.firstname.should.eql(user.firstname);
@@ -307,7 +313,7 @@ describe('User service tests', () => {
     });
   });
 
-  describe('Delete user tests', () => {
+  describe("Delete user tests", () => {
     let user;
     beforeEach(() =>
       db
@@ -316,49 +322,53 @@ describe('User service tests', () => {
           user = createRandomUserObject();
           return userService.insert(user);
         })
-        .then(newUser => {
+        .then((newUser) => {
           should.exist(newUser);
           user.id = newUser.id;
-        })
+        }),
     );
 
-    it('should delete user', () => {
-      return userService.remove(user.id).then(deleted => {
+    test("should delete user", () => {
+      return userService.remove(user.id).then((deleted) => {
         should.exist(deleted);
         deleted.should.eql(true);
       });
     });
 
-    it('should not delete user with invalid id', () => {
-      return userService.remove('invalid_id').then(deleted => {
+    test("should not delete user with invalid id", () => {
+      return userService.remove("invalid_id").then((deleted) => {
         should.exist(deleted);
         deleted.should.eql(false);
       });
     });
 
-    describe('should delete all the related credentials', () => {
+    describe("should delete all the related credentials", () => {
       const credentials = [];
-      before(() =>
+      beforeAll(async () =>
         Promise.all([
-          credentialService.insertScopes(['someScope']),
-          credentialService.insertCredential(user.id, 'jwt'),
-          credentialService.insertCredential(user.id, 'jwt'),
-        ]).then(([scope, jwt1, jwt2]) =>
+          credentialService.insertScopes(["someScope"]),
+          credentialService.insertCredential(user.id, "jwt"),
+          credentialService.insertCredential(user.id, "jwt"),
+        ]).then(([_scope, jwt1, jwt2]) =>
           Promise.all(
-            [jwt1, jwt2].map(cred => {
+            [jwt1, jwt2].map((cred) => {
               credentials.push(cred);
-              return credentialService.addScopesToCredential(cred.id, 'jwt', ['someScope']);
-            })
-          )
-        )
+              return credentialService.addScopesToCredential(cred.id, "jwt", [
+                "someScope",
+              ]);
+            }),
+          ),
+        ),
       );
 
-      it('should remove the user', () => {
+      test("should remove the user", () => {
         return should(userService.remove(user.id)).resolvedWith(true);
       });
 
-      it('should remove the credentials', () => {
-        return should(credentialService.getCredential(credentials[0].id, 'jwt')).resolvedWith(null);
+      test("should remove the credentials", () => {
+        return should(
+          credentialService.getCredential(credentials[0].id, "jwt"),
+        ).resolvedWith(null);
       });
     });
   });

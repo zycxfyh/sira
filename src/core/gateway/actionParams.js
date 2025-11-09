@@ -1,4 +1,4 @@
-const log = require('../logger').policy;
+const log = require("../logger").policy;
 class ActionParams {}
 
 // TODO: this may be not the best way,
@@ -8,8 +8,8 @@ ActionParams.prototype.getCommonAuthCallback = function (req, res, next) {
     // passThrough allows auth to fail
     // (hoping that next auth policy will be able to do auth)
     if (!user && this.passThrough) {
-      res.set('eg-consumer-id', 'anonymous');
-      log.debug('auth passThrough enabled, continuing pipeline', err, info);
+      res.set("eg-consumer-id", "anonymous");
+      log.debug("auth passThrough enabled, continuing pipeline", err, info);
       return next();
     }
 
@@ -18,14 +18,14 @@ ActionParams.prototype.getCommonAuthCallback = function (req, res, next) {
     }
 
     if (user) {
-      req.logIn(user, this, err => {
+      req.logIn(user, this, (err) => {
         if (req.egContext.consumer.id) {
-          req.headers['eg-consumer-id'] = req.egContext.consumer.id;
+          req.headers["eg-consumer-id"] = req.egContext.consumer.id;
         }
 
         next(err);
       });
-    } else if (info && info.unauthorized) {
+    } else if (info?.unauthorized) {
       res.sendStatus(403);
     } else {
       res.sendStatus(401);

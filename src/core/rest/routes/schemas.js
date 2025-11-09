@@ -1,10 +1,10 @@
-const express = require('express');
-const schemas = require('../../schemas');
+const express = require("express");
+const schemas = require("../../schemas");
 
-module.exports = function () {
+module.exports = () => {
   const router = express.Router();
 
-  router.get('/:param?', (req, res) => {
+  router.get("/:param?", (req, res) => {
     const { param } = req.params;
     res.json(schemas.find(param));
   });

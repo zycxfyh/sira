@@ -1,10 +1,10 @@
-const assert = require('assert');
-const environment = require('../../fixtures/cli/environment');
-const adminHelper = require('../../common/admin-helper')();
-const namespace = 'express-gateway:apps:info';
-const idGen = require('uuid62');
+const assert = require("node:assert");
+const environment = require("../../fixtures/cli/environment");
+const adminHelper = require("../../common/admin-helper")();
+const namespace = "express-gateway:apps:info";
+const idGen = require("uuid62");
 
-describe('eg apps info', () => {
+describe("eg apps info", () => {
   let program, env, user, app;
 
   before(() => adminHelper.start());
@@ -15,18 +15,18 @@ describe('eg apps info', () => {
     return adminHelper.admin.users
       .create({
         username: idGen.v4(),
-        firstname: 'La',
-        lastname: 'Deeda',
+        firstname: "La",
+        lastname: "Deeda",
       })
-      .then(createdUser => {
+      .then((createdUser) => {
         user = createdUser;
 
         return adminHelper.admin.apps.create(user.id, {
-          name: 'appy',
-          redirectUri: 'http://localhost:3000/cb',
+          name: "appy",
+          redirectUri: "http://localhost:3000/cb",
         });
       })
-      .then(createdApp => {
+      .then((createdApp) => {
         app = createdApp;
         return app;
       });
@@ -41,32 +41,32 @@ describe('eg apps info', () => {
 
   [
     {
-      testCase: 'returns app info',
+      testCase: "returns app info",
       listCommand: () => app.id,
     },
     {
-      testCase: 'returns app info by name',
+      testCase: "returns app info by name",
       listCommand: () => app.name,
     },
   ].forEach(({ testCase, listCommand }) => {
-    it(testCase, done => {
-      env.hijack(namespace, generator => {
+    it(testCase, (done) => {
+      env.hijack(namespace, (generator) => {
         let output = null;
 
-        generator.once('run', () => {
-          generator.stdout = message => {
+        generator.once("run", () => {
+          generator.stdout = (message) => {
             output = message;
           };
-          generator.log.error = message => {
+          generator.log.error = (message) => {
             done(new Error(message));
           };
         });
 
-        generator.once('end', () => {
+        generator.once("end", () => {
           const app = JSON.parse(output);
           assert.strictEqual(app.id, app.id);
-          assert.strictEqual(app.name, 'appy');
-          assert.strictEqual(app.redirectUri, 'http://localhost:3000/cb');
+          assert.strictEqual(app.name, "appy");
+          assert.strictEqual(app.redirectUri, "http://localhost:3000/cb");
           assert.strictEqual(app.isActive, true);
           assert.strictEqual(app.userId, user.id);
 

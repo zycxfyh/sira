@@ -1,5 +1,5 @@
-const express = require('express');
-const { RulesEngine } = require('../../rules-engine');
+const express = require("express");
+const { RulesEngine } = require("../../rules-engine");
 
 let rulesEngine = null;
 
@@ -22,7 +22,7 @@ function rulesRoutes() {
    * GET /rules
    * 获取所有规则
    */
-  router.get('/', async (req, res) => {
+  router.get("/", async (req, res) => {
     try {
       const { enabled, tags, limit = 100, offset = 0 } = req.query;
 
@@ -30,21 +30,26 @@ function rulesRoutes() {
 
       // 过滤条件
       if (enabled !== undefined) {
-        const enabledBool = enabled === 'true';
-        rules = rules.filter(rule => rule.enabled === enabledBool);
+        const enabledBool = enabled === "true";
+        rules = rules.filter((rule) => rule.enabled === enabledBool);
       }
 
       if (tags) {
-        const tagList = tags.split(',');
-        rules = rules.filter(rule => tagList.some(tag => rule.tags.includes(tag)));
+        const tagList = tags.split(",");
+        rules = rules.filter((rule) =>
+          tagList.some((tag) => rule.tags.includes(tag)),
+        );
       }
 
       // 分页
       const total = rules.length;
-      rules = rules.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+      rules = rules.slice(
+        parseInt(offset, 10),
+        parseInt(offset, 10) + parseInt(limit, 10),
+      );
 
       // 格式化响应
-      const formattedRules = rules.map(rule => ({
+      const formattedRules = rules.map((rule) => ({
         id: rule.id,
         name: rule.name,
         description: rule.description,
@@ -70,16 +75,16 @@ function rulesRoutes() {
         data: formattedRules,
         pagination: {
           total,
-          limit: parseInt(limit),
-          offset: parseInt(offset),
-          hasMore: parseInt(offset) + parseInt(limit) < total,
+          limit: parseInt(limit, 10),
+          offset: parseInt(offset, 10),
+          hasMore: parseInt(offset, 10) + parseInt(limit, 10) < total,
         },
       });
     } catch (error) {
-      console.error('获取规则列表失败:', error);
+      console.error("获取规则列表失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取规则列表失败',
+        error: "获取规则列表失败",
         message: error.message,
       });
     }
@@ -89,15 +94,15 @@ function rulesRoutes() {
    * POST /rules
    * 创建新规则
    */
-  router.post('/', async (req, res) => {
+  router.post("/", async (req, res) => {
     try {
       const ruleConfig = req.body;
 
       if (!ruleConfig.name || !ruleConfig.conditions || !ruleConfig.actions) {
         return res.status(400).json({
           success: false,
-          error: '缺少必需参数',
-          required: ['name', 'conditions', 'actions'],
+          error: "缺少必需参数",
+          required: ["name", "conditions", "actions"],
         });
       }
 
@@ -115,13 +120,13 @@ function rulesRoutes() {
           actions: rule.actions,
           createdAt: rule.createdAt,
         },
-        message: '规则创建成功',
+        message: "规则创建成功",
       });
     } catch (error) {
-      console.error('创建规则失败:', error);
+      console.error("创建规则失败:", error);
       res.status(400).json({
         success: false,
-        error: '创建规则失败',
+        error: "创建规则失败",
         message: error.message,
       });
     }
@@ -131,7 +136,7 @@ function rulesRoutes() {
    * GET /rules/:ruleId
    * 获取规则详情
    */
-  router.get('/:ruleId', async (req, res) => {
+  router.get("/:ruleId", async (req, res) => {
     try {
       const { ruleId } = req.params;
       const rule = rulesEngine.rules.get(ruleId);
@@ -139,7 +144,7 @@ function rulesRoutes() {
       if (!rule) {
         return res.status(404).json({
           success: false,
-          error: '规则不存在',
+          error: "规则不存在",
         });
       }
 
@@ -148,10 +153,10 @@ function rulesRoutes() {
         data: rule,
       });
     } catch (error) {
-      console.error('获取规则详情失败:', error);
+      console.error("获取规则详情失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取规则详情失败',
+        error: "获取规则详情失败",
         message: error.message,
       });
     }
@@ -161,7 +166,7 @@ function rulesRoutes() {
    * PUT /rules/:ruleId
    * 更新规则
    */
-  router.put('/:ruleId', async (req, res) => {
+  router.put("/:ruleId", async (req, res) => {
     try {
       const { ruleId } = req.params;
       const updates = req.body;
@@ -171,13 +176,13 @@ function rulesRoutes() {
       res.json({
         success: true,
         data: updatedRule,
-        message: '规则更新成功',
+        message: "规则更新成功",
       });
     } catch (error) {
-      console.error('更新规则失败:', error);
+      console.error("更新规则失败:", error);
       res.status(400).json({
         success: false,
-        error: '更新规则失败',
+        error: "更新规则失败",
         message: error.message,
       });
     }
@@ -187,7 +192,7 @@ function rulesRoutes() {
    * DELETE /rules/:ruleId
    * 删除规则
    */
-  router.delete('/:ruleId', async (req, res) => {
+  router.delete("/:ruleId", async (req, res) => {
     try {
       const { ruleId } = req.params;
 
@@ -195,13 +200,13 @@ function rulesRoutes() {
 
       res.json({
         success: true,
-        message: '规则删除成功',
+        message: "规则删除成功",
       });
     } catch (error) {
-      console.error('删除规则失败:', error);
+      console.error("删除规则失败:", error);
       res.status(400).json({
         success: false,
-        error: '删除规则失败',
+        error: "删除规则失败",
         message: error.message,
       });
     }
@@ -213,7 +218,7 @@ function rulesRoutes() {
    * GET /rules/sets
    * 获取所有规则集
    */
-  router.get('/sets', async (req, res) => {
+  router.get("/sets", async (req, res) => {
     try {
       const { enabled, limit = 50, offset = 0 } = req.query;
 
@@ -221,29 +226,34 @@ function rulesRoutes() {
 
       // 过滤条件
       if (enabled !== undefined) {
-        const enabledBool = enabled === 'true';
-        ruleSets = ruleSets.filter(ruleSet => ruleSet.enabled === enabledBool);
+        const enabledBool = enabled === "true";
+        ruleSets = ruleSets.filter(
+          (ruleSet) => ruleSet.enabled === enabledBool,
+        );
       }
 
       // 分页
       const total = ruleSets.length;
-      ruleSets = ruleSets.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+      ruleSets = ruleSets.slice(
+        parseInt(offset, 10),
+        parseInt(offset, 10) + parseInt(limit, 10),
+      );
 
       res.json({
         success: true,
         data: ruleSets,
         pagination: {
           total,
-          limit: parseInt(limit),
-          offset: parseInt(offset),
-          hasMore: parseInt(offset) + parseInt(limit) < total,
+          limit: parseInt(limit, 10),
+          offset: parseInt(offset, 10),
+          hasMore: parseInt(offset, 10) + parseInt(limit, 10) < total,
         },
       });
     } catch (error) {
-      console.error('获取规则集列表失败:', error);
+      console.error("获取规则集列表失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取规则集列表失败',
+        error: "获取规则集列表失败",
         message: error.message,
       });
     }
@@ -253,15 +263,15 @@ function rulesRoutes() {
    * POST /rules/sets
    * 创建规则集
    */
-  router.post('/sets', async (req, res) => {
+  router.post("/sets", async (req, res) => {
     try {
       const ruleSetConfig = req.body;
 
       if (!ruleSetConfig.name || !ruleSetConfig.rules) {
         return res.status(400).json({
           success: false,
-          error: '缺少必需参数',
-          required: ['name', 'rules'],
+          error: "缺少必需参数",
+          required: ["name", "rules"],
         });
       }
 
@@ -270,13 +280,13 @@ function rulesRoutes() {
       res.status(201).json({
         success: true,
         data: ruleSet,
-        message: '规则集创建成功',
+        message: "规则集创建成功",
       });
     } catch (error) {
-      console.error('创建规则集失败:', error);
+      console.error("创建规则集失败:", error);
       res.status(400).json({
         success: false,
-        error: '创建规则集失败',
+        error: "创建规则集失败",
         message: error.message,
       });
     }
@@ -286,7 +296,7 @@ function rulesRoutes() {
    * GET /rules/sets/:ruleSetId
    * 获取规则集详情
    */
-  router.get('/sets/:ruleSetId', async (req, res) => {
+  router.get("/sets/:ruleSetId", async (req, res) => {
     try {
       const { ruleSetId } = req.params;
       const ruleSet = rulesEngine.ruleSets.get(ruleSetId);
@@ -294,7 +304,7 @@ function rulesRoutes() {
       if (!ruleSet) {
         return res.status(404).json({
           success: false,
-          error: '规则集不存在',
+          error: "规则集不存在",
         });
       }
 
@@ -303,10 +313,10 @@ function rulesRoutes() {
         data: ruleSet,
       });
     } catch (error) {
-      console.error('获取规则集详情失败:', error);
+      console.error("获取规则集详情失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取规则集详情失败',
+        error: "获取规则集详情失败",
         message: error.message,
       });
     }
@@ -316,7 +326,7 @@ function rulesRoutes() {
    * PUT /rules/sets/:ruleSetId
    * 更新规则集
    */
-  router.put('/sets/:ruleSetId', async (req, res) => {
+  router.put("/sets/:ruleSetId", async (req, res) => {
     try {
       const { ruleSetId } = req.params;
       const updates = req.body;
@@ -325,7 +335,7 @@ function rulesRoutes() {
       if (!ruleSet) {
         return res.status(404).json({
           success: false,
-          error: '规则集不存在',
+          error: "规则集不存在",
         });
       }
 
@@ -345,13 +355,13 @@ function rulesRoutes() {
       res.json({
         success: true,
         data: ruleSet,
-        message: '规则集更新成功',
+        message: "规则集更新成功",
       });
     } catch (error) {
-      console.error('更新规则集失败:', error);
+      console.error("更新规则集失败:", error);
       res.status(400).json({
         success: false,
-        error: '更新规则集失败',
+        error: "更新规则集失败",
         message: error.message,
       });
     }
@@ -361,7 +371,7 @@ function rulesRoutes() {
    * DELETE /rules/sets/:ruleSetId
    * 删除规则集
    */
-  router.delete('/sets/:ruleSetId', async (req, res) => {
+  router.delete("/sets/:ruleSetId", async (req, res) => {
     try {
       const { ruleSetId } = req.params;
 
@@ -369,13 +379,13 @@ function rulesRoutes() {
 
       res.json({
         success: true,
-        message: '规则集删除成功',
+        message: "规则集删除成功",
       });
     } catch (error) {
-      console.error('删除规则集失败:', error);
+      console.error("删除规则集失败:", error);
       res.status(400).json({
         success: false,
-        error: '删除规则集失败',
+        error: "删除规则集失败",
         message: error.message,
       });
     }
@@ -387,15 +397,15 @@ function rulesRoutes() {
    * POST /rules/execute
    * 执行规则
    */
-  router.post('/execute', async (req, res) => {
+  router.post("/execute", async (req, res) => {
     try {
       const { context, ruleSetId, options = {} } = req.body;
 
       if (!context) {
         return res.status(400).json({
           success: false,
-          error: '缺少必需参数',
-          required: ['context'],
+          error: "缺少必需参数",
+          required: ["context"],
         });
       }
 
@@ -411,10 +421,10 @@ function rulesRoutes() {
         data: result,
       });
     } catch (error) {
-      console.error('执行规则失败:', error);
+      console.error("执行规则失败:", error);
       res.status(500).json({
         success: false,
-        error: '执行规则失败',
+        error: "执行规则失败",
         message: error.message,
       });
     }
@@ -424,7 +434,7 @@ function rulesRoutes() {
    * POST /rules/:ruleId/test
    * 测试规则条件
    */
-  router.post('/:ruleId/test', async (req, res) => {
+  router.post("/:ruleId/test", async (req, res) => {
     try {
       const { ruleId } = req.params;
       const { context } = req.body;
@@ -432,7 +442,7 @@ function rulesRoutes() {
       if (!context) {
         return res.status(400).json({
           success: false,
-          error: '缺少context参数',
+          error: "缺少context参数",
         });
       }
 
@@ -443,10 +453,10 @@ function rulesRoutes() {
         data: result,
       });
     } catch (error) {
-      console.error('测试规则失败:', error);
+      console.error("测试规则失败:", error);
       res.status(400).json({
         success: false,
-        error: '测试规则失败',
+        error: "测试规则失败",
         message: error.message,
       });
     }
@@ -458,7 +468,7 @@ function rulesRoutes() {
    * GET /rules/stats
    * 获取规则统计信息
    */
-  router.get('/stats/:ruleId?', async (req, res) => {
+  router.get("/stats/:ruleId?", async (req, res) => {
     try {
       const { ruleId } = req.params;
 
@@ -467,7 +477,7 @@ function rulesRoutes() {
       if (ruleId && !stats) {
         return res.status(404).json({
           success: false,
-          error: '规则不存在',
+          error: "规则不存在",
         });
       }
 
@@ -476,10 +486,10 @@ function rulesRoutes() {
         data: stats,
       });
     } catch (error) {
-      console.error('获取规则统计失败:', error);
+      console.error("获取规则统计失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取规则统计失败',
+        error: "获取规则统计失败",
         message: error.message,
       });
     }
@@ -489,24 +499,27 @@ function rulesRoutes() {
    * GET /rules/engine/stats
    * 获取规则引擎统计信息
    */
-  router.get('/engine/stats', async (req, res) => {
+  router.get("/engine/stats", async (_req, res) => {
     try {
       res.json({
         success: true,
         data: {
           rulesCount: rulesEngine.rules.size,
           ruleSetsCount: rulesEngine.ruleSets.size,
-          enabledRulesCount: Array.from(rulesEngine.rules.values()).filter(r => r.enabled).length,
-          enabledRuleSetsCount: Array.from(rulesEngine.ruleSets.values()).filter(rs => rs.enabled)
-            .length,
+          enabledRulesCount: Array.from(rulesEngine.rules.values()).filter(
+            (r) => r.enabled,
+          ).length,
+          enabledRuleSetsCount: Array.from(
+            rulesEngine.ruleSets.values(),
+          ).filter((rs) => rs.enabled).length,
           engineStats: rulesEngine.stats,
         },
       });
     } catch (error) {
-      console.error('获取引擎统计失败:', error);
+      console.error("获取引擎统计失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取引擎统计失败',
+        error: "获取引擎统计失败",
         message: error.message,
       });
     }
@@ -518,108 +531,108 @@ function rulesRoutes() {
    * GET /rules/templates
    * 获取规则模板
    */
-  router.get('/templates', async (req, res) => {
+  router.get("/templates", async (_req, res) => {
     try {
       const templates = {
         routing: {
-          name: '智能路由规则',
-          description: '基于用户等级和请求类型的智能路由',
+          name: "智能路由规则",
+          description: "基于用户等级和请求类型的智能路由",
           priority: 10,
           conditions: [
             {
-              type: 'field',
-              field: 'user.tier',
-              operator: 'equals',
-              value: 'premium',
+              type: "field",
+              field: "user.tier",
+              operator: "equals",
+              value: "premium",
             },
             {
-              type: 'field',
-              field: 'request.model',
-              operator: 'in',
-              value: ['gpt-4', 'claude-3-opus'],
+              type: "field",
+              field: "request.model",
+              operator: "in",
+              value: ["gpt-4", "claude-3-opus"],
             },
           ],
           actions: [
             {
-              type: 'setField',
+              type: "setField",
               params: {
-                field: 'routing.provider',
-                value: 'openai',
+                field: "routing.provider",
+                value: "openai",
               },
             },
             {
-              type: 'log',
+              type: "log",
               params: {
-                level: 'info',
-                message: 'Premium user routed to OpenAI GPT-4',
+                level: "info",
+                message: "Premium user routed to OpenAI GPT-4",
               },
             },
           ],
-          tags: ['routing', 'premium'],
+          tags: ["routing", "premium"],
         },
         rateLimit: {
-          name: '速率限制规则',
-          description: '根据用户类型设置不同的速率限制',
+          name: "速率限制规则",
+          description: "根据用户类型设置不同的速率限制",
           priority: 5,
           conditions: [
             {
-              type: 'field',
-              field: 'user.tier',
-              operator: 'equals',
-              value: 'free',
+              type: "field",
+              field: "user.tier",
+              operator: "equals",
+              value: "free",
             },
           ],
           actions: [
             {
-              type: 'modifyRequest',
+              type: "modifyRequest",
               params: {
                 modifications: [
                   {
-                    type: 'set',
-                    field: 'rateLimit.requestsPerHour',
+                    type: "set",
+                    field: "rateLimit.requestsPerHour",
                     value: 10,
                   },
                 ],
               },
             },
           ],
-          tags: ['rate-limit', 'free-tier'],
+          tags: ["rate-limit", "free-tier"],
         },
         costControl: {
-          name: '成本控制规则',
-          description: '高成本请求需要额外验证',
+          name: "成本控制规则",
+          description: "高成本请求需要额外验证",
           priority: 15,
           conditions: [
             {
-              type: 'field',
-              field: 'request.estimatedCost',
-              operator: 'greaterThan',
+              type: "field",
+              field: "request.estimatedCost",
+              operator: "greaterThan",
               value: 1.0,
             },
             {
-              type: 'field',
-              field: 'user.tier',
-              operator: 'notEquals',
-              value: 'enterprise',
+              type: "field",
+              field: "user.tier",
+              operator: "notEquals",
+              value: "enterprise",
             },
           ],
           actions: [
             {
-              type: 'setField',
+              type: "setField",
               params: {
-                field: 'request.requiresApproval',
+                field: "request.requiresApproval",
                 value: true,
               },
             },
             {
-              type: 'webhook',
+              type: "webhook",
               params: {
-                url: 'https://your-app.com/approval-required',
-                method: 'POST',
+                url: "https://your-app.com/approval-required",
+                method: "POST",
               },
             },
           ],
-          tags: ['cost-control', 'approval'],
+          tags: ["cost-control", "approval"],
         },
       };
 
@@ -628,10 +641,10 @@ function rulesRoutes() {
         data: templates,
       });
     } catch (error) {
-      console.error('获取规则模板失败:', error);
+      console.error("获取规则模板失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取规则模板失败',
+        error: "获取规则模板失败",
         message: error.message,
       });
     }

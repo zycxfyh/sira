@@ -1,15 +1,15 @@
-const eg = require('../../eg');
+const eg = require("../../eg");
 module.exports = class extends eg.Generator {
   constructor(args, opts) {
     super(args, opts);
 
     this.configureCommand({
-      command: ['remove [options] <app_id..>', 'rm'],
-      desc: 'Remove an application',
-      builder: yargs =>
+      command: ["remove [options] <app_id..>", "rm"],
+      desc: "Remove an application",
+      builder: (yargs) =>
         yargs
           .usage(`Usage: $0 ${process.argv[2]} remove [options] <app_id..>`)
-          .positional('app_id', { type: 'string' }),
+          .positional("app_id", { type: "string" }),
     });
   }
 
@@ -19,7 +19,7 @@ module.exports = class extends eg.Generator {
     const appIds = Array.isArray(argv.app_id) ? argv.app_id : [argv.app_id];
 
     return Promise.all(
-      appIds.map(appId => {
+      appIds.map((appId) => {
         return this.admin.apps
           .remove(appId)
           .then(() => {
@@ -29,10 +29,10 @@ module.exports = class extends eg.Generator {
               this.stdout(appId);
             }
           })
-          .catch(err => {
+          .catch((err) => {
             this.log.error(err.message);
           });
-      })
+      }),
     );
   }
 };

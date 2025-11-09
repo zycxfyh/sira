@@ -1,57 +1,57 @@
-const request = require('supertest');
-const should = require('should');
+const request = require("supertest");
+const should = require("should");
 
-const services = require('../../../src/core/services');
+const services = require("../../../core/services");
 const credentialService = services.credential;
 const userService = services.user;
-const serverHelper = require('../common/server-helper');
-const db = require('../../../src/core/db');
+const serverHelper = require("../common/server-helper");
+const db = require("../../../core/db");
 
-const testHelper = require('../common/routing.helper');
-const config = require('../../../src/core/config');
+const testHelper = require("../common/routing.helper");
+const config = require("../../../core/config");
 const originalGatewayConfig = config.gatewayConfig;
 
-describe('Functional Tests basic auth Policy', () => {
+describe("Functional Tests basic auth Policy", () => {
   const helper = testHelper();
   let user, app;
 
-  before('setup', () => {
+  before("setup", () => {
     config.gatewayConfig = {
       http: { port: 0 },
       serviceEndpoints: {
         backend: {
-          url: 'http://localhost:6067',
+          url: "http://localhost:6067",
         },
       },
       apiEndpoints: {
         authorizedEndpoint: {
-          host: '*',
-          paths: ['/authorizedPath'],
-          scopes: ['authorizedScope'],
+          host: "*",
+          paths: ["/authorizedPath"],
+          scopes: ["authorizedScope"],
         },
         unauthorizedEndpoint: {
-          host: '*',
-          paths: ['/unauthorizedPath'],
-          scopes: ['unauthorizedScope'],
+          host: "*",
+          paths: ["/unauthorizedPath"],
+          scopes: ["unauthorizedScope"],
         },
       },
-      policies: ['basic-auth', 'proxy'],
+      policies: ["basic-auth", "proxy"],
       pipelines: {
         pipeline1: {
-          apiEndpoint: 'authorizedEndpoint',
+          apiEndpoint: "authorizedEndpoint",
           policies: [
-            { 'basic-auth': {} },
+            { "basic-auth": {} },
             {
-              proxy: { action: { serviceEndpoint: 'backend' } },
+              proxy: { action: { serviceEndpoint: "backend" } },
             },
           ],
         },
         pipeline2: {
-          apiEndpoint: 'unauthorizedEndpoint',
+          apiEndpoint: "unauthorizedEndpoint",
           policies: [
-            { 'basic-auth': {} },
+            { "basic-auth": {} },
             {
-              proxy: { action: { serviceEndpoint: 'backend' } },
+              proxy: { action: { serviceEndpoint: "backend" } },
             },
           ],
         },
@@ -60,70 +60,79 @@ describe('Functional Tests basic auth Policy', () => {
 
     return db.flushdb().then(() => {
       const user1 = {
-        username: 'irfanbaqui',
-        firstname: 'irfan',
-        lastname: 'baqui',
-        email: 'irfan@eg.com',
+        username: "irfanbaqui",
+        firstname: "irfan",
+        lastname: "baqui",
+        email: "irfan@eg.com",
       };
 
       return userService
         .insert(user1)
-        .then(_fromDbUser1 => {
+        .then((_fromDbUser1) => {
           should.exist(_fromDbUser1);
           user = _fromDbUser1;
 
-          return credentialService.insertScopes(['authorizedScope', 'unauthorizedScope']);
+          return credentialService.insertScopes([
+            "authorizedScope",
+            "unauthorizedScope",
+          ]);
         })
         .then(() =>
-          credentialService.insertCredential(user.id, 'basic-auth', {
-            password: 'user-secret',
-            scopes: ['authorizedScope'],
-          })
+          credentialService.insertCredential(user.id, "basic-auth", {
+            password: "user-secret",
+            scopes: ["authorizedScope"],
+          }),
         )
-        .then(userRes => {
+        .then((userRes) => {
           should.exist(userRes);
           return serverHelper.generateBackendServer(6067);
         })
         .then(helper.setup)
-        .then(apps => {
+        .then((apps) => {
           app = apps.app;
         });
     });
   });
 
-  after('cleanup', () => {
+  after("cleanup", () => {
     config.gatewayConfig = originalGatewayConfig;
     return helper.cleanup();
   });
 
-  it('should not authenticate token for requests without token header', () => {
-    return request(app).get('/authorizedPath').expect(401);
+  it("should not authenticate token for requests without token header", () => {
+    return request(app).get("/authorizedPath").expect(401);
   });
 
   it("should not authenticate token for requests if requester doesn't have authorized scopes", () => {
-    const credentials = Buffer.from(user.username.concat(':user-secret')).toString('base64');
+    const credentials = Buffer.from(
+      user.username.concat(":user-secret"),
+    ).toString("base64");
 
     return request(app)
-      .get('/unauthorizedPath')
-      .set('Authorization', 'basic ' + credentials)
+      .get("/unauthorizedPath")
+      .set("Authorization", `basic ${credentials}`)
       .expect(401);
   });
 
-  it('should authenticate token for requests with scopes if requester is authorized', () => {
-    const credentials = Buffer.from(user.username.concat(':user-secret')).toString('base64');
+  it("should authenticate token for requests with scopes if requester is authorized", () => {
+    const credentials = Buffer.from(
+      user.username.concat(":user-secret"),
+    ).toString("base64");
 
     return request(app)
-      .get('/authorizedPath')
-      .set('Authorization', 'basic ' + credentials)
+      .get("/authorizedPath")
+      .set("Authorization", `basic ${credentials}`)
       .expect(200);
   });
 
-  it('should not authenticate invalid token', () => {
-    const credentials = Buffer.from(user.username.concat(':wrongPassword')).toString('base64');
+  it("should not authenticate invalid token", () => {
+    const credentials = Buffer.from(
+      user.username.concat(":wrongPassword"),
+    ).toString("base64");
 
     return request(app)
-      .get('/authorizedPath')
-      .set('Authorization', 'basic ' + credentials)
+      .get("/authorizedPath")
+      .set("Authorization", `basic ${credentials}`)
       .expect(401);
   });
 });

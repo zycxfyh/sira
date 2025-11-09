@@ -1,54 +1,54 @@
-const should = require('should');
+const should = require("should");
 
-const testHelper = require('../common/routing.helper');
-const config = require('../../../src/core/config');
+const testHelper = require("../common/routing.helper");
+const config = require("../../../core/config");
 const originalGatewayConfig = config.gatewayConfig;
 
-describe('Missing policies', () => {
+describe("Missing policies", () => {
   const helper = testHelper();
-  describe('Using a policy that is not installed', () => {
-    before('setup', () => {
+  describe("Using a policy that is not installed", () => {
+    before("setup", () => {
       config.gatewayConfig = {
         http: { port: 0 },
-        policies: ['rewrite'],
+        policies: ["rewrite"],
         pipelines: {
           pipeline1: {
-            apiEndpoint: 'authorizedEndpoint',
-            policies: [{ rewrite: { action: { serviceEndpoint: 'backend' } } }],
+            apiEndpoint: "authorizedEndpoint",
+            policies: [{ rewrite: { action: { serviceEndpoint: "backend" } } }],
           },
         },
       };
     });
 
-    it('should prevent the gateway from starting', () =>
-      should(helper.setup({ config })).rejectedWith('POLICY_NOT_FOUND'));
+    it("should prevent the gateway from starting", () =>
+      should(helper.setup({ config })).rejectedWith("POLICY_NOT_FOUND"));
   });
 
-  describe('Using a policy that is not listed in policies array', () => {
-    before('setup', () => {
+  describe("Using a policy that is not listed in policies array", () => {
+    before("setup", () => {
       config.gatewayConfig = {
         http: { port: 0 },
-        policies: ['basic-auth'],
+        policies: ["basic-auth"],
         apiEndpoints: {
           authorizedEndpoint: {
-            host: '*',
-            paths: ['/test'],
+            host: "*",
+            paths: ["/test"],
           },
         },
         pipelines: {
           pipeline1: {
-            apiEndpoint: 'authorizedEndpoint',
-            policies: [{ proxy: { action: { serviceEndpoint: 'backend' } } }],
+            apiEndpoint: "authorizedEndpoint",
+            policies: [{ proxy: { action: { serviceEndpoint: "backend" } } }],
           },
         },
       };
     });
 
-    it('should prevent the gateway from starting', () =>
-      should(helper.setup({ config })).rejectedWith('POLICY_NOT_DECLARED'));
+    it("should prevent the gateway from starting", () =>
+      should(helper.setup({ config })).rejectedWith("POLICY_NOT_DECLARED"));
   });
 
-  afterEach('cleanup', () => {
+  afterEach("cleanup", () => {
     config.gatewayConfig = originalGatewayConfig;
     return helper.cleanup();
   });

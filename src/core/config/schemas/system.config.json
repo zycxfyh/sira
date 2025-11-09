@@ -102,5 +102,12 @@
       "type": "object"
     }
   },
-  "required": ["db", "crypto", "session", "accessTokens", "refreshTokens", "authorizationCodes"]
+  "required": [
+    "db",
+    "crypto",
+    "session",
+    "accessTokens",
+    "refreshTokens",
+    "authorizationCodes"
+  ]
 }

@@ -3,10 +3,7 @@
   "moderate": true,
   "low": false,
   "critical": true,
-  "allowlist": [
-    "GHSA-4w2v-q235-vp99", // Example: allow specific vulnerability if it doesn't affect your use case
-    "GHSA-76p3-8jx3-jc4y" // Add more if needed
-  ],
+  "allowlist": ["GHSA-4w2v-q235-vp99", "GHSA-76p3-8jx3-jc4y"],
   "report": {
     "type": "full",
     "path": "./audit-results.json"

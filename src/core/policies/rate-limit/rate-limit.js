@@ -1,17 +1,17 @@
-const RateLimit = require('express-rate-limit');
-const RedisStore = require('rate-limit-redis');
-const logger = require('../../logger').policy;
+const RateLimit = require("express-rate-limit");
+const RedisStore = require("rate-limit-redis");
+const logger = require("../../logger").policy;
 
-module.exports = params => {
+module.exports = (params) => {
   if (params.rateLimitBy) {
-    params.keyGenerator = req => {
+    params.keyGenerator = (req) => {
       try {
         return req.egContext.evaluateAsTemplateString(params.rateLimitBy);
       } catch (err) {
         logger.error(
-          'Failed to generate rate-limit key with config: %s; %s',
+          "Failed to generate rate-limit key with config: %s; %s",
           params.rateLimitBy,
-          err.message
+          err.message,
         );
       }
     };
@@ -19,9 +19,9 @@ module.exports = params => {
   return new RateLimit(
     Object.assign(params, {
       store: new RedisStore({
-        client: require('../../db'),
+        client: require("../../db"),
         expiry: params.windowMs / 1000,
       }),
-    })
+    }),
   );
 };

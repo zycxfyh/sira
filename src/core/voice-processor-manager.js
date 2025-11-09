@@ -12,98 +12,116 @@
  * - 腾讯云语音
  */
 
-const { EventEmitter } = require('events');
-const crypto = require('crypto');
-const fs = require('fs').promises;
-const { WebhookManager } = require('./webhook-manager');
-const path = require('path');
+const { EventEmitter } = require("node:events");
+const crypto = require("node:crypto");
+const fs = require("node:fs").promises;
+const { WebhookManager } = require("./webhook-manager");
+const _path = require("node:path");
 
 // 语音处理配置
 const VOICE_CONFIG = {
   maxConcurrentJobs: 5,
   maxQueueSize: 50,
-  defaultSTTProvider: 'openai_whisper',
-  defaultTTSProvider: 'openai_tts',
-  defaultSTTModel: 'whisper-1',
-  defaultTTSModel: 'tts-1',
+  defaultSTTProvider: "openai_whisper",
+  defaultTTSProvider: "openai_tts",
+  defaultSTTModel: "whisper-1",
+  defaultTTSModel: "tts-1",
   maxAudioDuration: 300, // 5分钟
   maxTextLength: 4096, // TTS最大文本长度
-  supportedAudioFormats: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm', 'flac'],
-  supportedVoiceFormats: ['mp3', 'opus', 'aac', 'flac'],
+  supportedAudioFormats: [
+    "mp3",
+    "mp4",
+    "mpeg",
+    "mpga",
+    "m4a",
+    "wav",
+    "webm",
+    "flac",
+  ],
+  supportedVoiceFormats: ["mp3", "opus", "aac", "flac"],
 };
 
 // 支持的语音处理提供商配置
 const VOICE_PROVIDERS = {
   openai_whisper: {
-    name: 'OpenAI Whisper',
-    type: 'stt',
-    baseUrl: 'https://api.openai.com/v1/audio/transcriptions',
-    models: ['whisper-1'],
+    name: "OpenAI Whisper",
+    type: "stt",
+    baseUrl: "https://api.openai.com/v1/audio/transcriptions",
+    models: ["whisper-1"],
     maxDuration: 300,
-    supportedFormats: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm', 'flac'],
+    supportedFormats: [
+      "mp3",
+      "mp4",
+      "mpeg",
+      "mpga",
+      "m4a",
+      "wav",
+      "webm",
+      "flac",
+    ],
     pricing: { perMinute: 0.006 },
   },
   openai_tts: {
-    name: 'OpenAI TTS',
-    type: 'tts',
-    baseUrl: 'https://api.openai.com/v1/audio/speech',
-    models: ['tts-1', 'tts-1-hd'],
+    name: "OpenAI TTS",
+    type: "tts",
+    baseUrl: "https://api.openai.com/v1/audio/speech",
+    models: ["tts-1", "tts-1-hd"],
     maxTextLength: 4096,
-    voices: ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'],
-    supportedFormats: ['mp3', 'opus', 'aac', 'flac'],
+    voices: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"],
+    supportedFormats: ["mp3", "opus", "aac", "flac"],
     pricing: { perCharacter: 0.000015 },
   },
   azure_speech: {
-    name: 'Azure Speech Services',
-    type: 'both',
-    baseUrl: 'https://api.cognitive.microsoft.com/sts/v1.0',
-    models: ['latest'],
+    name: "Azure Speech Services",
+    type: "both",
+    baseUrl: "https://api.cognitive.microsoft.com/sts/v1.0",
+    models: ["latest"],
     voices: [
-      'zh-CN-XiaoxiaoNeural',
-      'zh-CN-YunjianNeural',
-      'zh-CN-XiaoyiNeural',
-      'en-US-ZiraRUS',
-      'en-US-AriaRUS',
-      'en-US-ZiraNeural',
+      "zh-CN-XiaoxiaoNeural",
+      "zh-CN-YunjianNeural",
+      "zh-CN-XiaoyiNeural",
+      "en-US-ZiraRUS",
+      "en-US-AriaRUS",
+      "en-US-ZiraNeural",
     ],
     maxDuration: 300,
     maxTextLength: 10000,
     pricing: { perHour: 1.0, perMillionChars: 15.0 },
   },
   google_speech: {
-    name: 'Google Speech-to-Text',
-    type: 'stt',
-    baseUrl: 'https://speech.googleapis.com/v1/speech:recognize',
-    models: ['latest_long', 'latest_short', 'command_and_search', 'phone_call'],
+    name: "Google Speech-to-Text",
+    type: "stt",
+    baseUrl: "https://speech.googleapis.com/v1/speech:recognize",
+    models: ["latest_long", "latest_short", "command_and_search", "phone_call"],
     maxDuration: 480,
-    supportedFormats: ['flac', 'wav', 'ogg', 'mp3'],
+    supportedFormats: ["flac", "wav", "ogg", "mp3"],
     pricing: { perHour: 0.024 },
   },
   google_tts: {
-    name: 'Google Text-to-Speech',
-    type: 'tts',
-    baseUrl: 'https://texttospeech.googleapis.com/v1/text:synthesize',
-    voices: ['zh-CN', 'zh-TW', 'en-US', 'en-GB', 'ja-JP', 'ko-KR'],
+    name: "Google Text-to-Speech",
+    type: "tts",
+    baseUrl: "https://texttospeech.googleapis.com/v1/text:synthesize",
+    voices: ["zh-CN", "zh-TW", "en-US", "en-GB", "ja-JP", "ko-KR"],
     maxTextLength: 5000,
-    supportedFormats: ['mp3', 'wav', 'ogg'],
+    supportedFormats: ["mp3", "wav", "ogg"],
     pricing: { perMillionChars: 16.0 },
   },
   aws_transcribe: {
-    name: 'AWS Transcribe',
-    type: 'stt',
-    baseUrl: 'https://transcribe.{region}.amazonaws.com',
-    models: ['standard', 'enhanced'],
+    name: "AWS Transcribe",
+    type: "stt",
+    baseUrl: "https://transcribe.{region}.amazonaws.com",
+    models: ["standard", "enhanced"],
     maxDuration: 14400, // 4小时
-    supportedFormats: ['flac', 'm4a', 'mp3', 'mp4', 'ogg', 'webm', 'wav'],
+    supportedFormats: ["flac", "m4a", "mp3", "mp4", "ogg", "webm", "wav"],
     pricing: { perHour: 0.024 },
   },
   aws_polly: {
-    name: 'AWS Polly',
-    type: 'tts',
-    baseUrl: 'https://polly.{region}.amazonaws.com',
-    voices: ['Zhiyu', 'Zhiyu', 'Salli', 'Matthew', 'Joanna', 'Luigi'],
+    name: "AWS Polly",
+    type: "tts",
+    baseUrl: "https://polly.{region}.amazonaws.com",
+    voices: ["Zhiyu", "Zhiyu", "Salli", "Matthew", "Joanna", "Luigi"],
     maxTextLength: 6000,
-    supportedFormats: ['mp3', 'ogg', 'pcm'],
+    supportedFormats: ["mp3", "ogg", "pcm"],
     pricing: { perMillionChars: 18.0 },
   },
 };
@@ -112,17 +130,17 @@ const VOICE_PROVIDERS = {
 class VoiceProcessingJob {
   constructor(options = {}) {
     this.id = crypto.randomUUID();
-    this.userId = options.userId || 'anonymous';
+    this.userId = options.userId || "anonymous";
     this.type = options.type; // 'stt' 或 'tts'
     this.provider = options.provider;
     this.model = options.model;
     this.input = options.input; // 文件路径或文本
-    this.outputFormat = options.outputFormat || 'json';
-    this.language = options.language || 'auto';
+    this.outputFormat = options.outputFormat || "json";
+    this.language = options.language || "auto";
     this.voice = options.voice; // TTS语音
 
     // 任务状态
-    this.status = 'queued'; // queued, processing, completed, failed
+    this.status = "queued"; // queued, processing, completed, failed
     this.progress = 0;
     this.createdAt = new Date();
     this.startedAt = null;
@@ -148,11 +166,11 @@ class VoiceProcessingJob {
       this.status = status;
     }
 
-    if (status === 'processing' && !this.startedAt) {
+    if (status === "processing" && !this.startedAt) {
       this.startedAt = new Date();
     }
 
-    if (status === 'completed' || status === 'failed') {
+    if (status === "completed" || status === "failed") {
       this.completedAt = new Date();
       if (this.startedAt) {
         this.metadata.processingTime = this.completedAt - this.startedAt;
@@ -164,23 +182,23 @@ class VoiceProcessingJob {
   setResult(result, cost = 0) {
     this.result = result;
     this.metadata.actualCost = cost;
-    this.updateProgress(100, 'completed');
+    this.updateProgress(100, "completed");
   }
 
   // 设置错误
   setError(error) {
     this.error = {
-      message: error.message || 'Unknown error',
-      code: error.code || 'PROCESSING_FAILED',
+      message: error.message || "Unknown error",
+      code: error.code || "PROCESSING_FAILED",
       timestamp: new Date(),
     };
-    this.updateProgress(0, 'failed');
+    this.updateProgress(0, "failed");
   }
 
   // 重试
   retry() {
     this.metadata.retryCount++;
-    this.status = 'queued';
+    this.status = "queued";
     this.progress = 0;
     this.error = null;
     this.result = null;
@@ -201,7 +219,7 @@ class VoiceProcessingQueue {
   // 添加任务到队列
   enqueue(job) {
     if (this.queue.length >= VOICE_CONFIG.maxQueueSize) {
-      throw new Error('Queue is full');
+      throw new Error("Queue is full");
     }
     this.queue.push(job);
     return job.id;
@@ -213,9 +231,9 @@ class VoiceProcessingQueue {
       return null;
     }
 
-    const job = this.queue.find(job => job.status === 'queued');
+    const job = this.queue.find((job) => job.status === "queued");
     if (job) {
-      job.updateProgress(0, 'processing');
+      job.updateProgress(0, "processing");
       this.processing.add(job.id);
     }
     return job;
@@ -246,7 +264,7 @@ class VoiceProcessingQueue {
           () => {
             this.queue.unshift(job);
           },
-          1000 * (job.metadata.retryCount + 1)
+          1000 * (job.metadata.retryCount + 1),
         );
       } else {
         this.completed.set(jobId, job);
@@ -257,8 +275,8 @@ class VoiceProcessingQueue {
   // 获取任务
   getJob(jobId) {
     return (
-      this.queue.find(job => job.id === jobId) ||
-      Array.from(this.processing).find(job => job.id === jobId) ||
+      this.queue.find((job) => job.id === jobId) ||
+      Array.from(this.processing).find((job) => job.id === jobId) ||
       this.completed.get(jobId)
     );
   }
@@ -266,7 +284,7 @@ class VoiceProcessingQueue {
   // 获取队列状态
   getStats() {
     return {
-      queued: this.queue.filter(job => job.status === 'queued').length,
+      queued: this.queue.filter((job) => job.status === "queued").length,
       processing: this.processing.size,
       completed: this.completed.size,
       total: this.queue.length + this.processing.size + this.completed.size,
@@ -277,36 +295,36 @@ class VoiceProcessingQueue {
 // 语音风格预设
 const VOICE_STYLES = {
   natural: {
-    name: '自然语音',
-    description: '自然的、日常对话风格',
+    name: "自然语音",
+    description: "自然的、日常对话风格",
     speed: 1.0,
     pitch: 0.0,
     stability: 0.5,
   },
   professional: {
-    name: '专业播音',
-    description: '清晰、专业的主持人风格',
+    name: "专业播音",
+    description: "清晰、专业的主持人风格",
     speed: 0.9,
     pitch: 0.1,
     stability: 0.8,
   },
   cheerful: {
-    name: '活泼开朗',
-    description: '充满活力、积极向上的语气',
+    name: "活泼开朗",
+    description: "充满活力、积极向上的语气",
     speed: 1.1,
     pitch: 0.2,
     stability: 0.3,
   },
   calm: {
-    name: '平静舒缓',
-    description: '温和、放松的叙述风格',
+    name: "平静舒缓",
+    description: "温和、放松的叙述风格",
     speed: 0.8,
     pitch: -0.1,
     stability: 0.9,
   },
   dramatic: {
-    name: '戏剧化',
-    description: '富有表现力、戏剧化的朗读',
+    name: "戏剧化",
+    description: "富有表现力、戏剧化的朗读",
     speed: 1.0,
     pitch: 0.3,
     stability: 0.2,
@@ -315,21 +333,21 @@ const VOICE_STYLES = {
 
 // 语言映射
 const LANGUAGE_MAPPING = {
-  zh: '中文',
-  'zh-CN': '中文(普通话)',
-  'zh-TW': '中文(台湾)',
-  en: '英语',
-  'en-US': '英语(美国)',
-  'en-GB': '英语(英国)',
-  ja: '日语',
-  ko: '韩语',
-  fr: '法语',
-  de: '德语',
-  es: '西班牙语',
-  it: '意大利语',
-  pt: '葡萄牙语',
-  ru: '俄语',
-  ar: '阿拉伯语',
+  zh: "中文",
+  "zh-CN": "中文(普通话)",
+  "zh-TW": "中文(台湾)",
+  en: "英语",
+  "en-US": "英语(美国)",
+  "en-GB": "英语(英国)",
+  ja: "日语",
+  ko: "韩语",
+  fr: "法语",
+  de: "德语",
+  es: "西班牙语",
+  it: "意大利语",
+  pt: "葡萄牙语",
+  ru: "俄语",
+  ar: "阿拉伯语",
 };
 
 // 主要语音处理管理器类
@@ -349,7 +367,7 @@ class VoiceProcessorManager extends EventEmitter {
     // 启动队列处理器
     this.startQueueProcessor();
 
-    logInfo('语音处理管理器初始化完成');
+    logInfo("语音处理管理器初始化完成");
   }
 
   // 语音转文字 (STT)
@@ -359,22 +377,22 @@ class VoiceProcessorManager extends EventEmitter {
       provider = this.config.defaultSTTProvider,
       model = this.config.defaultSTTModel,
       audioFile,
-      language = 'auto',
-      outputFormat = 'json',
+      language = "auto",
+      outputFormat = "json",
     } = options;
 
     // 验证输入
     if (!audioFile) {
-      throw new Error('音频文件路径是必需的');
+      throw new Error("音频文件路径是必需的");
     }
 
     // 检查文件是否存在
     try {
       const stats = await fs.stat(audioFile);
       if (stats.size === 0) {
-        throw new Error('音频文件为空');
+        throw new Error("音频文件为空");
       }
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`音频文件不存在或无法访问: ${audioFile}`);
     }
 
@@ -383,14 +401,14 @@ class VoiceProcessorManager extends EventEmitter {
     }
 
     const providerConfig = this.providers.get(provider);
-    if (providerConfig.type !== 'stt' && providerConfig.type !== 'both') {
+    if (providerConfig.type !== "stt" && providerConfig.type !== "both") {
       throw new Error(`提供商 ${provider} 不支持语音转文字`);
     }
 
     // 创建任务
     const job = new VoiceProcessingJob({
       userId,
-      type: 'stt',
+      type: "stt",
       provider,
       model,
       input: audioFile,
@@ -405,7 +423,7 @@ class VoiceProcessorManager extends EventEmitter {
     this.queue.enqueue(job);
     this.jobs.set(job.id, job);
 
-    this.emit('jobCreated', job);
+    this.emit("jobCreated", job);
 
     logInfo(`创建语音转文字任务: ${job.id} - ${provider}/${model}`);
 
@@ -419,15 +437,15 @@ class VoiceProcessorManager extends EventEmitter {
       provider = this.config.defaultTTSProvider,
       model = this.config.defaultTTSModel,
       text,
-      voice = 'alloy',
-      style = 'natural',
-      outputFormat = 'mp3',
+      voice = "alloy",
+      style = "natural",
+      outputFormat = "mp3",
       speed = 1.0,
     } = options;
 
     // 验证输入
     if (!text || text.trim().length === 0) {
-      throw new Error('文本内容是必需的');
+      throw new Error("文本内容是必需的");
     }
 
     if (text.length > this.config.maxTextLength) {
@@ -439,14 +457,14 @@ class VoiceProcessorManager extends EventEmitter {
     }
 
     const providerConfig = this.providers.get(provider);
-    if (providerConfig.type !== 'tts' && providerConfig.type !== 'both') {
+    if (providerConfig.type !== "tts" && providerConfig.type !== "both") {
       throw new Error(`提供商 ${provider} 不支持文字转语音`);
     }
 
     // 创建任务
     const job = new VoiceProcessingJob({
       userId,
-      type: 'tts',
+      type: "tts",
       provider,
       model,
       input: text,
@@ -462,7 +480,7 @@ class VoiceProcessorManager extends EventEmitter {
     this.queue.enqueue(job);
     this.jobs.set(job.id, job);
 
-    this.emit('jobCreated', job);
+    this.emit("jobCreated", job);
 
     logInfo(`创建文字转语音任务: ${job.id} - ${provider}/${model}`);
 
@@ -495,11 +513,11 @@ class VoiceProcessorManager extends EventEmitter {
   // 获取用户任务历史
   getUserJobs(userId, limit = 20) {
     const userJobs = Array.from(this.jobs.values())
-      .filter(job => job.userId === userId)
+      .filter((job) => job.userId === userId)
       .sort((a, b) => b.createdAt - a.lastActivity)
       .slice(0, limit);
 
-    return userJobs.map(job => ({
+    return userJobs.map((job) => ({
       id: job.id,
       type: job.type,
       status: job.status,
@@ -514,8 +532,8 @@ class VoiceProcessorManager extends EventEmitter {
   getQueueStats() {
     return {
       ...this.queue.getStats(),
-      activeJobs: Array.from(this.jobs.values()).filter(job =>
-        ['queued', 'processing'].includes(job.status)
+      activeJobs: Array.from(this.jobs.values()).filter((job) =>
+        ["queued", "processing"].includes(job.status),
       ).length,
     };
   }
@@ -523,7 +541,10 @@ class VoiceProcessorManager extends EventEmitter {
   // 获取支持的提供商
   getProviders(type = null) {
     const providers = Array.from(this.providers.entries())
-      .filter(([key, config]) => !type || config.type === type || config.type === 'both')
+      .filter(
+        ([_key, config]) =>
+          !type || config.type === type || config.type === "both",
+      )
       .map(([key, config]) => ({
         id: key,
         name: config.name,
@@ -560,7 +581,7 @@ class VoiceProcessorManager extends EventEmitter {
   }
 
   // 估算STT成本
-  estimateSTTCost(provider, audioFile) {
+  estimateSTTCost(provider, _audioFile) {
     // 简化的成本估算，实际应该基于音频时长
     const costMap = {
       openai_whisper: 0.006, // 每分钟
@@ -607,8 +628,12 @@ class VoiceProcessorManager extends EventEmitter {
 
       // 完成任务
       const mockResult =
-        job.type === 'stt'
-          ? { text: '这是模拟的语音转文字结果', confidence: 0.95, language: 'zh-CN' }
+        job.type === "stt"
+          ? {
+              text: "这是模拟的语音转文字结果",
+              confidence: 0.95,
+              language: "zh-CN",
+            }
           : {
               audioUrl: `https://example.com/generated/${job.id}/audio.${job.outputFormat}`,
               duration: 10.5,
@@ -616,7 +641,7 @@ class VoiceProcessorManager extends EventEmitter {
 
       this.queue.complete(job.id, mockResult, job.metadata.estimatedCost);
 
-      this.emit('jobCompleted', job);
+      this.emit("jobCompleted", job);
 
       // 触发webhook事件
       this.triggerWebhookEvent(`${job.type}.completed`, {
@@ -634,7 +659,7 @@ class VoiceProcessorManager extends EventEmitter {
     } catch (error) {
       logError(`语音任务失败: ${job.id} - ${error.message}`);
       this.queue.fail(job.id, error);
-      this.emit('jobFailed', job);
+      this.emit("jobFailed", job);
     }
   }
 
@@ -642,12 +667,12 @@ class VoiceProcessorManager extends EventEmitter {
   async initializeWebhookManager() {
     try {
       if (!global.webhookManager) {
-        const { WebhookManager } = require('./webhook-manager');
+        const { WebhookManager } = require("./webhook-manager");
         global.webhookManager = new WebhookManager();
         await global.webhookManager.initialize();
       }
       this.webhookManager = global.webhookManager;
-      logInfo('Webhook管理器集成成功');
+      logInfo("Webhook管理器集成成功");
     } catch (error) {
       logError(`Webhook管理器初始化失败: ${error.message}`);
       // 不影响主要功能
@@ -662,7 +687,7 @@ class VoiceProcessorManager extends EventEmitter {
 
     try {
       await this.webhookManager.triggerEvent(eventType, eventData, {
-        source: 'voice-processor',
+        source: "voice-processor",
         userId: eventData.userId,
       });
     } catch (error) {
@@ -673,19 +698,21 @@ class VoiceProcessorManager extends EventEmitter {
   // 模拟语音处理 (用于测试)
   async simulateVoiceProcessing(job) {
     const processingTime =
-      job.type === 'stt' ? 3000 + Math.random() * 7000 : 2000 + Math.random() * 3000;
+      job.type === "stt"
+        ? 3000 + Math.random() * 7000
+        : 2000 + Math.random() * 3000;
 
     job.updateProgress(25);
-    await new Promise(resolve => setTimeout(resolve, processingTime * 0.3));
+    await new Promise((resolve) => setTimeout(resolve, processingTime * 0.3));
 
     job.updateProgress(50);
-    await new Promise(resolve => setTimeout(resolve, processingTime * 0.3));
+    await new Promise((resolve) => setTimeout(resolve, processingTime * 0.3));
 
     job.updateProgress(75);
-    await new Promise(resolve => setTimeout(resolve, processingTime * 0.3));
+    await new Promise((resolve) => setTimeout(resolve, processingTime * 0.3));
 
     job.updateProgress(90);
-    await new Promise(resolve => setTimeout(resolve, processingTime * 0.1));
+    await new Promise((resolve) => setTimeout(resolve, processingTime * 0.1));
   }
 }
 
@@ -695,7 +722,9 @@ function logInfo(message) {
 }
 
 function logError(message) {
-  console.error(`[VoiceProcessor Error] ${new Date().toISOString()} - ${message}`);
+  console.error(
+    `[VoiceProcessor Error] ${new Date().toISOString()} - ${message}`,
+  );
 }
 
 // 导出单例实例

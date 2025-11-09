@@ -1,16 +1,16 @@
-const assert = require('assert');
-const environment = require('../../fixtures/cli/environment');
-const adminHelper = require('../../common/admin-helper')();
-const namespace = 'express-gateway:apps:create';
-const { PassThrough } = require('stream');
-const util = require('util');
-const idGen = require('uuid62');
-const helpers = require('yeoman-test');
-const { checkOutput } = require('../../common/output-helper');
+const assert = require("node:assert");
+const environment = require("../../fixtures/cli/environment");
+const adminHelper = require("../../common/admin-helper")();
+const namespace = "express-gateway:apps:create";
+const { PassThrough } = require("node:stream");
+const util = require("node:util");
+const idGen = require("uuid62");
+const helpers = require("yeoman-test");
+const { checkOutput } = require("../../common/output-helper");
 
 const usrName = idGen.v4();
 
-describe('eg apps create', () => {
+describe("eg apps create", () => {
   let program, env, user;
   before(() => {
     ({ program, env } = environment.bootstrap());
@@ -23,10 +23,10 @@ describe('eg apps create', () => {
     return adminHelper.admin.users
       .create({
         username: usrName,
-        firstname: 'La',
-        lastname: 'Deeda',
+        firstname: "La",
+        lastname: "Deeda",
       })
-      .then(createdUser => {
+      .then((createdUser) => {
         user = createdUser;
       });
   });
@@ -36,74 +36,77 @@ describe('eg apps create', () => {
     return adminHelper.reset();
   });
 
-  it('creates an app from prompts with username', done => {
-    env.hijack(namespace, generator => {
+  it("creates an app from prompts with username", (done) => {
+    env.hijack(namespace, (generator) => {
       let output, text;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           text = message;
         };
-        generator.stdout = message => {
+        generator.stdout = (message) => {
           output = message;
         };
 
         helpers.mockPrompt(generator, {
-          name: 'appy',
-          redirectUri: 'http://localhost:3000/cb',
+          name: "appy",
+          redirectUri: "http://localhost:3000/cb",
         });
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.apps
           .list()
-          .then(data => {
+          .then((data) => {
             const app = data.apps[0];
-            assert.strictEqual(app.name, 'appy');
-            assert.strictEqual(app.redirectUri, 'http://localhost:3000/cb');
+            assert.strictEqual(app.name, "appy");
+            assert.strictEqual(app.redirectUri, "http://localhost:3000/cb");
 
             assert.strictEqual(text, `Created ${app.id}`);
 
             const stdoutApp = JSON.parse(output);
-            assert.strictEqual(stdoutApp.name, 'appy');
-            assert.strictEqual(stdoutApp.redirectUri, 'http://localhost:3000/cb');
+            assert.strictEqual(stdoutApp.name, "appy");
+            assert.strictEqual(
+              stdoutApp.redirectUri,
+              "http://localhost:3000/cb",
+            );
             done();
           })
           .catch(done);
       });
     });
 
-    env.argv = program.parse('apps create -u ' + user.username);
+    env.argv = program.parse(`apps create -u ${user.username}`);
   });
 
-  it('creates an app from prompts with user ID', done => {
-    env.hijack(namespace, generator => {
+  it("creates an app from prompts with user ID", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
 
         helpers.mockPrompt(generator, {
-          name: 'appy',
-          redirectUri: 'http://localhost:3000/cb',
+          name: "appy",
+          redirectUri: "http://localhost:3000/cb",
         });
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.apps
           .list()
-          .then(data => {
+          .then((data) => {
             const app = data.apps[0];
-            assert.strictEqual(app.name, 'appy');
-            assert.strictEqual(app.redirectUri, 'http://localhost:3000/cb');
+            assert.strictEqual(app.name, "appy");
+            assert.strictEqual(app.redirectUri, "http://localhost:3000/cb");
 
             assert.strictEqual(output, `Created ${app.id}`);
             done();
@@ -112,29 +115,29 @@ describe('eg apps create', () => {
       });
     });
 
-    env.argv = program.parse('apps create -u ' + user.id);
+    env.argv = program.parse(`apps create -u ${user.id}`);
   });
 
-  it('creates an app from properties with username', done => {
-    env.hijack(namespace, generator => {
+  it("creates an app from properties with username", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.apps
           .list()
-          .then(data => {
+          .then((data) => {
             const app = data.apps[0];
-            assert.strictEqual(app.name, 'appy');
-            assert.strictEqual(app.redirectUri, 'http://localhost:3000/cb');
+            assert.strictEqual(app.name, "appy");
+            assert.strictEqual(app.redirectUri, "http://localhost:3000/cb");
             assert.strictEqual(output, `Created ${app.id}`);
             done();
           })
@@ -143,30 +146,30 @@ describe('eg apps create', () => {
     });
 
     env.argv = program.parse(
-      `apps create -u ${usrName} -p "name=appy" -p "redirectUri=http://localhost:3000/cb"`
+      `apps create -u ${usrName} -p "name=appy" -p "redirectUri=http://localhost:3000/cb"`,
     );
   });
 
-  it('creates an app from properties with user ID', done => {
-    env.hijack(namespace, generator => {
+  it("creates an app from properties with user ID", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.apps
           .list()
-          .then(data => {
+          .then((data) => {
             const app = data.apps[0];
-            assert.strictEqual(app.name, 'appy');
-            assert.strictEqual(app.redirectUri, 'http://localhost:3000/cb');
+            assert.strictEqual(app.name, "appy");
+            assert.strictEqual(app.redirectUri, "http://localhost:3000/cb");
             assert.strictEqual(output, `Created ${app.id}`);
             done();
           })
@@ -175,42 +178,43 @@ describe('eg apps create', () => {
     });
 
     env.argv = program.parse(
-      `apps create -u ${user.id} -p "name=appy" ` + '-p "redirectUri=http://localhost:3000/cb"'
+      `apps create -u ${user.id} -p "name=appy" ` +
+        '-p "redirectUri=http://localhost:3000/cb"',
     );
   });
 
-  it('creates an app from stdin', done => {
+  it("creates an app from stdin", (done) => {
     const app = {
-      name: 'appy',
-      redirectUri: 'http://localhost:3000/cb',
+      name: "appy",
+      redirectUri: "http://localhost:3000/cb",
     };
 
-    env.hijack(namespace, generator => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log = message => {
+        generator.log = (message) => {
           output = message;
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
 
         generator.stdin = new PassThrough();
-        generator.stdin.write(JSON.stringify(app), 'utf8');
+        generator.stdin.write(JSON.stringify(app), "utf8");
         generator.stdin.end();
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.apps
           .list()
-          .then(data => {
+          .then((data) => {
             const app = data.apps[0];
-            assert.strictEqual(app.name, 'appy');
-            assert.strictEqual(app.redirectUri, 'http://localhost:3000/cb');
+            assert.strictEqual(app.name, "appy");
+            assert.strictEqual(app.redirectUri, "http://localhost:3000/cb");
 
             assert.strictEqual(output, `Created ${app.id}`);
             done();
@@ -222,26 +226,26 @@ describe('eg apps create', () => {
     env.argv = program.parse(`apps create -u ${usrName} --stdin`);
   });
 
-  it('prints only the app id when using the --quiet flag', done => {
-    env.hijack(namespace, generator => {
+  it("prints only the app id when using the --quiet flag", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.stdout = message => {
+        generator.stdout = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.apps
           .list()
-          .then(data => {
+          .then((data) => {
             const app = data.apps[0];
-            assert.strictEqual(app.name, 'appy');
-            assert.strictEqual(app.redirectUri, 'http://localhost:3000/cb');
+            assert.strictEqual(app.name, "appy");
+            assert.strictEqual(app.redirectUri, "http://localhost:3000/cb");
 
             assert.strictEqual(output, `${app.id}`);
             done();
@@ -251,102 +255,105 @@ describe('eg apps create', () => {
     });
 
     env.argv = program.parse(
-      'apps create -u ' +
+      "apps create -u " +
         user.id +
         ' -p "name=appy" ' +
-        '-p "redirectUri=http://localhost:3000/cb" -q'
+        '-p "redirectUri=http://localhost:3000/cb" -q',
     );
   });
 
-  it('requires either --stdin or -u, --user flags', () => {
+  it("requires either --stdin or -u, --user flags", () => {
     const output = checkOutput(() => {
       return program.parse('apps create -p "name=appy"');
     });
 
     const usage = output.errors[output.errors.length - 1];
 
-    assert.strictEqual(usage, 'must include --stdin or -u, --user');
+    assert.strictEqual(usage, "must include --stdin or -u, --user");
   });
 
-  it('prints error on invalid JSON from stdin', done => {
+  it("prints error on invalid JSON from stdin", (done) => {
     const app = {};
 
-    env.hijack(namespace, generator => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log = message => {
+      generator.once("run", () => {
+        generator.log = (message) => {
           output = message;
         };
-        generator.log.error = message => {
-          assert.strictEqual(message, "data should have required property 'name'");
+        generator.log.error = (message) => {
+          assert.strictEqual(
+            message,
+            "data should have required property 'name'",
+          );
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
 
         generator.stdin = new PassThrough();
-        generator.stdin.write(JSON.stringify(app), 'utf8');
+        generator.stdin.write(JSON.stringify(app), "utf8");
         generator.stdin.end();
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         assert.strictEqual(output, null);
         done();
       });
     });
 
-    env.argv = program.parse('apps create -u ' + user.username + ' --stdin');
+    env.argv = program.parse(`apps create -u ${user.username} --stdin`);
   });
 
-  it('prints error on invalid user', done => {
+  it("prints error on invalid user", (done) => {
     const app = {
-      name: 'appy',
-      redirectUri: 'http://localhost:3000/cb',
+      name: "appy",
+      redirectUri: "http://localhost:3000/cb",
     };
 
-    env.hijack(namespace, generator => {
-      generator.once('run', () => {
-        generator.log = message => {
+    env.hijack(namespace, (generator) => {
+      generator.once("run", () => {
+        generator.log = (message) => {
           done(new Error(message));
         };
-        generator.log.error = message => {
-          assert.strictEqual(message, 'The specified user does not exist');
+        generator.log.error = (message) => {
+          assert.strictEqual(message, "The specified user does not exist");
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           done(new Error(message));
         };
 
         generator.stdin = new PassThrough();
-        generator.stdin.write(JSON.stringify(app), 'utf8');
+        generator.stdin.write(JSON.stringify(app), "utf8");
         generator.stdin.end();
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         done();
       });
     });
 
-    env.argv = program.parse('apps create -u invalid --stdin');
+    env.argv = program.parse("apps create -u invalid --stdin");
   });
 
-  it('prints an error on invalid property syntax', done => {
-    env.hijack(namespace, generator => {
+  it("prints an error on invalid property syntax", (done) => {
+    env.hijack(namespace, (generator) => {
       let error;
-      generator.once('run', () => {
+      generator.once("run", () => {
         generator.log.error = (format, ...args) => {
           error = util.format(format, ...args);
         };
       });
 
-      generator.once('end', () => {
-        assert.strictEqual(error, 'invalid property option: name=');
+      generator.once("end", () => {
+        assert.strictEqual(error, "invalid property option: name=");
         done();
       });
     });
 
     env.argv = program.parse(
-      `apps create -u ${usrName} -p "name=" -p "redirectUri=http://example.com/cb"`
+      `apps create -u ${usrName} -p "name=" -p "redirectUri=http://example.com/cb"`,
     );
   });
 });

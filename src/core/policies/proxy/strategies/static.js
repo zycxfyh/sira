@@ -1,4 +1,4 @@
-const url = require('url');
+const _url = require("node:url");
 
 module.exports = class StaticProxy {
   constructor(proxyOptions, endpoints) {

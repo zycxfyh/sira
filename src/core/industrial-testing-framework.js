@@ -3,12 +3,12 @@
  * 提供全面的测试能力：单元测试、集成测试、性能测试、压力测试、可靠性测试、安全测试
  */
 
-const EventEmitter = require('events');
-const fs = require('fs').promises;
-const path = require('path');
-const { exec } = require('child_process');
-const util = require('util');
-const execAsync = util.promisify(exec);
+const EventEmitter = require("node:events");
+const fs = require("node:fs").promises;
+const path = require("node:path");
+const { exec } = require("node:child_process");
+const util = require("node:util");
+const _execAsync = util.promisify(exec);
 
 /**
  * 工业级测试框架
@@ -22,9 +22,9 @@ class IndustrialTestingFramework extends EventEmitter {
       testTimeout: options.testTimeout || 300000, // 5分钟超时
       maxConcurrency: options.maxConcurrency || 10,
       retryAttempts: options.retryAttempts || 3,
-      reportDir: options.reportDir || path.join(__dirname, '../reports'),
-      baselineDir: options.baselineDir || path.join(__dirname, '../baselines'),
-      configDir: options.configDir || path.join(__dirname, '../config'),
+      reportDir: options.reportDir || path.join(__dirname, "../reports"),
+      baselineDir: options.baselineDir || path.join(__dirname, "../baselines"),
+      configDir: options.configDir || path.join(__dirname, "../config"),
       enableChaos: options.enableChaos !== false,
       enableLoadBalancing: options.enableLoadBalancing !== false,
       failFast: options.failFast !== false, // 快速失败模式
@@ -49,15 +49,24 @@ class IndustrialTestingFramework extends EventEmitter {
 
     // 测试环境配置
     this.environments = {
-      unit: { name: '单元测试', setup: this.setupUnitTest.bind(this) },
-      integration: { name: '集成测试', setup: this.setupIntegrationTest.bind(this) },
-      e2e: { name: '端到端测试', setup: this.setupE2ETest.bind(this) },
-      performance: { name: '性能测试', setup: this.setupPerformanceTest.bind(this) },
-      load: { name: '负载测试', setup: this.setupLoadTest.bind(this) },
-      stress: { name: '压力测试', setup: this.setupStressTest.bind(this) },
-      reliability: { name: '可靠性测试', setup: this.setupReliabilityTest.bind(this) },
-      security: { name: '安全测试', setup: this.setupSecurityTest.bind(this) },
-      chaos: { name: '混沌测试', setup: this.setupChaosTest.bind(this) },
+      unit: { name: "单元测试", setup: this.setupUnitTest.bind(this) },
+      integration: {
+        name: "集成测试",
+        setup: this.setupIntegrationTest.bind(this),
+      },
+      e2e: { name: "端到端测试", setup: this.setupE2ETest.bind(this) },
+      performance: {
+        name: "性能测试",
+        setup: this.setupPerformanceTest.bind(this),
+      },
+      load: { name: "负载测试", setup: this.setupLoadTest.bind(this) },
+      stress: { name: "压力测试", setup: this.setupStressTest.bind(this) },
+      reliability: {
+        name: "可靠性测试",
+        setup: this.setupReliabilityTest.bind(this),
+      },
+      security: { name: "安全测试", setup: this.setupSecurityTest.bind(this) },
+      chaos: { name: "混沌测试", setup: this.setupChaosTest.bind(this) },
     };
 
     // 测试工具集合
@@ -90,9 +99,9 @@ class IndustrialTestingFramework extends EventEmitter {
       // 设置事件监听器
       this.setupEventListeners();
 
-      console.log('✅ 工业级测试框架初始化完成');
+      console.log("✅ 工业级测试框架初始化完成");
     } catch (error) {
-      console.error('❌ 工业级测试框架初始化失败:', error.message);
+      console.error("❌ 工业级测试框架初始化失败:", error.message);
       throw error;
     }
   }
@@ -104,15 +113,15 @@ class IndustrialTestingFramework extends EventEmitter {
     const dirs = [
       this.options.reportDir,
       this.options.baselineDir,
-      path.join(this.options.reportDir, 'unit'),
-      path.join(this.options.reportDir, 'integration'),
-      path.join(this.options.reportDir, 'e2e'),
-      path.join(this.options.reportDir, 'performance'),
-      path.join(this.options.reportDir, 'load'),
-      path.join(this.options.reportDir, 'stress'),
-      path.join(this.options.reportDir, 'reliability'),
-      path.join(this.options.reportDir, 'security'),
-      path.join(this.options.reportDir, 'chaos'),
+      path.join(this.options.reportDir, "unit"),
+      path.join(this.options.reportDir, "integration"),
+      path.join(this.options.reportDir, "e2e"),
+      path.join(this.options.reportDir, "performance"),
+      path.join(this.options.reportDir, "load"),
+      path.join(this.options.reportDir, "stress"),
+      path.join(this.options.reportDir, "reliability"),
+      path.join(this.options.reportDir, "security"),
+      path.join(this.options.reportDir, "chaos"),
     ];
 
     for (const dir of dirs) {
@@ -131,17 +140,17 @@ class IndustrialTestingFramework extends EventEmitter {
     try {
       const baselineFiles = await fs.readdir(this.options.baselineDir);
       for (const file of baselineFiles) {
-        if (file.endsWith('.json')) {
+        if (file.endsWith(".json")) {
           const filePath = path.join(this.options.baselineDir, file);
-          const content = await fs.readFile(filePath, 'utf8');
+          const content = await fs.readFile(filePath, "utf8");
           const baseline = JSON.parse(content);
-          const testName = path.basename(file, '.json');
+          const testName = path.basename(file, ".json");
           this.performanceBaselines.set(testName, baseline);
         }
       }
       console.log(`📊 加载了 ${this.performanceBaselines.size} 个性能基准线`);
     } catch (error) {
-      console.warn('⚠️ 加载性能基准线失败:', error.message);
+      console.warn("⚠️ 加载性能基准线失败:", error.message);
     }
   }
 
@@ -151,15 +160,15 @@ class IndustrialTestingFramework extends EventEmitter {
   async initializeTestingTools() {
     // 加载测试工具模块
     try {
-      const { LoadTestingTool } = require('./load-testing');
+      const { LoadTestingTool } = require("./load-testing");
       this.testingTools.loadGenerator = new LoadTestingTool();
 
       // MetricsCollector 暂时不可用，使用简单的替代方案
       try {
-        const MetricsCollector = require('./metrics-collector');
+        const MetricsCollector = require("./metrics-collector");
         this.testingTools.metricsCollector = new MetricsCollector();
-      } catch (error) {
-        console.warn('⚠️ MetricsCollector 不可用，使用简化版本');
+      } catch (_error) {
+        console.warn("⚠️ MetricsCollector 不可用，使用简化版本");
         this.testingTools.metricsCollector = {
           collect: () => {},
           getMetrics: () => ({}),
@@ -167,16 +176,16 @@ class IndustrialTestingFramework extends EventEmitter {
       }
 
       if (this.options.enableChaos) {
-        const ChaosMonkey = require('./chaos-monkey');
+        const ChaosMonkey = require("./chaos-monkey");
         this.testingTools.chaosMonkey = new ChaosMonkey();
       }
 
       // SecurityScanner 暂时不可用，使用简单的替代方案
       try {
-        const SecurityScanner = require('./security-testing');
+        const SecurityScanner = require("./security-testing");
         this.testingTools.securityScanner = new SecurityScanner();
-      } catch (error) {
-        console.warn('⚠️ SecurityScanner 不可用，使用简化版本');
+      } catch (_error) {
+        console.warn("⚠️ SecurityScanner 不可用，使用简化版本");
         this.testingTools.securityScanner = {
           initialize: async () => {},
           scan: async () => ({ vulnerabilities: [] }),
@@ -186,19 +195,19 @@ class IndustrialTestingFramework extends EventEmitter {
 
       // PerformanceProfiler 暂时不可用，使用简单的替代方案
       try {
-        const PerformanceProfiler = require('./performance-profiler');
+        const PerformanceProfiler = require("./performance-profiler");
         this.testingTools.performanceProfiler = new PerformanceProfiler();
-      } catch (error) {
-        console.warn('⚠️ PerformanceProfiler 不可用，使用简化版本');
+      } catch (_error) {
+        console.warn("⚠️ PerformanceProfiler 不可用，使用简化版本");
         this.testingTools.performanceProfiler = {
           profile: async () => ({}),
           getProfile: () => ({}),
         };
       }
 
-      console.log('🔧 测试工具初始化完成');
+      console.log("🔧 测试工具初始化完成");
     } catch (error) {
-      console.warn('⚠️ 某些测试工具初始化失败:', error.message);
+      console.warn("⚠️ 某些测试工具初始化失败:", error.message);
     }
   }
 
@@ -207,13 +216,13 @@ class IndustrialTestingFramework extends EventEmitter {
    */
   setupEventListeners() {
     // 测试开始事件
-    this.on('testStart', testInfo => {
+    this.on("testStart", (testInfo) => {
       console.log(`🧪 开始测试: ${testInfo.name} (${testInfo.type})`);
       this.testMetrics.totalTests++;
     });
 
     // 测试完成事件
-    this.on('testComplete', result => {
+    this.on("testComplete", (result) => {
       if (result.passed) {
         this.testMetrics.passedTests++;
         console.log(`✅ 测试通过: ${result.name}`);
@@ -224,9 +233,9 @@ class IndustrialTestingFramework extends EventEmitter {
     });
 
     // 性能回归事件
-    this.on('performanceRegression', regression => {
+    this.on("performanceRegression", (regression) => {
       console.warn(
-        `⚠️ 性能回归检测: ${regression.test} - ${regression.metric}: ${regression.baseline} -> ${regression.current} (${regression.change}%)`
+        `⚠️ 性能回归检测: ${regression.test} - ${regression.metric}: ${regression.baseline} -> ${regression.current} (${regression.change}%)`,
       );
     });
   }
@@ -255,8 +264,8 @@ class IndustrialTestingFramework extends EventEmitter {
     const test = {
       id: `${suiteName}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: testConfig.name,
-      type: testConfig.type || 'unit',
-      description: testConfig.description || '',
+      type: testConfig.type || "unit",
+      description: testConfig.description || "",
       setup: testConfig.setup || (() => {}),
       execute: testConfig.execute,
       teardown: testConfig.teardown || (() => {}),
@@ -285,23 +294,23 @@ class IndustrialTestingFramework extends EventEmitter {
     } = options;
 
     this.testMetrics.startTime = Date.now();
-    this.emit('testingStart', { suites, types, tags });
+    this.emit("testingStart", { suites, types, tags });
 
     const results = [];
     let consecutiveFailures = 0;
     let shouldStop = false;
 
     // 快速失败检查函数
-    const checkFailFast = result => {
+    const checkFailFast = (result) => {
       if (!failFast) return false;
 
       if (!result.success && !result.passed) {
         consecutiveFailures++;
         if (consecutiveFailures >= failFastThreshold) {
           console.log(
-            `\n🚫 快速失败: 已连续失败 ${consecutiveFailures} 次测试，达到阈值 ${failFastThreshold}`
+            `\n🚫 快速失败: 已连续失败 ${consecutiveFailures} 次测试，达到阈值 ${failFastThreshold}`,
           );
-          this.emit('failFastTriggered', {
+          this.emit("failFastTriggered", {
             consecutiveFailures,
             threshold: failFastThreshold,
             lastFailedTest: result.name,
@@ -329,9 +338,10 @@ class IndustrialTestingFramework extends EventEmitter {
       await this.setupTestEnvironment(suite);
 
       // 过滤测试用例
-      const filteredTests = suite.tests.filter(test => {
+      const filteredTests = suite.tests.filter((test) => {
         if (types.length > 0 && !types.includes(test.type)) return false;
-        if (tags.length > 0 && !tags.some(tag => test.tags.includes(tag))) return false;
+        if (tags.length > 0 && !tags.some((tag) => test.tags.includes(tag)))
+          return false;
         return true;
       });
 
@@ -340,7 +350,7 @@ class IndustrialTestingFramework extends EventEmitter {
         const parallelResults = await this.runTestsParallel(
           filteredTests,
           maxConcurrency,
-          checkFailFast
+          checkFailFast,
         );
         results.push(...parallelResults);
 
@@ -377,12 +387,12 @@ class IndustrialTestingFramework extends EventEmitter {
 
     // 如果启用了快速失败，记录停止原因
     if (shouldStop) {
-      this.testMetrics.stopReason = 'fail_fast';
+      this.testMetrics.stopReason = "fail_fast";
       this.testMetrics.consecutiveFailures = consecutiveFailures;
-      console.log('\n🛑 测试执行因快速失败而提前终止');
+      console.log("\n🛑 测试执行因快速失败而提前终止");
     }
 
-    this.emit('testingComplete', results);
+    this.emit("testingComplete", results);
 
     return results;
   }
@@ -407,9 +417,9 @@ class IndustrialTestingFramework extends EventEmitter {
         results.push(result);
 
         // 检查快速失败条件
-        if (checkFailFast && checkFailFast(result)) {
+        if (checkFailFast?.(result)) {
           shouldStopParallel = true;
-          console.log('🛑 并行测试因快速失败而停止');
+          console.log("🛑 并行测试因快速失败而停止");
         }
       } finally {
         running.delete(test.id);
@@ -439,7 +449,7 @@ class IndustrialTestingFramework extends EventEmitter {
       id: test.id,
       name: test.name,
       type: test.type,
-      status: 'running',
+      status: "running",
       startTime,
       endTime: null,
       duration: null,
@@ -449,7 +459,7 @@ class IndustrialTestingFramework extends EventEmitter {
       metrics: {},
     };
 
-    this.emit('testStart', test);
+    this.emit("testStart", test);
 
     try {
       // 设置测试环境
@@ -458,22 +468,24 @@ class IndustrialTestingFramework extends EventEmitter {
       // 执行测试
       const testResult = await Promise.race([
         test.execute(),
-        new Promise((resolve, reject) =>
-          setTimeout(() => reject(new Error('测试超时')), test.timeout)
+        new Promise((_resolve, reject) =>
+          setTimeout(() => reject(new Error("测试超时")), test.timeout),
         ),
       ]);
 
       result.passed = true;
-      result.status = 'passed';
+      result.status = "passed";
       result.result = testResult;
     } catch (error) {
       result.passed = false;
-      result.status = 'failed';
+      result.status = "failed";
       result.error = error.message;
 
       // 重试逻辑
       if (attempt < test.retries) {
-        console.log(`🔄 重试测试: ${test.name} (尝试 ${attempt + 1}/${test.retries})`);
+        console.log(
+          `🔄 重试测试: ${test.name} (尝试 ${attempt + 1}/${test.retries})`,
+        );
         return this.runTest(test, attempt + 1);
       }
     } finally {
@@ -488,7 +500,7 @@ class IndustrialTestingFramework extends EventEmitter {
       result.duration = result.endTime - startTime;
     }
 
-    this.emit('testComplete', result);
+    this.emit("testComplete", result);
 
     // 存储结果
     this.testResults.set(test.id, result);
@@ -519,35 +531,35 @@ class IndustrialTestingFramework extends EventEmitter {
 
   async setupUnitTest() {
     // 单元测试环境设置
-    process.env.NODE_ENV = 'test';
-    process.env.TEST_TYPE = 'unit';
+    process.env.NODE_ENV = "test";
+    process.env.TEST_TYPE = "unit";
   }
 
   async setupIntegrationTest() {
     // 集成测试环境设置
-    process.env.NODE_ENV = 'test';
-    process.env.TEST_TYPE = 'integration';
+    process.env.NODE_ENV = "test";
+    process.env.TEST_TYPE = "integration";
     // 启动依赖服务
   }
 
   async setupE2ETest() {
     // 端到端测试环境设置
-    process.env.NODE_ENV = 'test';
-    process.env.TEST_TYPE = 'e2e';
+    process.env.NODE_ENV = "test";
+    process.env.TEST_TYPE = "e2e";
     // 启动完整应用栈
   }
 
   async setupPerformanceTest() {
     // 性能测试环境设置
-    process.env.NODE_ENV = 'test';
-    process.env.TEST_TYPE = 'performance';
+    process.env.NODE_ENV = "test";
+    process.env.TEST_TYPE = "performance";
     // 禁用不必要的日志
   }
 
   async setupLoadTest() {
     // 负载测试环境设置
-    process.env.NODE_ENV = 'test';
-    process.env.TEST_TYPE = 'load';
+    process.env.NODE_ENV = "test";
+    process.env.TEST_TYPE = "load";
     // 启用负载生成器
     if (this.testingTools.loadGenerator) {
       await this.testingTools.loadGenerator.initialize();
@@ -556,22 +568,22 @@ class IndustrialTestingFramework extends EventEmitter {
 
   async setupStressTest() {
     // 压力测试环境设置
-    process.env.NODE_ENV = 'test';
-    process.env.TEST_TYPE = 'stress';
+    process.env.NODE_ENV = "test";
+    process.env.TEST_TYPE = "stress";
     // 设置资源限制
   }
 
   async setupReliabilityTest() {
     // 可靠性测试环境设置
-    process.env.NODE_ENV = 'test';
-    process.env.TEST_TYPE = 'reliability';
+    process.env.NODE_ENV = "test";
+    process.env.TEST_TYPE = "reliability";
     // 设置长期运行配置
   }
 
   async setupSecurityTest() {
     // 安全测试环境设置
-    process.env.NODE_ENV = 'test';
-    process.env.TEST_TYPE = 'security';
+    process.env.NODE_ENV = "test";
+    process.env.TEST_TYPE = "security";
     // 启用安全扫描
     if (this.testingTools.securityScanner) {
       await this.testingTools.securityScanner.initialize();
@@ -580,8 +592,8 @@ class IndustrialTestingFramework extends EventEmitter {
 
   async setupChaosTest() {
     // 混沌测试环境设置
-    process.env.NODE_ENV = 'test';
-    process.env.TEST_TYPE = 'chaos';
+    process.env.NODE_ENV = "test";
+    process.env.TEST_TYPE = "chaos";
     // 启用混沌猴子
     if (this.testingTools.chaosMonkey) {
       await this.testingTools.chaosMonkey.initialize();
@@ -595,7 +607,7 @@ class IndustrialTestingFramework extends EventEmitter {
    */
   async generateReport(options = {}) {
     const {
-      format = 'html',
+      format = "html",
       outputDir = this.options.reportDir,
       includeCharts = true,
       includeMetrics = true,
@@ -604,8 +616,8 @@ class IndustrialTestingFramework extends EventEmitter {
     const report = {
       metadata: {
         generatedAt: new Date().toISOString(),
-        framework: 'Sira Industrial Testing Framework',
-        version: '1.0.0',
+        framework: "Sira Industrial Testing Framework",
+        version: "1.0.0",
         duration: this.testMetrics.duration,
         totalTests: this.testMetrics.totalTests,
         passedTests: this.testMetrics.passedTests,
@@ -626,13 +638,13 @@ class IndustrialTestingFramework extends EventEmitter {
 
     // 生成不同格式的报告
     switch (format) {
-      case 'html':
+      case "html":
         await this.generateHTMLReport(report, outputDir);
         break;
-      case 'json':
+      case "json":
         await this.generateJSONReport(report, outputDir);
         break;
-      case 'xml':
+      case "xml":
         await this.generateXMLReport(report, outputDir);
         break;
       default:
@@ -647,8 +659,8 @@ class IndustrialTestingFramework extends EventEmitter {
    */
   async generateHTMLReport(report, outputDir) {
     const htmlContent = this.buildHTMLReport(report);
-    const reportPath = path.join(outputDir, 'test-report.html');
-    await fs.writeFile(reportPath, htmlContent, 'utf8');
+    const reportPath = path.join(outputDir, "test-report.html");
+    await fs.writeFile(reportPath, htmlContent, "utf8");
     console.log(`📊 HTML测试报告已生成: ${reportPath}`);
   }
 
@@ -656,8 +668,8 @@ class IndustrialTestingFramework extends EventEmitter {
    * 生成JSON报告
    */
   async generateJSONReport(report, outputDir) {
-    const reportPath = path.join(outputDir, 'test-report.json');
-    await fs.writeFile(reportPath, JSON.stringify(report, null, 2), 'utf8');
+    const reportPath = path.join(outputDir, "test-report.json");
+    await fs.writeFile(reportPath, JSON.stringify(report, null, 2), "utf8");
     console.log(`📊 JSON测试报告已生成: ${reportPath}`);
   }
 
@@ -666,8 +678,8 @@ class IndustrialTestingFramework extends EventEmitter {
    */
   async generateXMLReport(report, outputDir) {
     const xmlContent = this.buildXMLReport(report);
-    const reportPath = path.join(outputDir, 'test-report.xml');
-    await fs.writeFile(reportPath, xmlContent, 'utf8');
+    const reportPath = path.join(outputDir, "test-report.xml");
+    await fs.writeFile(reportPath, xmlContent, "utf8");
     console.log(`📊 XML测试报告已生成: ${reportPath}`);
   }
 
@@ -677,7 +689,10 @@ class IndustrialTestingFramework extends EventEmitter {
   buildHTMLReport(report) {
     const passedPercent =
       report.metadata.totalTests > 0
-        ? ((report.metadata.passedTests / report.metadata.totalTests) * 100).toFixed(2)
+        ? (
+            (report.metadata.passedTests / report.metadata.totalTests) *
+            100
+          ).toFixed(2)
         : 0;
 
     return `
@@ -730,7 +745,7 @@ class IndustrialTestingFramework extends EventEmitter {
             </div>
             <div class="metric">
                 <h3>通过率</h3>
-                <div class="value ${passedPercent >= 95 ? 'passed' : 'failed'}">${passedPercent}%</div>
+                <div class="value ${passedPercent >= 95 ? "passed" : "failed"}">${passedPercent}%</div>
             </div>
         </div>
 
@@ -738,18 +753,18 @@ class IndustrialTestingFramework extends EventEmitter {
             <h2>📋 测试详情</h2>
             ${report.results
               .map(
-                test => `
-                <div class="test-item ${test.passed ? 'test-passed' : 'test-failed'}">
+                (test) => `
+                <div class="test-item ${test.passed ? "test-passed" : "test-failed"}">
                     <div class="test-header">
                         <span class="test-name">${test.name}</span>
                         <span class="test-duration">${test.duration}ms</span>
                     </div>
-                    <div>类型: ${test.type} | 状态: ${test.passed ? '✅ 通过' : '❌ 失败'}</div>
-                    ${test.error ? `<div class="test-error">错误: ${test.error}</div>` : ''}
+                    <div>类型: ${test.type} | 状态: ${test.passed ? "✅ 通过" : "❌ 失败"}</div>
+                    ${test.error ? `<div class="test-error">错误: ${test.error}</div>` : ""}
                 </div>
-            `
+            `,
               )
-              .join('')}
+              .join("")}
         </div>
     </div>
 </body>
@@ -775,13 +790,13 @@ class IndustrialTestingFramework extends EventEmitter {
     <results>
         ${report.results
           .map(
-            test => `
+            (test) => `
         <test id="${test.id}" name="${test.name}" type="${test.type}" status="${test.status}" passed="${test.passed}">
             <duration>${test.duration}</duration>
-            ${test.error ? `<error>${test.error}</error>` : ''}
-        </test>`
+            ${test.error ? `<error>${test.error}</error>` : ""}
+        </test>`,
           )
-          .join('')}
+          .join("")}
     </results>
 </test-report>`;
   }
@@ -795,13 +810,16 @@ class IndustrialTestingFramework extends EventEmitter {
     this.performanceBaselines.set(testName, {
       ...metrics,
       createdAt: new Date().toISOString(),
-      version: '1.0.0',
+      version: "1.0.0",
     });
 
-    const baselinePath = path.join(this.options.baselineDir, `${testName}.json`);
+    const baselinePath = path.join(
+      this.options.baselineDir,
+      `${testName}.json`,
+    );
     await fs.writeFile(
       baselinePath,
-      JSON.stringify(this.performanceBaselines.get(testName), null, 2)
+      JSON.stringify(this.performanceBaselines.get(testName), null, 2),
     );
     console.log(`📊 性能基准线已设置: ${testName}`);
   }
@@ -818,7 +836,11 @@ class IndustrialTestingFramework extends EventEmitter {
 
     for (const [metric, currentValue] of Object.entries(currentMetrics)) {
       const baselineValue = baseline[metric];
-      if (baselineValue && typeof baselineValue === 'number' && typeof currentValue === 'number') {
+      if (
+        baselineValue &&
+        typeof baselineValue === "number" &&
+        typeof currentValue === "number"
+      ) {
         const change = ((currentValue - baselineValue) / baselineValue) * 100;
 
         if (Math.abs(change) > 5) {
@@ -851,11 +873,17 @@ class IndustrialTestingFramework extends EventEmitter {
       ...this.testMetrics,
       passRate:
         this.testMetrics.totalTests > 0
-          ? ((this.testMetrics.passedTests / this.testMetrics.totalTests) * 100).toFixed(2)
+          ? (
+              (this.testMetrics.passedTests / this.testMetrics.totalTests) *
+              100
+            ).toFixed(2)
           : 0,
       failRate:
         this.testMetrics.totalTests > 0
-          ? ((this.testMetrics.failedTests / this.testMetrics.totalTests) * 100).toFixed(2)
+          ? (
+              (this.testMetrics.failedTests / this.testMetrics.totalTests) *
+              100
+            ).toFixed(2)
           : 0,
       averageDuration:
         this.testMetrics.totalTests > 0

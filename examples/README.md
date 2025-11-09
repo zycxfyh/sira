@@ -7,7 +7,9 @@
 ### 🟢 基础示例
 
 #### [basic-chat-app.js](./basic-chat-app.js)
+
 最简单的AI聊天应用示例，展示如何：
+
 - 连接到AI网关
 - 发送聊天消息
 - 处理响应
@@ -27,7 +29,9 @@ node examples/basic-chat-app.js --chat "你好，介绍一下你自己"
 ### 🟡 高级示例
 
 #### [advanced-ai-gateway.js](./advanced-ai-gateway.js)
+
 高级功能测试套件，演示：
+
 - 负载均衡效果
 - 缓存性能提升
 - 错误处理机制
@@ -50,7 +54,9 @@ node examples/advanced-ai-gateway.js --errors
 ### 🟠 生产最佳实践
 
 #### [production-best-practices.js](./production-best-practices.js)
+
 生产环境下的最佳实践示例，包括：
+
 - 熔断器模式
 - 重试机制
 - 监控和指标收集
@@ -67,7 +73,9 @@ node examples/production-best-practices.js --stress
 ### 🟣 快速启动模板
 
 #### [quick-start-template.js](./quick-start-template.js)
+
 可直接使用的应用模板，包含：
+
 - 完整的应用结构
 - 错误处理
 - 配置管理
@@ -158,11 +166,13 @@ pipelines:
 ## 🏗️ 架构模式
 
 ### 基础模式
+
 ```
 Client App → AI Gateway → AI Provider
 ```
 
 ### 高级模式
+
 ```
 Client App → Circuit Breaker → Retry Logic → AI Gateway → AI Provider
                      ↓
@@ -170,6 +180,7 @@ Client App → Circuit Breaker → Retry Logic → AI Gateway → AI Provider
 ```
 
 ### 生产模式
+
 ```
 Load Balancer → API Gateway → Circuit Breaker → AI Gateway → AI Provider
          ↓              ↓              ↓              ↓

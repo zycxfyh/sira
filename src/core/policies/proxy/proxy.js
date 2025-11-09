@@ -1,11 +1,11 @@
-const fs = require('fs');
-const clone = require('clone');
-const httpProxy = require('http-proxy');
-const ProxyAgent = require('proxy-agent');
-const logger = require('../../logger').policy;
-const strategies = require('./strategies');
-const http = require('http');
-const https = require('https');
+const fs = require("node:fs");
+const clone = require("clone");
+const httpProxy = require("http-proxy");
+const ProxyAgent = require("proxy-agent");
+const logger = require("../../logger").policy;
+const strategies = require("./strategies");
+const http = require("node:http");
+const https = require("node:https");
 
 const httpAgent = new http.Agent({ keepAlive: true });
 const httpsAgent = new https.Agent({ keepAlive: true });
@@ -15,12 +15,14 @@ const createStrategy = (strategy, proxyOptions, endpointUrls) => {
   return new Strategy(proxyOptions, endpointUrls);
 };
 
-module.exports = function (params, config) {
+module.exports = (params, config) => {
   const serviceEndpointKey = params.serviceEndpoint;
 
   if (!serviceEndpointKey) {
-    logger.warn('Service Endpoint not provided — this proxy policy will permanently return 502');
-    return (req, res) => res.sendStatus(502);
+    logger.warn(
+      "Service Endpoint not provided — this proxy policy will permanently return 502",
+    );
+    return (_req, res) => res.sendStatus(502);
   }
 
   const endpoint = config.gatewayConfig.serviceEndpoints[serviceEndpointKey];
@@ -28,7 +30,7 @@ module.exports = function (params, config) {
   if (!endpoint) {
     // Note: one day this can be ensured by JSON Schema, when $data keyword will be avaiable.
     throw new Error(
-      `service endpoint ${serviceEndpointKey} (referenced in proxy policy configuration) does not exist`
+      `service endpoint ${serviceEndpointKey} (referenced in proxy policy configuration) does not exist`,
     );
   }
 
@@ -58,20 +60,23 @@ module.exports = function (params, config) {
     Object.assign(proxyOptions.target, certificatesBuffer);
   }
 
-  const intermediateProxyUrl = process.env.http_proxy || process.env.HTTP_PROXY || params.proxyUrl;
+  const intermediateProxyUrl =
+    process.env.http_proxy || process.env.HTTP_PROXY || params.proxyUrl;
 
   if (intermediateProxyUrl) {
     logger.verbose(`using intermediate proxy ${intermediateProxyUrl}`);
     proxyOptions.agent = new ProxyAgent(intermediateProxyUrl);
   }
 
-  const proxy = httpProxy.createProxyServer(Object.assign(params, proxyOptions));
+  const proxy = httpProxy.createProxyServer(
+    Object.assign(params, proxyOptions),
+  );
 
-  proxy.on('error', (err, req, res) => {
+  proxy.on("error", (err, _req, res) => {
     logger.warn(err);
 
     if (!res.headersSent) {
-      res.status(502).send('Bad gateway.');
+      res.status(502).send("Bad gateway.");
     } else {
       res.end();
     }
@@ -81,21 +86,21 @@ module.exports = function (params, config) {
   let urls;
 
   if (endpoint.url) {
-    strategy = 'static';
+    strategy = "static";
     urls = [endpoint.url];
   } else {
-    strategy = params.strategy || 'round-robin';
+    strategy = params.strategy || "round-robin";
     urls = endpoint.urls;
   }
 
   const balancer = createStrategy(strategy, proxyOptions, urls);
 
   const stripPathFn = params.stripPath
-    ? req => {
+    ? (req) => {
         const wildcardPos = req.route.path.search(/[:*]/);
         if (wildcardPos === -1) {
           // no wildcard, strip the full path. i.e. change URL to / + query string
-          req.url = `/${req._parsedUrl.search || ''}`;
+          req.url = `/${req._parsedUrl.search || ""}`;
         } else if (wildcardPos === 0) {
           // full path is a wildcard match so there's nothing to strip
         } else {
@@ -108,8 +113,8 @@ module.exports = function (params, config) {
   return function proxyHandler(req, res) {
     const target = balancer.nextTarget();
     const headers = Object.assign(
-      { 'eg-request-id': req.egContext.requestID },
-      proxyOptions.headers
+      { "eg-request-id": req.egContext.requestID },
+      proxyOptions.headers,
     );
 
     stripPathFn(req);
@@ -120,7 +125,7 @@ module.exports = function (params, config) {
       headers,
       buffer: req.egContext.requestStream,
       agent: !intermediateProxyUrl
-        ? target.protocol === 'https:'
+        ? target.protocol === "https:"
           ? httpsAgent
           : httpAgent
         : proxyOptions.agent,

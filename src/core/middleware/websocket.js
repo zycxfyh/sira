@@ -1,5 +1,5 @@
-const WebSocket = require('ws');
-const { StreamingManager } = require('../streaming-manager');
+const WebSocket = require("ws");
+const { StreamingManager } = require("../streaming-manager");
 
 let streamingManager = null;
 let wss = null;
@@ -19,19 +19,19 @@ function createWebSocketServer(server, options = {}) {
   // 创建WebSocket服务器
   wss = new WebSocket.Server({
     server,
-    path: options.path || '/ws',
+    path: options.path || "/ws",
     maxPayload: options.maxPayload || 1024 * 1024, // 1MB
     ...options.wsOptions,
   });
 
-  console.log(`🔌 WebSocket服务器已启动，路径: ${options.path || '/ws'}`);
+  console.log(`🔌 WebSocket服务器已启动，路径: ${options.path || "/ws"}`);
 
   // WebSocket连接处理
-  wss.on('connection', (ws, req) => {
+  wss.on("connection", (ws, req) => {
     try {
       // 创建WebSocket连接
       const result = streamingManager.createWebSocketConnection(ws, req, {
-        userAgent: req.headers['user-agent'],
+        userAgent: req.headers["user-agent"],
         origin: req.headers.origin,
         ...options.connectionOptions,
       });
@@ -41,18 +41,18 @@ function createWebSocketServer(server, options = {}) {
       // 设置连接特定的消息处理器（如果需要的话）
       // 这里主要通过StreamingManager处理
     } catch (error) {
-      console.error('WebSocket连接处理失败:', error);
-      ws.close(1011, 'Connection setup failed');
+      console.error("WebSocket连接处理失败:", error);
+      ws.close(1011, "Connection setup failed");
     }
   });
 
   // 服务器事件处理
-  wss.on('error', error => {
-    console.error('WebSocket服务器错误:', error);
+  wss.on("error", (error) => {
+    console.error("WebSocket服务器错误:", error);
   });
 
-  wss.on('close', () => {
-    console.log('🔌 WebSocket服务器已关闭');
+  wss.on("close", () => {
+    console.log("🔌 WebSocket服务器已关闭");
   });
 
   return wss;
@@ -62,10 +62,13 @@ function createWebSocketServer(server, options = {}) {
  * WebSocket路由中间件
  * 用于Express应用中的WebSocket路由处理
  */
-function websocketMiddleware(options = {}) {
-  return (req, res, next) => {
+function websocketMiddleware(_options = {}) {
+  return (req, _res, next) => {
     // 如果是WebSocket升级请求，传递给WebSocket服务器
-    if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
+    if (
+      req.headers.upgrade &&
+      req.headers.upgrade.toLowerCase() === "websocket"
+    ) {
       // WebSocket握手由WebSocket.Server自动处理
       return next();
     }
@@ -77,7 +80,7 @@ function websocketMiddleware(options = {}) {
         if (streamingManager) {
           return streamingManager.sendStreamData(streamId, data, options);
         }
-        throw new Error('StreamingManager not initialized');
+        throw new Error("StreamingManager not initialized");
       },
 
       // 广播消息
@@ -85,7 +88,7 @@ function websocketMiddleware(options = {}) {
         if (streamingManager) {
           return streamingManager.broadcast(message, options);
         }
-        throw new Error('StreamingManager not initialized');
+        throw new Error("StreamingManager not initialized");
       },
 
       // 获取连接统计
@@ -93,7 +96,7 @@ function websocketMiddleware(options = {}) {
         if (streamingManager) {
           return streamingManager.getConnectionStats();
         }
-        throw new Error('StreamingManager not initialized');
+        throw new Error("StreamingManager not initialized");
       },
     };
 
@@ -120,12 +123,12 @@ function getStreamingManager() {
  */
 function broadcastToWebSockets(message, options = {}) {
   if (!streamingManager) {
-    throw new Error('StreamingManager not initialized');
+    throw new Error("StreamingManager not initialized");
   }
 
   return streamingManager.broadcast(message, {
     ...options,
-    connectionType: 'websocket',
+    connectionType: "websocket",
   });
 }
 
@@ -134,7 +137,7 @@ function broadcastToWebSockets(message, options = {}) {
  */
 function sendToWebSocket(connectionId, message, options = {}) {
   if (!streamingManager) {
-    throw new Error('StreamingManager not initialized');
+    throw new Error("StreamingManager not initialized");
   }
 
   const connection = streamingManager.wsConnections.get(connectionId);
@@ -145,9 +148,9 @@ function sendToWebSocket(connectionId, message, options = {}) {
   if (connection.ws.readyState === WebSocket.OPEN) {
     streamingManager.sendWebSocketMessage(
       connection.ws,
-      options.eventType || 'message',
+      options.eventType || "message",
       message,
-      options.metadata
+      options.metadata,
     );
     return true;
   }
@@ -160,7 +163,7 @@ function sendToWebSocket(connectionId, message, options = {}) {
  */
 function getWebSocketStats() {
   if (!streamingManager) {
-    return { error: 'StreamingManager not initialized' };
+    return { error: "StreamingManager not initialized" };
   }
 
   const stats = streamingManager.getConnectionStats();

@@ -1,33 +1,33 @@
-const supertest = require('supertest');
-const testHelper = require('../common/routing.helper');
-const config = require('../../../src/core/config');
+const supertest = require("supertest");
+const testHelper = require("../common/routing.helper");
+const config = require("../../../core/config");
 
-describe('Pipelines', () => {
-  describe('send a request that cannot be handled by any pipeline', () => {
+describe("Pipelines", () => {
+  describe("send a request that cannot be handled by any pipeline", () => {
     const helper = testHelper();
     let _app;
 
-    before('setup', () => {
+    before("setup", () => {
       config.gatewayConfig = {
         http: {
           port: 0,
         },
         apiEndpoints: {
           verticals: {
-            path: '/verticals',
+            path: "/verticals",
           },
         },
-        policies: ['terminate'],
+        policies: ["terminate"],
         pipelines: {
           common: {
-            apiEndpoints: ['verticals'],
+            apiEndpoints: ["verticals"],
             policies: [
               {
                 terminate: [
                   {
                     action: {
                       statusCode: 200,
-                      message: 'stop',
+                      message: "stop",
                     },
                   },
                 ],
@@ -44,6 +44,6 @@ describe('Pipelines', () => {
 
     after(helper.cleanup);
 
-    it('should return 404', () => supertest(_app).get('/no-clue').expect(404));
+    it("should return 404", () => supertest(_app).get("/no-clue").expect(404));
   });
 });

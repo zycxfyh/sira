@@ -1,67 +1,70 @@
-const logPolicy = require('../../../src/core/policies/log').policy;
-const EgContextBase = require('../../../src/core/gateway/context');
-const logger = require('../../../src/core/policies/log/instance');
-const sinon = require('sinon');
-const assert = require('assert');
+const logPolicy = require("../../../core/policies/log").policy;
+const EgContextBase = require("../../../core/gateway/context");
+const logger = require("../../../core/policies/log/instance");
+const sinon = require("sinon");
+const assert = require("node:assert");
 
-describe('@log policy', () => {
+describe("@log policy", () => {
   const res = {
-    test: 'text',
+    test: "text",
   };
   const req = {
-    url: '/test',
-    method: 'GET',
+    url: "/test",
+    method: "GET",
     egContext: Object.create(new EgContextBase()),
   };
   req.egContext.req = req;
   req.egContext.res = res;
-  before('prepare mocks', () => {
-    sinon.spy(logger, 'info');
-    sinon.spy(logger, 'error');
+  before("prepare mocks", () => {
+    sinon.spy(logger, "info");
+    sinon.spy(logger, "error");
   });
-  it('should log url', () => {
+  it("should log url", () => {
     const next = sinon.spy();
     const logMiddleware = logPolicy({
       // eslint-disable-next-line no-template-curly-in-string
-      message: '${req.url} ${egContext.req.method} ${res.test}',
+      message: "${req.url} ${egContext.req.method} ${res.test}",
     });
 
     logMiddleware(req, {}, next);
-    assert.strictEqual(logger.info.getCall(0).args[0], '/test GET text');
+    assert.strictEqual(logger.info.getCall(0).args[0], "/test GET text");
     assert.ok(next.calledOnce);
   });
-  it('should log requestID', () => {
+  it("should log requestID", () => {
     const next = sinon.spy();
     const logMiddleware = logPolicy({
       // eslint-disable-next-line no-template-curly-in-string
-      message: '${requestID}',
-    });
-
-    logMiddleware(req, {}, next);
-    assert.ok(logger.info.getCall(0).args[0].length > 10);
-    assert.ok(next.calledOnce);
-  });
-  it('should log egContext.requestID', () => {
-    const next = sinon.spy();
-    const logMiddleware = logPolicy({
-      // eslint-disable-next-line no-template-curly-in-string
-      message: '${egContext.requestID}',
+      message: "${requestID}",
     });
 
     logMiddleware(req, {}, next);
     assert.ok(logger.info.getCall(0).args[0].length > 10);
     assert.ok(next.calledOnce);
   });
-  it('should fail to access global context', () => {
+  it("should log egContext.requestID", () => {
     const next = sinon.spy();
     const logMiddleware = logPolicy({
       // eslint-disable-next-line no-template-curly-in-string
-      message: '${process.exit(1)}',
+      message: "${egContext.requestID}",
+    });
+
+    logMiddleware(req, {}, next);
+    assert.ok(logger.info.getCall(0).args[0].length > 10);
+    assert.ok(next.calledOnce);
+  });
+  it("should fail to access global context", () => {
+    const next = sinon.spy();
+    const logMiddleware = logPolicy({
+      // eslint-disable-next-line no-template-curly-in-string
+      message: "${process.exit(1)}",
     });
     logMiddleware(req, res, next);
     assert.ok(logger.info.notCalled);
 
-    assert.ok(logger.error.getCall(0).args[0].indexOf('failed to build log message') >= 0);
+    assert.ok(
+      logger.error.getCall(0).args[0].indexOf("failed to build log message") >=
+        0,
+    );
     assert.ok(next.calledOnce);
   });
 

@@ -1,19 +1,19 @@
-const testHelper = require('../../common/routing.helper');
-const Config = require('../../../src/core/config/config');
+const testHelper = require("../../common/routing.helper");
+const Config = require("../../../core/config/config");
 const helper = testHelper();
 
-describe('@terminate', () => {
-  before('setup', () => {
+describe("@terminate", () => {
+  before("setup", () => {
     const config = new Config();
     const configTemplate = {
       http: { port: 0 },
       apiEndpoints: {
-        test: { paths: '*' },
+        test: { paths: "*" },
       },
-      policies: ['terminate'],
+      policies: ["terminate"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['test'],
+          apiEndpoints: ["test"],
           policies: [
             {
               terminate: [
@@ -32,18 +32,18 @@ describe('@terminate', () => {
     return helper.setup({ config });
   });
 
-  after('cleanup', helper.cleanup);
+  after("cleanup", helper.cleanup);
 
   it(
-    'should terminate: ',
+    "should terminate: ",
     helper.validateError({
       setup: {
-        url: '/',
+        url: "/",
       },
       test: {
-        result: 'test',
+        result: "test",
         errorCode: 429,
       },
-    })
+    }),
   );
 });

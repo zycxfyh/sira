@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require("node:crypto");
 
 /**
  * 请求复杂度分析器
@@ -18,88 +18,88 @@ class ComplexityAnalyzer {
 
     // 技术术语库
     this.technicalTerms = new Set([
-      'algorithm',
-      'function',
-      'variable',
-      'class',
-      'method',
-      'api',
-      'database',
-      'server',
-      'client',
-      'protocol',
-      'framework',
-      'library',
-      'debug',
-      'compile',
-      'optimization',
-      'architecture',
-      'design pattern',
-      'inheritance',
-      'polymorphism',
-      'recursion',
-      'asynchronous',
-      'synchronization',
-      'thread',
-      'process',
-      'memory',
-      'cache',
-      'index',
-      'query',
-      'transaction',
-      'authentication',
-      'authorization',
-      'encryption',
-      'decryption',
-      'hash',
-      'signature',
-      'certificate',
-      'token',
-      'microservice',
-      'container',
-      'orchestration',
-      'kubernetes',
-      'docker',
-      'ci/cd',
-      'agile',
-      'scrum',
-      'kanban',
-      'refactor',
-      'testing',
-      'unit test',
-      'integration test',
-      'deployment',
-      'monitoring',
-      'logging',
-      'tracing',
-      'metrics',
-      'alert',
-      'dashboard',
+      "algorithm",
+      "function",
+      "variable",
+      "class",
+      "method",
+      "api",
+      "database",
+      "server",
+      "client",
+      "protocol",
+      "framework",
+      "library",
+      "debug",
+      "compile",
+      "optimization",
+      "architecture",
+      "design pattern",
+      "inheritance",
+      "polymorphism",
+      "recursion",
+      "asynchronous",
+      "synchronization",
+      "thread",
+      "process",
+      "memory",
+      "cache",
+      "index",
+      "query",
+      "transaction",
+      "authentication",
+      "authorization",
+      "encryption",
+      "decryption",
+      "hash",
+      "signature",
+      "certificate",
+      "token",
+      "microservice",
+      "container",
+      "orchestration",
+      "kubernetes",
+      "docker",
+      "ci/cd",
+      "agile",
+      "scrum",
+      "kanban",
+      "refactor",
+      "testing",
+      "unit test",
+      "integration test",
+      "deployment",
+      "monitoring",
+      "logging",
+      "tracing",
+      "metrics",
+      "alert",
+      "dashboard",
     ]);
 
     // 推理深度关键词
     this.reasoningKeywords = [
-      'analyze',
-      'evaluate',
-      'compare',
-      'contrast',
-      'explain why',
-      'justify',
-      'critique',
-      'assess',
-      'determine',
-      'conclude',
-      'therefore',
-      'because',
-      'however',
-      'although',
-      'nevertheless',
-      'consequently',
-      'furthermore',
-      'moreover',
-      'in conclusion',
-      'to summarize',
-      'on the other hand',
+      "analyze",
+      "evaluate",
+      "compare",
+      "contrast",
+      "explain why",
+      "justify",
+      "critique",
+      "assess",
+      "determine",
+      "conclude",
+      "therefore",
+      "because",
+      "however",
+      "although",
+      "nevertheless",
+      "consequently",
+      "furthermore",
+      "moreover",
+      "in conclusion",
+      "to summarize",
+      "on the other hand",
     ];
 
     // 代码模式 - 修复ReDoS漏洞：限制代码块的最大长度，避免灾难性回溯
@@ -159,9 +159,22 @@ class ComplexityAnalyzer {
 
     // 情感分析关键词
     this.sentimentKeywords = {
-      urgent: ['urgent', 'emergency', 'asap', 'immediately', 'critical', 'deadline'],
-      complex: ['complex', 'complicated', 'sophisticated', 'advanced', 'detailed'],
-      simple: ['simple', 'basic', 'easy', 'straightforward', 'clear'],
+      urgent: [
+        "urgent",
+        "emergency",
+        "asap",
+        "immediately",
+        "critical",
+        "deadline",
+      ],
+      complex: [
+        "complex",
+        "complicated",
+        "sophisticated",
+        "advanced",
+        "detailed",
+      ],
+      simple: ["simple", "basic", "easy", "straightforward", "clear"],
     };
   }
 
@@ -170,13 +183,13 @@ class ComplexityAnalyzer {
    */
   async analyzeComplexity(request) {
     const analysis = {
-      complexity: 'low',
+      complexity: "low",
       confidence: 0,
       factors: {},
       reasoning: [],
-      taskType: 'general',
+      taskType: "general",
       estimatedTokens: 0,
-      processingTime: 'fast',
+      processingTime: "fast",
       recommendedModels: [],
       metrics: {},
     };
@@ -185,8 +198,8 @@ class ComplexityAnalyzer {
       // 提取请求内容
       const content = this.extractContent(request);
       if (!content) {
-        analysis.complexity = 'low';
-        analysis.reasoning.push('Empty or invalid request content');
+        analysis.complexity = "low";
+        analysis.reasoning.push("Empty or invalid request content");
         return analysis;
       }
 
@@ -211,7 +224,10 @@ class ComplexityAnalyzer {
       analysis.taskType = this.identifyTaskType(content);
 
       // 计算综合复杂度
-      const complexityScore = this.calculateComplexityScore(dimensions, analysis.taskType);
+      const complexityScore = this.calculateComplexityScore(
+        dimensions,
+        analysis.taskType,
+      );
 
       analysis.complexity = this.classifyComplexity(complexityScore);
       analysis.confidence = this.calculateConfidence(dimensions);
@@ -219,21 +235,21 @@ class ComplexityAnalyzer {
       // 确定处理时间
       analysis.processingTime = this.determineProcessingTime(
         analysis.complexity,
-        analysis.taskType
+        analysis.taskType,
       );
 
       // 推荐模型
       analysis.recommendedModels = this.recommendModels(
         analysis.complexity,
         analysis.taskType,
-        dimensions
+        dimensions,
       );
 
       // 生成推理说明
       analysis.reasoning = this.generateReasoning(analysis, dimensions);
     } catch (error) {
-      console.error('Complexity analysis failed:', error);
-      analysis.complexity = 'medium'; // 出错时使用中等复杂度作为fallback
+      console.error("Complexity analysis failed:", error);
+      analysis.complexity = "medium"; // 出错时使用中等复杂度作为fallback
       analysis.reasoning.push(`Analysis error: ${error.message}`);
     }
 
@@ -245,14 +261,14 @@ class ComplexityAnalyzer {
    */
   extractContent(request) {
     // 从不同格式的请求中提取内容
-    if (typeof request === 'string') {
+    if (typeof request === "string") {
       return request;
     }
 
     if (request.messages && Array.isArray(request.messages)) {
       // ChatGPT格式
       const lastMessage = request.messages[request.messages.length - 1];
-      return lastMessage ? lastMessage.content || '' : '';
+      return lastMessage ? lastMessage.content || "" : "";
     }
 
     if (request.prompt) {
@@ -263,7 +279,7 @@ class ComplexityAnalyzer {
       return request.text;
     }
 
-    return '';
+    return "";
   }
 
   /**
@@ -293,23 +309,23 @@ class ComplexityAnalyzer {
 
     if (length > 5000) {
       score += 3;
-      reasoning.push('Very long content (>5000 chars)');
+      reasoning.push("Very long content (>5000 chars)");
     } else if (length > 2000) {
       score += 2;
-      reasoning.push('Long content (2000-5000 chars)');
+      reasoning.push("Long content (2000-5000 chars)");
     } else if (length > 500) {
       score += 1;
-      reasoning.push('Medium content (500-2000 chars)');
+      reasoning.push("Medium content (500-2000 chars)");
     } else {
-      reasoning.push('Short content (<500 chars)');
+      reasoning.push("Short content (<500 chars)");
     }
 
     if (wordCount > 1000) {
       score += 2;
-      reasoning.push('High word count (>1000)');
+      reasoning.push("High word count (>1000)");
     } else if (wordCount > 500) {
       score += 1;
-      reasoning.push('Medium word count (500-1000)');
+      reasoning.push("Medium word count (500-1000)");
     }
 
     return { score, reasoning, metrics: { length, wordCount, sentenceCount } };
@@ -323,7 +339,9 @@ class ComplexityAnalyzer {
     let technicalTermCount = 0;
 
     for (const term of this.technicalTerms) {
-      const matches = (lowerContent.match(new RegExp(`\\b${term}\\b`, 'g')) || []).length;
+      const matches = (
+        lowerContent.match(new RegExp(`\\b${term}\\b`, "g")) || []
+      ).length;
       technicalTermCount += matches;
     }
 
@@ -335,12 +353,14 @@ class ComplexityAnalyzer {
       reasoning.push(`Very technical (${technicalTermCount} technical terms)`);
     } else if (technicalTermCount > this.options.technicalTermsThreshold) {
       score += 2;
-      reasoning.push(`Technical content (${technicalTermCount} technical terms)`);
+      reasoning.push(
+        `Technical content (${technicalTermCount} technical terms)`,
+      );
     } else if (technicalTermCount > this.options.technicalTermsThreshold / 2) {
       score += 1;
       reasoning.push(`Some technical terms (${technicalTermCount})`);
     } else {
-      reasoning.push('Non-technical content');
+      reasoning.push("Non-technical content");
     }
 
     return { score, reasoning, metrics: { technicalTermCount } };
@@ -354,7 +374,8 @@ class ComplexityAnalyzer {
     let reasoningIndicatorCount = 0;
 
     for (const keyword of this.reasoningKeywords) {
-      const matches = (lowerContent.match(new RegExp(keyword, 'gi')) || []).length;
+      const matches = (lowerContent.match(new RegExp(keyword, "gi")) || [])
+        .length;
       reasoningIndicatorCount += matches;
     }
 
@@ -377,18 +398,26 @@ class ComplexityAnalyzer {
 
     if (totalIndicators > 5) {
       score += 3;
-      reasoning.push(`High reasoning complexity (${totalIndicators} indicators)`);
+      reasoning.push(
+        `High reasoning complexity (${totalIndicators} indicators)`,
+      );
     } else if (totalIndicators > 2) {
       score += 2;
-      reasoning.push(`Medium reasoning complexity (${totalIndicators} indicators)`);
+      reasoning.push(
+        `Medium reasoning complexity (${totalIndicators} indicators)`,
+      );
     } else if (totalIndicators > 0) {
       score += 1;
       reasoning.push(`Some reasoning elements (${totalIndicators} indicators)`);
     } else {
-      reasoning.push('Straightforward request');
+      reasoning.push("Straightforward request");
     }
 
-    return { score, reasoning, metrics: { reasoningIndicatorCount, questionCount } };
+    return {
+      score,
+      reasoning,
+      metrics: { reasoningIndicatorCount, questionCount },
+    };
   }
 
   /**
@@ -408,9 +437,10 @@ class ComplexityAnalyzer {
           codeScore += matches.length;
         }
       } catch (error) {
-        console.warn('Regex timeout in code complexity analysis:', error.message);
-        // 如果正则表达式超时，跳过这个模式
-        continue;
+        console.warn(
+          "Regex timeout in code complexity analysis:",
+          error.message,
+        );
       }
     }
 
@@ -426,15 +456,19 @@ class ComplexityAnalyzer {
 
     if (codeSnippetCount > this.options.codeSnippetThreshold) {
       score += 3;
-      reasoning.push(`High code complexity (${codeSnippetCount} code elements)`);
+      reasoning.push(
+        `High code complexity (${codeSnippetCount} code elements)`,
+      );
     } else if (codeSnippetCount > this.options.codeSnippetThreshold / 2) {
       score += 2;
-      reasoning.push(`Medium code complexity (${codeSnippetCount} code elements)`);
+      reasoning.push(
+        `Medium code complexity (${codeSnippetCount} code elements)`,
+      );
     } else if (codeSnippetCount > 0) {
       score += 1;
       reasoning.push(`Some code elements (${codeSnippetCount})`);
     } else {
-      reasoning.push('No code content');
+      reasoning.push("No code content");
     }
 
     return { score, reasoning, metrics: { codeSnippetCount, codeScore } };
@@ -459,7 +493,7 @@ class ComplexityAnalyzer {
     const equations = content.match(/[^\n]*=.*[^\n]*/g);
     if (equations) {
       for (const eq of equations) {
-        if (eq.includes('=') && (eq.match(/[+\-*/^√∫∂∑∏]/g) || []).length > 1) {
+        if (eq.includes("=") && (eq.match(/[+\-*/^√∫∂∑∏]/g) || []).length > 1) {
           mathScore += 2;
           mathElementCount++;
         }
@@ -471,15 +505,21 @@ class ComplexityAnalyzer {
 
     if (mathElementCount > this.options.mathExpressionThreshold * 2) {
       score += 3;
-      reasoning.push(`High mathematical complexity (${mathElementCount} math elements)`);
+      reasoning.push(
+        `High mathematical complexity (${mathElementCount} math elements)`,
+      );
     } else if (mathElementCount > this.options.mathExpressionThreshold) {
       score += 2;
-      reasoning.push(`Medium mathematical complexity (${mathElementCount} math elements)`);
+      reasoning.push(
+        `Medium mathematical complexity (${mathElementCount} math elements)`,
+      );
     } else if (mathElementCount > 0) {
       score += 1;
-      reasoning.push(`Some mathematical content (${mathElementCount} elements)`);
+      reasoning.push(
+        `Some mathematical content (${mathElementCount} elements)`,
+      );
     } else {
-      reasoning.push('No mathematical content');
+      reasoning.push("No mathematical content");
     }
 
     return { score, reasoning, metrics: { mathElementCount, mathScore } };
@@ -502,18 +542,26 @@ class ComplexityAnalyzer {
 
     if (structuralElements > 10) {
       score += 2;
-      reasoning.push(`Highly structured content (${structuralElements} elements)`);
+      reasoning.push(
+        `Highly structured content (${structuralElements} elements)`,
+      );
     } else if (structuralElements > 5) {
       score += 1;
       reasoning.push(`Structured content (${structuralElements} elements)`);
     } else {
-      reasoning.push('Unstructured or simple content');
+      reasoning.push("Unstructured or simple content");
     }
 
     return {
       score,
       reasoning,
-      metrics: { bulletPoints, numberedLists, headers, tables, structuralElements },
+      metrics: {
+        bulletPoints,
+        numberedLists,
+        headers,
+        tables,
+        structuralElements,
+      },
     };
   }
 
@@ -527,19 +575,26 @@ class ComplexityAnalyzer {
     // 检查消息历史长度
     if (request.messages && request.messages.length > 10) {
       score += 2;
-      reasoning.push('Long conversation history');
+      reasoning.push("Long conversation history");
     } else if (request.messages && request.messages.length > 5) {
       score += 1;
-      reasoning.push('Medium conversation history');
+      reasoning.push("Medium conversation history");
     }
 
     // 检查系统提示
-    if (request.system || (request.messages && request.messages[0]?.role === 'system')) {
+    if (
+      request.system ||
+      (request.messages && request.messages[0]?.role === "system")
+    ) {
       score += 1;
-      reasoning.push('System instructions present');
+      reasoning.push("System instructions present");
     }
 
-    return { score, reasoning, metrics: { messageCount: request.messages?.length || 0 } };
+    return {
+      score,
+      reasoning,
+      metrics: { messageCount: request.messages?.length || 0 },
+    };
   }
 
   /**
@@ -560,12 +615,12 @@ class ComplexityAnalyzer {
 
     if (urgencyScore > 2) {
       score += 2;
-      reasoning.push('High urgency indicators');
+      reasoning.push("High urgency indicators");
     } else if (urgencyScore > 0) {
       score += 1;
-      reasoning.push('Some urgency indicators');
+      reasoning.push("Some urgency indicators");
     } else {
-      reasoning.push('Normal priority');
+      reasoning.push("Normal priority");
     }
 
     return { score, reasoning, metrics: { urgencyScore } };
@@ -589,7 +644,7 @@ class ComplexityAnalyzer {
 
     // 找到最高分的任务类型
     let maxScore = 0;
-    let bestTask = 'general';
+    let bestTask = "general";
 
     for (const [task, score] of Object.entries(scores)) {
       if (score > maxScore) {
@@ -640,11 +695,11 @@ class ComplexityAnalyzer {
    * 分类复杂度等级
    */
   classifyComplexity(score) {
-    if (score >= 4.0) return 'very_high';
-    if (score >= 2.5) return 'high';
-    if (score >= 1.5) return 'medium';
-    if (score >= 0.8) return 'low_medium';
-    return 'low';
+    if (score >= 4.0) return "very_high";
+    if (score >= 2.5) return "high";
+    if (score >= 1.5) return "medium";
+    if (score >= 0.8) return "low_medium";
+    return "low";
   }
 
   /**
@@ -652,9 +707,10 @@ class ComplexityAnalyzer {
    */
   calculateConfidence(dimensions) {
     // 基于各维度的分析一致性计算置信度
-    const scores = Object.values(dimensions).map(d => d.score);
+    const scores = Object.values(dimensions).map((d) => d.score);
     const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
-    const variance = scores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / scores.length;
+    const variance =
+      scores.reduce((a, b) => a + (b - mean) ** 2, 0) / scores.length;
     const stdDev = Math.sqrt(variance);
 
     // 低方差表示分析结果一致，置信度高
@@ -668,57 +724,57 @@ class ComplexityAnalyzer {
    */
   determineProcessingTime(complexity, taskType) {
     const timeMap = {
-      very_high: 'slow',
-      high: 'medium',
-      medium: 'medium',
-      low_medium: 'fast',
-      low: 'fast',
+      very_high: "slow",
+      high: "medium",
+      medium: "medium",
+      low_medium: "fast",
+      low: "fast",
     };
 
     // 某些任务类型需要额外时间
-    if (taskType === 'coding' && ['high', 'very_high'].includes(complexity)) {
-      return 'slow';
+    if (taskType === "coding" && ["high", "very_high"].includes(complexity)) {
+      return "slow";
     }
 
-    if (taskType === 'math' && complexity === 'very_high') {
-      return 'slow';
+    if (taskType === "math" && complexity === "very_high") {
+      return "slow";
     }
 
-    return timeMap[complexity] || 'medium';
+    return timeMap[complexity] || "medium";
   }
 
   /**
    * 推荐模型
    */
-  recommendModels(complexity, taskType, dimensions) {
+  recommendModels(complexity, taskType, _dimensions) {
     const recommendations = [];
 
     // 基于复杂度推荐模型
     switch (complexity) {
-      case 'very_high':
-        recommendations.push('gpt-4', 'claude-2');
+      case "very_high":
+        recommendations.push("gpt-4", "claude-2");
         break;
-      case 'high':
-        recommendations.push('gpt-4', 'claude-2', 'gpt-3.5-turbo');
+      case "high":
+        recommendations.push("gpt-4", "claude-2", "gpt-3.5-turbo");
         break;
-      case 'medium':
-        recommendations.push('gpt-3.5-turbo', 'claude-2', 'gemini-pro');
+      case "medium":
+        recommendations.push("gpt-3.5-turbo", "claude-2", "gemini-pro");
         break;
-      case 'low_medium':
-        recommendations.push('gpt-3.5-turbo', 'gemini-pro', 'claude-instant');
+      case "low_medium":
+        recommendations.push("gpt-3.5-turbo", "gemini-pro", "claude-instant");
         break;
-      case 'low':
-        recommendations.push('gpt-3.5-turbo', 'claude-instant', 'gemini-pro');
+      case "low":
+        recommendations.push("gpt-3.5-turbo", "claude-instant", "gemini-pro");
         break;
     }
 
     // 任务类型特定的模型偏好
     const taskPreferences = {
-      coding: ['gpt-4', 'claude-2', 'gpt-3.5-turbo'],
-      math: ['gpt-4', 'claude-2', 'gpt-3.5-turbo'],
-      creative: ['claude-2', 'gpt-4', 'gemini-pro'],
-      analytical: ['gpt-4', 'claude-2', 'gpt-3.5-turbo'],
-      conversational: ['gpt-3.5-turbo', 'claude-instant', 'gemini-pro'],
+      coding: ["gpt-4", "claude-2", "gpt-3.5-turbo"],
+      math: ["gpt-4", "claude-2", "gpt-3.5-turbo"],
+      creative: ["claude-2", "gpt-4", "gemini-pro"],
+      analytical: ["gpt-4", "claude-2", "gpt-3.5-turbo"],
+      conversational: ["gpt-3.5-turbo", "claude-instant", "gemini-pro"],
     };
 
     if (taskPreferences[taskType]) {
@@ -740,7 +796,9 @@ class ComplexityAnalyzer {
   generateReasoning(analysis, dimensions) {
     const reasoning = [];
 
-    reasoning.push(`综合复杂度: ${analysis.complexity} (置信度: ${analysis.confidence})`);
+    reasoning.push(
+      `综合复杂度: ${analysis.complexity} (置信度: ${analysis.confidence})`,
+    );
     reasoning.push(`任务类型: ${analysis.taskType}`);
     reasoning.push(`预估tokens: ${analysis.estimatedTokens}`);
     reasoning.push(`处理时间: ${analysis.processingTime}`);
@@ -748,12 +806,12 @@ class ComplexityAnalyzer {
     // 添加各维度的推理
     for (const [dimension, data] of Object.entries(dimensions)) {
       if (data.reasoning && data.reasoning.length > 0) {
-        reasoning.push(`${dimension}: ${data.reasoning.join(', ')}`);
+        reasoning.push(`${dimension}: ${data.reasoning.join(", ")}`);
       }
     }
 
     if (analysis.recommendedModels.length > 0) {
-      reasoning.push(`推荐模型: ${analysis.recommendedModels.join(', ')}`);
+      reasoning.push(`推荐模型: ${analysis.recommendedModels.join(", ")}`);
     }
 
     return reasoning;
@@ -770,7 +828,11 @@ class ComplexityAnalyzer {
     return new Promise((resolve, reject) => {
       // 设置超时
       const timeout = setTimeout(() => {
-        reject(new Error(`Regex timeout after ${timeoutMs}ms for pattern: ${pattern.source}`));
+        reject(
+          new Error(
+            `Regex timeout after ${timeoutMs}ms for pattern: ${pattern.source}`,
+          ),
+        );
       }, timeoutMs);
 
       try {

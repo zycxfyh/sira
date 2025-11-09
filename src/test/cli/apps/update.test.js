@@ -1,12 +1,12 @@
-const assert = require('assert');
-const environment = require('../../fixtures/cli/environment');
-const adminHelper = require('../../common/admin-helper')();
-const namespace = 'express-gateway:apps:update';
-const idGen = require('uuid62');
-const util = require('util');
-const helpers = require('yeoman-test');
+const assert = require("node:assert");
+const environment = require("../../fixtures/cli/environment");
+const adminHelper = require("../../common/admin-helper")();
+const namespace = "express-gateway:apps:update";
+const idGen = require("uuid62");
+const util = require("node:util");
+const helpers = require("yeoman-test");
 
-describe('eg apps update', () => {
+describe("eg apps update", () => {
   let program, env, user, app1;
   before(() => {
     ({ program, env } = environment.bootstrap());
@@ -25,44 +25,44 @@ describe('eg apps update', () => {
     return adminHelper.admin.users
       .create({
         username: idGen.v4(),
-        firstname: 'La',
-        lastname: 'Deeda',
+        firstname: "La",
+        lastname: "Deeda",
       })
-      .then(createdUser => {
+      .then((createdUser) => {
         user = createdUser;
 
         return adminHelper.admin.apps.create(user.id, {
-          name: 'appy1',
-          redirectUri: 'http://localhost:3000/cb',
+          name: "appy1",
+          redirectUri: "http://localhost:3000/cb",
         });
       })
-      .then(createdApp => {
+      .then((createdApp) => {
         app1 = createdApp;
       });
   });
 
-  it('updates an app from prompts', done => {
-    env.hijack(namespace, generator => {
+  it("updates an app from prompts", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
 
         helpers.mockPrompt(generator, {
-          name: 'AppName',
-          redirectUri: 'http://example.com/cb',
+          name: "AppName",
+          redirectUri: "http://example.com/cb",
         });
       });
 
-      generator.once('end', () => {
-        return adminHelper.admin.apps.info(app1.id).then(app => {
-          assert.strictEqual(app.name, 'AppName');
-          assert.strictEqual(app.redirectUri, 'http://example.com/cb');
+      generator.once("end", () => {
+        return adminHelper.admin.apps.info(app1.id).then((app) => {
+          assert.strictEqual(app.name, "AppName");
+          assert.strictEqual(app.redirectUri, "http://example.com/cb");
           assert.strictEqual(output, `Updated ${app1.id}`);
           done();
         });
@@ -72,23 +72,23 @@ describe('eg apps update', () => {
     env.argv = program.parse(`apps update ${app1.id}`);
   });
 
-  it('updates an app from properties', done => {
-    env.hijack(namespace, generator => {
+  it("updates an app from properties", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
-        return adminHelper.admin.apps.info(app1.id).then(app => {
-          assert.strictEqual(app.name, 'AppName1');
-          assert.strictEqual(app.redirectUri, 'http://example.com/cb');
+      generator.once("end", () => {
+        return adminHelper.admin.apps.info(app1.id).then((app) => {
+          assert.strictEqual(app.name, "AppName1");
+          assert.strictEqual(app.redirectUri, "http://example.com/cb");
           assert.strictEqual(output, `Updated ${app1.id}`);
           done();
         });
@@ -96,27 +96,28 @@ describe('eg apps update', () => {
     });
 
     env.argv = program.parse(
-      `apps update ${app1.id} ` + '-p "name=AppName1" -p "redirectUri=http://example.com/cb"'
+      `apps update ${app1.id} ` +
+        '-p "name=AppName1" -p "redirectUri=http://example.com/cb"',
     );
   });
 
-  it('prints only the app id when using the --quiet flag', done => {
-    env.hijack(namespace, generator => {
+  it("prints only the app id when using the --quiet flag", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.stdout = message => {
+      generator.once("run", () => {
+        generator.stdout = (message) => {
           output = message;
         };
-        generator.log.error = message => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
       });
 
-      generator.once('end', () => {
-        return adminHelper.admin.apps.info(app1.id).then(app => {
-          assert.strictEqual(app.name, 'AppName2');
-          assert.strictEqual(app.redirectUri, 'http://example.com/cb');
+      generator.once("end", () => {
+        return adminHelper.admin.apps.info(app1.id).then((app) => {
+          assert.strictEqual(app.name, "AppName2");
+          assert.strictEqual(app.redirectUri, "http://example.com/cb");
           assert.strictEqual(output, `${app1.id}`);
           done();
         });
@@ -124,27 +125,28 @@ describe('eg apps update', () => {
     });
 
     env.argv = program.parse(
-      `apps update ${app1.id} ` + '-p "name=AppName2" -p "redirectUri=http://example.com/cb" -q'
+      `apps update ${app1.id} ` +
+        '-p "name=AppName2" -p "redirectUri=http://example.com/cb" -q',
     );
   });
 
-  it('errors on unknown app ID', done => {
-    env.hijack(namespace, generator => {
+  it("errors on unknown app ID", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log = message => {
+      generator.once("run", () => {
+        generator.log = (message) => {
           output = message;
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
-        generator.log.error = message => {
-          assert.strictEqual(message, 'App not found: asdf');
+        generator.log.error = (message) => {
+          assert.strictEqual(message, "App not found: asdf");
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         assert.strictEqual(output, null);
 
         done();
@@ -152,28 +154,30 @@ describe('eg apps update', () => {
     });
 
     env.argv = program.parse(
-      'apps update asdf ' + '-p "name=AppName" -p "redirectUri=http://example.com/cb"'
+      "apps update asdf " +
+        '-p "name=AppName" -p "redirectUri=http://example.com/cb"',
     );
   });
 
-  it('prints an error on invalid property syntax', done => {
-    env.hijack(namespace, generator => {
+  it("prints an error on invalid property syntax", (done) => {
+    env.hijack(namespace, (generator) => {
       let error = null;
 
-      generator.once('run', () => {
+      generator.once("run", () => {
         generator.log.error = (format, ...args) => {
           error = util.format(format, ...args);
         };
       });
 
-      generator.once('end', () => {
-        assert.strictEqual(error, 'invalid property option: name=');
+      generator.once("end", () => {
+        assert.strictEqual(error, "invalid property option: name=");
         done();
       });
     });
 
     env.argv = program.parse(
-      `apps update ${app1.id} -p "name=" ` + '-p "redirectUri=http://example.com/cb"'
+      `apps update ${app1.id} -p "name=" ` +
+        '-p "redirectUri=http://example.com/cb"',
     );
   });
 });

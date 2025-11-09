@@ -1,46 +1,51 @@
-const db = require('../../db');
-const config = require('../../config');
-const logger = require('../../logger').gateway;
-const scopeNamespace = 'scope';
-const scopeCredentialsNamespace = 'scope-credentials';
-const scopeDbKey = config.systemConfig.db.redis.namespace.concat('-', scopeNamespace);
+const db = require("../../db");
+const config = require("../../config");
+const logger = require("../../logger").gateway;
+const scopeNamespace = "scope";
+const scopeCredentialsNamespace = "scope-credentials";
+const scopeDbKey = config.systemConfig.db.redis.namespace.concat(
+  "-",
+  scopeNamespace,
+);
 
 const dao = {};
 
-dao.insertScopes = function (_scopes) {
+dao.insertScopes = (_scopes) => {
   const scopes = {};
   if (Array.isArray(_scopes)) {
-    _scopes.forEach(el => {
-      scopes[el] = 'true';
+    _scopes.forEach((el) => {
+      scopes[el] = "true";
     });
-  } else scopes[_scopes] = 'true';
+  } else scopes[_scopes] = "true";
 
   return db.hmset(scopeDbKey, scopes);
 };
 
-dao.associateCredentialWithScopes = function (id, type, scopes) {
+dao.associateCredentialWithScopes = (id, type, scopes) => {
   const credentialKey = buildIdKey(type, id);
   if (!scopes) {
     return Promise.resolve(null);
   }
 
   scopes = Array.isArray(scopes) ? scopes : [scopes];
-  const associationPromises = scopes.map(scope =>
-    db.hset(buildScopeKey(scope), credentialKey, 'true')
+  const associationPromises = scopes.map((scope) =>
+    db.hset(buildScopeKey(scope), credentialKey, "true"),
   );
 
   return Promise.all(associationPromises);
 };
 
-dao.dissociateCredentialFromScopes = function (id, type, scopes) {
+dao.dissociateCredentialFromScopes = (id, type, scopes) => {
   const credentialKey = buildIdKey(type, id);
   scopes = Array.isArray(scopes) ? scopes : [scopes];
-  const dissociationPromises = scopes.map(scope => db.hdel(buildScopeKey(scope), credentialKey));
+  const dissociationPromises = scopes.map((scope) =>
+    db.hdel(buildScopeKey(scope), credentialKey),
+  );
 
   return Promise.all(dissociationPromises);
 };
 
-dao.removeScopes = function (scopes) {
+dao.removeScopes = (scopes) => {
   let removeScopesTransaction;
   const getScopeCredentialPromises = [];
 
@@ -49,12 +54,12 @@ dao.removeScopes = function (scopes) {
   removeScopesTransaction = db.multi().hdel(scopeDbKey, scopes);
 
   // Get the list of ids with scopes to be removed, and remove scope-ids association
-  scopes.forEach(scope => {
+  scopes.forEach((scope) => {
     getScopeCredentialPromises.push(db.hgetall(buildScopeKey(scope)));
     removeScopesTransaction = removeScopesTransaction.del(buildScopeKey(scope));
   });
 
-  return Promise.all(getScopeCredentialPromises).then(idObjs => {
+  return Promise.all(getScopeCredentialPromises).then((idObjs) => {
     const getCredentialPromises = [];
     const credentialIdToScopes = {};
 
@@ -73,44 +78,46 @@ dao.removeScopes = function (scopes) {
       getCredentialPromises.push(db.hgetall(credentialId));
     }
 
-    return Promise.all(getCredentialPromises).then(credentialObjs => {
+    return Promise.all(getCredentialPromises).then((credentialObjs) => {
       let credentialScopes, newScopes;
       const credentialIds = Object.keys(credentialIdToScopes);
 
       credentialObjs.forEach((credentialObj, index) => {
         const credentialId = credentialIds[index];
 
-        if (credentialObj && credentialObj.scopes) {
+        if (credentialObj?.scopes) {
           credentialScopes = JSON.parse(credentialObj.scopes);
-          newScopes = credentialScopes.filter(scope => scopes.indexOf(scope) === -1);
-          removeScopesTransaction = removeScopesTransaction.hmset(credentialId, {
-            scopes: JSON.stringify(newScopes),
-          });
+          newScopes = credentialScopes.filter(
+            (scope) => scopes.indexOf(scope) === -1,
+          );
+          removeScopesTransaction = removeScopesTransaction.hmset(
+            credentialId,
+            {
+              scopes: JSON.stringify(newScopes),
+            },
+          );
         }
       });
 
-      return removeScopesTransaction.exec().then(res => res[0]); // .del may yield 0 if a scope wasn't assigned to any credential
+      return removeScopesTransaction.exec().then((res) => res[0]); // .del may yield 0 if a scope wasn't assigned to any credential
     });
   });
 };
 
-dao.existsScope = function (scope) {
-  return db.hget(scopeDbKey, scope).then(res => !!res);
-};
+dao.existsScope = (scope) => db.hget(scopeDbKey, scope).then((res) => !!res);
 
-dao.getAllScopes = function () {
-  return db.hgetall(scopeDbKey).then(res => {
+dao.getAllScopes = () =>
+  db.hgetall(scopeDbKey).then((res) => {
     const scopes = Object.keys(res || {});
     return scopes.length ? scopes : null;
   });
-};
 
-dao.insertCredential = function (id, type, credentialObj) {
+dao.insertCredential = (id, type, credentialObj) => {
   if (!credentialObj) {
     return Promise.resolve(null);
   }
   const key = buildIdKey(type, id);
-  if (type === 'key-auth' || type === 'jwt') {
+  if (type === "key-auth" || type === "jwt") {
     if (credentialObj.keyId) credentialObj.id = credentialObj.keyId;
     return Promise.all([
       // build relation consumerId -> [key1, key2]
@@ -122,63 +129,66 @@ dao.insertCredential = function (id, type, credentialObj) {
   return db.hmset(key, credentialObj);
 };
 
-dao.getCredential = function (id, type) {
-  return db
+dao.getCredential = (id, type) =>
+  db
     .hgetall(buildIdKey(type, id))
-    .then(credential => {
+    .then((credential) => {
       if (!credential || Object.keys(credential).length === 0) return null;
-      credential.isActive = credential.isActive === 'true'; // Redis has no bool type, manual conversion
+      credential.isActive = credential.isActive === "true"; // Redis has no bool type, manual conversion
       credential.type = type;
       credential.id = id;
       return credential;
     })
     .catch(logger.warn);
-};
 
-dao.activateCredential = function (id, type) {
-  return db.hmset(buildIdKey(type, id), { isActive: 'true', updatedAt: String(new Date()) });
-};
+dao.activateCredential = (id, type) =>
+  db.hmset(buildIdKey(type, id), {
+    isActive: "true",
+    updatedAt: String(new Date()),
+  });
 
-dao.deactivateCredential = function (id, type) {
-  return db.hmset(buildIdKey(type, id), { isActive: 'false', updatedAt: String(new Date()) });
-};
+dao.deactivateCredential = (id, type) =>
+  db.hmset(buildIdKey(type, id), {
+    isActive: "false",
+    updatedAt: String(new Date()),
+  });
 
-dao.removeCredential = function (id, type) {
-  return db.del(buildIdKey(type, id));
-};
+dao.removeCredential = (id, type) => db.del(buildIdKey(type, id));
 
 /*
  * Remove all credentials
  *
  * @id {String}
  */
-dao.removeAllCredentials = function (id) {
+dao.removeAllCredentials = (id) => {
   const dbTransaction = db.multi();
   const credentialTypes = Object.keys(config.models.credentials.properties);
-  const awaitAllPromises = credentialTypes.map(type => {
+  const awaitAllPromises = credentialTypes.map((type) => {
     const authKey = buildIdKey(type, id);
 
-    if (type === 'key-auth' || type === 'jwt') {
+    if (type === "key-auth" || type === "jwt") {
       const promises = [];
 
       // id in this call is actually consumerId, so we need to get all referenced keyIds
       // Get a list of all keys the user owns and all the scopes so we can remove keys from them
-      Promise.all([db.smembers(authKey), dao.getAllScopes()]).then(([ids, scopes]) => {
-        // Delete each key and remove key from scopes if they exist
-        ids.forEach(keyId => {
-          const idKey = buildIdKey(type, keyId);
+      Promise.all([db.smembers(authKey), dao.getAllScopes()]).then(
+        ([ids, scopes]) => {
+          // Delete each key and remove key from scopes if they exist
+          ids.forEach((keyId) => {
+            const idKey = buildIdKey(type, keyId);
 
-          // Delete key
-          promises.push(dbTransaction.del(idKey));
+            // Delete key
+            promises.push(dbTransaction.del(idKey));
 
-          // Delete key from all scopes
-          if (scopes) {
-            scopes.forEach(scope => {
-              promises.push(dbTransaction.hdel(buildScopeKey(scope), idKey));
-            });
-          }
-        });
-      });
+            // Delete key from all scopes
+            if (scopes) {
+              scopes.forEach((scope) => {
+                promises.push(dbTransaction.hdel(buildScopeKey(scope), idKey));
+              });
+            }
+          });
+        },
+      );
 
       // Now delete the main key for the user that lists all creds
       promises.push(dbTransaction.del(authKey));
@@ -194,19 +204,21 @@ dao.removeAllCredentials = function (id) {
 
 dao.getAllCredentials = function (consumerId) {
   const credentialTypes = Object.keys(config.models.credentials.properties);
-  const awaitAllPromises = credentialTypes.map(type => {
-    if (type === 'key-auth' || type === 'jwt') {
+  const awaitAllPromises = credentialTypes.map((type) => {
+    if (type === "key-auth" || type === "jwt") {
       // TODO: replace with separate implementation per type instead of ifs
-      return db.smembers(buildIdKey(type, consumerId)).then(keyIds => {
+      return db.smembers(buildIdKey(type, consumerId)).then((keyIds) => {
         // 1-* relation, finding all key-auth credentials (consumerid => [KeyId1, KeyId2, ..., KeyIdN])
-        return Promise.all(keyIds.map(keyId => this.getCredential(keyId, type)));
+        return Promise.all(
+          keyIds.map((keyId) => this.getCredential(keyId, type)),
+        );
       });
     }
     return this.getCredential(consumerId, type);
   });
 
-  return Promise.all(awaitAllPromises).then(results =>
-    Array.prototype.concat.apply([], results).filter(c => c)
+  return Promise.all(awaitAllPromises).then((results) =>
+    Array.prototype.concat.apply([], results).filter((c) => c),
   );
 };
 
@@ -218,9 +230,11 @@ module.exports = dao;
 
 function buildScopeKey(scope) {
   return config.systemConfig.db.redis.namespace
-    .concat('-', scopeCredentialsNamespace)
-    .concat(':', scope);
+    .concat("-", scopeCredentialsNamespace)
+    .concat(":", scope);
 }
 function buildIdKey(type, id) {
-  return config.systemConfig.db.redis.namespace.concat('-', type).concat(':', id);
+  return config.systemConfig.db.redis.namespace
+    .concat("-", type)
+    .concat(":", id);
 }

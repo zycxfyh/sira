@@ -1,10 +1,10 @@
-const assert = require('assert');
-const environment = require('../../fixtures/cli/environment');
-const adminHelper = require('../../common/admin-helper')();
-const namespace = 'express-gateway:users:deactivate';
-const idGen = require('uuid62');
+const assert = require("node:assert");
+const environment = require("../../fixtures/cli/environment");
+const adminHelper = require("../../common/admin-helper")();
+const namespace = "express-gateway:users:deactivate";
+const idGen = require("uuid62");
 
-describe('eg users deactivate', () => {
+describe("eg users deactivate", () => {
   let program, env, userId, username, username2;
   before(() => {
     ({ program, env } = environment.bootstrap());
@@ -20,15 +20,15 @@ describe('eg users deactivate', () => {
     return adminHelper.admin.users
       .create({
         username,
-        firstname: 'La',
-        lastname: 'Deeda',
+        firstname: "La",
+        lastname: "Deeda",
       })
-      .then(createdUser => {
+      .then((createdUser) => {
         userId = createdUser.id;
         return adminHelper.admin.users.create({
           username: username2,
-          firstname: 'La2',
-          lastname: 'Deeda2',
+          firstname: "La2",
+          lastname: "Deeda2",
         });
       });
   });
@@ -38,48 +38,48 @@ describe('eg users deactivate', () => {
     return adminHelper.reset();
   });
 
-  it('deactivates a user by username', done => {
-    env.hijack(namespace, generator => {
+  it("deactivates a user by username", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           assert.fail(message);
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
-        return adminHelper.admin.users.info(username).then(user => {
+      generator.once("end", () => {
+        return adminHelper.admin.users.info(username).then((user) => {
           assert.strictEqual(user.isActive, false);
-          assert.strictEqual(output, 'Deactivated ' + username);
+          assert.strictEqual(output, `Deactivated ${username}`);
           done();
         });
       });
     });
 
-    env.argv = program.parse('users deactivate ' + username);
+    env.argv = program.parse(`users deactivate ${username}`);
   });
 
-  it('deactivates a user by user ID', done => {
-    env.hijack(namespace, generator => {
+  it("deactivates a user by user ID", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           assert.fail(message);
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
-        return adminHelper.admin.users.info(userId).then(user => {
+      generator.once("end", () => {
+        return adminHelper.admin.users.info(userId).then((user) => {
           assert.strictEqual(user.isActive, false);
-          assert.strictEqual(output, 'Deactivated ' + userId);
+          assert.strictEqual(output, `Deactivated ${userId}`);
           done();
         });
       });
@@ -88,51 +88,51 @@ describe('eg users deactivate', () => {
     env.argv = program.parse(`users deactivate ${userId}`);
   });
 
-  it('deactivates multiple users', done => {
-    env.hijack(namespace, generator => {
+  it("deactivates multiple users", (done) => {
+    env.hijack(namespace, (generator) => {
       const output = {};
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           assert.fail(message);
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output[message] = true; // order is not garanteed, capture as object
         };
       });
 
-      generator.once('end', () => {
-        return adminHelper.admin.users.list().then(data => {
+      generator.once("end", () => {
+        return adminHelper.admin.users.list().then((data) => {
           const { users } = data;
           assert.strictEqual(users[0].isActive, false);
           assert.strictEqual(users[1].isActive, false);
 
-          assert.ok(output['Deactivated ' + username]);
-          assert.ok(output['Deactivated ' + username2]);
+          assert.ok(output[`Deactivated ${username}`]);
+          assert.ok(output[`Deactivated ${username2}`]);
           assert.strictEqual(Object.keys(output).length, 2);
           done();
         });
       });
     });
 
-    env.argv = program.parse('users deactivate ' + username + ' ' + username2);
+    env.argv = program.parse(`users deactivate ${username} ${username2}`);
   });
 
-  it('prints only the user id when using the --quiet flag', done => {
-    env.hijack(namespace, generator => {
+  it("prints only the user id when using the --quiet flag", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           assert.fail(message);
         };
-        generator.stdout = message => {
+        generator.stdout = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
-        return adminHelper.admin.users.info(username).then(user => {
+      generator.once("end", () => {
+        return adminHelper.admin.users.info(username).then((user) => {
           assert.strictEqual(user.isActive, false);
           assert.strictEqual(output, username);
           done();
@@ -140,6 +140,6 @@ describe('eg users deactivate', () => {
       });
     });
 
-    env.argv = program.parse('users deactivate ' + username + ' -q');
+    env.argv = program.parse(`users deactivate ${username} -q`);
   });
 });

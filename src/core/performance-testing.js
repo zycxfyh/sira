@@ -4,11 +4,11 @@
  * 提供全面的性能基准测试和容量规划
  */
 
-const EventEmitter = require('events');
-const { performance, PerformanceObserver } = require('perf_hooks');
-const axios = require('axios');
-const fs = require('fs').promises;
-const path = require('path');
+const EventEmitter = require("node:events");
+const { performance, PerformanceObserver } = require("node:perf_hooks");
+const axios = require("axios");
+const fs = require("node:fs").promises;
+const path = require("node:path");
 
 /**
  * 性能测试工具
@@ -19,7 +19,7 @@ class PerformanceTestingTool extends EventEmitter {
     super();
 
     this.options = {
-      baseUrl: options.baseUrl || 'http://localhost:8080',
+      baseUrl: options.baseUrl || "http://localhost:8080",
       testDuration: options.testDuration || 300, // 5分钟
       warmupTime: options.warmupTime || 60, // 1分钟预热
       cooldownTime: options.cooldownTime || 30, // 30秒冷却
@@ -28,14 +28,15 @@ class PerformanceTestingTool extends EventEmitter {
       thinkTime: options.thinkTime || 1000, // 1秒思考时间
       timeout: options.timeout || 30000,
       enableMetrics: options.enableMetrics !== false,
-      reportDir: options.reportDir || path.join(__dirname, '../reports/performance'),
+      reportDir:
+        options.reportDir || path.join(__dirname, "../reports/performance"),
       ...options,
     };
 
     // 测试状态
     this.isRunning = false;
     this.startTime = null;
-    this.testPhase = 'idle'; // idle, warmup, test, cooldown
+    this.testPhase = "idle"; // idle, warmup, test, cooldown
 
     // 性能指标收集
     this.metrics = {
@@ -76,19 +77,19 @@ class PerformanceTestingTool extends EventEmitter {
     this.httpClients = [];
 
     // 性能观察者
-    this.performanceObserver = new PerformanceObserver(list => {
+    this.performanceObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         this.recordPerformanceEntry(entry);
       }
     });
-    this.performanceObserver.observe({ entryTypes: ['measure', 'function'] });
+    this.performanceObserver.observe({ entryTypes: ["measure", "function"] });
   }
 
   /**
    * 初始化性能测试工具
    */
   async initialize() {
-    console.log('🔧 初始化性能测试工具');
+    console.log("🔧 初始化性能测试工具");
 
     // 创建报告目录
     await fs.mkdir(this.options.reportDir, { recursive: true });
@@ -106,28 +107,30 @@ class PerformanceTestingTool extends EventEmitter {
         baseURL: this.options.baseUrl,
         timeout: this.options.timeout,
         headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Sira-Performance-Tester/1.0',
+          "Content-Type": "application/json",
+          "User-Agent": "Sira-Performance-Tester/1.0",
         },
       });
 
       // 添加请求/响应拦截器
-      client.interceptors.request.use(config => {
+      client.interceptors.request.use((config) => {
         config.metadata = { startTime: performance.now() };
         return config;
       });
 
       client.interceptors.response.use(
-        response => {
-          const duration = performance.now() - response.config.metadata.startTime;
+        (response) => {
+          const duration =
+            performance.now() - response.config.metadata.startTime;
           this.recordResponse(response, duration);
           return response;
         },
-        error => {
-          const duration = performance.now() - error.config?.metadata?.startTime || 0;
+        (error) => {
+          const duration =
+            performance.now() - error.config?.metadata?.startTime || 0;
           this.recordError(error, duration);
           throw error;
-        }
+        },
       );
 
       this.httpClients.push(client);
@@ -139,63 +142,63 @@ class PerformanceTestingTool extends EventEmitter {
    */
   setupTestScenarios() {
     // AI聊天性能测试
-    this.testScenarios.set('ai_chat_performance', {
-      name: 'AI聊天性能测试',
-      description: '测试AI聊天接口的性能表现',
-      endpoint: '/chat/completions',
-      method: 'POST',
+    this.testScenarios.set("ai_chat_performance", {
+      name: "AI聊天性能测试",
+      description: "测试AI聊天接口的性能表现",
+      endpoint: "/chat/completions",
+      method: "POST",
       payload: {
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: '请写一首关于技术的诗' }],
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: "请写一首关于技术的诗" }],
         max_tokens: 100,
         temperature: 0.7,
       },
       headers: {
-        Authorization: 'Bearer sk-test-key',
+        Authorization: "Bearer sk-test-key",
       },
       weight: 0.7, // 70%的请求
     });
 
     // 参数优化性能测试
-    this.testScenarios.set('parameter_optimization', {
-      name: '参数优化性能测试',
-      description: '测试参数优化接口的性能',
-      endpoint: '/parameters/optimize',
-      method: 'POST',
+    this.testScenarios.set("parameter_optimization", {
+      name: "参数优化性能测试",
+      description: "测试参数优化接口的性能",
+      endpoint: "/parameters/optimize",
+      method: "POST",
       payload: {
         parameters: {
           temperature: 0.8,
           top_p: 0.9,
           frequency_penalty: 0.1,
         },
-        task_type: 'creative',
+        task_type: "creative",
       },
       weight: 0.1, // 10%的请求
     });
 
     // API密钥验证测试
-    this.testScenarios.set('api_key_validation', {
-      name: 'API密钥验证性能测试',
-      description: '测试API密钥验证的性能',
-      endpoint: '/api-keys/validate',
-      method: 'POST',
+    this.testScenarios.set("api_key_validation", {
+      name: "API密钥验证性能测试",
+      description: "测试API密钥验证的性能",
+      endpoint: "/api-keys/validate",
+      method: "POST",
       payload: {
-        key: 'sk-test-key-123',
-        permissions: ['read', 'write'],
+        key: "sk-test-key-123",
+        permissions: ["read", "write"],
       },
       weight: 0.1, // 10%的请求
     });
 
     // 批量处理测试
-    this.testScenarios.set('batch_processing', {
-      name: '批量处理性能测试',
-      description: '测试批量处理接口的性能',
-      endpoint: '/batch-processing/batches',
-      method: 'POST',
+    this.testScenarios.set("batch_processing", {
+      name: "批量处理性能测试",
+      description: "测试批量处理接口的性能",
+      endpoint: "/batch-processing/batches",
+      method: "POST",
       payload: {
         requests: Array.from({ length: 5 }, (_, i) => ({
           id: `req_${i}`,
-          model: 'gpt-3.5-turbo',
+          model: "gpt-3.5-turbo",
           prompt: `生成测试内容 ${i + 1}`,
         })),
       },
@@ -203,11 +206,11 @@ class PerformanceTestingTool extends EventEmitter {
     });
 
     // 健康检查测试
-    this.testScenarios.set('health_check', {
-      name: '健康检查性能测试',
-      description: '测试健康检查接口的性能',
-      endpoint: '/health',
-      method: 'GET',
+    this.testScenarios.set("health_check", {
+      name: "健康检查性能测试",
+      description: "测试健康检查接口的性能",
+      endpoint: "/health",
+      method: "GET",
       weight: 0.05, // 5%的请求
     });
   }
@@ -217,15 +220,15 @@ class PerformanceTestingTool extends EventEmitter {
    */
   async runPerformanceTest(config = {}) {
     const {
-      scenario = 'ai_chat_performance',
-      testType = 'load', // benchmark, load, stress, spike, volume
+      scenario = "ai_chat_performance",
+      testType = "load", // benchmark, load, stress, spike, volume
       duration = this.options.testDuration,
       concurrentUsers = this.options.concurrentUsers,
       targetRPS = 50,
     } = config;
 
     if (this.isRunning) {
-      throw new Error('性能测试已在运行中');
+      throw new Error("性能测试已在运行中");
     }
 
     this.isRunning = true;
@@ -233,7 +236,7 @@ class PerformanceTestingTool extends EventEmitter {
 
     console.log(`📊 开始性能测试: ${scenario} (${testType}模式)`);
 
-    this.emit('testStart', {
+    this.emit("testStart", {
       scenario,
       testType,
       duration,
@@ -245,33 +248,47 @@ class PerformanceTestingTool extends EventEmitter {
       let results;
 
       switch (testType) {
-        case 'benchmark':
+        case "benchmark":
           results = await this.runBenchmarkTest(scenario, duration);
           break;
-        case 'load':
-          results = await this.runLoadTest(scenario, targetRPS, duration, concurrentUsers);
+        case "load":
+          results = await this.runLoadTest(
+            scenario,
+            targetRPS,
+            duration,
+            concurrentUsers,
+          );
           break;
-        case 'stress':
-          results = await this.runStressTest(scenario, concurrentUsers, duration);
+        case "stress":
+          results = await this.runStressTest(
+            scenario,
+            concurrentUsers,
+            duration,
+          );
           break;
-        case 'spike':
+        case "spike":
           results = await this.runSpikeTest(scenario, targetRPS, duration);
           break;
-        case 'volume':
+        case "volume":
           results = await this.runVolumeTest(scenario, duration);
           break;
         default:
-          results = await this.runLoadTest(scenario, targetRPS, duration, concurrentUsers);
+          results = await this.runLoadTest(
+            scenario,
+            targetRPS,
+            duration,
+            concurrentUsers,
+          );
       }
 
       const report = this.generatePerformanceReport(results);
 
-      this.emit('testComplete', report);
+      this.emit("testComplete", report);
 
       return report;
     } catch (error) {
-      console.error('性能测试失败:', error.message);
-      this.emit('testError', error);
+      console.error("性能测试失败:", error.message);
+      this.emit("testError", error);
       throw error;
     } finally {
       await this.cleanup();
@@ -294,7 +311,7 @@ class PerformanceTestingTool extends EventEmitter {
     await this.warmupPhase(30, scenarioConfig);
 
     // 基准测试阶段
-    this.testPhase = 'benchmark';
+    this.testPhase = "benchmark";
     const endTime = Date.now() + duration * 1000;
     const results = [];
 
@@ -341,13 +358,16 @@ class PerformanceTestingTool extends EventEmitter {
     console.log(`📊 运行负载测试: ${scenario} (${targetRPS} RPS)`);
 
     // 预热阶段
-    await this.warmupPhase(this.options.warmupTime, this.testScenarios.get(scenario));
+    await this.warmupPhase(
+      this.options.warmupTime,
+      this.testScenarios.get(scenario),
+    );
 
     // 爬坡阶段
     await this.rampUpPhase(targetRPS, this.options.rampUpTime);
 
     // 负载测试阶段
-    this.testPhase = 'load';
+    this.testPhase = "load";
     const endTime = Date.now() + duration * 1000;
     const interval = 1000 / targetRPS;
     const workers = [];
@@ -391,8 +411,8 @@ class PerformanceTestingTool extends EventEmitter {
             interval,
             Math.min(endTime, Date.now() + 10000),
             results,
-            i
-          )
+            i,
+          ),
         );
       }
 
@@ -424,13 +444,26 @@ class PerformanceTestingTool extends EventEmitter {
     for (const phase of phases) {
       if (Date.now() >= endTime) break;
 
-      const phaseEndTime = Math.min(endTime, Date.now() + phase.duration * 1000);
+      const phaseEndTime = Math.min(
+        endTime,
+        Date.now() + phase.duration * 1000,
+      );
       const interval = 1000 / phase.rps;
 
       const workers = [];
-      for (let i = 0; i < Math.min(this.options.concurrentUsers, Math.ceil(phase.rps)); i++) {
+      for (
+        let i = 0;
+        i < Math.min(this.options.concurrentUsers, Math.ceil(phase.rps));
+        i++
+      ) {
         workers.push(
-          this.createSpikeWorker(scenarioConfig, interval, phaseEndTime, results, phase.rps)
+          this.createSpikeWorker(
+            scenarioConfig,
+            interval,
+            phaseEndTime,
+            results,
+            phase.rps,
+          ),
         );
       }
 
@@ -454,10 +487,11 @@ class PerformanceTestingTool extends EventEmitter {
     const largePayload = {
       ...scenarioConfig.payload,
       messages: Array.from({ length: 50 }, (_, i) => ({
-        role: i % 2 === 0 ? 'user' : 'assistant',
-        content: `这是测试消息 ${i + 1}，包含大量文本内容用于测试系统处理大数据量的能力。`.repeat(
-          10
-        ),
+        role: i % 2 === 0 ? "user" : "assistant",
+        content:
+          `这是测试消息 ${i + 1}，包含大量文本内容用于测试系统处理大数据量的能力。`.repeat(
+            10,
+          ),
       })),
     };
 
@@ -497,8 +531,8 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 创建负载测试工作线程
    */
-  createLoadWorker(scenario, interval, endTime, results) {
-    return new Promise(resolve => {
+  createLoadWorker(scenario, interval, endTime, _results) {
+    return new Promise((resolve) => {
       const scenarioConfig = this.testScenarios.get(scenario);
       const clientIndex = Math.floor(Math.random() * this.httpClients.length);
 
@@ -511,7 +545,7 @@ class PerformanceTestingTool extends EventEmitter {
             headers: scenarioConfig.headers,
           });
           // 结果会被拦截器记录
-        } catch (error) {
+        } catch (_error) {
           // 错误会被拦截器记录
         }
       };
@@ -534,8 +568,8 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 创建压力测试工作线程
    */
-  createStressWorker(scenarioConfig, interval, endTime, results, workerId) {
-    return new Promise(resolve => {
+  createStressWorker(scenarioConfig, interval, endTime, _results, workerId) {
+    return new Promise((resolve) => {
       const clientIndex = workerId % this.httpClients.length;
 
       const executeRequest = async () => {
@@ -546,7 +580,7 @@ class PerformanceTestingTool extends EventEmitter {
             data: scenarioConfig.payload,
             headers: scenarioConfig.headers,
           });
-        } catch (error) {
+        } catch (_error) {
           // 错误处理
         }
       };
@@ -569,8 +603,8 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 创建峰值测试工作线程
    */
-  createSpikeWorker(scenarioConfig, interval, endTime, results, targetRPS) {
-    return new Promise(resolve => {
+  createSpikeWorker(scenarioConfig, interval, endTime, _results, _targetRPS) {
+    return new Promise((resolve) => {
       const clientIndex = Math.floor(Math.random() * this.httpClients.length);
 
       const executeRequest = async () => {
@@ -581,7 +615,7 @@ class PerformanceTestingTool extends EventEmitter {
             data: scenarioConfig.payload,
             headers: scenarioConfig.headers,
           });
-        } catch (error) {
+        } catch (_error) {
           // 错误处理
         }
       };
@@ -605,7 +639,7 @@ class PerformanceTestingTool extends EventEmitter {
    * 预热阶段
    */
   async warmupPhase(duration, scenarioConfig) {
-    this.testPhase = 'warmup';
+    this.testPhase = "warmup";
     console.log(`🔥 预热阶段: ${duration}秒`);
 
     const endTime = Date.now() + duration * 1000;
@@ -618,21 +652,21 @@ class PerformanceTestingTool extends EventEmitter {
           data: scenarioConfig.payload,
           headers: scenarioConfig.headers,
         });
-      } catch (error) {
+      } catch (_error) {
         // 预热阶段忽略错误
       }
 
       await this.sleep(1000);
     }
 
-    console.log('🔥 预热阶段完成');
+    console.log("🔥 预热阶段完成");
   }
 
   /**
    * 爬坡阶段
    */
   async rampUpPhase(targetRPS, duration) {
-    this.testPhase = 'ramp_up';
+    this.testPhase = "ramp_up";
     console.log(`📈 爬坡阶段: 0 -> ${targetRPS} RPS (${duration}秒)`);
 
     const endTime = Date.now() + duration * 1000;
@@ -645,32 +679,32 @@ class PerformanceTestingTool extends EventEmitter {
 
       // 发送请求
       try {
-        await this.httpClients[0].get('/health');
-      } catch (error) {
+        await this.httpClients[0].get("/health");
+      } catch (_error) {
         // 忽略爬坡阶段错误
       }
 
       await this.sleep(interval);
     }
 
-    console.log('📈 爬坡阶段完成');
+    console.log("📈 爬坡阶段完成");
   }
 
   /**
    * 冷却阶段
    */
   async cooldownPhase() {
-    this.testPhase = 'cooldown';
+    this.testPhase = "cooldown";
     console.log(`❄️ 冷却阶段: ${this.options.cooldownTime}秒`);
 
     await this.sleep(this.options.cooldownTime * 1000);
-    console.log('❄️ 冷却阶段完成');
+    console.log("❄️ 冷却阶段完成");
   }
 
   /**
    * 记录响应
    */
-  recordResponse(response, responseTime) {
+  recordResponse(_response, responseTime) {
     this.metrics.responseTime.values.push(responseTime);
 
     if (responseTime < this.metrics.responseTime.min) {
@@ -705,7 +739,7 @@ class PerformanceTestingTool extends EventEmitter {
     const errorType = this.categorizeError(error);
     this.metrics.errorRate.errors.set(
       errorType,
-      (this.metrics.errorRate.errors.get(errorType) || 0) + 1
+      (this.metrics.errorRate.errors.get(errorType) || 0) + 1,
     );
 
     // 即使出错也记录响应时间用于统计
@@ -726,11 +760,11 @@ class PerformanceTestingTool extends EventEmitter {
    * 分类错误
    */
   categorizeError(error) {
-    if (error.code === 'ECONNREFUSED') return 'connection_refused';
-    if (error.code === 'ETIMEDOUT') return 'timeout';
-    if (error.response?.status >= 500) return 'server_error';
-    if (error.response?.status >= 400) return 'client_error';
-    return 'unknown';
+    if (error.code === "ECONNREFUSED") return "connection_refused";
+    if (error.code === "ETIMEDOUT") return "timeout";
+    if (error.response?.status >= 500) return "server_error";
+    if (error.response?.status >= 400) return "client_error";
+    return "unknown";
   }
 
   /**
@@ -738,11 +772,13 @@ class PerformanceTestingTool extends EventEmitter {
    */
   generatePerformanceReport(results) {
     const totalRequests = results.length;
-    const successfulRequests = results.filter(r => r.success).length;
+    const successfulRequests = results.filter((r) => r.success).length;
     const failedRequests = totalRequests - successfulRequests;
 
     // 计算响应时间统计
-    const responseTimes = results.filter(r => r.success).map(r => r.responseTime);
+    const responseTimes = results
+      .filter((r) => r.success)
+      .map((r) => r.responseTime);
     const avgResponseTime =
       responseTimes.length > 0
         ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
@@ -753,12 +789,15 @@ class PerformanceTestingTool extends EventEmitter {
     // 计算吞吐量
     const avgThroughput =
       this.metrics.throughput.timeline.length > 0
-        ? this.metrics.throughput.timeline.reduce((sum, point) => sum + point.rps, 0) /
-          this.metrics.throughput.timeline.length
+        ? this.metrics.throughput.timeline.reduce(
+            (sum, point) => sum + point.rps,
+            0,
+          ) / this.metrics.throughput.timeline.length
         : 0;
 
     // 计算错误率
-    const errorRate = totalRequests > 0 ? (failedRequests / totalRequests) * 100 : 0;
+    const errorRate =
+      totalRequests > 0 ? (failedRequests / totalRequests) * 100 : 0;
 
     const report = {
       summary: {
@@ -783,7 +822,7 @@ class PerformanceTestingTool extends EventEmitter {
         avgResponseTime,
         errorRate,
         avgThroughput,
-        percentiles
+        percentiles,
       ),
     };
 
@@ -799,7 +838,7 @@ class PerformanceTestingTool extends EventEmitter {
     const sorted = [...values].sort((a, b) => a - b);
     const result = {};
 
-    percentiles.forEach(p => {
+    percentiles.forEach((p) => {
       const index = Math.ceil((p / 100) * sorted.length) - 1;
       result[p] = sorted[Math.max(0, Math.min(index, sorted.length - 1))];
     });
@@ -810,23 +849,28 @@ class PerformanceTestingTool extends EventEmitter {
   /**
    * 生成性能建议
    */
-  generatePerformanceRecommendations(avgResponseTime, errorRate, avgThroughput, percentiles) {
+  generatePerformanceRecommendations(
+    avgResponseTime,
+    errorRate,
+    avgThroughput,
+    percentiles,
+  ) {
     const recommendations = [];
 
     if (avgResponseTime > 2000) {
-      recommendations.push('平均响应时间超过2秒，建议优化数据库查询和缓存策略');
+      recommendations.push("平均响应时间超过2秒，建议优化数据库查询和缓存策略");
     }
 
     if (percentiles[95] > 5000) {
-      recommendations.push('95%响应时间超过5秒，存在严重的性能问题');
+      recommendations.push("95%响应时间超过5秒，存在严重的性能问题");
     }
 
     if (errorRate > 5) {
-      recommendations.push('错误率超过5%，系统稳定性不足');
+      recommendations.push("错误率超过5%，系统稳定性不足");
     }
 
     if (avgThroughput < 10) {
-      recommendations.push('平均吞吐量过低，建议增加服务器资源或优化架构');
+      recommendations.push("平均吞吐量过低，建议增加服务器资源或优化架构");
     }
 
     return recommendations;
@@ -836,14 +880,14 @@ class PerformanceTestingTool extends EventEmitter {
    * 休眠工具函数
    */
   async sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
    * 清理测试环境
    */
   async cleanup() {
-    console.log('🧹 清理性能测试环境');
+    console.log("🧹 清理性能测试环境");
     this.isRunning = false;
 
     // 断开性能观察者
@@ -877,8 +921,8 @@ class PerformanceTestingTool extends EventEmitter {
    */
   stop() {
     this.isRunning = false;
-    console.log('🛑 性能测试已停止');
-    this.emit('testStopped');
+    console.log("🛑 性能测试已停止");
+    this.emit("testStopped");
   }
 }
 

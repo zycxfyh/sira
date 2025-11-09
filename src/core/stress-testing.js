@@ -4,9 +4,9 @@
  * 测试系统在极端条件下的表现和弹性
  */
 
-const EventEmitter = require('events');
-const { performance } = require('perf_hooks');
-const os = require('os');
+const EventEmitter = require("node:events");
+const { performance } = require("node:perf_hooks");
+const os = require("node:os");
 
 /**
  * 压力测试工具
@@ -33,7 +33,7 @@ class StressTestingTool extends EventEmitter {
     // 测试状态
     this.isRunning = false;
     this.startTime = null;
-    this.testPhase = 'idle'; // idle, warmup, stress, cooldown
+    this.testPhase = "idle"; // idle, warmup, stress, cooldown
 
     // 系统监控
     this.systemMetrics = {
@@ -63,7 +63,7 @@ class StressTestingTool extends EventEmitter {
    * 初始化压力测试工具
    */
   async initialize() {
-    console.log('🔧 初始化压力测试工具');
+    console.log("🔧 初始化压力测试工具");
     await this.failureInjector.initialize();
     await this.resilienceTester.initialize();
   }
@@ -73,14 +73,14 @@ class StressTestingTool extends EventEmitter {
    */
   async runStressTest(config = {}) {
     const {
-      scenario = 'full_system',
-      intensity = 'high',
+      scenario = "full_system",
+      intensity = "high",
       duration = this.options.testDuration,
       enableFailures = true,
     } = config;
 
     if (this.isRunning) {
-      throw new Error('压力测试已在运行中');
+      throw new Error("压力测试已在运行中");
     }
 
     this.isRunning = true;
@@ -88,7 +88,7 @@ class StressTestingTool extends EventEmitter {
 
     console.log(`💥 开始压力测试: ${scenario} (${intensity}强度)`);
 
-    this.emit('testStart', {
+    this.emit("testStart", {
       scenario,
       intensity,
       duration,
@@ -100,7 +100,12 @@ class StressTestingTool extends EventEmitter {
       await this.warmupPhase(duration * 0.2);
 
       // 压力阶段
-      await this.stressPhase(scenario, intensity, duration * 0.6, enableFailures);
+      await this.stressPhase(
+        scenario,
+        intensity,
+        duration * 0.6,
+        enableFailures,
+      );
 
       // 故障注入阶段 (如果启用)
       if (enableFailures) {
@@ -112,12 +117,12 @@ class StressTestingTool extends EventEmitter {
 
       const results = this.generateStressReport();
 
-      this.emit('testComplete', results);
+      this.emit("testComplete", results);
 
       return results;
     } catch (error) {
-      console.error('压力测试失败:', error.message);
-      this.emit('testError', error);
+      console.error("压力测试失败:", error.message);
+      this.emit("testError", error);
       throw error;
     } finally {
       await this.cleanup();
@@ -129,7 +134,7 @@ class StressTestingTool extends EventEmitter {
    * 预热阶段
    */
   async warmupPhase(duration) {
-    this.testPhase = 'warmup';
+    this.testPhase = "warmup";
     console.log(`🔥 预热阶段: ${duration}秒`);
 
     const endTime = Date.now() + duration * 1000;
@@ -139,14 +144,14 @@ class StressTestingTool extends EventEmitter {
       await this.sleep(1000); // 每秒监控一次
     }
 
-    this.emit('warmupComplete');
+    this.emit("warmupComplete");
   }
 
   /**
    * 压力阶段
    */
   async stressPhase(scenario, intensity, duration, enableFailures) {
-    this.testPhase = 'stress';
+    this.testPhase = "stress";
     console.log(`💥 压力阶段: ${scenario} (${intensity}) - ${duration}秒`);
 
     const endTime = Date.now() + duration * 1000;
@@ -155,25 +160,24 @@ class StressTestingTool extends EventEmitter {
     const stressTasks = [];
 
     switch (scenario) {
-      case 'memory_stress':
+      case "memory_stress":
         stressTasks.push(this.applyMemoryStress(intensity, endTime));
         break;
-      case 'cpu_stress':
+      case "cpu_stress":
         stressTasks.push(this.applyCPUStress(intensity, endTime));
         break;
-      case 'network_stress':
+      case "network_stress":
         stressTasks.push(this.applyNetworkStress(intensity, endTime));
         break;
-      case 'io_stress':
+      case "io_stress":
         stressTasks.push(this.applyIOStress(intensity, endTime));
         break;
-      case 'full_system':
       default:
         stressTasks.push(
           this.applyMemoryStress(intensity, endTime),
           this.applyCPUStress(intensity, endTime),
           this.applyNetworkStress(intensity, endTime),
-          this.applyIOStress(intensity, endTime)
+          this.applyIOStress(intensity, endTime),
         );
         break;
     }
@@ -186,14 +190,14 @@ class StressTestingTool extends EventEmitter {
     // 并行执行所有压力任务
     await Promise.all(stressTasks);
 
-    this.emit('stressComplete');
+    this.emit("stressComplete");
   }
 
   /**
    * 故障注入阶段
    */
   async failureInjectionPhase(duration) {
-    this.testPhase = 'failure_injection';
+    this.testPhase = "failure_injection";
     console.log(`💣 故障注入阶段: ${duration}秒`);
 
     const endTime = Date.now() + duration * 1000;
@@ -204,14 +208,14 @@ class StressTestingTool extends EventEmitter {
       await this.sleep(5000); // 每5秒注入一个故障
     }
 
-    this.emit('failureInjectionComplete');
+    this.emit("failureInjectionComplete");
   }
 
   /**
    * 恢复阶段
    */
   async recoveryPhase(duration) {
-    this.testPhase = 'recovery';
+    this.testPhase = "recovery";
     console.log(`🔄 恢复阶段: ${duration}秒`);
 
     const endTime = Date.now() + duration * 1000;
@@ -226,7 +230,7 @@ class StressTestingTool extends EventEmitter {
       await this.sleep(2000);
     }
 
-    this.emit('recoveryComplete');
+    this.emit("recoveryComplete");
   }
 
   /**
@@ -250,7 +254,8 @@ class StressTestingTool extends EventEmitter {
         memoryChunks.push(chunk);
 
         // 检查内存使用率
-        const memUsage = process.memoryUsage().heapUsed / process.memoryUsage().heapTotal;
+        const memUsage =
+          process.memoryUsage().heapUsed / process.memoryUsage().heapTotal;
 
         if (memUsage > this.options.maxMemoryUsage) {
           console.warn(`⚠️ 内存使用率过高: ${(memUsage * 100).toFixed(2)}%`);
@@ -262,7 +267,7 @@ class StressTestingTool extends EventEmitter {
 
         await this.sleep(1000);
       } catch (error) {
-        console.error('内存压力测试出错:', error.message);
+        console.error("内存压力测试出错:", error.message);
         break;
       }
     }
@@ -271,7 +276,7 @@ class StressTestingTool extends EventEmitter {
     memoryChunks.length = 0;
     if (global.gc) global.gc();
 
-    console.log('🧠 内存压力测试完成');
+    console.log("🧠 内存压力测试完成");
   }
 
   /**
@@ -294,20 +299,20 @@ class StressTestingTool extends EventEmitter {
     }
 
     await Promise.all(workers);
-    console.log('⚡ CPU压力测试完成');
+    console.log("⚡ CPU压力测试完成");
   }
 
   /**
    * 创建CPU压力工作线程
    */
   createCPUWorker(endTime) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const worker = async () => {
         while (Date.now() < endTime) {
           // 执行CPU密集型计算
-          let result = 0;
+          let _result = 0;
           for (let i = 0; i < 1000000; i++) {
-            result += Math.sin(i) * Math.cos(i);
+            _result += Math.sin(i) * Math.cos(i);
           }
 
           // 小延迟避免完全阻塞
@@ -340,7 +345,7 @@ class StressTestingTool extends EventEmitter {
     }
 
     await Promise.all(connections);
-    console.log('🌐 网络压力测试完成');
+    console.log("🌐 网络压力测试完成");
   }
 
   /**
@@ -348,13 +353,13 @@ class StressTestingTool extends EventEmitter {
    */
   async createNetworkConnection(endTime) {
     // 模拟网络连接压力
-    const axios = require('axios');
+    const axios = require("axios");
 
     while (Date.now() < endTime) {
       try {
         // 发送大量小请求
-        await axios.get('http://httpbin.org/delay/0.1', { timeout: 5000 });
-      } catch (error) {
+        await axios.get("http://httpbin.org/delay/0.1", { timeout: 5000 });
+      } catch (_error) {
         // 忽略网络错误
       }
 
@@ -382,19 +387,22 @@ class StressTestingTool extends EventEmitter {
     }
 
     await Promise.all(ioTasks);
-    console.log('💾 IO压力测试完成');
+    console.log("💾 IO压力测试完成");
   }
 
   /**
    * 创建IO工作线程
    */
   async createIOWorker(endTime, workerId) {
-    const fs = require('fs').promises;
-    const path = require('path');
-    const os = require('os');
+    const fs = require("node:fs").promises;
+    const path = require("node:path");
+    const os = require("node:os");
 
     const tempDir = os.tmpdir();
-    const fileName = path.join(tempDir, `stress_test_${workerId}_${Date.now()}.tmp`);
+    const fileName = path.join(
+      tempDir,
+      `stress_test_${workerId}_${Date.now()}.tmp`,
+    );
 
     try {
       while (Date.now() < endTime) {
@@ -420,8 +428,14 @@ class StressTestingTool extends EventEmitter {
    */
   async injectFailuresRandomly(endTime) {
     while (Date.now() < endTime) {
-      const failureTypes = ['network_latency', 'memory_leak', 'cpu_spike', 'disk_full'];
-      const randomFailure = failureTypes[Math.floor(Math.random() * failureTypes.length)];
+      const failureTypes = [
+        "network_latency",
+        "memory_leak",
+        "cpu_spike",
+        "disk_full",
+      ];
+      const randomFailure =
+        failureTypes[Math.floor(Math.random() * failureTypes.length)];
 
       await this.failureInjector.injectFailure(randomFailure, {
         duration: Math.random() * 10000 + 5000, // 5-15秒
@@ -465,7 +479,7 @@ class StressTestingTool extends EventEmitter {
     });
 
     // 磁盘监控 (简化版)
-    const fs = require('fs');
+    const _fs = require("node:fs");
     const diskStats = {
       timestamp,
       free: Math.floor(Math.random() * 1000000000), // 模拟数据
@@ -479,7 +493,7 @@ class StressTestingTool extends EventEmitter {
     const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
     this.trimMetrics(tenMinutesAgo);
 
-    this.emit('systemMetrics', {
+    this.emit("systemMetrics", {
       memory: memUsage,
       cpu: cpuUsage,
       timestamp,
@@ -490,8 +504,8 @@ class StressTestingTool extends EventEmitter {
    * 修剪指标数据
    */
   trimMetrics(cutoffTime) {
-    const trimArray = (arr, timeKey = 'timestamp') => {
-      const startIndex = arr.findIndex(item => item[timeKey] >= cutoffTime);
+    const trimArray = (arr, timeKey = "timestamp") => {
+      const startIndex = arr.findIndex((item) => item[timeKey] >= cutoffTime);
       if (startIndex > 0) {
         arr.splice(0, startIndex);
       }
@@ -508,7 +522,7 @@ class StressTestingTool extends EventEmitter {
    * 停止所有压力源
    */
   async stopAllStressSources() {
-    console.log('🛑 停止所有压力源');
+    console.log("🛑 停止所有压力源");
 
     // 停止内存压力
     if (global.gc) global.gc();
@@ -526,7 +540,7 @@ class StressTestingTool extends EventEmitter {
    * 清理测试环境
    */
   async cleanup() {
-    console.log('🧹 清理压力测试环境');
+    console.log("🧹 清理压力测试环境");
 
     await this.stopAllStressSources();
     await this.failureInjector.cleanup();
@@ -538,7 +552,7 @@ class StressTestingTool extends EventEmitter {
       global.gc();
     }
 
-    this.testPhase = 'idle';
+    this.testPhase = "idle";
   }
 
   /**
@@ -560,7 +574,11 @@ class StressTestingTool extends EventEmitter {
       cpu: cpuStats,
       failures: failureStats,
       resilience: resilienceStats,
-      recommendations: this.generateStressRecommendations(memoryStats, cpuStats, failureStats),
+      recommendations: this.generateStressRecommendations(
+        memoryStats,
+        cpuStats,
+        failureStats,
+      ),
     };
   }
 
@@ -571,15 +589,16 @@ class StressTestingTool extends EventEmitter {
     if (this.systemMetrics.memory.length === 0) return {};
 
     const memoryData = this.systemMetrics.memory;
-    const heapUsed = memoryData.map(m => m.heapUsed);
-    const usagePercent = memoryData.map(m => m.usagePercent);
+    const heapUsed = memoryData.map((m) => m.heapUsed);
+    const usagePercent = memoryData.map((m) => m.usagePercent);
 
     return {
       peakUsage: Math.max(...heapUsed),
       averageUsage: heapUsed.reduce((a, b) => a + b, 0) / heapUsed.length,
       minUsage: Math.min(...heapUsed),
       peakUsagePercent: Math.max(...usagePercent),
-      averageUsagePercent: usagePercent.reduce((a, b) => a + b, 0) / usagePercent.length,
+      averageUsagePercent:
+        usagePercent.reduce((a, b) => a + b, 0) / usagePercent.length,
     };
   }
 
@@ -590,7 +609,7 @@ class StressTestingTool extends EventEmitter {
     if (this.systemMetrics.cpu.length === 0) return {};
 
     const cpuData = this.systemMetrics.cpu;
-    const totalCPU = cpuData.map(c => c.total);
+    const totalCPU = cpuData.map((c) => c.total);
 
     return {
       peakUsage: Math.max(...totalCPU),
@@ -605,12 +624,14 @@ class StressTestingTool extends EventEmitter {
   calculateSystemLoad() {
     const memoryLoad =
       this.systemMetrics.memory.length > 0
-        ? this.systemMetrics.memory[this.systemMetrics.memory.length - 1].usagePercent / 100
+        ? this.systemMetrics.memory[this.systemMetrics.memory.length - 1]
+            .usagePercent / 100
         : 0;
 
     const cpuLoad =
       this.systemMetrics.cpu.length > 0
-        ? this.systemMetrics.cpu[this.systemMetrics.cpu.length - 1].total / 1000000
+        ? this.systemMetrics.cpu[this.systemMetrics.cpu.length - 1].total /
+          1000000
         : 0; // 转换为秒
 
     return {
@@ -627,20 +648,22 @@ class StressTestingTool extends EventEmitter {
     const recommendations = [];
 
     if (memoryStats.peakUsagePercent > 85) {
-      recommendations.push('内存使用率过高，建议优化内存管理或增加内存资源');
+      recommendations.push("内存使用率过高，建议优化内存管理或增加内存资源");
     }
 
     if (cpuStats.peakUsage > 90000000) {
       // 90秒
-      recommendations.push('CPU使用率过高，建议优化算法或增加CPU资源');
+      recommendations.push("CPU使用率过高，建议优化算法或增加CPU资源");
     }
 
     if (failureStats.totalFailures > 10) {
-      recommendations.push('系统在压力下出现较多故障，建议加强错误处理和恢复机制');
+      recommendations.push(
+        "系统在压力下出现较多故障，建议加强错误处理和恢复机制",
+      );
     }
 
     if (memoryStats.averageUsagePercent > 70) {
-      recommendations.push('平均内存使用率较高，建议检查内存泄漏');
+      recommendations.push("平均内存使用率较高，建议检查内存泄漏");
     }
 
     return recommendations;
@@ -651,13 +674,13 @@ class StressTestingTool extends EventEmitter {
    */
   getIntensityValue(intensity, values) {
     switch (intensity) {
-      case 'low':
+      case "low":
         return values.low;
-      case 'medium':
+      case "medium":
         return values.medium;
-      case 'high':
+      case "high":
         return values.high;
-      case 'extreme':
+      case "extreme":
         return values.extreme;
       default:
         return values.medium;
@@ -668,7 +691,7 @@ class StressTestingTool extends EventEmitter {
    * 休眠工具函数
    */
   async sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -695,8 +718,8 @@ class StressTestingTool extends EventEmitter {
    */
   stop() {
     this.isRunning = false;
-    console.log('🛑 压力测试已停止');
-    this.emit('testStopped');
+    console.log("🛑 压力测试已停止");
+    this.emit("testStopped");
   }
 }
 
@@ -709,23 +732,23 @@ class FailureInjector {
   }
 
   async initialize() {
-    console.log('🔧 初始化故障注入器');
+    console.log("🔧 初始化故障注入器");
   }
 
   async injectFailure(type, options = {}) {
     console.log(`💣 注入故障: ${type}`);
 
     switch (type) {
-      case 'network_latency':
+      case "network_latency":
         await this.injectNetworkLatency(options);
         break;
-      case 'memory_leak':
+      case "memory_leak":
         await this.injectMemoryLeak(options);
         break;
-      case 'cpu_spike':
+      case "cpu_spike":
         await this.injectCPUSpike(options);
         break;
-      case 'disk_full':
+      case "disk_full":
         await this.injectDiskFull(options);
         break;
       default:
@@ -736,20 +759,22 @@ class FailureInjector {
   }
 
   async injectRandomFailure() {
-    const types = ['network_latency', 'memory_leak', 'cpu_spike'];
+    const types = ["network_latency", "memory_leak", "cpu_spike"];
     const randomType = types[Math.floor(Math.random() * types.length)];
     await this.injectFailure(randomType);
   }
 
   async injectNetworkLatency(options) {
     // 模拟网络延迟 (简化实现)
-    console.log('🌐 模拟网络延迟');
-    await new Promise(resolve => setTimeout(resolve, options.duration || 5000));
+    console.log("🌐 模拟网络延迟");
+    await new Promise((resolve) =>
+      setTimeout(resolve, options.duration || 5000),
+    );
   }
 
-  async injectMemoryLeak(options) {
+  async injectMemoryLeak(_options) {
     // 模拟内存泄漏
-    console.log('🧠 模拟内存泄漏');
+    console.log("🧠 模拟内存泄漏");
     const leaks = [];
     for (let i = 0; i < 1000; i++) {
       leaks.push(Buffer.alloc(1024 * 1024)); // 1MB
@@ -759,23 +784,23 @@ class FailureInjector {
 
   async injectCPUSpike(options) {
     // 模拟CPU峰值
-    console.log('⚡ 模拟CPU峰值');
+    console.log("⚡ 模拟CPU峰值");
     const start = Date.now();
     while (Date.now() - start < (options.duration || 10000)) {
       Math.random() * Math.sin(Date.now());
     }
   }
 
-  async injectDiskFull(options) {
+  async injectDiskFull(_options) {
     // 模拟磁盘满载 (简化实现)
-    console.log('💾 模拟磁盘满载');
+    console.log("💾 模拟磁盘满载");
     // 这里可以创建大量临时文件
   }
 
   async cleanup() {
     // 清理所有注入的故障
     if (global.gc) global.gc();
-    console.log('🧹 故障注入器清理完成');
+    console.log("🧹 故障注入器清理完成");
   }
 
   getStats() {
@@ -798,29 +823,29 @@ class ResilienceTester {
   }
 
   async initialize() {
-    console.log('🔧 初始化恢复机制测试器');
+    console.log("🔧 初始化恢复机制测试器");
   }
 
   async testRecovery() {
     // 测试系统的恢复能力
     const recoveryTest = {
       timestamp: Date.now(),
-      type: 'recovery_check',
-      status: 'passed',
+      type: "recovery_check",
+      status: "passed",
     };
 
     try {
       // 检查内存使用是否在合理范围内
       const memUsage = process.memoryUsage();
       if (memUsage.heapUsed / memUsage.heapTotal > 0.9) {
-        recoveryTest.status = 'warning';
-        recoveryTest.message = '内存使用率过高';
+        recoveryTest.status = "warning";
+        recoveryTest.message = "内存使用率过高";
       }
 
       // 检查是否有未处理的错误
       // 这里可以添加更多恢复检查
     } catch (error) {
-      recoveryTest.status = 'failed';
+      recoveryTest.status = "failed";
       recoveryTest.error = error.message;
     }
 
@@ -828,13 +853,19 @@ class ResilienceTester {
   }
 
   async cleanup() {
-    console.log('🧹 恢复机制测试器清理完成');
+    console.log("🧹 恢复机制测试器清理完成");
   }
 
   getStats() {
-    const passed = this.recoveryTests.filter(t => t.status === 'passed').length;
-    const warnings = this.recoveryTests.filter(t => t.status === 'warning').length;
-    const failed = this.recoveryTests.filter(t => t.status === 'failed').length;
+    const passed = this.recoveryTests.filter(
+      (t) => t.status === "passed",
+    ).length;
+    const warnings = this.recoveryTests.filter(
+      (t) => t.status === "warning",
+    ).length;
+    const failed = this.recoveryTests.filter(
+      (t) => t.status === "failed",
+    ).length;
 
     return {
       totalTests: this.recoveryTests.length,
@@ -842,7 +873,9 @@ class ResilienceTester {
       warnings,
       failed,
       successRate:
-        this.recoveryTests.length > 0 ? ((passed / this.recoveryTests.length) * 100).toFixed(2) : 0,
+        this.recoveryTests.length > 0
+          ? ((passed / this.recoveryTests.length) * 100).toFixed(2)
+          : 0,
     };
   }
 }

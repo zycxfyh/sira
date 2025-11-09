@@ -1,32 +1,32 @@
-const testHelper = require('../common/routing.helper');
-const Config = require('../../../src/core/config/config');
-describe('path resolution for specific and general domains', () => {
+const testHelper = require("../common/routing.helper");
+const Config = require("../../../core/config/config");
+describe("path resolution for specific and general domains", () => {
   const config = new Config();
-  [undefined, 'example.com', 'sub.demo.com'].forEach(host => {
+  [undefined, "example.com", "sub.demo.com"].forEach((host) => {
     const configTemplate = {
       http: { port: 9085 },
       apiEndpoints: {
         test: { paths: undefined, host },
       },
-      policies: ['routeTest'],
+      policies: ["routeTest"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['test'],
+          apiEndpoints: ["test"],
           policies: { routeTest: {} },
         },
       },
     };
 
-    describe('paths configuration without wildcards paths:/admin host:' + host, () => {
+    describe(`paths configuration without wildcards paths:/admin host:${host}`, () => {
       const helper = testHelper();
-      before('setup', () => {
+      before("setup", () => {
         const plugins = {
           policies: [
             {
-              name: 'routeTest',
+              name: "routeTest",
               policy: () => (req, res) => {
                 res.json({
-                  result: 'test',
+                  result: "test",
                   hostname: req.hostname,
                   url: req.url,
                   apiEndpoint: req.egContext.apiEndpoint,
@@ -36,15 +36,15 @@ describe('path resolution for specific and general domains', () => {
           ],
         };
         config.gatewayConfig = configTemplate;
-        config.gatewayConfig.apiEndpoints.test.paths = '/admin';
+        config.gatewayConfig.apiEndpoints.test.paths = "/admin";
         return helper.setup({ config, plugins });
       });
 
-      after('cleanup', helper.cleanup);
+      after("cleanup", helper.cleanup);
 
-      ['/admin/', '/admin'].forEach(url => {
+      ["/admin/", "/admin"].forEach((url) => {
         it(
-          'should serve exact matched url',
+          "should serve exact matched url",
           helper.validateSuccess({
             setup: {
               host,
@@ -53,34 +53,34 @@ describe('path resolution for specific and general domains', () => {
             test: {
               host,
               url,
-              result: 'test',
+              result: "test",
             },
-          })
+          }),
         );
       });
 
-      ['/admin/new', '/student', '/admin/new/1', '/adm'].forEach(url => {
+      ["/admin/new", "/student", "/admin/new/1", "/adm"].forEach((url) => {
         it(
-          'should not serve  url: ' + url,
+          `should not serve  url: ${url}`,
           helper.validate404({
             setup: {
               host,
               url,
             },
-          })
+          }),
         );
       });
     });
 
-    describe('paths configuration with  /admin/*', () => {
+    describe("paths configuration with  /admin/*", () => {
       const helper = testHelper();
       const plugins = {
         policies: [
           {
-            name: 'routeTest',
+            name: "routeTest",
             policy: () => (req, res) => {
               res.json({
-                result: 'test',
+                result: "test",
                 hostname: req.hostname,
                 url: req.url,
                 apiEndpoint: req.egContext.apiEndpoint,
@@ -90,53 +90,55 @@ describe('path resolution for specific and general domains', () => {
         ],
       };
 
-      before('setup', () => {
+      before("setup", () => {
         config.gatewayConfig = configTemplate;
-        config.gatewayConfig.apiEndpoints.test.paths = '/admin/*';
+        config.gatewayConfig.apiEndpoints.test.paths = "/admin/*";
         return helper.setup({ config, plugins });
       });
 
-      after('cleanup', helper.cleanup);
+      after("cleanup", helper.cleanup);
 
-      ['/admin/new', '/admin/new/1', '/admin/', '/admin/new/1/test'].forEach(url => {
-        it(
-          'should serve matched url: ' + url,
-          helper.validateSuccess({
-            setup: {
-              host,
-              url,
-            },
-            test: {
-              host,
-              url,
-              result: 'test',
-            },
-          })
-        );
-      });
+      ["/admin/new", "/admin/new/1", "/admin/", "/admin/new/1/test"].forEach(
+        (url) => {
+          it(
+            `should serve matched url: ${url}`,
+            helper.validateSuccess({
+              setup: {
+                host,
+                url,
+              },
+              test: {
+                host,
+                url,
+                result: "test",
+              },
+            }),
+          );
+        },
+      );
 
-      ['/student', '/adm', '/admin'].forEach(url => {
+      ["/student", "/adm", "/admin"].forEach((url) => {
         it(
-          'should not serve  url: ' + url,
+          `should not serve  url: ${url}`,
           helper.validate404({
             setup: {
               host,
               url,
             },
-          })
+          }),
         );
       });
     });
 
-    describe('paths with one named parameter /admin/:id', () => {
+    describe("paths with one named parameter /admin/:id", () => {
       const helper = testHelper();
       const plugins = {
         policies: [
           {
-            name: 'routeTest',
+            name: "routeTest",
             policy: () => (req, res) => {
               res.json({
-                result: 'test',
+                result: "test",
                 hostname: req.hostname,
                 url: req.url,
                 apiEndpoint: req.egContext.apiEndpoint,
@@ -146,17 +148,17 @@ describe('path resolution for specific and general domains', () => {
         ],
       };
 
-      before('setup', () => {
+      before("setup", () => {
         config.gatewayConfig = configTemplate;
-        config.gatewayConfig.apiEndpoints.test.paths = '/admin/:id';
+        config.gatewayConfig.apiEndpoints.test.paths = "/admin/:id";
         return helper.setup({ config, plugins });
       });
 
-      after('cleanup', helper.cleanup);
+      after("cleanup", helper.cleanup);
 
-      ['/admin/new', '/admin/4040040', '/admin/1'].forEach(url => {
+      ["/admin/new", "/admin/4040040", "/admin/1"].forEach((url) => {
         it(
-          'should serve matched url: ' + url,
+          `should serve matched url: ${url}`,
           helper.validateSuccess({
             setup: {
               host,
@@ -165,34 +167,36 @@ describe('path resolution for specific and general domains', () => {
             test: {
               host,
               url,
-              result: 'test',
+              result: "test",
             },
-          })
+          }),
         );
       });
 
-      ['/student', '/adm', '/admin', '/admin/', '/admin/1/rt'].forEach(url => {
-        it(
-          'should not serve  url: ' + url,
-          helper.validate404({
-            setup: {
-              host,
-              url,
-            },
-          })
-        );
-      });
+      ["/student", "/adm", "/admin", "/admin/", "/admin/1/rt"].forEach(
+        (url) => {
+          it(
+            `should not serve  url: ${url}`,
+            helper.validate404({
+              setup: {
+                host,
+                url,
+              },
+            }),
+          );
+        },
+      );
     });
 
-    describe('paths with named parameters /admin/:group/:id', () => {
+    describe("paths with named parameters /admin/:group/:id", () => {
       const helper = testHelper();
       const plugins = {
         policies: [
           {
-            name: 'routeTest',
+            name: "routeTest",
             policy: () => (req, res) => {
               res.json({
-                result: 'test',
+                result: "test",
                 hostname: req.hostname,
                 url: req.url,
                 apiEndpoint: req.egContext.apiEndpoint,
@@ -203,17 +207,17 @@ describe('path resolution for specific and general domains', () => {
         ],
       };
 
-      before('setup', () => {
+      before("setup", () => {
         config.gatewayConfig = configTemplate;
-        config.gatewayConfig.apiEndpoints.test.paths = '/admin/:group/:id';
+        config.gatewayConfig.apiEndpoints.test.paths = "/admin/:group/:id";
         return helper.setup({ config, plugins });
       });
 
-      after('cleanup', helper.cleanup);
+      after("cleanup", helper.cleanup);
 
-      ['/admin/new/1', '/admin/another/2'].forEach(url => {
+      ["/admin/new/1", "/admin/another/2"].forEach((url) => {
         it(
-          'should serve matched url: ' + url,
+          `should serve matched url: ${url}`,
           helper.validateSuccess({
             setup: {
               host,
@@ -222,13 +226,13 @@ describe('path resolution for specific and general domains', () => {
             test: {
               host,
               url,
-              result: 'test',
+              result: "test",
             },
-          })
+          }),
         );
 
         it(
-          'should map named route parameters to req.params',
+          "should map named route parameters to req.params",
           helper.validateParams({
             setup: {
               host,
@@ -237,22 +241,22 @@ describe('path resolution for specific and general domains', () => {
             test: {
               host,
               url,
-              result: 'test',
-              params: { group: url.split('/')[2], id: url.split('/')[3] },
+              result: "test",
+              params: { group: url.split("/")[2], id: url.split("/")[3] },
             },
-          })
+          }),
         );
       });
 
-      ['/admin', '/admin/', '/admin/1', '/admin/1/5/6'].forEach(url => {
+      ["/admin", "/admin/", "/admin/1", "/admin/1/5/6"].forEach((url) => {
         it(
-          'should not serve  url: ' + url,
+          `should not serve  url: ${url}`,
           helper.validate404({
             setup: {
               host,
               url,
             },
-          })
+          }),
         );
       });
     });
@@ -262,10 +266,10 @@ describe('path resolution for specific and general domains', () => {
       const plugins = {
         policies: [
           {
-            name: 'routeTest',
+            name: "routeTest",
             policy: () => (req, res) => {
               res.json({
-                result: 'test',
+                result: "test",
                 hostname: req.hostname,
                 url: req.url,
                 apiEndpoint: req.egContext.apiEndpoint,
@@ -275,17 +279,23 @@ describe('path resolution for specific and general domains', () => {
         ],
       };
 
-      before('setup', () => {
+      before("setup", () => {
         config.gatewayConfig = configTemplate;
-        config.gatewayConfig.apiEndpoints.test.paths = ['/admin', '/admin/*'];
+        config.gatewayConfig.apiEndpoints.test.paths = ["/admin", "/admin/*"];
         return helper.setup({ config, plugins });
       });
 
-      after('cleanup', helper.cleanup);
+      after("cleanup", helper.cleanup);
 
-      ['/admin', '/admin/new', '/admin/', '/admin/new/1', '/admin/new/1/test'].forEach(url => {
+      [
+        "/admin",
+        "/admin/new",
+        "/admin/",
+        "/admin/new/1",
+        "/admin/new/1/test",
+      ].forEach((url) => {
         it(
-          'should serve matched url: ' + url,
+          `should serve matched url: ${url}`,
           helper.validateSuccess({
             setup: {
               host,
@@ -294,21 +304,21 @@ describe('path resolution for specific and general domains', () => {
             test: {
               host,
               url,
-              result: 'test',
+              result: "test",
             },
-          })
+          }),
         );
       });
 
-      ['/student', '/adm', '/'].forEach(url => {
+      ["/student", "/adm", "/"].forEach((url) => {
         it(
-          'should not serve  url: ' + url,
+          `should not serve  url: ${url}`,
           helper.validate404({
             setup: {
               host,
               url,
             },
-          })
+          }),
         );
       });
     });

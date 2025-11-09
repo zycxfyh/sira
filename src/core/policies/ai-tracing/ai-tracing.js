@@ -1,60 +1,74 @@
 // AI Tracing Policy
 // Distributed tracing for AI requests using OpenTelemetry
 
-let opentelemetry, NodeTracerProvider, BatchSpanProcessor, Resource, SemanticResourceAttributes;
-let JaegerExporter,
-  ZipkinExporter,
-  OTLPTraceExporter,
-  ConsoleSpanExporter,
+let opentelemetry,
+  NodeTracerProvider,
+  BatchSpanProcessor,
+  Resource,
+  SemanticResourceAttributes;
+let _JaegerExporter,
+  _ZipkinExporter,
+  _OTLPTraceExporter,
+  _ConsoleSpanExporter,
   TraceIdRatioBasedSampler;
 
 try {
-  opentelemetry = require('@opentelemetry/api');
-  NodeTracerProvider = require('@opentelemetry/sdk-trace-node').NodeTracerProvider;
-  BatchSpanProcessor = require('@opentelemetry/sdk-trace-base').BatchSpanProcessor;
-  Resource = require('@opentelemetry/resources').Resource;
+  opentelemetry = require("@opentelemetry/api");
+  NodeTracerProvider =
+    require("@opentelemetry/sdk-trace-node").NodeTracerProvider;
+  BatchSpanProcessor =
+    require("@opentelemetry/sdk-trace-base").BatchSpanProcessor;
+  Resource = require("@opentelemetry/resources").Resource;
   SemanticResourceAttributes =
-    require('@opentelemetry/semantic-conventions').SemanticResourceAttributes;
+    require("@opentelemetry/semantic-conventions").SemanticResourceAttributes;
 
   // Optional exporters
   try {
-    JaegerExporter = require('@opentelemetry/exporter-jaeger').JaegerExporter;
-  } catch (e) {
-    JaegerExporter = null;
+    _JaegerExporter = require("@opentelemetry/exporter-jaeger").JaegerExporter;
+  } catch (_e) {
+    _JaegerExporter = null;
   }
 
   try {
-    ZipkinExporter = require('@opentelemetry/exporter-zipkin').ZipkinExporter;
-  } catch (e) {
-    ZipkinExporter = null;
+    _ZipkinExporter = require("@opentelemetry/exporter-zipkin").ZipkinExporter;
+  } catch (_e) {
+    _ZipkinExporter = null;
   }
 
   try {
-    OTLPTraceExporter = require('@opentelemetry/exporter-trace-otlp-proto').OTLPTraceExporter;
-  } catch (e) {
-    OTLPTraceExporter = null;
+    _OTLPTraceExporter =
+      require("@opentelemetry/exporter-trace-otlp-proto").OTLPTraceExporter;
+  } catch (_e) {
+    _OTLPTraceExporter = null;
   }
 
-  ConsoleSpanExporter = require('@opentelemetry/sdk-trace-base').ConsoleSpanExporter;
-  TraceIdRatioBasedSampler = require('@opentelemetry/sdk-trace-base').TraceIdRatioBasedSampler;
+  _ConsoleSpanExporter =
+    require("@opentelemetry/sdk-trace-base").ConsoleSpanExporter;
+  TraceIdRatioBasedSampler =
+    require("@opentelemetry/sdk-trace-base").TraceIdRatioBasedSampler;
 } catch (error) {
-  console.warn('OpenTelemetry dependencies not available, tracing disabled:', error.message);
+  console.warn(
+    "OpenTelemetry dependencies not available, tracing disabled:",
+    error.message,
+  );
   // Graceful degradation - tracing will be disabled
 }
 
-module.exports = function (params, config) {
+module.exports = (params, config) => {
   const logger = config.logger || console;
 
   // Tracing configuration
   const tracingConfig = {
-    serviceName: params.serviceName || 'ai-gateway',
-    serviceVersion: params.serviceVersion || '1.0.0',
-    environment: params.environment || 'development',
-    exporter: params.exporter || 'console', // console, jaeger, zipkin, otlp
+    serviceName: params.serviceName || "ai-gateway",
+    serviceVersion: params.serviceVersion || "1.0.0",
+    environment: params.environment || "development",
+    exporter: params.exporter || "console", // console, jaeger, zipkin, otlp
     sampleRate: params.sampleRate || 1.0, // 1.0 = 100% sampling
-    jaegerEndpoint: params.jaegerEndpoint || 'http://localhost:14268/api/traces',
-    zipkinEndpoint: params.zipkinEndpoint || 'http://localhost:9411/api/v2/spans',
-    otlpEndpoint: params.otlpEndpoint || 'http://localhost:4318/v1/traces',
+    jaegerEndpoint:
+      params.jaegerEndpoint || "http://localhost:14268/api/traces",
+    zipkinEndpoint:
+      params.zipkinEndpoint || "http://localhost:9411/api/v2/spans",
+    otlpEndpoint: params.otlpEndpoint || "http://localhost:4318/v1/traces",
   };
 
   let tracer = null;
@@ -63,8 +77,10 @@ module.exports = function (params, config) {
   if (opentelemetry && !opentelemetry.trace.getTracerProvider()) {
     const resource = new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: tracingConfig.serviceName,
-      [SemanticResourceAttributes.SERVICE_VERSION]: tracingConfig.serviceVersion,
-      [SemanticResourceAttributes.SERVICE_ENVIRONMENT]: tracingConfig.environment,
+      [SemanticResourceAttributes.SERVICE_VERSION]:
+        tracingConfig.serviceVersion,
+      [SemanticResourceAttributes.SERVICE_ENVIRONMENT]:
+        tracingConfig.environment,
     });
 
     const provider = new NodeTracerProvider({ resource });
@@ -72,29 +88,33 @@ module.exports = function (params, config) {
     // Configure exporter
     let exporter;
     switch (tracingConfig.exporter) {
-      case 'jaeger': {
-        const { JaegerExporter } = require('@opentelemetry/exporter-jaeger');
+      case "jaeger": {
+        const { JaegerExporter } = require("@opentelemetry/exporter-jaeger");
         exporter = new JaegerExporter({
           endpoint: tracingConfig.jaegerEndpoint,
         });
         break;
       }
-      case 'zipkin': {
-        const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');
+      case "zipkin": {
+        const { ZipkinExporter } = require("@opentelemetry/exporter-zipkin");
         exporter = new ZipkinExporter({
           url: tracingConfig.zipkinEndpoint,
         });
         break;
       }
-      case 'otlp': {
-        const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-proto');
+      case "otlp": {
+        const {
+          OTLPTraceExporter,
+        } = require("@opentelemetry/exporter-trace-otlp-proto");
         exporter = new OTLPTraceExporter({
           url: tracingConfig.otlpEndpoint,
         });
         break;
       }
       default: {
-        const { ConsoleSpanExporter } = require('@opentelemetry/sdk-trace-base');
+        const {
+          ConsoleSpanExporter,
+        } = require("@opentelemetry/sdk-trace-base");
         exporter = new ConsoleSpanExporter();
       }
     }
@@ -107,7 +127,7 @@ module.exports = function (params, config) {
       provider.sampler = new TraceIdRatioBasedSampler(tracingConfig.sampleRate);
     }
 
-    logger.info('OpenTelemetry tracing initialized', {
+    logger.info("OpenTelemetry tracing initialized", {
       exporter: tracingConfig.exporter,
       sampleRate: tracingConfig.sampleRate,
       serviceName: tracingConfig.serviceName,
@@ -122,13 +142,13 @@ module.exports = function (params, config) {
   // Health check for tracing
   config.tracingHealth = {
     getStats: () => ({
-      tracer: tracer ? 'active' : 'inactive',
+      tracer: tracer ? "active" : "inactive",
       config: tracingConfig,
     }),
     flush: async () => {
       // Force flush any pending spans
       const provider = opentelemetry.trace.getTracerProvider();
-      if (provider && typeof provider.forceFlush === 'function') {
+      if (provider && typeof provider.forceFlush === "function") {
         await provider.forceFlush();
       }
     },
@@ -137,7 +157,7 @@ module.exports = function (params, config) {
   return function aiTracing(req, res, next) {
     // Check if OpenTelemetry is available
     if (!opentelemetry || !tracer) {
-      logger.debug('OpenTelemetry not available, skipping tracing');
+      logger.debug("OpenTelemetry not available, skipping tracing");
       return next();
     }
 
@@ -145,24 +165,28 @@ module.exports = function (params, config) {
     const span = tracer.startSpan(`ai-gateway ${req.method} ${req.path}`, {
       kind: opentelemetry.SpanKind.SERVER,
       attributes: {
-        'http.method': req.method,
-        'http.url': req.url,
-        'http.scheme': req.protocol,
-        'http.host': req.get('host'),
-        'http.target': req.url,
-        'http.user_agent': req.get('user-agent'),
-        'http.request_content_length': req.get('content-length') || 0,
-        'net.transport': 'ip_tcp',
-        'net.peer.ip': req.ip,
-        'net.peer.port': req.connection.remotePort,
-        'ai.gateway.request_id': req.headers['x-request-id'] || generateRequestId(),
-        'ai.gateway.user_id': req.user?.id || 'anonymous',
-        'ai.gateway.api_key': req.headers['x-api-key'] ? 'present' : 'missing',
+        "http.method": req.method,
+        "http.url": req.url,
+        "http.scheme": req.protocol,
+        "http.host": req.get("host"),
+        "http.target": req.url,
+        "http.user_agent": req.get("user-agent"),
+        "http.request_content_length": req.get("content-length") || 0,
+        "net.transport": "ip_tcp",
+        "net.peer.ip": req.ip,
+        "net.peer.port": req.connection.remotePort,
+        "ai.gateway.request_id":
+          req.headers["x-request-id"] || generateRequestId(),
+        "ai.gateway.user_id": req.user?.id || "anonymous",
+        "ai.gateway.api_key": req.headers["x-api-key"] ? "present" : "missing",
       },
     });
 
     // Set span context for downstream services
-    const ctx = opentelemetry.trace.setSpan(opentelemetry.context.active(), span);
+    const ctx = opentelemetry.trace.setSpan(
+      opentelemetry.context.active(),
+      span,
+    );
     req.traceContext = ctx;
 
     // Add trace headers to request for propagation
@@ -171,28 +195,31 @@ module.exports = function (params, config) {
     req.traceHeaders = carrier;
 
     // Extract AI-specific attributes
-    if (req.body && typeof req.body === 'object') {
+    if (req.body && typeof req.body === "object") {
       const { body } = req;
 
       if (body.model) {
-        span.setAttribute('ai.model', body.model);
-        span.setAttribute('ai.provider', detectProvider(body.model));
+        span.setAttribute("ai.model", body.model);
+        span.setAttribute("ai.provider", detectProvider(body.model));
       }
 
       if (body.messages) {
-        span.setAttribute('ai.messages.count', body.messages.length);
+        span.setAttribute("ai.messages.count", body.messages.length);
         span.setAttribute(
-          'ai.messages.total_length',
-          body.messages.reduce((sum, msg) => sum + (msg.content?.length || 0), 0)
+          "ai.messages.total_length",
+          body.messages.reduce(
+            (sum, msg) => sum + (msg.content?.length || 0),
+            0,
+          ),
         );
       }
 
       if (body.max_tokens) {
-        span.setAttribute('ai.max_tokens', body.max_tokens);
+        span.setAttribute("ai.max_tokens", body.max_tokens);
       }
 
       if (body.temperature) {
-        span.setAttribute('ai.temperature', body.temperature);
+        span.setAttribute("ai.temperature", body.temperature);
       }
     }
 
@@ -201,13 +228,13 @@ module.exports = function (params, config) {
     const originalSend = res.send;
     const originalStatus = res.status;
 
-    let responseBody;
-    let statusCode = 200;
+    let _responseBody;
+    let _statusCode = 200;
     let responseSize = 0;
 
     res.status = function (code) {
-      statusCode = code;
-      span.setAttribute('http.status_code', code);
+      _statusCode = code;
+      span.setAttribute("http.status_code", code);
 
       // Set span status based on HTTP status
       if (code >= 400) {
@@ -221,24 +248,33 @@ module.exports = function (params, config) {
     };
 
     res.json = function (data) {
-      responseBody = data;
+      _responseBody = data;
       responseSize = JSON.stringify(data).length;
 
-      span.setAttribute('http.response_content_length', responseSize);
+      span.setAttribute("http.response_content_length", responseSize);
 
       // Extract AI response metrics
-      if (data && typeof data === 'object') {
+      if (data && typeof data === "object") {
         if (data.usage) {
-          span.setAttribute('ai.usage.prompt_tokens', data.usage.prompt_tokens || 0);
-          span.setAttribute('ai.usage.completion_tokens', data.usage.completion_tokens || 0);
-          span.setAttribute('ai.usage.total_tokens', data.usage.total_tokens || 0);
+          span.setAttribute(
+            "ai.usage.prompt_tokens",
+            data.usage.prompt_tokens || 0,
+          );
+          span.setAttribute(
+            "ai.usage.completion_tokens",
+            data.usage.completion_tokens || 0,
+          );
+          span.setAttribute(
+            "ai.usage.total_tokens",
+            data.usage.total_tokens || 0,
+          );
         }
 
         if (data.choices && data.choices.length > 0) {
-          span.setAttribute('ai.choices.count', data.choices.length);
+          span.setAttribute("ai.choices.count", data.choices.length);
           const firstChoice = data.choices[0];
           if (firstChoice.finish_reason) {
-            span.setAttribute('ai.finish_reason', firstChoice.finish_reason);
+            span.setAttribute("ai.finish_reason", firstChoice.finish_reason);
           }
         }
       }
@@ -248,13 +284,13 @@ module.exports = function (params, config) {
     };
 
     res.send = function (data) {
-      if (typeof data === 'string') {
+      if (typeof data === "string") {
         responseSize = data.length;
       } else if (Buffer.isBuffer(data)) {
         responseSize = data.length;
       }
 
-      span.setAttribute('http.response_content_length', responseSize);
+      span.setAttribute("http.response_content_length", responseSize);
       span.end();
 
       return originalSend.call(this, data);
@@ -262,9 +298,9 @@ module.exports = function (params, config) {
 
     // Handle request errors
     const originalOnError = req.on.bind(req);
-    req.on = function (event, handler) {
-      if (event === 'error') {
-        return originalOnError(event, error => {
+    req.on = (event, handler) => {
+      if (event === "error") {
+        return originalOnError(event, (error) => {
           span.recordException(error);
           span.setStatus({
             code: opentelemetry.SpanStatusCode.ERROR,
@@ -278,20 +314,20 @@ module.exports = function (params, config) {
 
     // Add trace ID to response headers for debugging
     const { traceId } = span.spanContext();
-    res.set('x-trace-id', traceId);
+    res.set("x-trace-id", traceId);
 
     next();
   };
 
   // Detect AI provider from model name
   function detectProvider(model) {
-    if (!model) return 'unknown';
+    if (!model) return "unknown";
 
-    if (model.startsWith('gpt-')) return 'openai';
-    if (model.startsWith('claude-')) return 'anthropic';
-    if (model.includes('azure') || model.includes('embedding')) return 'azure';
+    if (model.startsWith("gpt-")) return "openai";
+    if (model.startsWith("claude-")) return "anthropic";
+    if (model.includes("azure") || model.includes("embedding")) return "azure";
 
-    return 'unknown';
+    return "unknown";
   }
 
   // Generate request ID

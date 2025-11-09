@@ -1,10 +1,10 @@
-const oauth2orize = require('oauth2orize');
-const passport = require('passport');
-const login = require('connect-ensure-login');
-const path = require('path');
+const oauth2orize = require("oauth2orize");
+const passport = require("passport");
+const login = require("connect-ensure-login");
+const path = require("node:path");
 
-const services = require('../../services/index');
-const config = require('../../config');
+const services = require("../../services/index");
+const config = require("../../config");
 const tokenService = services.token;
 const authCodeService = services.authorizationCode;
 const authService = services.auth;
@@ -34,7 +34,7 @@ server.deserializeClient((consumer, done) => {
 
   return authService
     .validateConsumer(id)
-    .then(foundConsumer => {
+    .then((foundConsumer) => {
       if (!foundConsumer) return done(null, false);
       return done(null, consumer);
     })
@@ -56,7 +56,7 @@ server.deserializeClient((consumer, done) => {
 // values, and will be exchanged for an access token.
 
 server.grant(
-  oauth2orize.grant.code((consumer, redirectUri, user, ares, done) => {
+  oauth2orize.grant.code((consumer, redirectUri, user, _ares, done) => {
     const code = {
       consumerId: consumer.id,
       redirectUri,
@@ -67,11 +67,11 @@ server.grant(
 
     return authCodeService
       .save(code)
-      .then(codeObj => {
+      .then((codeObj) => {
         return done(null, codeObj.id);
       })
       .catch(done);
-  })
+  }),
 );
 
 // Grant implicit authorization. The callback takes the `client` requesting
@@ -81,23 +81,24 @@ server.grant(
 // values.
 
 server.grant(
-  oauth2orize.grant.token((consumer, authenticatedUser, ares, done) => {
+  oauth2orize.grant.token((consumer, authenticatedUser, _ares, done) => {
     const tokenCriteria = {
       consumerId: consumer.id,
       authenticatedUserId: authenticatedUser.id,
       redirectUri: consumer.redirectUri,
-      authType: 'oauth2',
+      authType: "oauth2",
     };
 
-    if (consumer.authorizedScopes) tokenCriteria.scopes = consumer.authorizedScopes;
+    if (consumer.authorizedScopes)
+      tokenCriteria.scopes = consumer.authorizedScopes;
 
     return tokenService
       .findOrSave(tokenCriteria)
-      .then(token => {
+      .then((token) => {
         return done(null, token.access_token);
       })
       .catch(done);
-  })
+  }),
 );
 
 // Exchange authorization codes for access tokens. The callback accepts the
@@ -116,7 +117,7 @@ server.exchange(
 
     authCodeService
       .find(codeCriteria)
-      .then(codeObj => {
+      .then((codeObj) => {
         if (!codeObj) {
           return done(null, false);
         }
@@ -124,35 +125,39 @@ server.exchange(
         const tokenCriteria = {
           consumerId: consumer.id,
           authenticatedUserId: codeObj.userId,
-          authType: 'oauth2',
+          authType: "oauth2",
         };
 
         if (codeObj.scopes) tokenCriteria.scopes = codeObj.scopes;
 
-        if (config.systemConfig.accessTokens.tokenType === 'jwt') {
+        if (config.systemConfig.accessTokens.tokenType === "jwt") {
           return tokenService
             .createJWT({ consumerId: consumer.id, scopes: codeObj.scopes })
-            .then(res =>
+            .then((res) =>
               Promise.all([
                 res,
                 tokenService.save(
                   { consumerId: consumer.id, scopes: codeObj.scopes },
-                  { refreshTokenOnly: true }
+                  { refreshTokenOnly: true },
                 ),
-              ])
+              ]),
             )
-            .then(([res, token]) => done(null, res, token.refresh_token, { expires_in: expiresIn }))
+            .then(([res, token]) =>
+              done(null, res, token.refresh_token, { expires_in: expiresIn }),
+            )
             .catch(done);
         }
 
         return tokenService
           .findOrSave(tokenCriteria, { includeRefreshToken: true })
-          .then(token =>
-            done(null, token.access_token, token.refresh_token, { expires_in: expiresIn })
+          .then((token) =>
+            done(null, token.access_token, token.refresh_token, {
+              expires_in: expiresIn,
+            }),
           );
       })
       .catch(done);
-  })
+  }),
 );
 
 // Exchange user id and password for access tokens. The callback accepts the
@@ -161,54 +166,69 @@ server.exchange(
 // application issues an access token on behalf of the user who authorized the code.
 
 server.exchange(
-  oauth2orize.exchange.password((consumer, username, password, scopes, done) => {
-    // Validate the consumer
-    return authService
-      .validateConsumer(consumer.id)
-      .then(consumer => {
-        if (!consumer) return done(null, false);
+  oauth2orize.exchange.password(
+    (consumer, username, password, scopes, done) => {
+      // Validate the consumer
+      return authService
+        .validateConsumer(consumer.id)
+        .then((consumer) => {
+          if (!consumer) return done(null, false);
 
-        return authService.authenticateCredential(username, password, 'basic-auth');
-      })
-      .then(user => {
-        if (!user) return done(null, false);
-
-        return Promise.all([
-          user,
-          scopes ? authService.authorizeCredential(consumer.id, 'oauth2', scopes) : true,
-        ]);
-      })
-      .then(([user, authorized]) => {
-        if (!authorized) return done(null, false);
-
-        const tokenCriteria = {
-          consumerId: consumer.id,
-          authenticatedUser: user.id,
-        };
-
-        if (scopes) tokenCriteria.scopes = scopes;
-
-        if (config.systemConfig.accessTokens.tokenType === 'jwt') {
-          return tokenService
-            .createJWT({ consumerId: consumer.id, scopes })
-            .then(res =>
-              Promise.all([
-                res,
-                tokenService.save({ consumerId: consumer.id, scopes }, { refreshTokenOnly: true }),
-              ])
-            )
-            .then(([res, token]) => done(null, res, token.refresh_token, { expires_in: expiresIn }))
-            .catch(done);
-        }
-
-        return tokenService
-          .findOrSave(tokenCriteria, { includeRefreshToken: true })
-          .then(token =>
-            done(null, token.access_token, token.refresh_token, { expires_in: expiresIn })
+          return authService.authenticateCredential(
+            username,
+            password,
+            "basic-auth",
           );
-      })
-      .catch(done);
-  })
+        })
+        .then((user) => {
+          if (!user) return done(null, false);
+
+          return Promise.all([
+            user,
+            scopes
+              ? authService.authorizeCredential(consumer.id, "oauth2", scopes)
+              : true,
+          ]);
+        })
+        .then(([user, authorized]) => {
+          if (!authorized) return done(null, false);
+
+          const tokenCriteria = {
+            consumerId: consumer.id,
+            authenticatedUser: user.id,
+          };
+
+          if (scopes) tokenCriteria.scopes = scopes;
+
+          if (config.systemConfig.accessTokens.tokenType === "jwt") {
+            return tokenService
+              .createJWT({ consumerId: consumer.id, scopes })
+              .then((res) =>
+                Promise.all([
+                  res,
+                  tokenService.save(
+                    { consumerId: consumer.id, scopes },
+                    { refreshTokenOnly: true },
+                  ),
+                ]),
+              )
+              .then(([res, token]) =>
+                done(null, res, token.refresh_token, { expires_in: expiresIn }),
+              )
+              .catch(done);
+          }
+
+          return tokenService
+            .findOrSave(tokenCriteria, { includeRefreshToken: true })
+            .then((token) =>
+              done(null, token.access_token, token.refresh_token, {
+                expires_in: expiresIn,
+              }),
+            );
+        })
+        .catch(done);
+    },
+  ),
 );
 
 // Exchange the client id and password/secret for an access token. The callback accepts the
@@ -221,7 +241,7 @@ server.exchange(
     // Validate the client
     return authService
       .validateConsumer(consumer.id)
-      .then(consumer => {
+      .then((consumer) => {
         let scopeAuthorizationPromise;
 
         if (!consumer) return done(null, false);
@@ -229,36 +249,38 @@ server.exchange(
         if (scopes) {
           scopeAuthorizationPromise = authService.authorizeCredential(
             consumer.id,
-            'oauth2',
-            scopes
+            "oauth2",
+            scopes,
           );
         } else scopeAuthorizationPromise = Promise.resolve(true);
 
         return scopeAuthorizationPromise;
       })
-      .then(authorized => {
+      .then((authorized) => {
         if (!authorized) return done(null, false);
 
         const tokenCriteria = {
           consumerId: consumer.id,
-          authType: 'oauth2',
+          authType: "oauth2",
         };
 
         if (scopes) tokenCriteria.scopes = scopes;
 
-        if (config.systemConfig.accessTokens.tokenType === 'jwt') {
+        if (config.systemConfig.accessTokens.tokenType === "jwt") {
           return tokenService
             .createJWT({ consumerId: consumer.id, scopes })
-            .then(res => done(null, res))
+            .then((res) => done(null, res))
             .catch(done);
         }
 
         return tokenService
           .findOrSave(tokenCriteria)
-          .then(token => done(null, token.access_token, null, { expires_in: expiresIn }));
+          .then((token) =>
+            done(null, token.access_token, null, { expires_in: expiresIn }),
+          );
       })
       .catch(done);
-  })
+  }),
 );
 
 // Exchange Refresh Token
@@ -266,31 +288,33 @@ server.exchange(
   oauth2orize.exchange.refreshToken((consumer, refreshToken, done) => {
     return authService
       .validateConsumer(consumer.id)
-      .then(consumer => {
+      .then((consumer) => {
         if (!consumer) {
           return done(null, false);
         }
 
         return tokenService.getTokenObject(refreshToken);
       })
-      .then(tokenObj => {
+      .then((tokenObj) => {
         if (!tokenObj) {
           return done(null, false);
         }
 
-        if (config.systemConfig.accessTokens.tokenType === 'jwt') {
+        if (config.systemConfig.accessTokens.tokenType === "jwt") {
           return tokenService
             .createJWT({ consumerId: consumer.id, scopes: tokenObj.scopes })
-            .then(res => done(null, res))
+            .then((res) => done(null, res))
             .catch(done);
         }
 
         return tokenService
           .findOrSave(tokenObj)
-          .then(token => done(null, token.access_token, null, { expires_in: expiresIn }));
+          .then((token) =>
+            done(null, token.access_token, null, { expires_in: expiresIn }),
+          );
       })
       .catch(done);
-  })
+  }),
 );
 
 // User authorization endpoint.
@@ -314,16 +338,17 @@ module.exports.authorization = [
   server.authorization((req, done) => {
     return authService
       .validateConsumer(req.clientID)
-      .then(consumer => {
-        if (!consumer || consumer.redirectUri !== req.redirectURI) return done(null, false);
+      .then((consumer) => {
+        if (!consumer || consumer.redirectUri !== req.redirectURI)
+          return done(null, false);
 
         if (!req.scope) {
           return done(null, consumer, req.redirectURI);
         }
 
         return authService
-          .authorizeCredential(req.clientID, 'oauth2', req.scope)
-          .then(authorized => {
+          .authorizeCredential(req.clientID, "oauth2", req.scope)
+          .then((authorized) => {
             if (!authorized) {
               return done(null, false);
             }
@@ -336,8 +361,8 @@ module.exports.authorization = [
       .catch(done);
   }),
   (request, response) => {
-    response.set('transaction_id', request.oauth2.transactionID);
-    response.render(path.join(__dirname, 'views/dialog'), {
+    response.set("transaction_id", request.oauth2.transactionID);
+    response.render(path.join(__dirname, "views/dialog"), {
       transactionId: request.oauth2.transactionID,
       user: request.user,
       client: request.oauth2.client,
@@ -363,7 +388,9 @@ module.exports.decision = [login.ensureLoggedIn(), server.decision()];
 // authenticate when making requests to this endpoint.
 
 module.exports.token = [
-  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  passport.authenticate(["basic", "oauth2-client-password"], {
+    session: false,
+  }),
   server.token(),
   server.errorHandler(),
 ];

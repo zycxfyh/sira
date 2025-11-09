@@ -1,21 +1,21 @@
-const { expect } = require('chai');
-const sinon = require('sinon');
-const aiCache = require('../../../src/core/policies/ai-cache');
+const { expect } = require("chai");
+const sinon = require("sinon");
+const aiCache = require("../../../core/policies/ai-cache");
 
-describe('AI Cache Policy', () => {
+describe("AI Cache Policy", () => {
   let req, res, next, config, cache;
 
   beforeEach(() => {
     req = {
-      method: 'POST',
-      url: '/api/v1/ai/chat/completions',
+      method: "POST",
+      url: "/api/v1/ai/chat/completions",
       headers: {
-        'content-type': 'application/json',
-        'x-api-key': 'test-key',
+        "content-type": "application/json",
+        "x-api-key": "test-key",
       },
       body: {
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: 'Hello' }],
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: "Hello" }],
         temperature: 0.7,
       },
     };
@@ -40,33 +40,33 @@ describe('AI Cache Policy', () => {
     };
   });
 
-  describe('Policy Configuration', () => {
-    it('should create policy with default configuration', () => {
+  describe("Policy Configuration", () => {
+    it("should create policy with default configuration", () => {
       const policy = aiCache(
         {
           ttl: 300,
           maxSize: 1000,
         },
-        config
+        config,
       );
 
-      expect(policy).to.be.a('function');
-      expect(config.cacheStats).to.be.a('function');
+      expect(policy).to.be.a("function");
+      expect(config.cacheStats).to.be.a("function");
     });
 
-    it('should validate configuration parameters', () => {
+    it("should validate configuration parameters", () => {
       expect(() => aiCache({ ttl: -1 }, config)).to.throw();
       expect(() => aiCache({ maxSize: 0 }, config)).to.throw();
-      expect(() => aiCache({ ttl: 'invalid' }, config)).to.throw();
+      expect(() => aiCache({ ttl: "invalid" }, config)).to.throw();
     });
 
-    it('should handle missing configuration gracefully', () => {
+    it("should handle missing configuration gracefully", () => {
       const policy = aiCache({}, config);
-      expect(policy).to.be.a('function');
+      expect(policy).to.be.a("function");
     });
   });
 
-  describe('Cache Functionality', () => {
+  describe("Cache Functionality", () => {
     let policy, cache;
 
     beforeEach(() => {
@@ -76,14 +76,14 @@ describe('AI Cache Policy', () => {
           maxSize: 1000,
           compressionEnabled: true,
         },
-        config
+        config,
       );
 
       // Access the internal cache (in a real scenario, this would be private)
       cache = policy.cache || new Map();
     });
 
-    it('should cache AI responses', done => {
+    it("should cache AI responses", (done) => {
       const originalSend = res.send;
       res.send = function (data) {
         originalSend.call(this, data);
@@ -93,9 +93,9 @@ describe('AI Cache Policy', () => {
         expect(cache.has(cacheKey)).to.be.true;
 
         const cached = cache.get(cacheKey);
-        expect(cached).to.have.property('body', data);
-        expect(cached).to.have.property('cachedAt');
-        expect(cached).to.have.property('ttl', 300);
+        expect(cached).to.have.property("body", data);
+        expect(cached).to.have.property("cachedAt");
+        expect(cached).to.have.property("ttl", 300);
 
         done();
       };
@@ -103,9 +103,11 @@ describe('AI Cache Policy', () => {
       policy(req, res, next);
     });
 
-    it('should serve from cache when available', done => {
+    it("should serve from cache when available", (done) => {
       // First request to populate cache
-      const firstResponse = { choices: [{ message: { content: 'First response' } }] };
+      const firstResponse = {
+        choices: [{ message: { content: "First response" } }],
+      };
       cache.set(policy.generateCacheKey(req), {
         body: JSON.stringify(firstResponse),
         cachedAt: Date.now(),
@@ -128,29 +130,29 @@ describe('AI Cache Policy', () => {
       policy(req, res, next);
     });
 
-    it('should respect TTL and expire old entries', done => {
+    it("should respect TTL and expire old entries", (done) => {
       // Add expired entry
       const expiredTime = Date.now() - 301 * 1000; // 301 seconds ago
-      cache.set('expired-key', {
-        body: 'expired data',
+      cache.set("expired-key", {
+        body: "expired data",
         cachedAt: expiredTime,
         ttl: 300,
       });
 
       // Wait for cleanup interval
       setTimeout(() => {
-        expect(cache.has('expired-key')).to.be.false;
+        expect(cache.has("expired-key")).to.be.false;
         done();
       }, 100);
     });
 
-    it('should handle cache size limits', () => {
-      const largePolicy = aiCache(
+    it("should handle cache size limits", () => {
+      const _largePolicy = aiCache(
         {
           ttl: 300,
           maxSize: 2, // Very small cache
         },
-        config
+        config,
       );
 
       // Add entries beyond limit
@@ -167,8 +169,8 @@ describe('AI Cache Policy', () => {
     });
   });
 
-  describe('Cache Key Generation', () => {
-    it('should generate consistent cache keys', () => {
+  describe("Cache Key Generation", () => {
+    it("should generate consistent cache keys", () => {
       const policy = aiCache({}, config);
       const key1 = policy.generateCacheKey(req);
       const key2 = policy.generateCacheKey(req);
@@ -176,16 +178,16 @@ describe('AI Cache Policy', () => {
       expect(key1).to.equal(key2);
     });
 
-    it('should include relevant request data in cache key', () => {
+    it("should include relevant request data in cache key", () => {
       const policy = aiCache({}, config);
       const key = policy.generateCacheKey(req);
 
-      expect(key).to.include('gpt-3.5-turbo');
-      expect(key).to.include('Hello');
-      expect(key).to.include('0.7');
+      expect(key).to.include("gpt-3.5-turbo");
+      expect(key).to.include("Hello");
+      expect(key).to.include("0.7");
     });
 
-    it('should differentiate requests with different parameters', () => {
+    it("should differentiate requests with different parameters", () => {
       const policy = aiCache({}, config);
       const req2 = { ...req, body: { ...req.body, temperature: 0.8 } };
 
@@ -196,8 +198,8 @@ describe('AI Cache Policy', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle cache serialization errors', done => {
+  describe("Error Handling", () => {
+    it("should handle cache serialization errors", (done) => {
       const circularObj = {};
       circularObj.self = circularObj;
 
@@ -210,53 +212,53 @@ describe('AI Cache Policy', () => {
       done();
     });
 
-    it('should handle malformed cached data', () => {
-      const policy = aiCache({}, config);
+    it("should handle malformed cached data", () => {
+      const _policy = aiCache({}, config);
 
       // Add malformed cache entry
-      cache.set('bad-key', {
-        body: '{invalid json}',
+      cache.set("bad-key", {
+        body: "{invalid json}",
         cachedAt: Date.now(),
         ttl: 300,
       });
 
       // Should not crash when retrieving bad data
       expect(() => {
-        const data = cache.get('bad-key');
+        const data = cache.get("bad-key");
         if (data) JSON.parse(data.body);
       }).to.not.throw();
     });
   });
 
-  describe('Statistics and Monitoring', () => {
-    it('should expose cache statistics', () => {
-      const policy = aiCache(
+  describe("Statistics and Monitoring", () => {
+    it("should expose cache statistics", () => {
+      const _policy = aiCache(
         {
           ttl: 300,
           maxSize: 100,
         },
-        config
+        config,
       );
 
       const stats = config.cacheStats();
-      expect(stats).to.have.property('totalEntries');
-      expect(stats).to.have.property('hitRate');
-      expect(stats).to.have.property('entries');
-      expect(stats.entries).to.be.an('array');
+      expect(stats).to.have.property("totalEntries");
+      expect(stats).to.have.property("hitRate");
+      expect(stats).to.have.property("entries");
+      expect(stats.entries).to.be.an("array");
     });
 
-    it('should track cache hits and misses', () => {
-      const policy = aiCache({}, config);
+    it("should track cache hits and misses", () => {
+      const _policy = aiCache({}, config);
 
       // This would require mocking internal counters
       // Implementation depends on how statistics are tracked
       const stats = config.cacheStats();
-      expect(stats).to.be.an('object');
+      expect(stats).to.be.an("object");
     });
   });
 
-  describe('Performance', () => {
-    it('should have minimal overhead for cache misses', done => {
+  describe("Performance", () => {
+    it("should have minimal overhead for cache misses", (done) => {
       const policy = aiCache({}, config);
       const startTime = Date.now();
 
@@ -270,12 +272,12 @@ describe('AI Cache Policy', () => {
       done();
     });
 
-    it('should serve cached responses quickly', done => {
+    it("should serve cached responses quickly", (done) => {
       const policy = aiCache({}, config);
 
       // Populate cache
       cache.set(policy.generateCacheKey(req), {
-        body: JSON.stringify({ response: 'cached' }),
+        body: JSON.stringify({ response: "cached" }),
         cachedAt: Date.now(),
         ttl: 300,
       });

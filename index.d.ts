@@ -1,8 +1,8 @@
-import * as express from 'express';
-import { EventEmitter } from 'events';
-import { JSONSchema7 } from 'json-schema';
+import * as express from "express";
+import { EventEmitter } from "node:events";
+import { JSONSchema7 } from "json-schema";
 
-declare module 'express' {
+declare module "express" {
   export interface Request {
     egContext: unknown;
   }
@@ -25,10 +25,12 @@ declare namespace ExpressGateway {
     registerPolicy(policy: Policy): void;
     registerCondition(condition: Condition): void;
     registerGatewayRoute(
-      gatewayRoutesDeclaration: (gatewayExpressApp: express.Application) => void
+      gatewayRoutesDeclaration: (
+        gatewayExpressApp: express.Application,
+      ) => void,
     ): void;
     registerAdminRoute(
-      adminRoutesDeclaration: (adminExpressApp: express.Application) => void
+      adminRoutesDeclaration: (adminExpressApp: express.Application) => void,
     ): void;
     registerCLIExtension(cliExtension: unknown): void;
     eventBus: EventEmitter;

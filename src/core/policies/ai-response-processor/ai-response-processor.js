@@ -1,35 +1,35 @@
 // AI Response Processor Policy
 // 处理AI路由后的响应，统计使用情况、转换响应格式
 
-module.exports = function (params, config) {
+module.exports = (_params, config) => {
   const logger = config.logger || console;
 
   // Provider-specific response transformers
   const responseTransformers = {
-    openai: data => data,
-    anthropic: data => data,
-    google: data => data,
-    azure: data => data,
+    openai: (data) => data,
+    anthropic: (data) => data,
+    google: (data) => data,
+    azure: (data) => data,
   };
 
   // Token usage extractors
   const tokenExtractors = {
-    openai: data => ({
+    openai: (data) => ({
       prompt: data.usage?.prompt_tokens || 0,
       completion: data.usage?.completion_tokens || 0,
       total: data.usage?.total_tokens || 0,
     }),
-    anthropic: data => ({
+    anthropic: (data) => ({
       prompt: data.usage?.input_tokens || 0,
       completion: data.usage?.output_tokens || 0,
       total: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
     }),
-    google: data => ({
+    google: (data) => ({
       prompt: data.usageMetadata?.promptTokenCount || 0,
       completion: data.usageMetadata?.candidatesTokenCount || 0,
       total: data.usageMetadata?.totalTokenCount || 0,
     }),
-    azure: data => ({
+    azure: (data) => ({
       prompt: data.usage?.prompt_tokens || 0,
       completion: data.usage?.completion_tokens || 0,
       total: data.usage?.total_tokens || 0,
@@ -41,26 +41,35 @@ module.exports = function (params, config) {
     openai: (model, tokens) => {
       // Simplified pricing (update with actual rates)
       const rates = {
-        'gpt-4': { prompt: 0.03, completion: 0.06 },
-        'gpt-3.5-turbo': { prompt: 0.0015, completion: 0.002 },
+        "gpt-4": { prompt: 0.03, completion: 0.06 },
+        "gpt-3.5-turbo": { prompt: 0.0015, completion: 0.002 },
       };
-      const rate = rates[model] || rates['gpt-3.5-turbo'];
-      return (tokens.prompt * rate.prompt + tokens.completion * rate.completion) / 1000;
+      const rate = rates[model] || rates["gpt-3.5-turbo"];
+      return (
+        (tokens.prompt * rate.prompt + tokens.completion * rate.completion) /
+        1000
+      );
     },
     anthropic: (model, tokens) => {
       const rates = {
-        'claude-3-opus': { prompt: 15, completion: 75 },
-        'claude-3-sonnet': { prompt: 3, completion: 15 },
+        "claude-3-opus": { prompt: 15, completion: 75 },
+        "claude-3-sonnet": { prompt: 3, completion: 15 },
       };
-      const rate = rates[model] || rates['claude-3-sonnet'];
-      return (tokens.prompt * rate.prompt + tokens.completion * rate.completion) / 1000000;
+      const rate = rates[model] || rates["claude-3-sonnet"];
+      return (
+        (tokens.prompt * rate.prompt + tokens.completion * rate.completion) /
+        1000000
+      );
     },
     google: (model, tokens) => {
       const rates = {
-        'gemini-pro': { prompt: 0.5, completion: 1.5 },
+        "gemini-pro": { prompt: 0.5, completion: 1.5 },
       };
-      const rate = rates[model] || rates['gemini-pro'];
-      return (tokens.prompt * rate.prompt + tokens.completion * rate.completion) / 1000;
+      const rate = rates[model] || rates["gemini-pro"];
+      return (
+        (tokens.prompt * rate.prompt + tokens.completion * rate.completion) /
+        1000
+      );
     },
     azure: (model, tokens) => {
       return costCalculators.openai(model, tokens); // Similar to OpenAI
@@ -92,7 +101,7 @@ module.exports = function (params, config) {
     };
 
     res.send = function (data) {
-      if (typeof data === 'object') {
+      if (typeof data === "object") {
         responseData = data;
       }
       statusCode = res.statusCode || 200;
@@ -115,16 +124,24 @@ module.exports = function (params, config) {
   };
 
   function processResponse(data, statusCode, responseTime, routingData) {
-    const { selectedProvider, model, userId, requestId, keyId, abTestAllocation } = routingData;
+    const {
+      selectedProvider,
+      model,
+      userId,
+      requestId,
+      keyId,
+      abTestAllocation,
+    } = routingData;
 
     try {
       // Transform response if needed
-      const transformer = responseTransformers[selectedProvider] || (d => d);
+      const transformer = responseTransformers[selectedProvider] || ((d) => d);
       const transformedResponse = transformer(data);
 
       // Extract token usage
       const tokenExtractor =
-        tokenExtractors[selectedProvider] || (() => ({ prompt: 0, completion: 0, total: 0 }));
+        tokenExtractors[selectedProvider] ||
+        (() => ({ prompt: 0, completion: 0, total: 0 }));
       const tokens = tokenExtractor(transformedResponse);
 
       // Calculate cost
@@ -132,7 +149,11 @@ module.exports = function (params, config) {
       const cost = costCalculator(model, tokens);
 
       // Record provider performance
-      recordProviderPerformance(selectedProvider, statusCode < 400, responseTime);
+      recordProviderPerformance(
+        selectedProvider,
+        statusCode < 400,
+        responseTime,
+      );
 
       // Record API key usage
       if (apiKeyManager && keyId) {
@@ -158,7 +179,7 @@ module.exports = function (params, config) {
           statusCode,
           timestamp: new Date(),
           ip: req.ip,
-          userAgent: req.headers['user-agent'],
+          userAgent: req.headers["user-agent"],
         });
       }
 
@@ -172,9 +193,14 @@ module.exports = function (params, config) {
         };
 
         abTestManager
-          .recordResult(abTestAllocation.testId, abTestAllocation.variantId, userId, metrics)
-          .catch(error => {
-            logger.warn('A/B测试结果记录失败', {
+          .recordResult(
+            abTestAllocation.testId,
+            abTestAllocation.variantId,
+            userId,
+            metrics,
+          )
+          .catch((error) => {
+            logger.warn("A/B测试结果记录失败", {
               userId,
               requestId,
               testId: abTestAllocation.testId,
@@ -185,15 +211,15 @@ module.exports = function (params, config) {
 
       // Add custom headers
       res.set({
-        'x-ai-provider': selectedProvider,
-        'x-ai-model': model,
-        'x-response-time': responseTime,
-        'x-tokens-used': tokens.total || 0,
-        'x-cost': cost || 0,
-        'x-request-id': requestId,
+        "x-ai-provider": selectedProvider,
+        "x-ai-model": model,
+        "x-response-time": responseTime,
+        "x-tokens-used": tokens.total || 0,
+        "x-cost": cost || 0,
+        "x-request-id": requestId,
       });
 
-      logger.info('AI request processed', {
+      logger.info("AI request processed", {
         requestId,
         userId,
         model,
@@ -204,7 +230,7 @@ module.exports = function (params, config) {
         cost,
       });
     } catch (error) {
-      logger.error('Response processing error', {
+      logger.error("Response processing error", {
         requestId,
         userId,
         provider: selectedProvider,
@@ -222,7 +248,7 @@ module.exports = function (params, config) {
     });
   }
 
-  function calculateQualityScore(response, model) {
+  function calculateQualityScore(response, _model) {
     // Simple quality scoring based on response characteristics
     if (!response) return 0;
 
@@ -234,7 +260,7 @@ module.exports = function (params, config) {
     }
 
     // Check response length (reasonable responses are usually substantial)
-    if (typeof response === 'string' && response.length > 10) {
+    if (typeof response === "string" && response.length > 10) {
       score += 0.2;
     }
 

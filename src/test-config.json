@@ -280,7 +280,18 @@
       }
     },
     "ci_cd": {
-      "stages": ["dependency_check", "lint", "unit_test", "integration_test", "e2e_test", "performance_test", "security_scan", "deploy_staging", "reliability_test", "deploy_production"],
+      "stages": [
+        "dependency_check",
+        "lint",
+        "unit_test",
+        "integration_test",
+        "e2e_test",
+        "performance_test",
+        "security_scan",
+        "deploy_staging",
+        "reliability_test",
+        "deploy_production"
+      ],
       "parallel_execution": {
         "unit_test": 4,
         "integration_test": 2,

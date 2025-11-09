@@ -1,30 +1,30 @@
 module.exports = {
-  $id: 'http://express-gateway.io/schemas/policies/request-transformer.json',
-  type: 'object',
+  $id: "http://express-gateway.io/schemas/policies/request-transformer.json",
+  type: "object",
   definitions: {
     addRemove: {
-      type: 'object',
+      type: "object",
       properties: {
         add: {
-          type: 'object',
+          type: "object",
           additionalProperties: {
-            type: ['string', 'number'],
+            type: ["string", "number"],
           },
           minProperties: 1,
         },
         remove: {
-          type: ['array'],
+          type: ["array"],
           items: {
-            type: 'string',
+            type: "string",
           },
         },
       },
-      anyOf: [{ required: ['add'] }, { required: ['remove'] }],
+      anyOf: [{ required: ["add"] }, { required: ["remove"] }],
     },
   },
   properties: {
-    headers: { $ref: '#/definitions/addRemove' },
-    body: { $ref: '#/definitions/addRemove' },
+    headers: { $ref: "#/definitions/addRemove" },
+    body: { $ref: "#/definitions/addRemove" },
   },
-  anyOf: [{ required: ['headers'] }, { required: ['body'] }],
+  anyOf: [{ required: ["headers"] }, { required: ["body"] }],
 };

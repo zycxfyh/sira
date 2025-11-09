@@ -1,37 +1,43 @@
-const db = require('../../db');
-const config = require('../../config');
+const db = require("../../db");
+const config = require("../../config");
 
 const dao = {};
 
 const redisNamespace = config.systemConfig.db.redis.namespace;
 
-const accessTokenNamespace = 'access-token';
-const accessTokenConsumerTokensNamespace = 'consumer-access-tokens';
-const accessTokenConsumerTokensExpiredNamespace = 'consumer-access-tokens-expired';
+const accessTokenNamespace = "access-token";
+const accessTokenConsumerTokensNamespace = "consumer-access-tokens";
+const accessTokenConsumerTokensExpiredNamespace =
+  "consumer-access-tokens-expired";
 
-const refreshTokenNamespace = 'refresh-token';
-const refreshTokenConsumerTokensNamespace = 'consumer-refresh-tokens';
-const refreshTokenConsumerTokensExpiredNamespace = 'consumer-refresh-tokens-expired';
+const refreshTokenNamespace = "refresh-token";
+const refreshTokenConsumerTokensNamespace = "consumer-refresh-tokens";
+const refreshTokenConsumerTokensExpiredNamespace =
+  "consumer-refresh-tokens-expired";
 
-dao.save = function (token, options) {
+dao.save = (token, options) => {
   options = options || {};
 
-  const type = options.type || 'access_token';
+  const type = options.type || "access_token";
   let tokenKey, consumerTokensKey;
 
-  if (type === 'access_token') {
+  if (type === "access_token") {
     // key for the token hash table
-    tokenKey = redisNamespace.concat('-', accessTokenNamespace).concat(':', token.id);
+    tokenKey = redisNamespace
+      .concat("-", accessTokenNamespace)
+      .concat(":", token.id);
 
     // key for the consumer-tokens hash table
     consumerTokensKey = redisNamespace
-      .concat('-', accessTokenConsumerTokensNamespace)
-      .concat(':', token.consumerId);
+      .concat("-", accessTokenConsumerTokensNamespace)
+      .concat(":", token.consumerId);
   } else {
-    tokenKey = redisNamespace.concat('-', refreshTokenNamespace).concat(':', token.id);
+    tokenKey = redisNamespace
+      .concat("-", refreshTokenNamespace)
+      .concat(":", token.id);
     consumerTokensKey = redisNamespace
-      .concat('-', refreshTokenConsumerTokensNamespace)
-      .concat(':', token.consumerId);
+      .concat("-", refreshTokenConsumerTokensNamespace)
+      .concat(":", token.consumerId);
   }
   return db
     .multi()
@@ -40,37 +46,37 @@ dao.save = function (token, options) {
     .exec();
 };
 
-dao.find = function (tokenObj, options) {
+dao.find = (tokenObj, options) => {
   options = options || {};
   let foundToken, tokenNamespace, consumerTokensKey, consumerTokensExpiredKey;
-  const type = options.type || 'access_token';
+  const type = options.type || "access_token";
 
-  if (type === 'access_token') {
-    tokenNamespace = redisNamespace.concat('-', accessTokenNamespace);
+  if (type === "access_token") {
+    tokenNamespace = redisNamespace.concat("-", accessTokenNamespace);
     consumerTokensKey = redisNamespace
-      .concat('-', accessTokenConsumerTokensNamespace)
-      .concat(':', tokenObj.consumerId);
+      .concat("-", accessTokenConsumerTokensNamespace)
+      .concat(":", tokenObj.consumerId);
     consumerTokensExpiredKey = redisNamespace
-      .concat('-', accessTokenConsumerTokensExpiredNamespace)
-      .concat(':', tokenObj.consumerId);
+      .concat("-", accessTokenConsumerTokensExpiredNamespace)
+      .concat(":", tokenObj.consumerId);
   } else {
-    tokenNamespace = redisNamespace.concat('-', refreshTokenNamespace);
+    tokenNamespace = redisNamespace.concat("-", refreshTokenNamespace);
     consumerTokensKey = redisNamespace
-      .concat('-', refreshTokenConsumerTokensNamespace)
-      .concat(':', tokenObj.consumerId);
+      .concat("-", refreshTokenConsumerTokensNamespace)
+      .concat(":", tokenObj.consumerId);
     consumerTokensExpiredKey = redisNamespace
-      .concat('-', refreshTokenConsumerTokensExpiredNamespace)
-      .concat(':', tokenObj.consumerId);
+      .concat("-", refreshTokenConsumerTokensExpiredNamespace)
+      .concat(":", tokenObj.consumerId);
   }
 
-  return db.hgetall(consumerTokensKey).then(tokenIds => {
+  return db.hgetall(consumerTokensKey).then((tokenIds) => {
     const expiredTokenIds = [];
 
     if (!tokenIds || Object.keys(tokenIds).length === 0) {
       return null;
     }
 
-    const activeTokenIds = Object.keys(tokenIds).filter(key => {
+    const activeTokenIds = Object.keys(tokenIds).filter((key) => {
       if (tokenIds[key] <= Date.now()) {
         expiredTokenIds.push(key);
         return false;
@@ -86,9 +92,14 @@ dao.find = function (tokenObj, options) {
           reject(new Error());
           return;
         }
-        db.hgetall(tokenNamespace.concat(':', activeTokenIds.pop()))
-          .then(token => {
-            if (!token || !Object.keys(tokenObj).every(key => tokenObj[key] === token[key])) {
+        db.hgetall(tokenNamespace.concat(":", activeTokenIds.pop()))
+          .then((token) => {
+            if (
+              !token ||
+              !Object.keys(tokenObj).every(
+                (key) => tokenObj[key] === token[key],
+              )
+            ) {
               throw new Error();
             }
 
@@ -101,7 +112,7 @@ dao.find = function (tokenObj, options) {
     });
 
     return getTokenPromise
-      .then(token => {
+      .then((token) => {
         foundToken = token;
       })
       .catch(() => null)
@@ -112,14 +123,18 @@ dao.find = function (tokenObj, options) {
           return;
         }
 
-        expiredTokenIds.forEach(id => {
+        expiredTokenIds.forEach((id) => {
           tokenTransaction = tokenTransaction.hset(
-            tokenNamespace.concat(':', id),
-            'archived',
-            'true'
+            tokenNamespace.concat(":", id),
+            "archived",
+            "true",
           );
           tokenTransaction = tokenTransaction.hdel(consumerTokensKey, id);
-          tokenTransaction = tokenTransaction.hset(consumerTokensExpiredKey, id, 'true');
+          tokenTransaction = tokenTransaction.hset(
+            consumerTokensExpiredKey,
+            id,
+            "true",
+          );
         });
 
         return tokenTransaction.exec();
@@ -130,13 +145,13 @@ dao.find = function (tokenObj, options) {
 
 dao.get = function (tokenId, options) {
   options = options || {};
-  const type = options.type || 'access_token';
+  const type = options.type || "access_token";
   const tokenNamespace = redisNamespace.concat(
-    '-',
-    type === 'access_token' ? accessTokenNamespace : refreshTokenNamespace
+    "-",
+    type === "access_token" ? accessTokenNamespace : refreshTokenNamespace,
   );
 
-  return db.hgetall(tokenNamespace.concat(':', tokenId)).then(token => {
+  return db.hgetall(tokenNamespace.concat(":", tokenId)).then((token) => {
     if (!token || !token.expiresAt) {
       return null;
     }
@@ -156,58 +171,74 @@ dao.get = function (tokenId, options) {
   });
 };
 
-dao.revoke = function (token, options) {
+dao.revoke = (token, options) => {
   options = options || {};
-  const type = options.type || 'access_token';
+  const type = options.type || "access_token";
   let tokenNamespace, consumerTokensNamespace, consumerTokensExpiredNamespace;
-  if (type === 'access_token') {
-    tokenNamespace = redisNamespace.concat('-', accessTokenNamespace);
-    consumerTokensNamespace = redisNamespace.concat('-', accessTokenConsumerTokensNamespace);
+  if (type === "access_token") {
+    tokenNamespace = redisNamespace.concat("-", accessTokenNamespace);
+    consumerTokensNamespace = redisNamespace.concat(
+      "-",
+      accessTokenConsumerTokensNamespace,
+    );
     consumerTokensExpiredNamespace = redisNamespace.concat(
-      '-',
-      accessTokenConsumerTokensExpiredNamespace
+      "-",
+      accessTokenConsumerTokensExpiredNamespace,
     );
   } else {
-    tokenNamespace = redisNamespace.concat('-', refreshTokenNamespace);
-    consumerTokensNamespace = redisNamespace.concat('-', refreshTokenConsumerTokensNamespace);
+    tokenNamespace = redisNamespace.concat("-", refreshTokenNamespace);
+    consumerTokensNamespace = redisNamespace.concat(
+      "-",
+      refreshTokenConsumerTokensNamespace,
+    );
     consumerTokensExpiredNamespace = redisNamespace.concat(
-      '-',
-      refreshTokenConsumerTokensExpiredNamespace
+      "-",
+      refreshTokenConsumerTokensExpiredNamespace,
     );
   }
   return db
     .multi()
-    .hset(tokenNamespace.concat(':', token.id), 'archived', 'true')
-    .hdel(consumerTokensNamespace.concat(':', token.consumerId), token.id)
-    .hset(consumerTokensExpiredNamespace.concat(':', token.consumerId), token.id, 'true')
+    .hset(tokenNamespace.concat(":", token.id), "archived", "true")
+    .hdel(consumerTokensNamespace.concat(":", token.consumerId), token.id)
+    .hset(
+      consumerTokensExpiredNamespace.concat(":", token.consumerId),
+      token.id,
+      "true",
+    )
     .exec();
 };
 
 dao.getTokensByConsumer = function (id, options) {
   options = options || {};
   let consumerTokensNamespace, consumerTokensExpiredNamespace;
-  const type = options.type || 'access_token';
+  const type = options.type || "access_token";
 
-  if (type === 'access_token') {
-    consumerTokensNamespace = redisNamespace.concat('-', accessTokenConsumerTokensNamespace);
+  if (type === "access_token") {
+    consumerTokensNamespace = redisNamespace.concat(
+      "-",
+      accessTokenConsumerTokensNamespace,
+    );
     consumerTokensExpiredNamespace = redisNamespace.concat(
-      '-',
-      accessTokenConsumerTokensExpiredNamespace
+      "-",
+      accessTokenConsumerTokensExpiredNamespace,
     );
   } else {
-    consumerTokensNamespace = redisNamespace.concat('-', refreshTokenConsumerTokensNamespace);
+    consumerTokensNamespace = redisNamespace.concat(
+      "-",
+      refreshTokenConsumerTokensNamespace,
+    );
     consumerTokensExpiredNamespace = redisNamespace.concat(
-      '-',
-      refreshTokenConsumerTokensExpiredNamespace
+      "-",
+      refreshTokenConsumerTokensExpiredNamespace,
     );
   }
 
-  let getIds = db.multi().hgetall(consumerTokensNamespace.concat(':', id));
+  let getIds = db.multi().hgetall(consumerTokensNamespace.concat(":", id));
 
   if (options.includeExpired) {
-    getIds = getIds.hgetall(consumerTokensExpiredNamespace.concat(':', id));
+    getIds = getIds.hgetall(consumerTokensExpiredNamespace.concat(":", id));
   }
-  return getIds.exec().then(tokensArr => {
+  return getIds.exec().then((tokensArr) => {
     let tokens = tokensArr[0][1];
     let expiredTokens = tokensArr.length > 1 ? tokensArr[1][1] : undefined;
 
@@ -220,12 +251,12 @@ dao.getTokensByConsumer = function (id, options) {
     tokens = Object.keys(tokens || {});
     expiredTokens = Object.keys(expiredTokens || {});
 
-    tokens.concat(expiredTokens).forEach(tokenId => {
+    tokens.concat(expiredTokens).forEach((tokenId) => {
       return tokenPromises.push(this.get(tokenId, options));
     });
 
-    return Promise.all(tokenPromises).then(results => {
-      return results.filter(r => !!r);
+    return Promise.all(tokenPromises).then((results) => {
+      return results.filter((r) => !!r);
     });
   });
 };

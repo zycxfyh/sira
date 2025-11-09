@@ -1,41 +1,43 @@
-module.exports = function (client) {
-  const baseUrl = '/apps/';
+module.exports = (client) => {
+  const baseUrl = "/apps/";
   return {
     create(userId, app) {
       app.userId = userId;
       return client
         .post(baseUrl)
         .send(app)
-        .then(res => res.body);
+        .then((res) => res.body);
     },
     update(appId, app) {
       return client
         .put(`${baseUrl}${encodeURIComponent(appId)}`)
         .send(app)
-        .then(res => res.body);
+        .then((res) => res.body);
     },
     activate(id) {
       return client
         .put(`${baseUrl}${encodeURIComponent(id)}/status`)
         .send({ status: true })
-        .then(res => res.body);
+        .then((res) => res.body);
     },
 
     deactivate(id) {
       return client
         .put(`${baseUrl}${encodeURIComponent(id)}/status`)
         .send({ status: false })
-        .then(res => res.body);
+        .then((res) => res.body);
     },
 
     info(id) {
-      return client.get(`${baseUrl}${encodeURIComponent(id)}`).then(res => res.body);
+      return client
+        .get(`${baseUrl}${encodeURIComponent(id)}`)
+        .then((res) => res.body);
     },
 
     list(params = {}) {
       let results = [];
 
-      const fetchNext = res => {
+      const fetchNext = (res) => {
         results = results.concat(res.body.apps);
         if (params.all && res.body.nextKey !== 0) {
           return client
@@ -50,7 +52,9 @@ module.exports = function (client) {
     },
 
     remove(id) {
-      return client.del(`${baseUrl}${encodeURIComponent(id)}`).then(res => res.body);
+      return client
+        .del(`${baseUrl}${encodeURIComponent(id)}`)
+        .then((res) => res.body);
     },
   };
 };

@@ -1,10 +1,10 @@
-const assert = require('assert');
-const environment = require('../../fixtures/cli/environment');
-const adminHelper = require('../../common/admin-helper')();
-const namespace = 'express-gateway:credential-scopes:add';
-const idGen = require('uuid62');
+const assert = require("node:assert");
+const environment = require("../../fixtures/cli/environment");
+const adminHelper = require("../../common/admin-helper")();
+const namespace = "express-gateway:credential-scopes:add";
+const idGen = require("uuid62");
 
-describe('eg credential:scopes add', () => {
+describe("eg credential:scopes add", () => {
   let program, env, user, cred1, scope1, scope2;
   before(() => {
     ({ program, env } = environment.bootstrap());
@@ -17,14 +17,14 @@ describe('eg credential:scopes add', () => {
     return adminHelper.admin.users
       .create({
         username: idGen.v4(),
-        firstname: 'f',
-        lastname: 'l',
+        firstname: "f",
+        lastname: "l",
       })
-      .then(createdUser => {
+      .then((createdUser) => {
         user = createdUser;
-        return adminHelper.admin.credentials.create(user.id, 'key-auth', {});
+        return adminHelper.admin.credentials.create(user.id, "key-auth", {});
       })
-      .then(createdCred => {
+      .then((createdCred) => {
         cred1 = createdCred;
         scope1 = idGen.v4();
         scope2 = idGen.v4();
@@ -37,26 +37,26 @@ describe('eg credential:scopes add', () => {
     return adminHelper.reset();
   });
 
-  it('adds scope to a credential', done => {
-    env.hijack(namespace, generator => {
+  it("adds scope to a credential", (done) => {
+    env.hijack(namespace, (generator) => {
       const output = {};
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
+        generator.log.ok = (message) => {
           output[message] = true;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.credentials
-          .info(cred1.keyId, 'key-auth')
-          .then(cred => {
+          .info(cred1.keyId, "key-auth")
+          .then((cred) => {
             assert.strictEqual(cred.isActive, true);
-            assert.ok(output[`Scope ${scope1} added to ` + cred1.keyId]);
-            assert.ok(output[`Scope ${scope2} added to ` + cred1.keyId]);
+            assert.ok(output[`Scope ${scope1} added to ${cred1.keyId}`]);
+            assert.ok(output[`Scope ${scope2} added to ${cred1.keyId}`]);
             assert.ok(cred.scopes.indexOf(scope1) >= 0);
             assert.ok(cred.scopes.indexOf(scope2) >= 0);
             done();
@@ -66,25 +66,25 @@ describe('eg credential:scopes add', () => {
     });
 
     env.argv = program.parse(
-      `credential:scopes add --id ${cred1.keyId} -t key-auth ${scope1} ${scope2}`
+      `credential:scopes add --id ${cred1.keyId} -t key-auth ${scope1} ${scope2}`,
     );
   });
 
-  it('prints only the credential id when using the --quiet flag', done => {
-    env.hijack(namespace, generator => {
-      generator.once('run', () => {
-        generator.log.error = message => {
+  it("prints only the credential id when using the --quiet flag", (done) => {
+    env.hijack(namespace, (generator) => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.log.ok = message => {
-          done(new Error('should not log: ' + message));
+        generator.log.ok = (message) => {
+          done(new Error(`should not log: ${message}`));
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         return adminHelper.admin.credentials
-          .info(cred1.keyId, 'key-auth')
-          .then(cred => {
+          .info(cred1.keyId, "key-auth")
+          .then((cred) => {
             assert.strictEqual(cred.isActive, true);
             assert.ok(cred.scopes.indexOf(scope1) >= 0);
             assert.ok(cred.scopes.indexOf(scope2) >= 0);
@@ -95,7 +95,7 @@ describe('eg credential:scopes add', () => {
     });
 
     env.argv = program.parse(
-      `credential:scopes add -t key-auth -q --id ${cred1.keyId} ${scope1} ${scope2}`
+      `credential:scopes add -t key-auth -q --id ${cred1.keyId} ${scope1} ${scope2}`,
     );
   });
 });

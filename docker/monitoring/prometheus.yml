@@ -4,7 +4,7 @@ global:
   scrape_timeout: 10s
 
 rule_files:
-  - "alert-rules.yml"
+  - 'alert-rules.yml'
 
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.

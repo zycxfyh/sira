@@ -5,7 +5,7 @@
 
 // capture terminal output, so that we might
 // assert against it.
-exports.checkOutput = function (f, argv, cb) {
+exports.checkOutput = (f, argv, cb) => {
   let exit = false;
   const _exit = process.exit;
   const _emit = process.emit;
@@ -15,35 +15,35 @@ exports.checkOutput = function (f, argv, cb) {
   const _log = console.log;
   const _warn = console.warn;
 
-  process.exit = function () {
+  process.exit = () => {
     exit = true;
   };
-  process.env = Object.assign(process.env, { _: 'node' });
-  process.argv = argv || ['./usage'];
+  process.env = Object.assign(process.env, { _: "node" });
+  process.argv = argv || ["./usage"];
 
   const errors = [];
   const logs = [];
   const warnings = [];
 
-  console.error = function (msg) {
+  console.error = (msg) => {
     errors.push(msg);
   };
-  console.log = function (msg) {
+  console.log = (msg) => {
     logs.push(msg);
   };
-  console.warn = function (msg) {
+  console.warn = (msg) => {
     warnings.push(msg);
   };
 
   let result;
 
-  if (typeof cb === 'function') {
-    process.exit = function () {
+  if (typeof cb === "function") {
+    process.exit = () => {
       exit = true;
       cb(null, done());
     };
     process.emit = function (ev, value) {
-      if (ev === 'uncaughtException') {
+      if (ev === "uncaughtException") {
         done();
         cb(value);
         return true;

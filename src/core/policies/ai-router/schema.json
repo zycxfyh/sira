@@ -46,7 +46,12 @@
           "properties": {
             "enabled": { "type": "boolean", "default": true },
             "apiKey": { "type": "string" },
-            "priority": { "type": "integer", "minimum": 1, "maximum": 10, "default": 5 }
+            "priority": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            }
           }
         },
         "anthropic": {
@@ -54,7 +59,12 @@
           "properties": {
             "enabled": { "type": "boolean", "default": true },
             "apiKey": { "type": "string" },
-            "priority": { "type": "integer", "minimum": 1, "maximum": 10, "default": 5 }
+            "priority": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            }
           }
         },
         "azure": {
@@ -63,7 +73,12 @@
             "enabled": { "type": "boolean", "default": true },
             "apiKey": { "type": "string" },
             "endpoint": { "type": "string" },
-            "priority": { "type": "integer", "minimum": 1, "maximum": 10, "default": 5 }
+            "priority": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            }
           }
         }
       }

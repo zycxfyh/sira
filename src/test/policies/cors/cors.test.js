@@ -1,36 +1,36 @@
-const testHelper = require('../../common/routing.helper');
-const config = require('../../../src/core/config');
+const testHelper = require("../../common/routing.helper");
+const config = require("../../../core/config");
 const originalGatewayConfig = config.gatewayConfig;
-const should = require('should');
+const should = require("should");
 
-describe('cors', () => {
+describe("cors", () => {
   const helper = testHelper();
-  helper.addPolicy('test', () => (req, res) => {
+  helper.addPolicy("test", () => (req, res) => {
     res.json({
-      result: 'test',
+      result: "test",
       hostname: req.hostname,
       url: req.url,
       apiEndpoint: req.egContext.apiEndpoint,
     });
   });
 
-  const setupHandler = origin => {
+  const setupHandler = (origin) => {
     config.gatewayConfig = {
       http: { port: 0 },
       apiEndpoints: {
         test_default: {},
       },
-      policies: ['cors', 'test'],
+      policies: ["cors", "test"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['test_default'],
+          apiEndpoints: ["test_default"],
           policies: [
             {
               cors: {
                 action: {
                   origin,
-                  methods: 'HEAD,PUT,PATCH,POST,DELETE',
-                  allowedHeaders: 'X-TEST',
+                  methods: "HEAD,PUT,PATCH,POST,DELETE",
+                  allowedHeaders: "X-TEST",
                 },
               },
             },
@@ -45,196 +45,204 @@ describe('cors', () => {
     return helper.setup();
   };
 
-  describe('origin as string', () => {
-    before('setup', () => {
-      return setupHandler('http://www.example.com');
+  describe("origin as string", () => {
+    before("setup", () => {
+      return setupHandler("http://www.example.com");
     });
 
-    after('cleanup', () => {
+    after("cleanup", () => {
       config.gatewayConfig = originalGatewayConfig;
       return helper.cleanup();
     });
 
     it(
-      'should allow first request for host',
+      "should allow first request for host",
       helper.validateOptions({
         setup: {
-          url: '/',
+          url: "/",
           preflight: true,
         },
         test: {
-          url: '/',
+          url: "/",
           statusCode: 204,
           headers: {
-            'access-control-allow-origin': 'http://www.example.com',
-            'access-control-allow-methods': 'HEAD,PUT,PATCH,POST,DELETE',
-            'access-control-allow-headers': 'X-TEST',
+            "access-control-allow-origin": "http://www.example.com",
+            "access-control-allow-methods": "HEAD,PUT,PATCH,POST,DELETE",
+            "access-control-allow-headers": "X-TEST",
           },
         },
-      })
+      }),
     );
   });
 
-  describe('origin as regexp', () => {
-    before('setup', () => {
+  describe("origin as regexp", () => {
+    before("setup", () => {
       return setupHandler(/http:\/\/www\.example\.com/);
     });
 
-    after('cleanup', () => {
+    after("cleanup", () => {
       config.gatewayConfig = originalGatewayConfig;
       return helper.cleanup();
     });
 
     it(
-      'should have allow origin response header same as request origin when regexp matched',
+      "should have allow origin response header same as request origin when regexp matched",
       helper.validateOptions({
         setup: {
-          origin: 'http://www.example.com',
-          url: '/',
+          origin: "http://www.example.com",
+          url: "/",
           preflight: true,
         },
         test: {
-          url: '/',
+          url: "/",
           statusCode: 204,
           headers: {
-            'access-control-allow-origin': 'http://www.example.com',
-            'access-control-allow-methods': 'HEAD,PUT,PATCH,POST,DELETE',
-            'access-control-allow-headers': 'X-TEST',
+            "access-control-allow-origin": "http://www.example.com",
+            "access-control-allow-methods": "HEAD,PUT,PATCH,POST,DELETE",
+            "access-control-allow-headers": "X-TEST",
           },
         },
-      })
+      }),
     );
 
     it(
       "should have no allow origin response header when regexp didn't match",
       helper.validateOptions({
         setup: {
-          origin: 'http://www.bad.com',
-          url: '/',
+          origin: "http://www.bad.com",
+          url: "/",
           preflight: true,
         },
         test: {
-          url: '/',
+          url: "/",
           statusCode: 204,
           headers: {
-            'access-control-allow-methods': 'HEAD,PUT,PATCH,POST,DELETE',
-            'access-control-allow-headers': 'X-TEST',
+            "access-control-allow-methods": "HEAD,PUT,PATCH,POST,DELETE",
+            "access-control-allow-headers": "X-TEST",
           },
-          excludedHeaders: ['access-control-allow-origin'],
+          excludedHeaders: ["access-control-allow-origin"],
         },
-      })
+      }),
     );
   });
 
-  describe('origin as array of strings', () => {
-    before('setup', () => {
-      return setupHandler(['http://www.example.com', 'http://www.example2.com']);
+  describe("origin as array of strings", () => {
+    before("setup", () => {
+      return setupHandler([
+        "http://www.example.com",
+        "http://www.example2.com",
+      ]);
     });
 
-    after('cleanup', () => {
+    after("cleanup", () => {
       config.gatewayConfig = originalGatewayConfig;
       return helper.cleanup();
     });
 
     it(
-      'should have allow origin response header same as request origin when any string item in array matched',
+      "should have allow origin response header same as request origin when any string item in array matched",
       helper.validateOptions({
         setup: {
-          origin: 'http://www.example.com',
-          url: '/',
+          origin: "http://www.example.com",
+          url: "/",
           preflight: true,
         },
         test: {
-          url: '/',
+          url: "/",
           statusCode: 204,
           headers: {
-            'access-control-allow-origin': 'http://www.example.com',
-            'access-control-allow-methods': 'HEAD,PUT,PATCH,POST,DELETE',
-            'access-control-allow-headers': 'X-TEST',
+            "access-control-allow-origin": "http://www.example.com",
+            "access-control-allow-methods": "HEAD,PUT,PATCH,POST,DELETE",
+            "access-control-allow-headers": "X-TEST",
           },
         },
-      })
+      }),
     );
 
     it(
-      'should have no allow origin response header when none of the string items in the array matched the request origin',
+      "should have no allow origin response header when none of the string items in the array matched the request origin",
       helper.validateOptions({
         setup: {
-          origin: 'http://www.bad.com',
-          url: '/',
+          origin: "http://www.bad.com",
+          url: "/",
           preflight: true,
         },
         test: {
-          url: '/',
+          url: "/",
           statusCode: 204,
           headers: {
-            'access-control-allow-methods': 'HEAD,PUT,PATCH,POST,DELETE',
-            'access-control-allow-headers': 'X-TEST',
+            "access-control-allow-methods": "HEAD,PUT,PATCH,POST,DELETE",
+            "access-control-allow-headers": "X-TEST",
           },
-          excludedHeaders: ['access-control-allow-origin'],
+          excludedHeaders: ["access-control-allow-origin"],
         },
-      })
+      }),
     );
   });
 
-  describe('origin as array of RegExp', () => {
-    before('setup', () => {
-      return setupHandler([/http:\/\/www\.example\.com/, /http:\/\/www\.example2\.com/]);
+  describe("origin as array of RegExp", () => {
+    before("setup", () => {
+      return setupHandler([
+        /http:\/\/www\.example\.com/,
+        /http:\/\/www\.example2\.com/,
+      ]);
     });
 
-    after('cleanup', () => {
+    after("cleanup", () => {
       config.gatewayConfig = originalGatewayConfig;
       return helper.cleanup();
     });
 
     it(
-      'should have allow origin response header same as request origin when any RegExp item in array matched',
+      "should have allow origin response header same as request origin when any RegExp item in array matched",
       helper.validateOptions({
         setup: {
-          origin: 'http://www.example.com',
-          url: '/',
+          origin: "http://www.example.com",
+          url: "/",
           preflight: true,
         },
         test: {
-          url: '/',
+          url: "/",
           statusCode: 204,
           headers: {
-            'access-control-allow-origin': 'http://www.example.com',
-            'access-control-allow-methods': 'HEAD,PUT,PATCH,POST,DELETE',
-            'access-control-allow-headers': 'X-TEST',
+            "access-control-allow-origin": "http://www.example.com",
+            "access-control-allow-methods": "HEAD,PUT,PATCH,POST,DELETE",
+            "access-control-allow-headers": "X-TEST",
           },
         },
-      })
+      }),
     );
 
     it(
-      'should have no allow origin response header when none of the RegExp items in the array matched the request origin',
+      "should have no allow origin response header when none of the RegExp items in the array matched the request origin",
       helper.validateOptions({
         setup: {
-          origin: 'http://www.bad.com',
-          url: '/',
+          origin: "http://www.bad.com",
+          url: "/",
           preflight: true,
         },
         test: {
-          url: '/',
+          url: "/",
           statusCode: 204,
           headers: {
-            'access-control-allow-methods': 'HEAD,PUT,PATCH,POST,DELETE',
-            'access-control-allow-headers': 'X-TEST',
+            "access-control-allow-methods": "HEAD,PUT,PATCH,POST,DELETE",
+            "access-control-allow-headers": "X-TEST",
           },
-          excludedHeaders: ['access-control-allow-origin'],
+          excludedHeaders: ["access-control-allow-origin"],
         },
-      })
+      }),
     );
   });
 
-  describe('origin as non regexp object', () => {
-    after('cleanup', () => {
+  describe("origin as non regexp object", () => {
+    after("cleanup", () => {
       config.gatewayConfig = originalGatewayConfig;
     });
 
-    it('should throw exception when origin is an object but not regexp', () => {
-      return should(setupHandler(() => {})).rejectedWith(/POLICY_PARAMS_VALIDATION_FAILED/);
+    it("should throw exception when origin is an object but not regexp", () => {
+      return should(setupHandler(() => {})).rejectedWith(
+        /POLICY_PARAMS_VALIDATION_FAILED/,
+      );
     });
   });
 });

@@ -1,8 +1,8 @@
-const express = require('express');
-const path = require('path');
-const { AdminAPI } = require('./rest-api');
-const { AuthManager } = require('./auth-manager');
-const { MonitoringDashboard } = require('./monitoring-dashboard');
+const express = require("express");
+const path = require("node:path");
+const { AdminAPI } = require("./rest-api");
+const { AuthManager } = require("./auth-manager");
+const { MonitoringDashboard } = require("./monitoring-dashboard");
 
 /**
  * Sira AI Gateway 管理模块
@@ -12,9 +12,9 @@ class AdminModule {
   constructor(options = {}) {
     this.options = {
       port: options.port || 3001,
-      jwtSecret: options.jwtSecret || 'sira-admin-secret-key',
+      jwtSecret: options.jwtSecret || "sira-admin-secret-key",
       enableFrontend: options.enableFrontend !== false,
-      frontendPath: options.frontendPath || path.join(__dirname, 'public'),
+      frontendPath: options.frontendPath || path.join(__dirname, "public"),
       ...options,
     };
 
@@ -33,7 +33,7 @@ class AdminModule {
   async initialize() {
     if (this.initialized) return;
 
-    console.log('🚀 初始化管理模块...');
+    console.log("🚀 初始化管理模块...");
 
     try {
       // 初始化权限管理器
@@ -65,15 +65,15 @@ class AdminModule {
       this.integrateComponents();
 
       this.initialized = true;
-      console.log('✅ 管理模块初始化完成');
+      console.log("✅ 管理模块初始化完成");
 
-      this.emit('initialized', {
+      this.emit("initialized", {
         port: this.options.port,
         hasFrontend: this.options.enableFrontend,
-        components: ['auth', 'monitoring', 'api'],
+        components: ["auth", "monitoring", "api"],
       });
     } catch (error) {
-      console.error('❌ 管理模块初始化失败:', error);
+      console.error("❌ 管理模块初始化失败:", error);
       throw error;
     }
   }
@@ -88,8 +88,8 @@ class AdminModule {
     this.api.app.use(express.static(this.options.frontendPath));
 
     // SPA路由回退
-    this.api.app.get('/', (req, res) => {
-      res.sendFile(path.join(this.options.frontendPath, 'index.html'));
+    this.api.app.get("/", (_req, res) => {
+      res.sendFile(path.join(this.options.frontendPath, "index.html"));
     });
 
     console.log(`🌐 前端文件服务已设置: ${this.options.frontendPath}`);
@@ -114,7 +114,7 @@ class AdminModule {
    */
   extendAPIRoutes() {
     const adminRouter = this.api.app._router.stack.find(
-      layer => layer.route && layer.route.path === '/api/admin'
+      (layer) => layer.route && layer.route.path === "/api/admin",
     );
 
     if (!adminRouter) return;
@@ -122,7 +122,7 @@ class AdminModule {
     const adminRoutes = adminRouter.handle;
 
     // 添加用户管理路由
-    adminRoutes.get('/users', async (req, res) => {
+    adminRoutes.get("/users", async (_req, res) => {
       try {
         const users = this.auth.getUsers();
         res.json({ success: true, data: users });
@@ -131,7 +131,7 @@ class AdminModule {
       }
     });
 
-    adminRoutes.post('/users', async (req, res) => {
+    adminRoutes.post("/users", async (req, res) => {
       try {
         const user = await this.auth.createUser(req.body);
         res.status(201).json({ success: true, data: user });
@@ -140,7 +140,7 @@ class AdminModule {
       }
     });
 
-    adminRoutes.put('/users/:id', async (req, res) => {
+    adminRoutes.put("/users/:id", async (req, res) => {
       try {
         const user = await this.auth.updateUser(req.params.id, req.body);
         res.json({ success: true, data: user });
@@ -149,7 +149,7 @@ class AdminModule {
       }
     });
 
-    adminRoutes.delete('/users/:id', async (req, res) => {
+    adminRoutes.delete("/users/:id", async (req, res) => {
       try {
         const result = await this.auth.deleteUser(req.params.id);
         res.json({ success: true, data: result });
@@ -159,7 +159,7 @@ class AdminModule {
     });
 
     // 添加监控路由
-    adminRoutes.get('/dashboard', async (req, res) => {
+    adminRoutes.get("/dashboard", async (_req, res) => {
       try {
         const dashboard = this.monitoring.getDashboardOverview();
         res.json({ success: true, data: dashboard });
@@ -168,7 +168,7 @@ class AdminModule {
       }
     });
 
-    adminRoutes.get('/monitoring/realtime', async (req, res) => {
+    adminRoutes.get("/monitoring/realtime", async (_req, res) => {
       try {
         const data = this.monitoring.getRealtimeData();
         res.json({ success: true, data });
@@ -177,7 +177,7 @@ class AdminModule {
       }
     });
 
-    adminRoutes.get('/monitoring/history', async (req, res) => {
+    adminRoutes.get("/monitoring/history", async (req, res) => {
       try {
         const data = this.monitoring.getDetailedMetrics(req.query.timeRange);
         res.json({ success: true, data });
@@ -186,12 +186,12 @@ class AdminModule {
       }
     });
 
-    adminRoutes.get('/monitoring/alerts', async (req, res) => {
+    adminRoutes.get("/monitoring/alerts", async (req, res) => {
       try {
         const alerts = this.monitoring.getAlerts({
           status: req.query.status,
           severity: req.query.severity,
-          limit: parseInt(req.query.limit) || 50,
+          limit: parseInt(req.query.limit, 10) || 50,
         });
         res.json({ success: true, data: alerts });
       } catch (error) {
@@ -199,18 +199,24 @@ class AdminModule {
       }
     });
 
-    adminRoutes.post('/monitoring/alerts/:id/acknowledge', async (req, res) => {
+    adminRoutes.post("/monitoring/alerts/:id/acknowledge", async (req, res) => {
       try {
-        const result = this.monitoring.acknowledgeAlert(req.params.id, req.user.username);
+        const result = this.monitoring.acknowledgeAlert(
+          req.params.id,
+          req.user.username,
+        );
         res.json({ success: true, data: result });
       } catch (error) {
         res.status(400).json({ error: error.message });
       }
     });
 
-    adminRoutes.post('/monitoring/alerts/:id/resolve', async (req, res) => {
+    adminRoutes.post("/monitoring/alerts/:id/resolve", async (req, res) => {
       try {
-        const result = this.monitoring.resolveAlert(req.params.id, req.body.resolution);
+        const result = this.monitoring.resolveAlert(
+          req.params.id,
+          req.body.resolution,
+        );
         res.json({ success: true, data: result });
       } catch (error) {
         res.status(400).json({ error: error.message });
@@ -226,7 +232,7 @@ class AdminModule {
       await this.initialize();
     }
 
-    console.log('🔄 启动管理模块...');
+    console.log("🔄 启动管理模块...");
 
     try {
       await this.api.start();
@@ -236,12 +242,12 @@ class AdminModule {
         console.log(`🌐 管理界面: http://localhost:${this.options.port}`);
       }
 
-      this.emit('started', {
+      this.emit("started", {
         port: this.options.port,
         frontend: this.options.enableFrontend,
       });
     } catch (error) {
-      console.error('❌ 启动管理模块失败:', error);
+      console.error("❌ 启动管理模块失败:", error);
       throw error;
     }
   }
@@ -250,7 +256,7 @@ class AdminModule {
    * 停止管理模块
    */
   async stop() {
-    console.log('🛑 停止管理模块...');
+    console.log("🛑 停止管理模块...");
 
     try {
       if (this.monitoring) {
@@ -261,10 +267,10 @@ class AdminModule {
         await this.api.stop();
       }
 
-      console.log('✅ 管理模块已停止');
-      this.emit('stopped');
+      console.log("✅ 管理模块已停止");
+      this.emit("stopped");
     } catch (error) {
-      console.error('停止管理模块时出错:', error);
+      console.error("停止管理模块时出错:", error);
       throw error;
     }
   }
@@ -320,7 +326,7 @@ class AdminModule {
    */
   getActiveAlerts() {
     if (!this.monitoring) return [];
-    return this.monitoring.getAlerts({ status: 'active' });
+    return this.monitoring.getAlerts({ status: "active" });
   }
 
   /**
@@ -329,7 +335,7 @@ class AdminModule {
   exportConfig() {
     return {
       port: this.options.port,
-      jwtSecret: this.options.jwtSecret ? '[HIDDEN]' : null,
+      jwtSecret: this.options.jwtSecret ? "[HIDDEN]" : null,
       enableFrontend: this.options.enableFrontend,
       frontendPath: this.options.frontendPath,
       monitoring: {
@@ -343,7 +349,7 @@ class AdminModule {
    * 重新加载配置
    */
   async reloadConfig(newConfig = {}) {
-    console.log('🔄 重新加载管理模块配置...');
+    console.log("🔄 重新加载管理模块配置...");
 
     // 合并新配置
     Object.assign(this.options, newConfig);
@@ -353,12 +359,12 @@ class AdminModule {
       this.auth.options.jwtSecret = newConfig.jwtSecret;
     }
 
-    console.log('✅ 配置重新加载完成');
+    console.log("✅ 配置重新加载完成");
   }
 }
 
 // 事件发射器继承
-const EventEmitter = require('events');
+const EventEmitter = require("node:events");
 Object.setPrototypeOf(AdminModule.prototype, EventEmitter.prototype);
 
 module.exports = { AdminModule };

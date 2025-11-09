@@ -1,15 +1,15 @@
-const express = require('express');
+const express = require("express");
 
-module.exports = function ({ config }) {
+module.exports = ({ config }) => {
   const router = express.Router();
 
-  router.get('/', (req, res) => {
+  router.get("/", (_req, res) => {
     res.json(config.gatewayConfig.policies);
   });
 
-  router.put('/:name', (req, res, next) => {
+  router.put("/:name", (req, res, next) => {
     config
-      .updateGatewayConfig(json => {
+      .updateGatewayConfig((json) => {
         json.policies = json.policies || [];
         if (json.policies.indexOf(req.params.name) === -1) {
           json.policies.push(req.params.name);
@@ -17,14 +17,14 @@ module.exports = function ({ config }) {
         return json;
       })
       .then(() => {
-        res.json({ status: 'ok' });
+        res.json({ status: "ok" });
       })
       .catch(next);
   });
 
-  router.delete('/:name', (req, res, next) => {
+  router.delete("/:name", (req, res, next) => {
     config
-      .updateGatewayConfig(json => {
+      .updateGatewayConfig((json) => {
         json.policies = json.policies || [];
         const index = json.policies.indexOf(req.params.name);
         if (index >= 0) {

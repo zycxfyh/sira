@@ -3,8 +3,8 @@
  * 提供生成各种测试数据的工具函数
  */
 
-const { faker } = require('@faker-js/faker');
-const { v4: uuidv4 } = require('uuid');
+const { faker } = require("@faker-js/faker");
+const { v4: uuidv4 } = require("uuid");
 
 class TestDataFactory {
   constructor() {
@@ -21,8 +21,8 @@ class TestDataFactory {
       email: faker.internet.email(),
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
-      role: 'user',
-      status: 'active',
+      role: "user",
+      status: "active",
       createdAt: faker.date.past(),
       updatedAt: faker.date.recent(),
       ...overrides,
@@ -42,7 +42,7 @@ class TestDataFactory {
       name: faker.company.name(),
       description: faker.lorem.sentence(),
       ownerId: owner.id,
-      status: 'active',
+      status: "active",
       apiKey: this.createApiKey({ applicationId: null }),
       createdAt: faker.date.past(),
       updatedAt: faker.date.recent(),
@@ -61,7 +61,7 @@ class TestDataFactory {
       id: uuidv4(),
       key: `sk_test_${faker.string.alphanumeric(48)}`,
       name: faker.lorem.words(2),
-      scopes: ['read', 'write'],
+      scopes: ["read", "write"],
       applicationId: overrides.applicationId || uuidv4(),
       expiresAt: faker.date.future(),
       createdAt: faker.date.past(),
@@ -78,13 +78,13 @@ class TestDataFactory {
    */
   createAIRequest(overrides = {}) {
     const models = [
-      'gpt-3.5-turbo',
-      'gpt-4',
-      'gpt-4-turbo',
-      'claude-3-opus',
-      'claude-3-sonnet',
-      'gpt-4-azure',
-      'claude-2',
+      "gpt-3.5-turbo",
+      "gpt-4",
+      "gpt-4-turbo",
+      "claude-3-opus",
+      "claude-3-sonnet",
+      "gpt-4-azure",
+      "claude-2",
     ];
 
     const request = {
@@ -92,7 +92,7 @@ class TestDataFactory {
       model: faker.helpers.arrayElement(models),
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: faker.lorem.sentences(2),
         },
       ],
@@ -114,17 +114,17 @@ class TestDataFactory {
   createAIResponse(request, overrides = {}) {
     const response = {
       id: `chatcmpl-${faker.string.alphanumeric(14)}`,
-      object: 'chat.completion',
+      object: "chat.completion",
       created: Math.floor(Date.now() / 1000),
       model: request.model,
       choices: [
         {
           index: 0,
           message: {
-            role: 'assistant',
+            role: "assistant",
             content: faker.lorem.paragraphs(2),
           },
-          finish_reason: 'stop',
+          finish_reason: "stop",
         },
       ],
       usage: {
@@ -157,10 +157,10 @@ class TestDataFactory {
     // 如果不成功，添加错误类型
     if (!metrics.success) {
       metrics.errorType = faker.helpers.arrayElement([
-        'timeout',
-        'rate_limit',
-        'server_error',
-        'network_error',
+        "timeout",
+        "rate_limit",
+        "server_error",
+        "network_error",
       ]);
     }
 
@@ -171,7 +171,9 @@ class TestDataFactory {
    * 生成测试批次数据
    */
   createBatch(size = 10, factoryFunction, ...args) {
-    return Array.from({ length: size }, () => factoryFunction.apply(this, args));
+    return Array.from({ length: size }, () =>
+      factoryFunction.apply(this, args),
+    );
   }
 
   /**
@@ -180,10 +182,12 @@ class TestDataFactory {
   createDataset(name, size = 100) {
     const datasets = {
       users: () => this.createBatch(size, this.createUser.bind(this)),
-      applications: () => this.createBatch(size, this.createApplication.bind(this)),
+      applications: () =>
+        this.createBatch(size, this.createApplication.bind(this)),
       apiKeys: () => this.createBatch(size, this.createApiKey.bind(this)),
       aiRequests: () => this.createBatch(size, this.createAIRequest.bind(this)),
-      performance: () => this.createBatch(size, this.createPerformanceMetrics.bind(this)),
+      performance: () =>
+        this.createBatch(size, this.createPerformanceMetrics.bind(this)),
     };
 
     if (!datasets[name]) {
@@ -228,7 +232,10 @@ class TestDataFactory {
         users: this.createBatch(50, this.createUser.bind(this)),
         apps: this.createBatch(20, this.createApplication.bind(this)),
         requests: this.createBatch(1000, this.createAIRequest.bind(this)),
-        metrics: this.createBatch(1000, this.createPerformanceMetrics.bind(this)),
+        metrics: this.createBatch(
+          1000,
+          this.createPerformanceMetrics.bind(this),
+        ),
       }),
     };
 
@@ -252,7 +259,7 @@ class TestDataFactory {
   getStats() {
     const stats = {};
     for (const [key] of this.createdEntities) {
-      const type = key.split('-')[0];
+      const type = key.split("-")[0];
       stats[type] = (stats[type] || 0) + 1;
     }
     return stats;

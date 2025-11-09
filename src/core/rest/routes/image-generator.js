@@ -3,17 +3,17 @@
  * 提供完整的图像生成功能接口
  */
 
-const express = require('express');
+const express = require("express");
 const {
   imageGeneratorManager,
   IMAGE_STYLES,
   IMAGE_PROVIDERS,
-} = require('../../image-generator-manager');
+} = require("../../image-generator-manager");
 
 const router = express.Router();
 
 // 中间件：异步错误处理
-const asyncHandler = fn => (req, res, next) => {
+const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
@@ -23,7 +23,7 @@ const validateJobId = (req, res, next) => {
   if (!jobId) {
     return res.status(400).json({
       success: false,
-      error: '缺少任务ID',
+      error: "缺少任务ID",
     });
   }
 
@@ -31,7 +31,7 @@ const validateJobId = (req, res, next) => {
   if (!job) {
     return res.status(404).json({
       success: false,
-      error: '任务不存在',
+      error: "任务不存在",
     });
   }
 
@@ -46,40 +46,40 @@ const validateJobId = (req, res, next) => {
  * POST /images/generate
  */
 router.post(
-  '/generate',
+  "/generate",
   asyncHandler(async (req, res) => {
     const {
-      userId = 'anonymous',
-      provider = 'openai_dalle',
-      model = 'dall-e-3',
+      userId = "anonymous",
+      provider = "openai_dalle",
+      model = "dall-e-3",
       prompt,
-      negativePrompt = '',
-      size = '1024x1024',
-      quality = 'standard',
-      style = 'natural',
+      negativePrompt = "",
+      size = "1024x1024",
+      quality = "standard",
+      style = "natural",
       count = 1,
-      format = 'png',
+      format = "png",
     } = req.body;
 
     // 验证必需参数
     if (!prompt) {
       return res.status(400).json({
         success: false,
-        error: '缺少必需参数: prompt',
+        error: "缺少必需参数: prompt",
       });
     }
 
     if (prompt.length > 1000) {
       return res.status(400).json({
         success: false,
-        error: '提示词长度不能超过1000字符',
+        error: "提示词长度不能超过1000字符",
       });
     }
 
     if (count < 1 || count > 4) {
       return res.status(400).json({
         success: false,
-        error: '生成数量必须在1-4之间',
+        error: "生成数量必须在1-4之间",
       });
     }
 
@@ -101,8 +101,8 @@ router.post(
         success: true,
         data: {
           jobId,
-          message: '图像生成任务已创建',
-          estimatedWaitTime: '30-60秒',
+          message: "图像生成任务已创建",
+          estimatedWaitTime: "30-60秒",
         },
       });
     } catch (error) {
@@ -111,7 +111,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -119,34 +119,37 @@ router.post(
  * POST /images/variation/:jobId
  */
 router.post(
-  '/variation/:jobId',
+  "/variation/:jobId",
   validateJobId,
   asyncHandler(async (req, res) => {
     const { jobId } = req.params;
     const { job } = req;
 
     // 检查原任务是否完成
-    if (job.status !== 'completed') {
+    if (job.status !== "completed") {
       return res.status(400).json({
         success: false,
-        error: '原任务未完成，无法生成变体',
+        error: "原任务未完成，无法生成变体",
       });
     }
 
     const { userId = job.userId, count = 1, style = job.style } = req.body;
 
     try {
-      const variationJobId = await imageGeneratorManager.generateVariation(jobId, {
-        userId,
-        count,
-        style,
-      });
+      const variationJobId = await imageGeneratorManager.generateVariation(
+        jobId,
+        {
+          userId,
+          count,
+          style,
+        },
+      );
 
       res.json({
         success: true,
         data: {
           jobId: variationJobId,
-          message: '图像变体生成任务已创建',
+          message: "图像变体生成任务已创建",
         },
       });
     } catch (error) {
@@ -155,7 +158,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -163,17 +166,17 @@ router.post(
  * POST /images/edit/:jobId
  */
 router.post(
-  '/edit/:jobId',
+  "/edit/:jobId",
   validateJobId,
   asyncHandler(async (req, res) => {
     const { jobId } = req.params;
     const { job } = req;
 
     // 检查原任务是否完成
-    if (job.status !== 'completed') {
+    if (job.status !== "completed") {
       return res.status(400).json({
         success: false,
-        error: '原任务未完成，无法编辑图像',
+        error: "原任务未完成，无法编辑图像",
       });
     }
 
@@ -182,7 +185,7 @@ router.post(
     if (!mask) {
       return res.status(400).json({
         success: false,
-        error: '编辑图像需要提供mask参数',
+        error: "编辑图像需要提供mask参数",
       });
     }
 
@@ -197,7 +200,7 @@ router.post(
         success: true,
         data: {
           jobId: editJobId,
-          message: '图像编辑任务已创建',
+          message: "图像编辑任务已创建",
         },
       });
     } catch (error) {
@@ -206,7 +209,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 任务管理 ====================
@@ -215,7 +218,7 @@ router.post(
  * 获取任务状态
  * GET /images/job/:jobId
  */
-router.get('/job/:jobId', validateJobId, (req, res) => {
+router.get("/job/:jobId", validateJobId, (req, res) => {
   const { job } = req;
 
   res.json({
@@ -247,18 +250,21 @@ router.get('/job/:jobId', validateJobId, (req, res) => {
  * GET /images/history/:userId
  */
 router.get(
-  '/history/:userId',
+  "/history/:userId",
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const { limit = 20, offset = 0 } = req.query;
 
     try {
-      const jobs = imageGeneratorManager.getUserJobs(userId, parseInt(limit));
+      const jobs = imageGeneratorManager.getUserJobs(
+        userId,
+        parseInt(limit, 10),
+      );
 
       res.json({
         success: true,
         data: {
-          jobs: jobs.slice(parseInt(offset)),
+          jobs: jobs.slice(parseInt(offset, 10)),
           total: jobs.length,
         },
       });
@@ -268,21 +274,21 @@ router.get(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
  * 取消任务
  * DELETE /images/job/:jobId
  */
-router.delete('/job/:jobId', validateJobId, (req, res) => {
+router.delete("/job/:jobId", validateJobId, (req, res) => {
   const { job } = req;
 
   // 检查任务是否可以取消
-  if (['completed', 'failed'].includes(job.status)) {
+  if (["completed", "failed"].includes(job.status)) {
     return res.status(400).json({
       success: false,
-      error: '已完成或失败的任务无法取消',
+      error: "已完成或失败的任务无法取消",
     });
   }
 
@@ -291,7 +297,7 @@ router.delete('/job/:jobId', validateJobId, (req, res) => {
 
   res.json({
     success: true,
-    message: '任务取消请求已提交',
+    message: "任务取消请求已提交",
   });
 });
 
@@ -301,7 +307,7 @@ router.delete('/job/:jobId', validateJobId, (req, res) => {
  * 获取队列统计
  * GET /images/stats
  */
-router.get('/stats', (req, res) => {
+router.get("/stats", (_req, res) => {
   const stats = imageGeneratorManager.getQueueStats();
 
   res.json({
@@ -316,7 +322,7 @@ router.get('/stats', (req, res) => {
  * 获取支持的提供商
  * GET /images/providers
  */
-router.get('/providers', (req, res) => {
+router.get("/providers", (_req, res) => {
   const providers = imageGeneratorManager.getProviders();
 
   res.json({
@@ -331,7 +337,7 @@ router.get('/providers', (req, res) => {
  * 获取支持的风格
  * GET /images/styles
  */
-router.get('/styles', (req, res) => {
+router.get("/styles", (_req, res) => {
   const styles = imageGeneratorManager.getStyles();
 
   res.json({
@@ -346,14 +352,14 @@ router.get('/styles', (req, res) => {
  * 获取提供商模型信息
  * GET /images/models/:provider
  */
-router.get('/models/:provider', (req, res) => {
+router.get("/models/:provider", (req, res) => {
   const { provider } = req.params;
 
   const providerConfig = IMAGE_PROVIDERS[provider];
   if (!providerConfig) {
     return res.status(404).json({
       success: false,
-      error: '提供商不存在',
+      error: "提供商不存在",
     });
   }
 
@@ -378,21 +384,21 @@ router.get('/models/:provider', (req, res) => {
  * POST /images/batch
  */
 router.post(
-  '/batch',
+  "/batch",
   asyncHandler(async (req, res) => {
-    const { userId = 'anonymous', requests = [] } = req.body;
+    const { userId = "anonymous", requests = [] } = req.body;
 
     if (!Array.isArray(requests) || requests.length === 0) {
       return res.status(400).json({
         success: false,
-        error: '批量请求必须是非空数组',
+        error: "批量请求必须是非空数组",
       });
     }
 
     if (requests.length > 10) {
       return res.status(400).json({
         success: false,
-        error: '批量请求数量不能超过10个',
+        error: "批量请求数量不能超过10个",
       });
     }
 
@@ -420,7 +426,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 预设模板 ====================
@@ -429,44 +435,47 @@ router.post(
  * 获取图像生成模板
  * GET /images/templates
  */
-router.get('/templates', (req, res) => {
+router.get("/templates", (_req, res) => {
   const templates = [
     {
-      id: 'portrait',
-      name: '人物肖像',
-      description: '生成人物肖像照片',
+      id: "portrait",
+      name: "人物肖像",
+      description: "生成人物肖像照片",
       prompt:
-        'A professional portrait photo of a person, high quality, detailed face, natural lighting',
-      category: '人物',
+        "A professional portrait photo of a person, high quality, detailed face, natural lighting",
+      category: "人物",
     },
     {
-      id: 'landscape',
-      name: '风景画',
-      description: '生成自然风景图像',
-      prompt: 'A beautiful landscape with mountains and lake, scenic view, high quality, detailed',
-      category: '风景',
-    },
-    {
-      id: 'concept_art',
-      name: '概念艺术',
-      description: '生成奇幻概念艺术',
-      prompt: 'Concept art of a mystical fantasy scene, detailed illustration, magical atmosphere',
-      category: '艺术',
-    },
-    {
-      id: 'product',
-      name: '产品展示',
-      description: '生成产品展示图像',
-      prompt: 'Professional product photography, clean background, high quality, commercial style',
-      category: '商业',
-    },
-    {
-      id: 'anime',
-      name: '动漫风格',
-      description: '生成动漫风格图像',
+      id: "landscape",
+      name: "风景画",
+      description: "生成自然风景图像",
       prompt:
-        'Anime style illustration, vibrant colors, detailed character design, Japanese animation',
-      category: '动漫',
+        "A beautiful landscape with mountains and lake, scenic view, high quality, detailed",
+      category: "风景",
+    },
+    {
+      id: "concept_art",
+      name: "概念艺术",
+      description: "生成奇幻概念艺术",
+      prompt:
+        "Concept art of a mystical fantasy scene, detailed illustration, magical atmosphere",
+      category: "艺术",
+    },
+    {
+      id: "product",
+      name: "产品展示",
+      description: "生成产品展示图像",
+      prompt:
+        "Professional product photography, clean background, high quality, commercial style",
+      category: "商业",
+    },
+    {
+      id: "anime",
+      name: "动漫风格",
+      description: "生成动漫风格图像",
+      prompt:
+        "Anime style illustration, vibrant colors, detailed character design, Japanese animation",
+      category: "动漫",
     },
   ];
 
@@ -483,36 +492,36 @@ router.get('/templates', (req, res) => {
  * POST /images/generate-from-template
  */
 router.post(
-  '/generate-from-template',
+  "/generate-from-template",
   asyncHandler(async (req, res) => {
-    const { templateId, userId = 'anonymous', customizations = {} } = req.body;
+    const { templateId, userId = "anonymous", customizations = {} } = req.body;
 
     // 获取模板
-    const templates = await new Promise(resolve => {
-      router.get('/templates', (req, res) => {
+    const templates = await new Promise((resolve) => {
+      router.get("/templates", (_req, _res) => {
         const templates = [
           {
-            id: 'portrait',
-            name: '人物肖像',
+            id: "portrait",
+            name: "人物肖像",
             prompt:
-              'A professional portrait photo of a person, high quality, detailed face, natural lighting',
+              "A professional portrait photo of a person, high quality, detailed face, natural lighting",
           },
           {
-            id: 'landscape',
-            name: '风景画',
+            id: "landscape",
+            name: "风景画",
             prompt:
-              'A beautiful landscape with mountains and lake, scenic view, high quality, detailed',
+              "A beautiful landscape with mountains and lake, scenic view, high quality, detailed",
           },
         ];
         resolve(templates);
       });
     });
 
-    const template = templates.find(t => t.id === templateId);
+    const template = templates.find((t) => t.id === templateId);
     if (!template) {
       return res.status(404).json({
         success: false,
-        error: '模板不存在',
+        error: "模板不存在",
       });
     }
 
@@ -528,14 +537,15 @@ router.post(
     };
 
     try {
-      const jobId = await imageGeneratorManager.generateImage(generationOptions);
+      const jobId =
+        await imageGeneratorManager.generateImage(generationOptions);
 
       res.json({
         success: true,
         data: {
           jobId,
           template: template.name,
-          message: '使用模板的图像生成任务已创建',
+          message: "使用模板的图像生成任务已创建",
         },
       });
     } catch (error) {
@@ -544,7 +554,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 健康检查 ====================
@@ -553,17 +563,17 @@ router.post(
  * 健康检查
  * GET /images/health
  */
-router.get('/health', (req, res) => {
+router.get("/health", (_req, res) => {
   const stats = imageGeneratorManager.getQueueStats();
 
   res.json({
     success: true,
     data: {
-      status: 'healthy',
+      status: "healthy",
       timestamp: new Date(),
       uptime: process.uptime(),
       queueStats: stats,
-      version: '1.0',
+      version: "1.0",
     },
   });
 });

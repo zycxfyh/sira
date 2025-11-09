@@ -1,30 +1,30 @@
-const should = require('should');
-const adminHelper = require('../common/admin-helper')();
-const Config = require('../../../src/core/config/config');
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const idGen = require('uuid62');
-const yaml = require('js-yaml');
+const should = require("should");
+const adminHelper = require("../common/admin-helper")();
+const Config = require("../../../core/config/config");
+const os = require("node:os");
+const fs = require("node:fs");
+const path = require("node:path");
+const idGen = require("uuid62");
+const yaml = require("js-yaml");
 
-describe('REST: pipelines', () => {
+describe("REST: pipelines", () => {
   let config;
   beforeEach(() => {
     config = new Config();
-    config.gatewayConfigPath = path.join(os.tmpdir(), idGen.v4() + 'yml');
+    config.gatewayConfigPath = path.join(os.tmpdir(), `${idGen.v4()}yml`);
   });
 
   afterEach(() => {
     return adminHelper.stop();
   });
 
-  describe('when no pipelines defined', () => {
+  describe("when no pipelines defined", () => {
     beforeEach(() => {
       const initialConfig = {
         admin: { port: 0 },
-        apiEndpoints: { api: { host: '*' } },
-        policies: ['proxy', 'terminate'],
-        serviceEndpoints: { backend: { url: 'http://localhost:1010' } },
+        apiEndpoints: { api: { host: "*" } },
+        policies: ["proxy", "terminate"],
+        serviceEndpoints: { backend: { url: "http://localhost:1010" } },
       };
 
       fs.writeFileSync(config.gatewayConfigPath, yaml.dump(initialConfig));
@@ -32,32 +32,36 @@ describe('REST: pipelines', () => {
       return adminHelper.start({ config });
     });
 
-    it('should create a new pipeline', () => {
+    it("should create a new pipeline", () => {
       const testPipeline = {
-        apiEndpoints: ['api'],
-        policies: [{ proxy: { action: { serviceEndpoint: 'backend' } } }],
+        apiEndpoints: ["api"],
+        policies: [{ proxy: { action: { serviceEndpoint: "backend" } } }],
         customId: idGen.v4(), // NOTE: save operation should allow custom props
       };
-      return adminHelper.admin.config.pipelines.create('test', testPipeline).then(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        should(cfg.pipelines.test.apiEndpoints).deepEqual(testPipeline.apiEndpoints);
-        should(cfg.pipelines.test.policies).deepEqual(testPipeline.policies);
-        should(cfg.pipelines.test).have.property('customId');
-      });
+      return adminHelper.admin.config.pipelines
+        .create("test", testPipeline)
+        .then(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          should(cfg.pipelines.test.apiEndpoints).deepEqual(
+            testPipeline.apiEndpoints,
+          );
+          should(cfg.pipelines.test.policies).deepEqual(testPipeline.policies);
+          should(cfg.pipelines.test).have.property("customId");
+        });
     });
   });
 
-  describe('when pipelines defined', () => {
+  describe("when pipelines defined", () => {
     beforeEach(() => {
       const initialConfig = {
         admin: { port: 0 },
-        apiEndpoints: { api: { host: '*' } },
-        serviceEndpoints: { backend: { url: 'http://localhost:1010' } },
-        policies: ['proxy', 'terminate'],
+        apiEndpoints: { api: { host: "*" } },
+        serviceEndpoints: { backend: { url: "http://localhost:1010" } },
+        policies: ["proxy", "terminate"],
         pipelines: {
-          example: { apiEndpoints: ['example'], policies: [{ terminate: {} }] },
-          hello: { apiEndpoints: ['hello'], policies: [{ terminate: {} }] },
+          example: { apiEndpoints: ["example"], policies: [{ terminate: {} }] },
+          hello: { apiEndpoints: ["hello"], policies: [{ terminate: {} }] },
         },
       };
       fs.writeFileSync(config.gatewayConfigPath, yaml.dump(initialConfig));
@@ -65,106 +69,122 @@ describe('REST: pipelines', () => {
       return adminHelper.start({ config });
     });
 
-    it('should create a new pipeline', () => {
+    it("should create a new pipeline", () => {
       const testPipeline = {
-        apiEndpoints: ['api'],
+        apiEndpoints: ["api"],
         customId: idGen.v4(), // NOTE: save operation should allow custom props
-        policies: [{ proxy: { action: { serviceEndpoint: 'backend' } } }],
+        policies: [{ proxy: { action: { serviceEndpoint: "backend" } } }],
       };
 
-      return adminHelper.admin.config.pipelines.create('test', testPipeline).then(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        should(cfg.pipelines.test.apiEndpoints).deepEqual(testPipeline.apiEndpoints);
-        should(cfg.pipelines.example.apiEndpoints).deepEqual(['example']);
-        should(cfg.pipelines.hello.apiEndpoints).deepEqual(['hello']);
-        should(cfg.pipelines.test).have.property('customId');
-      });
+      return adminHelper.admin.config.pipelines
+        .create("test", testPipeline)
+        .then(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          should(cfg.pipelines.test.apiEndpoints).deepEqual(
+            testPipeline.apiEndpoints,
+          );
+          should(cfg.pipelines.example.apiEndpoints).deepEqual(["example"]);
+          should(cfg.pipelines.hello.apiEndpoints).deepEqual(["hello"]);
+          should(cfg.pipelines.test).have.property("customId");
+        });
     });
 
-    it('should not create a new pipeline when the general gateway.config is invalid', () => {
+    it("should not create a new pipeline when the general gateway.config is invalid", () => {
       const testPipeline = {
-        apiEndpoints: ['api'],
+        apiEndpoints: ["api"],
         customId: idGen.v4(), // NOTE: save operation should allow custom props
-        policies: ['proxy', 'terminate'],
+        policies: ["proxy", "terminate"],
       };
-      return adminHelper.admin.config.pipelines.create('invalid', testPipeline).catch(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        should(cfg.pipelines).not.have.property('invalid');
-      });
+      return adminHelper.admin.config.pipelines
+        .create("invalid", testPipeline)
+        .catch(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          should(cfg.pipelines).not.have.property("invalid");
+        });
     });
 
-    it('should not create a new pipeline when the a specified policy is invalid', () => {
+    it("should not create a new pipeline when the a specified policy is invalid", () => {
       const testPipeline = {
-        apiEndpoints: ['api'],
+        apiEndpoints: ["api"],
         customId: idGen.v4(), // NOTE: save operation should allow custom props
         policies: [{ proxy: {} }],
       };
-      return adminHelper.admin.config.pipelines.create('invalid', testPipeline).catch(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        should(cfg.pipelines).not.have.property('invalid');
-      });
+      return adminHelper.admin.config.pipelines
+        .create("invalid", testPipeline)
+        .catch(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          should(cfg.pipelines).not.have.property("invalid");
+        });
     });
 
-    it('should not create a new pipeline when the a specified policy has no condition and action', () => {
+    it("should not create a new pipeline when the a specified policy has no condition and action", () => {
       const testPipeline = {
-        apiEndpoints: ['api'],
+        apiEndpoints: ["api"],
         customId: idGen.v4(), // NOTE: save operation should allow custom props
         policies: [{ proxy: null }],
       };
-      return adminHelper.admin.config.pipelines.create('invalid', testPipeline).catch(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        should(cfg.pipelines).not.have.property('invalid');
-      });
+      return adminHelper.admin.config.pipelines
+        .create("invalid", testPipeline)
+        .catch(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          should(cfg.pipelines).not.have.property("invalid");
+        });
     });
 
-    it('should update existing pipeline', () => {
+    it("should update existing pipeline", () => {
       const testPipeline = {
-        apiEndpoints: ['api'],
+        apiEndpoints: ["api"],
         customId: idGen.v4(), // NOTE: save operation should allow custom props
-        policies: [{ proxy: { action: { serviceEndpoint: 'backend' } } }],
+        policies: [{ proxy: { action: { serviceEndpoint: "backend" } } }],
       };
-      return adminHelper.admin.config.pipelines.update('example', testPipeline).then(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        should(cfg.pipelines.example.apiEndpoints).deepEqual(testPipeline.apiEndpoints);
-        should(cfg.pipelines.example).have.property('customId');
-      });
+      return adminHelper.admin.config.pipelines
+        .update("example", testPipeline)
+        .then(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          should(cfg.pipelines.example.apiEndpoints).deepEqual(
+            testPipeline.apiEndpoints,
+          );
+          should(cfg.pipelines.example).have.property("customId");
+        });
     });
 
-    it('should refuse a misconfigured policy in a pipeline', () => {
+    it("should refuse a misconfigured policy in a pipeline", () => {
       const testPipeline = {
-        apiEndpoints: ['api'],
+        apiEndpoints: ["api"],
         customId: idGen.v4(), // NOTE: save operation should allow custom props
         policies: [{ jwt: { action: {} } }],
       };
 
       return should(
-        adminHelper.admin.config.pipelines.update('example', testPipeline)
+        adminHelper.admin.config.pipelines.update("example", testPipeline),
       ).be.rejectedWith({ response: { statusCode: 422 } });
     });
 
-    it('should delete existing pipeline', () => {
-      return adminHelper.admin.config.pipelines.remove('example').then(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
+    it("should delete existing pipeline", () => {
+      return adminHelper.admin.config.pipelines.remove("example").then(() => {
+        const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
         const cfg = yaml.load(data);
         should(cfg.pipelines.example).not.ok();
       });
     });
 
-    it('should show existing pipeline', () => {
-      return adminHelper.admin.config.pipelines.info('example').then(endpoint => {
-        should(endpoint.apiEndpoints).be.deepEqual(['example']);
-      });
+    it("should show existing pipeline", () => {
+      return adminHelper.admin.config.pipelines
+        .info("example")
+        .then((endpoint) => {
+          should(endpoint.apiEndpoints).be.deepEqual(["example"]);
+        });
     });
 
-    it('should list all pipelines', () => {
-      return adminHelper.admin.config.pipelines.list().then(pipelines => {
-        should(pipelines.example.apiEndpoints).be.deepEqual(['example']);
-        should(pipelines.hello.apiEndpoints).be.deepEqual(['hello']);
+    it("should list all pipelines", () => {
+      return adminHelper.admin.config.pipelines.list().then((pipelines) => {
+        should(pipelines.example.apiEndpoints).be.deepEqual(["example"]);
+        should(pipelines.hello.apiEndpoints).be.deepEqual(["hello"]);
         should(Object.keys(pipelines)).length(2);
       });
     });

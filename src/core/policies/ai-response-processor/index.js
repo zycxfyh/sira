@@ -1,1 +1,1 @@
-module.exports = require('./ai-response-processor');
+module.exports = require("./ai-response-processor");

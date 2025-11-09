@@ -1,10 +1,10 @@
-const assert = require('assert');
-const adminHelper = require('../../common/admin-helper')();
-const idGen = require('uuid62');
-const environment = require('../../fixtures/cli/environment');
-const namespace = 'express-gateway:scopes:list';
+const assert = require("node:assert");
+const adminHelper = require("../../common/admin-helper")();
+const idGen = require("uuid62");
+const environment = require("../../fixtures/cli/environment");
+const namespace = "express-gateway:scopes:list";
 
-describe('eg scopes list', () => {
+describe("eg scopes list", () => {
   let program, env, scopeName, scopeName2;
 
   before(() => {
@@ -25,50 +25,50 @@ describe('eg scopes list', () => {
     return adminHelper.reset();
   });
 
-  it('should show scopes list', done => {
-    env.hijack(namespace, generator => {
+  it("should show scopes list", (done) => {
+    env.hijack(namespace, (generator) => {
       const output = {};
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.stdout = message => {
+        generator.stdout = (message) => {
           output[message] = true;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         assert.ok(output[scopeName]);
         assert.ok(output[scopeName2]);
         done();
       });
     });
 
-    env.argv = program.parse('scopes list ');
+    env.argv = program.parse("scopes list ");
   });
 
   // For now output is the same as without -q, just to check that flag is accepted
-  it('prints only the scope names when using the --quiet flag', done => {
-    env.hijack(namespace, generator => {
+  it("prints only the scope names when using the --quiet flag", (done) => {
+    env.hijack(namespace, (generator) => {
       const output = {};
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           done(new Error(message));
         };
-        generator.stdout = message => {
+        generator.stdout = (message) => {
           output[message] = true;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         assert.ok(output[scopeName]);
         assert.ok(output[scopeName2]);
         done();
       });
     });
 
-    env.argv = program.parse('scopes list --quiet ');
+    env.argv = program.parse("scopes list --quiet ");
   });
 });

@@ -1,24 +1,24 @@
-const assert = require('assert');
-const adminHelper = require('../common/admin-helper')();
-const Config = require('../../../src/core/config/config');
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const idGen = require('uuid62');
-const yaml = require('js-yaml');
+const assert = require("node:assert");
+const adminHelper = require("../common/admin-helper")();
+const Config = require("../../../core/config/config");
+const os = require("node:os");
+const fs = require("node:fs");
+const path = require("node:path");
+const idGen = require("uuid62");
+const yaml = require("js-yaml");
 
-describe('REST: api endpoints', () => {
+describe("REST: api endpoints", () => {
   let config;
   beforeEach(() => {
     config = new Config();
-    config.gatewayConfigPath = path.join(os.tmpdir(), idGen.v4() + 'yml');
+    config.gatewayConfigPath = path.join(os.tmpdir(), `${idGen.v4()}yml`);
   });
 
   afterEach(() => {
     return adminHelper.stop();
   });
 
-  describe('when no api endpoints defined', () => {
+  describe("when no api endpoints defined", () => {
     beforeEach(() => {
       const initialConfig = {
         admin: { port: 0 },
@@ -28,76 +28,86 @@ describe('REST: api endpoints', () => {
       config.loadGatewayConfig();
       return adminHelper.start({ config });
     });
-    it('should create a new api endpoint', () => {
+    it("should create a new api endpoint", () => {
       const testEndpoint = {
-        host: 'express-gateway.io',
+        host: "express-gateway.io",
         customId: idGen.v4(),
       };
-      return adminHelper.admin.config.apiEndpoints.create('test', testEndpoint).then(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        assert.strictEqual(cfg.apiEndpoints.test.host, testEndpoint.host);
-        assert(cfg.apiEndpoints.test.customId);
-      });
+      return adminHelper.admin.config.apiEndpoints
+        .create("test", testEndpoint)
+        .then(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          assert.strictEqual(cfg.apiEndpoints.test.host, testEndpoint.host);
+          assert(cfg.apiEndpoints.test.customId);
+        });
     });
   });
 
-  describe('when api endpoints defined', () => {
+  describe("when api endpoints defined", () => {
     beforeEach(() => {
       const initialConfig = {
         admin: { port: 0 },
         apiEndpoints: {
-          example: { host: 'example.com' },
-          hello: { host: 'hello.com' },
+          example: { host: "example.com" },
+          hello: { host: "hello.com" },
         },
       };
       fs.writeFileSync(config.gatewayConfigPath, yaml.dump(initialConfig));
       config.loadGatewayConfig();
       return adminHelper.start({ config });
     });
-    it('should create a new api endpoint', () => {
+    it("should create a new api endpoint", () => {
       const testEndpoint = {
-        host: 'express-gateway.io',
+        host: "express-gateway.io",
         customId: idGen.v4(), // NOTE: save operation should allow custom props
       };
-      return adminHelper.admin.config.apiEndpoints.create('test', testEndpoint).then(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        assert.strictEqual(cfg.apiEndpoints.test.host, testEndpoint.host);
-        assert.strictEqual(cfg.apiEndpoints.example.host, 'example.com');
-        assert.strictEqual(cfg.apiEndpoints.hello.host, 'hello.com');
-        assert(cfg.apiEndpoints.test.customId);
-      });
+      return adminHelper.admin.config.apiEndpoints
+        .create("test", testEndpoint)
+        .then(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          assert.strictEqual(cfg.apiEndpoints.test.host, testEndpoint.host);
+          assert.strictEqual(cfg.apiEndpoints.example.host, "example.com");
+          assert.strictEqual(cfg.apiEndpoints.hello.host, "hello.com");
+          assert(cfg.apiEndpoints.test.customId);
+        });
     });
-    it('should update existing endpoint', () => {
+    it("should update existing endpoint", () => {
       const testEndpoint = {
-        host: 'express-gateway.io',
+        host: "express-gateway.io",
         customId: idGen.v4(),
       };
-      return adminHelper.admin.config.apiEndpoints.update('example', testEndpoint).then(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        assert.strictEqual(cfg.apiEndpoints.example.host, testEndpoint.host);
-        assert(cfg.apiEndpoints.example.customId);
-      });
+      return adminHelper.admin.config.apiEndpoints
+        .update("example", testEndpoint)
+        .then(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          assert.strictEqual(cfg.apiEndpoints.example.host, testEndpoint.host);
+          assert(cfg.apiEndpoints.example.customId);
+        });
     });
 
-    it('should delete existing endpoint', () => {
-      return adminHelper.admin.config.apiEndpoints.remove('example').then(() => {
-        const data = fs.readFileSync(config.gatewayConfigPath, 'utf8');
-        const cfg = yaml.load(data);
-        assert(!cfg.apiEndpoints.example);
-      });
+    it("should delete existing endpoint", () => {
+      return adminHelper.admin.config.apiEndpoints
+        .remove("example")
+        .then(() => {
+          const data = fs.readFileSync(config.gatewayConfigPath, "utf8");
+          const cfg = yaml.load(data);
+          assert(!cfg.apiEndpoints.example);
+        });
     });
-    it('should show existing endpoint', () => {
-      return adminHelper.admin.config.apiEndpoints.info('example').then(endpoint => {
-        assert.strictEqual(endpoint.host, 'example.com');
-      });
+    it("should show existing endpoint", () => {
+      return adminHelper.admin.config.apiEndpoints
+        .info("example")
+        .then((endpoint) => {
+          assert.strictEqual(endpoint.host, "example.com");
+        });
     });
-    it('should list all endpoints', () => {
-      return adminHelper.admin.config.apiEndpoints.list().then(endpoints => {
-        assert.strictEqual(endpoints.example.host, 'example.com');
-        assert.strictEqual(endpoints.hello.host, 'hello.com');
+    it("should list all endpoints", () => {
+      return adminHelper.admin.config.apiEndpoints.list().then((endpoints) => {
+        assert.strictEqual(endpoints.example.host, "example.com");
+        assert.strictEqual(endpoints.hello.host, "hello.com");
         assert.strictEqual(Object.keys(endpoints).length, 2);
       });
     });

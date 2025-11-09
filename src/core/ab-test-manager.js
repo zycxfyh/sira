@@ -1,7 +1,7 @@
-const crypto = require('crypto');
-const fs = require('fs').promises;
-const path = require('path');
-const logger = require('./logger').createLoggerWithLabel('[EG:ab-test]');
+const crypto = require("node:crypto");
+const fs = require("node:fs").promises;
+const path = require("node:path");
+const logger = require("./logger").createLoggerWithLabel("[EG:ab-test]");
 
 /**
  * A/B测试框架 - 借鉴Google Optimize和Optimizely设计理念
@@ -9,8 +9,11 @@ const logger = require('./logger').createLoggerWithLabel('[EG:ab-test]');
  */
 class ABTestManager {
   constructor(options = {}) {
-    this.configPath = options.configPath || path.join(__dirname, '../config/ab-tests.json');
-    this.resultsPath = options.resultsPath || path.join(__dirname, '../data/ab-test-results.json');
+    this.configPath =
+      options.configPath || path.join(__dirname, "../config/ab-tests.json");
+    this.resultsPath =
+      options.resultsPath ||
+      path.join(__dirname, "../data/ab-test-results.json");
     this.tests = new Map();
     this.results = new Map();
     this.trafficAllocators = new Map();
@@ -32,9 +35,11 @@ class ABTestManager {
       this.initializeTrafficAllocators();
 
       this.initialized = true;
-      logger.info(`A/B测试管理器已初始化，加载了 ${this.tests.size} 个测试配置`);
+      logger.info(
+        `A/B测试管理器已初始化，加载了 ${this.tests.size} 个测试配置`,
+      );
     } catch (error) {
-      logger.error('A/B测试管理器初始化失败:', error.message);
+      logger.error("A/B测试管理器初始化失败:", error.message);
       throw error;
     }
   }
@@ -53,15 +58,15 @@ class ABTestManager {
       id: testId,
       name: testConfig.name,
       description: testConfig.description,
-      status: 'draft', // draft, running, paused, completed
-      type: testConfig.type || 'ab', // ab, multivariate
+      status: "draft", // draft, running, paused, completed
+      type: testConfig.type || "ab", // ab, multivariate
       variants: testConfig.variants || [], // 测试变体
       target: testConfig.target, // 测试目标 (provider, model, parameter_set等)
       conditions: testConfig.conditions || {}, // 测试条件
       traffic: testConfig.traffic || 100, // 参与测试的流量百分比
-      allocation: testConfig.allocation || 'even', // 流量分配策略: even, weighted, adaptive
+      allocation: testConfig.allocation || "even", // 流量分配策略: even, weighted, adaptive
       weights: testConfig.weights || {}, // 变体权重
-      metrics: testConfig.metrics || ['response_time', 'cost', 'quality_score'], // 评估指标
+      metrics: testConfig.metrics || ["response_time", "cost", "quality_score"], // 评估指标
       startDate: testConfig.startDate,
       endDate: testConfig.endDate,
       createdAt: new Date().toISOString(),
@@ -90,11 +95,11 @@ class ABTestManager {
       throw new Error(`测试 ${testId} 不存在`);
     }
 
-    if (test.status === 'running') {
+    if (test.status === "running") {
       throw new Error(`测试 ${testId} 已在运行中`);
     }
 
-    test.status = 'running';
+    test.status = "running";
     test.startDate = new Date().toISOString();
     test.updatedAt = new Date().toISOString();
 
@@ -114,7 +119,7 @@ class ABTestManager {
       throw new Error(`测试 ${testId} 不存在`);
     }
 
-    test.status = 'paused';
+    test.status = "paused";
     test.updatedAt = new Date().toISOString();
 
     await this.saveTestConfigurations();
@@ -130,7 +135,7 @@ class ABTestManager {
       throw new Error(`测试 ${testId} 不存在`);
     }
 
-    test.status = 'completed';
+    test.status = "completed";
     test.endDate = new Date().toISOString();
     test.updatedAt = new Date().toISOString();
 
@@ -143,7 +148,7 @@ class ABTestManager {
    */
   allocateVariant(testId, userId, context = {}) {
     const test = this.tests.get(testId);
-    if (!test || test.status !== 'running') {
+    if (!test || test.status !== "running") {
       return null;
     }
 
@@ -167,7 +172,7 @@ class ABTestManager {
     return {
       testId,
       variantId,
-      variant: test.variants.find(v => v.id === variantId),
+      variant: test.variants.find((v) => v.id === variantId),
     };
   }
 
@@ -231,7 +236,7 @@ class ABTestManager {
       analysis.metrics[metricName] = {};
 
       Object.entries(variantData).forEach(([variantId, dataPoints]) => {
-        const values = dataPoints.map(d => d.value);
+        const values = dataPoints.map((d) => d.value);
         const count = values.length;
 
         analysis.metrics[metricName][variantId] = {
@@ -256,16 +261,16 @@ class ABTestManager {
         const testData = variantData[testVariant] || [];
 
         if (controlData.length > 10 && testData.length > 10) {
-          const controlMean = this.calculateMean(controlData.map(d => d.value));
-          const testMean = this.calculateMean(testData.map(d => d.value));
+          const controlMean = this.calculateMean(
+            controlData.map((d) => d.value),
+          );
+          const testMean = this.calculateMean(testData.map((d) => d.value));
 
           // 计算提升百分比
           const improvement = ((testMean - controlMean) / controlMean) * 100;
           analysis.metrics[metricName].improvement = improvement;
-          analysis.metrics[metricName].significance = this.calculateSignificance(
-            controlData,
-            testData
-          );
+          analysis.metrics[metricName].significance =
+            this.calculateSignificance(controlData, testData);
         }
       }
     });
@@ -283,7 +288,7 @@ class ABTestManager {
     const overview = [];
 
     for (const [testId, test] of this.tests) {
-      const results = this.results.get(testId);
+      const _results = this.results.get(testId);
       const analysis = this.getTestAnalysis(testId);
 
       overview.push({
@@ -328,27 +333,28 @@ class ABTestManager {
    * 生成测试ID
    */
   generateTestId() {
-    return `ab_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `ab_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 验证测试配置
    */
   validateTestConfig(test) {
-    if (!test.name) throw new Error('测试名称不能为空');
-    if (!test.variants || test.variants.length < 2) throw new Error('至少需要2个测试变体');
-    if (!test.target) throw new Error('测试目标不能为空');
+    if (!test.name) throw new Error("测试名称不能为空");
+    if (!test.variants || test.variants.length < 2)
+      throw new Error("至少需要2个测试变体");
+    if (!test.target) throw new Error("测试目标不能为空");
 
     // 验证变体
-    test.variants.forEach(variant => {
-      if (!variant.id) throw new Error('变体ID不能为空');
-      if (!variant.name) throw new Error('变体名称不能为空');
+    test.variants.forEach((variant) => {
+      if (!variant.id) throw new Error("变体ID不能为空");
+      if (!variant.name) throw new Error("变体名称不能为空");
     });
 
     // 检查变体ID唯一性
-    const variantIds = test.variants.map(v => v.id);
+    const variantIds = test.variants.map((v) => v.id);
     if (new Set(variantIds).size !== variantIds.length) {
-      throw new Error('变体ID必须唯一');
+      throw new Error("变体ID必须唯一");
     }
   }
 
@@ -368,8 +374,8 @@ class ABTestManager {
    * 初始化流量分配器
    */
   initializeTrafficAllocators() {
-    for (const [testId, test] of this.tests) {
-      if (test.status === 'running') {
+    for (const [_testId, test] of this.tests) {
+      if (test.status === "running") {
         this.initializeTrafficAllocator(test);
       }
     }
@@ -389,7 +395,10 @@ class ABTestManager {
   checkTestConditions(test, context) {
     const { conditions } = test;
 
-    if (conditions.userId && !context.userId?.match(new RegExp(conditions.userId))) {
+    if (
+      conditions.userId &&
+      !context.userId?.match(new RegExp(conditions.userId))
+    ) {
       return false;
     }
 
@@ -413,15 +422,15 @@ class ABTestManager {
    */
   async loadTestConfigurations() {
     try {
-      const data = await fs.readFile(this.configPath, 'utf8');
+      const data = await fs.readFile(this.configPath, "utf8");
       const configs = JSON.parse(data);
 
       for (const [testId, config] of Object.entries(configs)) {
         this.tests.set(testId, config);
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载A/B测试配置失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载A/B测试配置失败:", error.message);
       }
       // 如果文件不存在，创建空的Map
     }
@@ -445,15 +454,15 @@ class ABTestManager {
    */
   async loadTestResults() {
     try {
-      const data = await fs.readFile(this.resultsPath, 'utf8');
+      const data = await fs.readFile(this.resultsPath, "utf8");
       const results = JSON.parse(data);
 
       for (const [testId, result] of Object.entries(results)) {
         this.results.set(testId, result);
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载A/B测试结果失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载A/B测试结果失败:", error.message);
       }
     }
   }
@@ -484,7 +493,9 @@ class ABTestManager {
   calculateMedian(values) {
     const sorted = [...values].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return sorted.length % 2 === 0
+      ? (sorted[mid - 1] + sorted[mid]) / 2
+      : sorted[mid];
   }
 
   /**
@@ -492,7 +503,7 @@ class ABTestManager {
    */
   calculateStd(values) {
     const mean = this.calculateMean(values);
-    const squaredDiffs = values.map(value => Math.pow(value - mean, 2));
+    const squaredDiffs = values.map((value) => (value - mean) ** 2);
     return Math.sqrt(this.calculateMean(squaredDiffs));
   }
 
@@ -500,8 +511,8 @@ class ABTestManager {
    * 计算统计显著性 (简化版t检验)
    */
   calculateSignificance(groupA, groupB) {
-    const valuesA = groupA.map(d => d.value);
-    const valuesB = groupB.map(d => d.value);
+    const valuesA = groupA.map((d) => d.value);
+    const valuesB = groupB.map((d) => d.value);
 
     const meanA = this.calculateMean(valuesA);
     const meanB = this.calculateMean(valuesB);
@@ -512,7 +523,9 @@ class ABTestManager {
     const nB = valuesB.length;
 
     // t统计量
-    const t = Math.abs(meanA - meanB) / Math.sqrt((stdA * stdA) / nA + (stdB * stdB) / nB);
+    const t =
+      Math.abs(meanA - meanB) /
+      Math.sqrt((stdA * stdA) / nA + (stdB * stdB) / nB);
 
     // 简化的p值估计 (近似)
     const df = nA + nB - 2;
@@ -546,9 +559,9 @@ class ABTestManager {
 
     // 简单的获胜者确定逻辑 (可以扩展为更复杂的算法)
     const variants = new Set();
-    Object.values(analysis.metrics).forEach(metric => {
-      Object.keys(metric).forEach(variantId => {
-        if (variantId !== 'improvement' && variantId !== 'significance') {
+    Object.values(analysis.metrics).forEach((metric) => {
+      Object.keys(metric).forEach((variantId) => {
+        if (variantId !== "improvement" && variantId !== "significance") {
           variants.add(variantId);
         }
       });
@@ -568,7 +581,10 @@ class ABTestManager {
         if (variantData && variantData.count > 10) {
           // 至少10个样本
           // 对于响应时间，越低越好；对于其他指标，越高越好
-          const value = metricName === 'response_time' ? -variantData.mean : variantData.mean;
+          const value =
+            metricName === "response_time"
+              ? -variantData.mean
+              : variantData.mean;
           score += value;
           metricCount++;
         }
@@ -599,7 +615,7 @@ class TrafficAllocator {
   constructor(test) {
     this.test = test;
     this.userAssignments = new Map(); // userId -> variantId
-    this.strategy = test.allocation || 'even';
+    this.strategy = test.allocation || "even";
     this.weights = test.weights || {};
   }
 
@@ -622,14 +638,14 @@ class TrafficAllocator {
    */
   allocateNew(userId) {
     const { variants } = this.test;
-    const variantIds = variants.map(v => v.id);
+    const variantIds = variants.map((v) => v.id);
 
     switch (this.strategy) {
-      case 'even':
+      case "even":
         return this.allocateEvenly(userId, variantIds);
-      case 'weighted':
+      case "weighted":
         return this.allocateWeighted(userId, variantIds);
-      case 'adaptive':
+      case "adaptive":
         return this.allocateAdaptively(userId, variantIds);
       default:
         return this.allocateEvenly(userId, variantIds);
@@ -640,7 +656,7 @@ class TrafficAllocator {
    * 均匀分配
    */
   allocateEvenly(userId, variantIds) {
-    const hash = crypto.createHash('md5').update(userId).digest('hex');
+    const hash = crypto.createHash("md5").update(userId).digest("hex");
     const index = parseInt(hash.substring(0, 8), 16) % variantIds.length;
     return variantIds[index];
   }
@@ -649,8 +665,11 @@ class TrafficAllocator {
    * 加权分配
    */
   allocateWeighted(userId, variantIds) {
-    const totalWeight = variantIds.reduce((sum, id) => sum + (this.weights[id] || 1), 0);
-    const hash = crypto.createHash('md5').update(userId).digest('hex');
+    const totalWeight = variantIds.reduce(
+      (sum, id) => sum + (this.weights[id] || 1),
+      0,
+    );
+    const hash = crypto.createHash("md5").update(userId).digest("hex");
     const random = parseInt(hash.substring(0, 8), 16) / 0xffffffff;
 
     let cumulativeWeight = 0;

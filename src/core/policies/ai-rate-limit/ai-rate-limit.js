@@ -2,13 +2,13 @@
 // Advanced rate limiting based on AI model token consumption and user quotas
 // Redis-backed implementation for cluster compatibility
 
-const db = require('../../db');
+const db = require("../../db");
 
 // Default rate limit handler
-function defaultHandler(req, res, windowMs = 900000) {
+function defaultHandler(_req, res, windowMs = 900000) {
   res.status(429).json({
-    error: 'Too Many Requests',
-    message: 'Rate limit exceeded. Please try again later.',
+    error: "Too Many Requests",
+    message: "Rate limit exceeded. Please try again later.",
     retryAfter: Math.ceil(windowMs / 1000),
   });
 }
@@ -19,12 +19,12 @@ function defaultOnLimitReached(key, req) {
   logger.warn(`Rate limit exceeded for key: ${key}`, {
     ip: req.ip,
     userId: req.user?.id,
-    userAgent: req.get('User-Agent'),
+    userAgent: req.get("User-Agent"),
     url: req.url,
   });
 }
 
-module.exports = function (params, config) {
+module.exports = (params, config) => {
   const logger = config.logger || console;
 
   // Rate limit configuration
@@ -34,7 +34,7 @@ module.exports = function (params, config) {
     maxTokens: params.maxTokens || 10000, // Maximum tokens per window
     skipSuccessfulRequests: params.skipSuccessfulRequests || false,
     skipFailedRequests: params.skipFailedRequests || false,
-    keyGenerator: params.keyGenerator || (req => req.user?.id || req.ip),
+    keyGenerator: params.keyGenerator || ((req) => req.user?.id || req.ip),
     handler: params.handler || defaultHandler,
     onLimitReached: params.onLimitReached || defaultOnLimitReached,
   };
@@ -42,24 +42,24 @@ module.exports = function (params, config) {
   // Token estimation for different models
   const tokenEstimates = {
     // Chat models (rough estimates per request)
-    'gpt-4': { base: 100, perMessage: 25, perToken: 1 },
-    'gpt-4-turbo': { base: 80, perMessage: 20, perToken: 1 },
-    'gpt-3.5-turbo': { base: 50, perMessage: 15, perToken: 1 },
-    'claude-3-opus': { base: 120, perMessage: 30, perToken: 1 },
-    'claude-3-sonnet': { base: 80, perMessage: 20, perToken: 1 },
-    'claude-3-haiku': { base: 40, perMessage: 10, perToken: 1 },
+    "gpt-4": { base: 100, perMessage: 25, perToken: 1 },
+    "gpt-4-turbo": { base: 80, perMessage: 20, perToken: 1 },
+    "gpt-3.5-turbo": { base: 50, perMessage: 15, perToken: 1 },
+    "claude-3-opus": { base: 120, perMessage: 30, perToken: 1 },
+    "claude-3-sonnet": { base: 80, perMessage: 20, perToken: 1 },
+    "claude-3-haiku": { base: 40, perMessage: 10, perToken: 1 },
 
     // Embedding models (per input token)
-    'text-embedding-ada-002': { perToken: 0.1 },
-    'text-embedding-3-small': { perToken: 0.1 },
-    'text-embedding-3-large': { perToken: 0.1 },
+    "text-embedding-ada-002": { perToken: 0.1 },
+    "text-embedding-3-small": { perToken: 0.1 },
+    "text-embedding-3-large": { perToken: 0.1 },
   };
 
   async function aiRateLimit(req, res, next) {
     const key = rateConfig.keyGenerator(req);
 
     if (!key) {
-      logger.warn('Rate limit: No key generated for request');
+      logger.warn("Rate limit: No key generated for request");
       return next();
     }
 
@@ -79,9 +79,9 @@ module.exports = function (params, config) {
         db.get(resetKey),
       ]);
 
-      let currentRequests = parseInt(requests) || 0;
-      let currentTokens = parseInt(tokens) || 0;
-      let currentResetTime = parseInt(resetTime) || 0;
+      let currentRequests = parseInt(requests, 10) || 0;
+      let currentTokens = parseInt(tokens, 10) || 0;
+      let currentResetTime = parseInt(resetTime, 10) || 0;
 
       // Check if window has expired
       if (now > currentResetTime) {
@@ -101,7 +101,8 @@ module.exports = function (params, config) {
 
       // Check limits
       const requestsExceeded = currentRequests >= rateConfig.maxRequests;
-      const tokensExceeded = currentTokens + estimatedTokens > rateConfig.maxTokens;
+      const tokensExceeded =
+        currentTokens + estimatedTokens > rateConfig.maxTokens;
 
       if (requestsExceeded || tokensExceeded) {
         // Call limit reached handler
@@ -118,7 +119,7 @@ module.exports = function (params, config) {
       res.json = async function (data) {
         try {
           // Track actual token usage from response
-          if (data && data.usage) {
+          if (data?.usage) {
             const actualTokens = data.usage.total_tokens || estimatedTokens;
             await db.incrby(tokenKey, actualTokens);
 
@@ -130,21 +131,21 @@ module.exports = function (params, config) {
 
             // Add rate limit headers
             res.set({
-              'x-ratelimit-limit-requests': rateConfig.maxRequests,
-              'x-ratelimit-remaining-requests': Math.max(
+              "x-ratelimit-limit-requests": rateConfig.maxRequests,
+              "x-ratelimit-remaining-requests": Math.max(
                 0,
-                rateConfig.maxRequests - parseInt(finalRequests)
+                rateConfig.maxRequests - parseInt(finalRequests, 10),
               ),
-              'x-ratelimit-limit-tokens': rateConfig.maxTokens,
-              'x-ratelimit-remaining-tokens': Math.max(
+              "x-ratelimit-limit-tokens": rateConfig.maxTokens,
+              "x-ratelimit-remaining-tokens": Math.max(
                 0,
-                rateConfig.maxTokens - parseInt(finalTokens)
+                rateConfig.maxTokens - parseInt(finalTokens, 10),
               ),
-              'x-ratelimit-reset': new Date(currentResetTime).toISOString(),
+              "x-ratelimit-reset": new Date(currentResetTime).toISOString(),
             });
           }
         } catch (error) {
-          logger.warn('Failed to update token usage in Redis:', error.message);
+          logger.warn("Failed to update token usage in Redis:", error.message);
         }
 
         return originalJson.call(this, data);
@@ -152,7 +153,7 @@ module.exports = function (params, config) {
 
       next();
     } catch (error) {
-      logger.error('Rate limit error:', error.message);
+      logger.error("Rate limit error:", error.message);
       // On Redis error, allow request to proceed (fail open)
       next();
     }
@@ -177,7 +178,7 @@ module.exports = function (params, config) {
         }
 
         // Add tokens for message content (rough estimate)
-        messages.forEach(msg => {
+        messages.forEach((msg) => {
           if (msg.content) {
             const contentTokens = Math.ceil(msg.content.length / 4); // Rough: 1 token per 4 chars
             estimate += contentTokens * (modelConfig.perToken || 1);
@@ -187,7 +188,7 @@ module.exports = function (params, config) {
 
       return Math.max(estimate, 10); // Minimum 10 tokens
     } catch (error) {
-      logger.warn('Token estimation error:', error.message);
+      logger.warn("Token estimation error:", error.message);
       return 50; // Default fallback
     }
   }
@@ -198,14 +199,14 @@ module.exports = function (params, config) {
       try {
         return {
           config: rateConfig,
-          note: 'Redis-backed rate limiting - stats collection limited',
+          note: "Redis-backed rate limiting - stats collection limited",
         };
       } catch (error) {
-        logger.error('Failed to get rate limit stats:', error.message);
+        logger.error("Failed to get rate limit stats:", error.message);
         return { error: error.message };
       }
     },
-    getKeyStats: async key => {
+    getKeyStats: async (key) => {
       try {
         const requestKey = `ratelimit:requests:${key}`;
         const tokenKey = `ratelimit:tokens:${key}`;
@@ -218,22 +219,26 @@ module.exports = function (params, config) {
         ]);
 
         return {
-          requests: parseInt(requests) || 0,
-          tokens: parseInt(tokens) || 0,
-          resetTime: parseInt(resetTime) || 0,
+          requests: parseInt(requests, 10) || 0,
+          tokens: parseInt(tokens, 10) || 0,
+          resetTime: parseInt(resetTime, 10) || 0,
         };
       } catch (error) {
         logger.error(`Failed to get key stats for ${key}:`, error.message);
         return { error: error.message };
       }
     },
-    resetKey: async key => {
+    resetKey: async (key) => {
       try {
         const requestKey = `ratelimit:requests:${key}`;
         const tokenKey = `ratelimit:tokens:${key}`;
         const resetKey = `ratelimit:reset:${key}`;
 
-        await Promise.all([db.del(requestKey), db.del(tokenKey), db.del(resetKey)]);
+        await Promise.all([
+          db.del(requestKey),
+          db.del(tokenKey),
+          db.del(resetKey),
+        ]);
 
         return true;
       } catch (error) {

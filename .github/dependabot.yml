@@ -1,53 +1,24 @@
 version: 2
 updates:
-  # Enable version updates for npm
-  - package-ecosystem: 'npm'
-    directory: '/'
+  - "package-ecosystem": npm
+    directory: /
     schedule:
-      interval: 'weekly'
-      day: 'monday'
-      time: '09:00'
-      timezone: 'Asia/Shanghai'
-    open-pull-requests-limit: 10
+      interval: weekly
+      day: monday
+      time: "09:00"
+      "time-zone": Asia/Shanghai
+    "open-pull-requests-limit": 10
     reviewers:
-      - 'zycxfyh'
+      - zycxfyh
     assignees:
-      - 'zycxfyh'
-    commit-message:
-      prefix: 'deps'
-      prefix-development: 'deps-dev'
-      include: 'scope'
-
-  # Enable version updates for Docker
-  - package-ecosystem: 'docker'
-    directory: '/'
+      - zycxfyh
+    "commit-message":
+      prefix: deps
+      "prefix-development": deps-dev
+      include: scope
+  - "package-ecosystem": github-actions
+    directory: /
     schedule:
-      interval: 'weekly'
-      day: 'monday'
-      time: '09:00'
-      timezone: 'Asia/Shanghai'
-    open-pull-requests-limit: 5
-    reviewers:
-      - 'zycxfyh'
-    assignees:
-      - 'zycxfyh'
-    commit-message:
-      prefix: 'docker'
-      include: 'scope'
-
-  # Enable version updates for GitHub Actions
-  - package-ecosystem: 'github-actions'
-    directory: '/'
-    schedule:
-      interval: 'weekly'
-      day: 'monday'
-      time: '09:00'
-      timezone: 'Asia/Shanghai'
-    open-pull-requests-limit: 5
-    reviewers:
-      - 'zycxfyh'
-    assignees:
-      - 'zycxfyh'
-    commit-message:
-      prefix: 'ci'
-      include: 'scope'
+      interval: weekly
+      day: monday
+      time: "09:00"

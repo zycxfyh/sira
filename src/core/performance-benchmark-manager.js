@@ -3,17 +3,18 @@
  * 提供全面的AI模型性能评估系统
  */
 
-const EventEmitter = require('events');
-const fs = require('fs').promises;
-const path = require('path');
-const { performance } = require('perf_hooks');
+const EventEmitter = require("node:events");
+const fs = require("node:fs").promises;
+const path = require("node:path");
+const { performance } = require("node:perf_hooks");
 
 class PerformanceBenchmarkManager extends EventEmitter {
   constructor(options = {}) {
     super();
 
     this.options = {
-      resultsDir: options.resultsDir || path.join(process.cwd(), 'benchmark-results'),
+      resultsDir:
+        options.resultsDir || path.join(process.cwd(), "benchmark-results"),
       maxConcurrency: options.maxConcurrency || 5,
       defaultIterations: options.defaultIterations || 5,
       timeout: options.timeout || 30000, // 30秒超时
@@ -32,8 +33,8 @@ class PerformanceBenchmarkManager extends EventEmitter {
     this.testExecutor = new TestExecutor(this.options);
 
     this.initializeResultsDirectory();
-    this.emit('initialized');
-    console.log('✅ 性能基准测试管理模块初始化完成');
+    this.emit("initialized");
+    console.log("✅ 性能基准测试管理模块初始化完成");
   }
 
   /**
@@ -44,7 +45,7 @@ class PerformanceBenchmarkManager extends EventEmitter {
       await fs.mkdir(this.options.resultsDir, { recursive: true });
       console.log(`📁 基准测试结果目录: ${this.options.resultsDir}`);
     } catch (error) {
-      console.error('创建结果目录失败:', error);
+      console.error("创建结果目录失败:", error);
     }
   }
 
@@ -80,20 +81,20 @@ class PerformanceBenchmarkManager extends EventEmitter {
           startTime: new Date(startTime).toISOString(),
           endTime: new Date().toISOString(),
           duration: performance.now() - startTime,
-          version: '1.0.0',
+          version: "1.0.0",
         },
       };
 
       await this.saveResults(testResult);
       this.results.set(testId, testResult);
 
-      this.emit('benchmarkCompleted', testResult);
+      this.emit("benchmarkCompleted", testResult);
       console.log(`✅ 基准测试完成: ${testId}`);
 
       return testResult;
     } catch (error) {
       console.error(`❌ 基准测试失败: ${testId}`, error);
-      this.emit('benchmarkFailed', { testId, error: error.message });
+      this.emit("benchmarkFailed", { testId, error: error.message });
       throw error;
     } finally {
       this.activeTests.delete(testId);
@@ -113,8 +114,8 @@ class PerformanceBenchmarkManager extends EventEmitter {
   normalizeConfig(config) {
     return {
       name: config.name || `Benchmark ${new Date().toLocaleString()}`,
-      models: config.models || ['gpt-4', 'deepseek-chat'],
-      tasks: config.tasks || ['simple_qa'],
+      models: config.models || ["gpt-4", "deepseek-chat"],
+      tasks: config.tasks || ["simple_qa"],
       iterations: config.iterations || this.options.defaultIterations,
       concurrency: config.concurrency || this.options.maxConcurrency,
       timeout: config.timeout || this.options.timeout,
@@ -130,19 +131,19 @@ class PerformanceBenchmarkManager extends EventEmitter {
    */
   validateBenchmarkConfig(config) {
     if (!config.models || config.models.length === 0) {
-      throw new Error('至少需要指定一个模型');
+      throw new Error("至少需要指定一个模型");
     }
 
     if (!config.tasks || config.tasks.length === 0) {
-      throw new Error('至少需要指定一个测试任务');
+      throw new Error("至少需要指定一个测试任务");
     }
 
     if (config.iterations < 1) {
-      throw new Error('迭代次数必须大于0');
+      throw new Error("迭代次数必须大于0");
     }
 
     if (config.concurrency < 1 || config.concurrency > 20) {
-      throw new Error('并发数必须在1-20之间');
+      throw new Error("并发数必须在1-20之间");
     }
   }
 
@@ -164,7 +165,7 @@ class PerformanceBenchmarkManager extends EventEmitter {
         config.tasks,
         config.iterations,
         config,
-        testId
+        testId,
       );
     }
 
@@ -191,17 +192,17 @@ class PerformanceBenchmarkManager extends EventEmitter {
     };
 
     for (const [model, results] of Object.entries(modelResults)) {
-      if (results.tasks && results.tasks[task]) {
+      if (results.tasks?.[task]) {
         taskResults.model_performance[model] = results.tasks[task];
       }
     }
 
     // 计算平均值
-    const metrics = ['response_time', 'tokens_used', 'cost', 'quality_score'];
+    const metrics = ["response_time", "tokens_used", "cost", "quality_score"];
     for (const metric of metrics) {
       const values = Object.values(taskResults.model_performance)
-        .map(r => r[metric])
-        .filter(v => v !== undefined && v !== null);
+        .map((r) => r[metric])
+        .filter((v) => v !== undefined && v !== null);
 
       if (values.length > 0) {
         taskResults.averages[metric] = {
@@ -219,13 +220,15 @@ class PerformanceBenchmarkManager extends EventEmitter {
       taskResults.best_performer = performances.reduce(
         (best, [model, perf]) =>
           perf.response_time < best.perf.response_time ? { model, perf } : best,
-        { model: performances[0][0], perf: performances[0][1] }
+        { model: performances[0][0], perf: performances[0][1] },
       );
 
       taskResults.worst_performer = performances.reduce(
         (worst, [model, perf]) =>
-          perf.response_time > worst.perf.response_time ? { model, perf } : worst,
-        { model: performances[0][0], perf: performances[0][1] }
+          perf.response_time > worst.perf.response_time
+            ? { model, perf }
+            : worst,
+        { model: performances[0][0], perf: performances[0][1] },
       );
     }
 
@@ -235,7 +238,7 @@ class PerformanceBenchmarkManager extends EventEmitter {
   /**
    * 生成汇总统计
    */
-  generateSummaryStats(results, config) {
+  generateSummaryStats(results, _config) {
     const summary = {
       total_tests: 0,
       total_duration: 0,
@@ -266,26 +269,29 @@ class PerformanceBenchmarkManager extends EventEmitter {
 
     if (allPerformances.length > 0) {
       summary.average_response_time =
-        allPerformances.reduce((sum, p) => sum + p.response_time, 0) / allPerformances.length;
+        allPerformances.reduce((sum, p) => sum + p.response_time, 0) /
+        allPerformances.length;
       summary.average_cost =
-        allPerformances.reduce((sum, p) => sum + p.cost, 0) / allPerformances.length;
+        allPerformances.reduce((sum, p) => sum + p.cost, 0) /
+        allPerformances.length;
       summary.average_quality =
-        allPerformances.reduce((sum, p) => sum + (p.quality || 0), 0) / allPerformances.length;
+        allPerformances.reduce((sum, p) => sum + (p.quality || 0), 0) /
+        allPerformances.length;
 
       // 生成排名
       summary.performance_rankings = allPerformances
         .sort((a, b) => a.response_time - b.response_time)
-        .map(p => ({ model: p.model, value: p.response_time }));
+        .map((p) => ({ model: p.model, value: p.response_time }));
 
       summary.cost_efficiency_rankings = allPerformances
-        .filter(p => p.cost_efficiency)
+        .filter((p) => p.cost_efficiency)
         .sort((a, b) => a.cost_efficiency - b.cost_efficiency)
-        .map(p => ({ model: p.model, value: p.cost_efficiency }));
+        .map((p) => ({ model: p.model, value: p.cost_efficiency }));
 
       summary.quality_rankings = allPerformances
-        .filter(p => p.quality)
+        .filter((p) => p.quality)
         .sort((a, b) => b.quality - a.quality)
-        .map(p => ({ model: p.model, value: p.quality }));
+        .map((p) => ({ model: p.model, value: p.quality }));
     }
 
     return summary;
@@ -317,7 +323,7 @@ class PerformanceBenchmarkManager extends EventEmitter {
     const modelTimes = {};
 
     for (const [model, modelResults] of Object.entries(results.models)) {
-      if (modelResults.summary && modelResults.summary.average_response_time) {
+      if (modelResults.summary?.average_response_time) {
         modelTimes[model] = modelResults.summary.average_response_time;
       }
     }
@@ -357,7 +363,7 @@ class PerformanceBenchmarkManager extends EventEmitter {
     const modelCosts = {};
 
     for (const [model, modelResults] of Object.entries(results.models)) {
-      if (modelResults.summary && modelResults.summary.average_cost) {
+      if (modelResults.summary?.average_cost) {
         modelCosts[model] = modelResults.summary.average_cost;
       }
     }
@@ -372,7 +378,8 @@ class PerformanceBenchmarkManager extends EventEmitter {
 
       // 计算成本效率分数
       for (const [model, cost] of Object.entries(modelCosts)) {
-        const quality = results.models[model]?.summary?.average_quality_score || 1;
+        const quality =
+          results.models[model]?.summary?.average_quality_score || 1;
         analysis.cost_efficiency_scores[model] = quality / cost;
       }
     }
@@ -394,14 +401,17 @@ class PerformanceBenchmarkManager extends EventEmitter {
     const modelQualities = {};
 
     for (const [model, modelResults] of Object.entries(results.models)) {
-      if (modelResults.summary && modelResults.summary.average_quality_score) {
+      if (modelResults.summary?.average_quality_score) {
         modelQualities[model] = modelResults.summary.average_quality_score;
       }
     }
 
     if (Object.keys(modelQualities).length > 0) {
       const sorted = Object.entries(modelQualities).sort((a, b) => b[1] - a[1]);
-      analysis.highest_quality_model = { model: sorted[0][0], quality: sorted[0][1] };
+      analysis.highest_quality_model = {
+        model: sorted[0][0],
+        quality: sorted[0][1],
+      };
       analysis.lowest_quality_model = {
         model: sorted[sorted.length - 1][0],
         quality: sorted[sorted.length - 1][1],
@@ -437,7 +447,9 @@ class PerformanceBenchmarkManager extends EventEmitter {
       if (modelResults.summary) {
         const { summary } = modelResults;
         modelScores[model] = {
-          speed_score: summary.average_response_time ? 1 / summary.average_response_time : 0,
+          speed_score: summary.average_response_time
+            ? 1 / summary.average_response_time
+            : 0,
           cost_score: summary.average_cost ? 1 / summary.average_cost : 0,
           quality_score: summary.average_quality_score || 0,
         };
@@ -457,25 +469,25 @@ class PerformanceBenchmarkManager extends EventEmitter {
     if (Object.keys(modelScores).length > 0) {
       // 最佳综合表现
       const bestOverall = Object.entries(modelScores).sort(
-        (a, b) => b[1].overall_score - a[1].overall_score
+        (a, b) => b[1].overall_score - a[1].overall_score,
       )[0];
       recommendations.best_overall = bestOverall[0];
 
       // 最佳速度
       const bestSpeed = Object.entries(modelScores).sort(
-        (a, b) => b[1].speed_score - a[1].speed_score
+        (a, b) => b[1].speed_score - a[1].speed_score,
       )[0];
       recommendations.best_for_speed = bestSpeed[0];
 
       // 最佳成本效益
       const bestCost = Object.entries(modelScores).sort(
-        (a, b) => b[1].cost_score - a[1].cost_score
+        (a, b) => b[1].cost_score - a[1].cost_score,
       )[0];
       recommendations.best_for_cost = bestCost[0];
 
       // 最佳质量
       const bestQuality = Object.entries(modelScores).sort(
-        (a, b) => b[1].quality_score - a[1].quality_score
+        (a, b) => b[1].quality_score - a[1].quality_score,
       )[0];
       recommendations.best_for_quality = bestQuality[0];
     }
@@ -489,16 +501,17 @@ class PerformanceBenchmarkManager extends EventEmitter {
   /**
    * 生成建议
    */
-  generateSuggestions(results, config) {
+  generateSuggestions(results, _config) {
     const suggestions = [];
 
     // 基于性能的建议
     const perfAnalysis = this.analyzePerformance(results);
     if (perfAnalysis.fastest_model && perfAnalysis.slowest_model) {
-      const speedup = perfAnalysis.slowest_model.time / perfAnalysis.fastest_model.time;
+      const speedup =
+        perfAnalysis.slowest_model.time / perfAnalysis.fastest_model.time;
       if (speedup > 2) {
         suggestions.push(
-          `考虑使用 ${perfAnalysis.fastest_model.model} 替代 ${perfAnalysis.slowest_model.model} 可提升 ${Math.round((speedup - 1) * 100)}% 的响应速度`
+          `考虑使用 ${perfAnalysis.fastest_model.model} 替代 ${perfAnalysis.slowest_model.model} 可提升 ${Math.round((speedup - 1) * 100)}% 的响应速度`,
         );
       }
     }
@@ -506,19 +519,24 @@ class PerformanceBenchmarkManager extends EventEmitter {
     // 基于成本的建议
     const costAnalysis = this.analyzeCost(results);
     if (costAnalysis.cheapest_model && costAnalysis.most_expensive_model) {
-      const savings = costAnalysis.most_expensive_model.cost / costAnalysis.cheapest_model.cost;
+      const savings =
+        costAnalysis.most_expensive_model.cost /
+        costAnalysis.cheapest_model.cost;
       if (savings > 1.5) {
         suggestions.push(
-          `切换到 ${costAnalysis.cheapest_model.model} 可节省 ${Math.round((savings - 1) * 100)}% 的成本`
+          `切换到 ${costAnalysis.cheapest_model.model} 可节省 ${Math.round((savings - 1) * 100)}% 的成本`,
         );
       }
     }
 
     // 基于质量的建议
     const qualityAnalysis = this.analyzeQuality(results);
-    if (qualityAnalysis.highest_quality_model && qualityAnalysis.quality_distribution.std > 0.3) {
+    if (
+      qualityAnalysis.highest_quality_model &&
+      qualityAnalysis.quality_distribution.std > 0.3
+    ) {
       suggestions.push(
-        `对于高质量要求任务，推荐使用 ${qualityAnalysis.highest_quality_model.model}`
+        `对于高质量要求任务，推荐使用 ${qualityAnalysis.highest_quality_model.model}`,
       );
     }
 
@@ -529,14 +547,14 @@ class PerformanceBenchmarkManager extends EventEmitter {
    * 保存结果
    */
   async saveResults(testResult) {
-    const filename = `benchmark_${testResult.testId}_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+    const filename = `benchmark_${testResult.testId}_${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.json`;
     const filepath = path.join(this.options.resultsDir, filename);
 
     try {
-      await fs.writeFile(filepath, JSON.stringify(testResult, null, 2), 'utf8');
+      await fs.writeFile(filepath, JSON.stringify(testResult, null, 2), "utf8");
       console.log(`💾 结果已保存: ${filepath}`);
     } catch (error) {
-      console.error('保存结果失败:', error);
+      console.error("保存结果失败:", error);
     }
   }
 
@@ -555,14 +573,17 @@ class PerformanceBenchmarkManager extends EventEmitter {
    */
   getLatestResults(limit = 10) {
     return Array.from(this.results.values())
-      .sort((a, b) => new Date(b.metadata.startTime) - new Date(a.metadata.startTime))
+      .sort(
+        (a, b) =>
+          new Date(b.metadata.startTime) - new Date(a.metadata.startTime),
+      )
       .slice(0, limit);
   }
 
   /**
    * 比较模型性能
    */
-  compareModels(models, metric = 'response_time') {
+  compareModels(models, metric = "response_time") {
     const comparison = {
       metric,
       rankings: [],
@@ -572,22 +593,24 @@ class PerformanceBenchmarkManager extends EventEmitter {
     const modelValues = {};
 
     for (const model of models) {
-      const latestResult = this.getLatestResults(1).find(r => r.config.models.includes(model));
+      const latestResult = this.getLatestResults(1).find((r) =>
+        r.config.models.includes(model),
+      );
 
-      if (latestResult && latestResult.results.models[model]) {
+      if (latestResult?.results.models[model]) {
         const { summary } = latestResult.results.models[model];
         if (summary) {
           switch (metric) {
-            case 'response_time':
+            case "response_time":
               modelValues[model] = summary.average_response_time;
               break;
-            case 'cost':
+            case "cost":
               modelValues[model] = summary.average_cost;
               break;
-            case 'quality':
+            case "quality":
               modelValues[model] = summary.average_quality_score;
               break;
-            case 'cost_efficiency':
+            case "cost_efficiency":
               modelValues[model] = summary.cost_per_token;
               break;
           }
@@ -599,7 +622,11 @@ class PerformanceBenchmarkManager extends EventEmitter {
     comparison.rankings = Object.entries(modelValues)
       .sort((a, b) => {
         // 对于成本和响应时间，越小越好；对于质量和效率，越大越好
-        if (metric === 'response_time' || metric === 'cost' || metric === 'cost_efficiency') {
+        if (
+          metric === "response_time" ||
+          metric === "cost" ||
+          metric === "cost_efficiency"
+        ) {
           return a[1] - b[1];
         } else {
           return b[1] - a[1];
@@ -614,7 +641,7 @@ class PerformanceBenchmarkManager extends EventEmitter {
 
       comparison.differences = {
         best_to_worst:
-          metric === 'response_time' || metric === 'cost'
+          metric === "response_time" || metric === "cost"
             ? `${((worst.value / best.value - 1) * 100).toFixed(1)}% 差异`
             : `${((best.value / worst.value - 1) * 100).toFixed(1)}% 差异`,
         improvement_potential: `切换到 ${best.model} 可获得显著提升`,
@@ -629,15 +656,18 @@ class PerformanceBenchmarkManager extends EventEmitter {
    */
   calculateStd(values) {
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    const squareDiffs = values.map(value => Math.pow(value - mean, 2));
-    const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / squareDiffs.length;
+    const squareDiffs = values.map((value) => (value - mean) ** 2);
+    const avgSquareDiff =
+      squareDiffs.reduce((a, b) => a + b, 0) / squareDiffs.length;
     return Math.sqrt(avgSquareDiff);
   }
 
   calculateMedian(values) {
     const sorted = [...values].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    return sorted.length % 2 !== 0
+      ? sorted[mid]
+      : (sorted[mid - 1] + sorted[mid]) / 2;
   }
 
   calculatePercentile(values, percentile) {
@@ -663,13 +693,13 @@ class PerformanceBenchmarkManager extends EventEmitter {
   /**
    * 导出结果
    */
-  exportResults(format = 'json') {
+  exportResults(format = "json") {
     const allResults = this.getResults();
 
     switch (format) {
-      case 'json':
+      case "json":
         return JSON.stringify(allResults, null, 2);
-      case 'csv':
+      case "csv":
         return this.convertToCSV(allResults);
       default:
         throw new Error(`不支持的导出格式: ${format}`);
@@ -680,27 +710,31 @@ class PerformanceBenchmarkManager extends EventEmitter {
    * 转换为CSV
    */
   convertToCSV(results) {
-    const csv = ['Test ID,Model,Task,Response Time,Cost,Quality Score,Status'];
+    const csv = ["Test ID,Model,Task,Response Time,Cost,Quality Score,Status"];
 
     for (const result of results) {
-      for (const [model, modelResults] of Object.entries(result.results.models)) {
-        for (const [task, taskResults] of Object.entries(modelResults.tasks || {})) {
+      for (const [model, modelResults] of Object.entries(
+        result.results.models,
+      )) {
+        for (const [task, taskResults] of Object.entries(
+          modelResults.tasks || {},
+        )) {
           csv.push(
             [
               result.testId,
               model,
               task,
-              taskResults.response_time || '',
-              taskResults.cost || '',
-              taskResults.quality_score || '',
-              taskResults.status || 'completed',
-            ].join(',')
+              taskResults.response_time || "",
+              taskResults.cost || "",
+              taskResults.quality_score || "",
+              taskResults.status || "completed",
+            ].join(","),
           );
         }
       }
     }
 
-    return csv.join('\n');
+    return csv.join("\n");
   }
 }
 
@@ -737,7 +771,8 @@ class MetricsCalculator {
     if (!times || times.length < 2) return 0;
 
     const mean = times.reduce((a, b) => a + b, 0) / times.length;
-    const variance = times.reduce((sum, time) => sum + Math.pow(time - mean, 2), 0) / times.length;
+    const variance =
+      times.reduce((sum, time) => sum + (time - mean) ** 2, 0) / times.length;
     const std = Math.sqrt(variance);
 
     // 稳定性分数：标准差越小，分数越高 (0-1)
@@ -771,7 +806,7 @@ class TestExecutor {
     };
 
     // 导入测试用例
-    const { testCases } = require('./benchmark-test-cases');
+    const { testCases } = require("./benchmark-test-cases");
 
     // 为每个任务执行测试
     for (const task of tasks) {
@@ -787,7 +822,7 @@ class TestExecutor {
         testCases[task],
         iterations,
         config,
-        testId
+        testId,
       );
     }
 
@@ -811,25 +846,34 @@ class TestExecutor {
     const concurrency = Math.min(config.concurrency, iterations);
     const chunks = this.chunkArray(
       Array.from({ length: iterations }, (_, i) => i),
-      concurrency
+      concurrency,
     );
 
     for (const chunk of chunks) {
-      const promises = chunk.map(async iteration => {
+      const promises = chunk.map(async (iteration) => {
         try {
-          const result = await this.runSingleTest(model, task, testCase, iteration, config, testId);
+          const result = await this.runSingleTest(
+            model,
+            task,
+            testCase,
+            iteration,
+            config,
+            testId,
+          );
 
           taskResults.iterations.push({
             iteration,
             ...result,
-            status: 'success',
+            status: "success",
           });
 
-          if (result.response_time) taskResults.response_times.push(result.response_time);
+          if (result.response_time)
+            taskResults.response_times.push(result.response_time);
           if (result.cost) taskResults.costs.push(result.cost);
           if (result.quality_score !== undefined)
             taskResults.quality_scores.push(result.quality_score);
-          if (result.tokens_used) taskResults.tokens_used.push(result.tokens_used);
+          if (result.tokens_used)
+            taskResults.tokens_used.push(result.tokens_used);
         } catch (error) {
           taskResults.errors.push({
             iteration,
@@ -839,7 +883,7 @@ class TestExecutor {
 
           taskResults.iterations.push({
             iteration,
-            status: 'failed',
+            status: "failed",
             error: error.message,
           });
         }
@@ -848,30 +892,35 @@ class TestExecutor {
       await Promise.all(promises);
 
       // 添加小延迟避免并发过高
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     // 计算任务统计
     return this.calculateTaskStats(taskResults);
   }
 
-  async runSingleTest(model, task, testCase, iteration, config, testId) {
+  async runSingleTest(model, _task, testCase, _iteration, config, _testId) {
     const startTime = performance.now();
 
     try {
       // 生成测试输入
-      const testInput = testCase.generateInput ? testCase.generateInput() : testCase.input;
+      const testInput = testCase.generateInput
+        ? testCase.generateInput()
+        : testCase.input;
 
       // 构建请求
       const requestBody = {
         model,
-        messages: [{ role: 'user', content: testInput }],
+        messages: [{ role: "user", content: testInput }],
         ...config.parameters,
       };
 
       // 这里应该调用实际的AI网关API
       // 为了演示，我们模拟一个响应
-      const mockResponse = await this.simulateAIRequest(requestBody, config.timeout);
+      const mockResponse = await this.simulateAIRequest(
+        requestBody,
+        config.timeout,
+      );
 
       const endTime = performance.now();
       const responseTime = endTime - startTime;
@@ -895,27 +944,29 @@ class TestExecutor {
       };
     } catch (error) {
       const endTime = performance.now();
-      throw new Error(`测试失败: ${error.message} (耗时: ${(endTime - startTime).toFixed(2)}ms)`);
+      throw new Error(
+        `测试失败: ${error.message} (耗时: ${(endTime - startTime).toFixed(2)}ms)`,
+      );
     }
   }
 
-  async simulateAIRequest(requestBody, timeout) {
+  async simulateAIRequest(_requestBody, _timeout) {
     // 模拟网络延迟
     const delay = Math.random() * 1000 + 500; // 500-1500ms
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
 
     // 模拟响应内容
     const responses = [
-      '这是一个模拟的AI响应，用于性能基准测试。测试内容质量和响应时间。',
-      'Performance benchmark test response. This simulates a typical AI model output for evaluation purposes.',
-      '基准测试模拟响应。评估模型的响应速度、成本效益和输出质量。',
-      'Mock response for benchmarking. Used to measure latency, cost, and quality metrics.',
-      'AI模型性能测试响应内容。包含足够的信息用于质量评估和统计分析。',
+      "这是一个模拟的AI响应，用于性能基准测试。测试内容质量和响应时间。",
+      "Performance benchmark test response. This simulates a typical AI model output for evaluation purposes.",
+      "基准测试模拟响应。评估模型的响应速度、成本效益和输出质量。",
+      "Mock response for benchmarking. Used to measure latency, cost, and quality metrics.",
+      "AI模型性能测试响应内容。包含足够的信息用于质量评估和统计分析。",
     ];
 
     return {
       content: responses[Math.floor(Math.random() * responses.length)],
-      finish_reason: 'stop',
+      finish_reason: "stop",
     };
   }
 
@@ -923,7 +974,10 @@ class TestExecutor {
     if (!expectedOutput) return 0.8; // 默认分数
 
     // 简单的质量评估（实际应该使用更复杂的算法）
-    const similarity = this.calculateTextSimilarity(actualOutput, expectedOutput);
+    const similarity = this.calculateTextSimilarity(
+      actualOutput,
+      expectedOutput,
+    );
     return Math.max(0.1, Math.min(1.0, similarity));
   }
 
@@ -932,7 +986,7 @@ class TestExecutor {
     const words1 = new Set(text1.toLowerCase().split(/\s+/));
     const words2 = new Set(text2.toLowerCase().split(/\s+/));
 
-    const intersection = new Set([...words1].filter(x => words2.has(x)));
+    const intersection = new Set([...words1].filter((x) => words2.has(x)));
     const union = new Set([...words1, ...words2]);
 
     return intersection.size / union.size;
@@ -941,11 +995,11 @@ class TestExecutor {
   calculateEstimatedCost(model, tokens) {
     // 估算成本（实际应该从配置中获取）
     const costPerToken = {
-      'gpt-4': 0.03,
-      'gpt-3.5-turbo': 0.002,
-      'claude-3-opus': 0.015,
-      'deepseek-chat': 0.001,
-      'qwen-max': 0.002,
+      "gpt-4": 0.03,
+      "gpt-3.5-turbo": 0.002,
+      "claude-3-opus": 0.015,
+      "deepseek-chat": 0.001,
+      "qwen-max": 0.002,
     };
 
     return (costPerToken[model] || 0.01) * tokens;
@@ -961,7 +1015,7 @@ class TestExecutor {
       cost: {},
       quality_score: {},
       tokens_used: {},
-      status: 'completed',
+      status: "completed",
     };
 
     stats.success_rate = stats.successful_iterations / stats.total_iterations;
@@ -993,7 +1047,8 @@ class TestExecutor {
     const mean = sum / values.length;
 
     const variance =
-      values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / values.length;
+      values.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
+      values.length;
     const std = Math.sqrt(variance);
 
     return {
@@ -1005,7 +1060,8 @@ class TestExecutor {
       min: sorted[0],
       max: sorted[sorted.length - 1],
       std,
-      p95: sorted[Math.floor(sorted.length * 0.95)] || sorted[sorted.length - 1],
+      p95:
+        sorted[Math.floor(sorted.length * 0.95)] || sorted[sorted.length - 1],
       count: values.length,
     };
   }
@@ -1018,7 +1074,7 @@ class TestExecutor {
     let totalTokens = 0;
     let qualityCount = 0;
 
-    for (const [taskName, taskResults] of Object.entries(results.tasks)) {
+    for (const [_taskName, taskResults] of Object.entries(results.tasks)) {
       summary.total_requests += taskResults.total_iterations;
       summary.successful_requests += taskResults.successful_iterations;
       summary.failed_requests += taskResults.failed_iterations;
@@ -1031,7 +1087,10 @@ class TestExecutor {
         totalCost += taskResults.cost.mean;
       }
 
-      if (taskResults.quality_score && taskResults.quality_score.mean !== undefined) {
+      if (
+        taskResults.quality_score &&
+        taskResults.quality_score.mean !== undefined
+      ) {
         totalQuality += taskResults.quality_score.mean;
         qualityCount++;
       }

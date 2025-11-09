@@ -1,30 +1,30 @@
-const testHelper = require('../../common/routing.helper');
-const config = require('../../../src/core/config');
-const db = require('../../../src/core/db');
+const testHelper = require("../../common/routing.helper");
+const config = require("../../../core/config");
+const db = require("../../../core/db");
 const originalGatewayConfig = config.gatewayConfig;
 
-describe('rate-limit policy', () => {
+describe("rate-limit policy", () => {
   const helper = testHelper();
-  helper.addPolicy('test', () => (req, res) => {
+  helper.addPolicy("test", () => (req, res) => {
     res.json({
-      result: 'test',
+      result: "test",
       hostname: req.hostname,
       url: req.url,
       apiEndpoint: req.egContext.apiEndpoint,
     });
   });
 
-  before('setup', () => {
+  before("setup", () => {
     config.gatewayConfig = {
       http: { port: 0 },
       apiEndpoints: {
         test_default: {},
       },
-      policies: ['rate-limit', 'test'],
+      policies: ["rate-limit", "test"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['test_default'],
-          policies: [{ 'rate-limit': { action: { max: 1 } } }, { test: [] }],
+          apiEndpoints: ["test_default"],
+          policies: [{ "rate-limit": { action: { max: 1 } } }, { test: [] }],
         },
       },
     };
@@ -32,31 +32,31 @@ describe('rate-limit policy', () => {
     return helper.setup();
   });
 
-  after('cleanup', () => {
+  after("cleanup", () => {
     config.gatewayConfig = originalGatewayConfig;
     return db.flushdb().then(() => helper.cleanup());
   });
 
   it(
-    'should allow first request ',
+    "should allow first request ",
     helper.validateSuccess({
       setup: {
-        url: '/',
+        url: "/",
       },
       test: {
-        url: '/',
+        url: "/",
       },
-    })
+    }),
   );
   it(
-    'should rate-limit second request ',
+    "should rate-limit second request ",
     helper.validateError({
       setup: {
-        url: '/',
+        url: "/",
       },
       test: {
         errorCode: 429,
       },
-    })
+    }),
   );
 });

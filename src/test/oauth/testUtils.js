@@ -1,8 +1,8 @@
-const should = require('should');
-const uuid = require('uuid62');
+const should = require("should");
+const uuid = require("uuid62");
 
-const services = require('../../../src/core/services');
-const db = require('../../../src/core/db');
+const services = require("../../../core/services");
+const db = require("../../../core/db");
 
 const credentialService = services.credential;
 const userService = services.user;
@@ -10,22 +10,26 @@ const applicationService = services.application;
 
 module.exports = {
   checkTokenResponse: (response, additionalProps = []) => {
-    should(response).have.properties('access_token', 'expires_in', ...additionalProps);
-    should(response.token_type).be.eql('Bearer');
+    should(response).have.properties(
+      "access_token",
+      "expires_in",
+      ...additionalProps,
+    );
+    should(response.token_type).be.eql("Bearer");
     should(response.access_token.length).be.greaterThan(15);
   },
 
   createOAuthScenario: () => {
     const user1 = {
       username: uuid.v4(),
-      firstname: 'irfan',
-      lastname: 'baqui',
-      email: 'irfan@eg.com',
+      firstname: "irfan",
+      lastname: "baqui",
+      email: "irfan@eg.com",
     };
 
     const app1 = {
-      name: 'irfan_app',
-      redirectUri: 'https://some.host.com/some/route',
+      name: "irfan_app",
+      redirectUri: "https://some.host.com/some/route",
     };
 
     let fromDbUser, fromDbApp;
@@ -33,29 +37,29 @@ module.exports = {
     return db
       .flushdb()
       .then(() => userService.insert(user1))
-      .then(_fromDbUser => {
+      .then((_fromDbUser) => {
         should.exist(_fromDbUser);
 
         fromDbUser = _fromDbUser;
 
         return applicationService.insert(app1, fromDbUser.id);
       })
-      .then(_fromDbApp => {
+      .then((_fromDbApp) => {
         should.exist(_fromDbApp);
         fromDbApp = _fromDbApp;
 
-        return credentialService.insertScopes(['someScope']);
+        return credentialService.insertScopes(["someScope"]);
       })
       .then(() =>
         Promise.all([
-          credentialService.insertCredential(fromDbUser.id, 'basic-auth', {
-            password: 'user-secret',
+          credentialService.insertCredential(fromDbUser.id, "basic-auth", {
+            password: "user-secret",
           }),
-          credentialService.insertCredential(fromDbApp.id, 'oauth2', {
-            secret: 'app-secret',
-            scopes: ['someScope'],
+          credentialService.insertCredential(fromDbApp.id, "oauth2", {
+            secret: "app-secret",
+            scopes: ["someScope"],
           }),
-        ])
+        ]),
       )
       .then(([userRes, appRes]) => {
         should.exist(userRes);

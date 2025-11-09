@@ -2,12 +2,12 @@
 
 const eg = {
   get config() {
-    return require('../lib/config');
+    return require("../lib/config");
   },
 };
 
-const bootstraped = require('./environment').bootstrap(eg);
+const bootstraped = require("./environment").bootstrap(eg);
 
-if (bootstraped && bootstraped.program) {
+if (bootstraped?.program) {
   bootstraped.program.parse(process.argv.slice(2));
 }

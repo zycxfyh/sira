@@ -1,4 +1,4 @@
-const passportJWT = require('passport-jwt');
+const passportJWT = require("passport-jwt");
 
 module.exports = {
   header: passportJWT.ExtractJwt.fromHeader,

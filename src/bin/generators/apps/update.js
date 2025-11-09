@@ -1,20 +1,20 @@
-const eg = require('../../eg');
-const SCHEMA = 'http://express-gateway.io/models/applications.json';
+const eg = require("../../eg");
+const SCHEMA = "http://express-gateway.io/models/applications.json";
 
 module.exports = class extends eg.Generator {
   constructor(args, opts) {
     super(args, opts);
 
     this.configureCommand({
-      command: 'update <app_id> [options]',
-      desc: 'Update an application',
-      builder: yargs =>
+      command: "update <app_id> [options]",
+      desc: "Update an application",
+      builder: (yargs) =>
         yargs
-          .usage('Usage: $0 apps update <app_id> [options]')
-          .string('p')
-          .describe('p', "App property in the form [-p 'foo=bar']")
-          .alias('p', 'property')
-          .group(['p'], 'Options:'),
+          .usage("Usage: $0 apps update <app_id> [options]")
+          .string("p")
+          .describe("p", "App property in the form [-p 'foo=bar']")
+          .alias("p", "property")
+          .group(["p"], "Options:"),
     });
   }
 
@@ -35,11 +35,11 @@ module.exports = class extends eg.Generator {
 
     let hasInvalidProperty = false;
 
-    propertyValues.forEach(p => {
-      const equalIndex = p.indexOf('=');
+    propertyValues.forEach((p) => {
+      const equalIndex = p.indexOf("=");
 
       if (equalIndex === -1 || equalIndex === p.length - 1) {
-        this.log.error('invalid property option:', p);
+        this.log.error("invalid property option:", p);
         hasInvalidProperty = true;
         return;
       }
@@ -60,15 +60,15 @@ module.exports = class extends eg.Generator {
         throw new Error(`App not found: ${argv.app_id}`);
       })
       .then(() => this._promptAndValidate(app, SCHEMA))
-      .then(app => this.admin.apps.update(argv.app_id, app))
-      .then(res => {
+      .then((app) => this.admin.apps.update(argv.app_id, app))
+      .then((_res) => {
         if (!argv.q) {
           this.log.ok(`Updated ${argv.app_id}`);
         } else {
           this.stdout(argv.app_id);
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (!argv.q) {
           this.log.error(err.message);
         }

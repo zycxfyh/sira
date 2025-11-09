@@ -1,9 +1,9 @@
-const should = require('should');
+const should = require("should");
 
-const { conditions, init } = require('../../../src/core/conditions');
-const gateway = require('../../../src/core/gateway');
-const Config = require('../../../src/core/config/config');
-const express = require('express');
+const { conditions, init } = require("../../../core/conditions");
+const gateway = require("../../../core/gateway");
+const Config = require("../../../core/config/config");
+const express = require("express");
 
 const config = new Config();
 config.gatewayConfig = {
@@ -12,24 +12,24 @@ config.gatewayConfig = {
   },
   apiEndpoints: {
     api: {
-      host: '*',
+      host: "*",
     },
   },
   serviceEndpoints: {
     backend: {
-      url: 'http://www.example.com',
+      url: "http://www.example.com",
     },
   },
-  policies: ['proxy'],
+  policies: ["proxy"],
   pipelines: {
     ecommerce: {
-      apiEndpoints: ['api'],
+      apiEndpoints: ["api"],
       policies: [
         {
           proxy: [
             {
               action: {
-                serviceEndpoint: 'backend',
+                serviceEndpoint: "backend",
               },
             },
           ],
@@ -39,112 +39,114 @@ config.gatewayConfig = {
   },
 };
 
-describe('gateway condition with plugins', () => {
+describe("gateway condition with plugins", () => {
   before(init);
 
   let gatewaySrv;
-  before('fires up a new gateway instance', () => {
+  before("fires up a new gateway instance", () => {
     return gateway({
       plugins: {
         conditions: [
           {
-            name: 'test-condition',
-            handler: conditionConfig => req => {
+            name: "test-condition",
+            handler: (conditionConfig) => (req) => {
               should(conditionConfig.param1).ok();
-              should(req.url).be.eql('/test');
+              should(req.url).be.eql("/test");
               return conditionConfig.param1 === req.url;
             },
           },
         ],
       },
       config,
-    }).then(srv => {
+    }).then((srv) => {
       gatewaySrv = srv.app;
       return srv;
     });
   });
 
-  it('should return false for param1 not matching url', () => {
+  it("should return false for param1 not matching url", () => {
     const req = Object.create(express.request);
-    req.url = '/test';
-    should(conditions['test-condition']({ param1: true })(req)).be.false();
+    req.url = "/test";
+    should(conditions["test-condition"]({ param1: true })(req)).be.false();
   });
 
-  it('should return true for param1 matching url', () => {
+  it("should return true for param1 matching url", () => {
     const req = Object.create(express.request);
-    req.url = '/test';
-    should(conditions['test-condition']({ param1: '/test' })(req)).be.ok();
+    req.url = "/test";
+    should(conditions["test-condition"]({ param1: "/test" })(req)).be.ok();
   });
 
-  after('close gateway srv', () => {
+  after("close gateway srv", () => {
     gatewaySrv.close();
   });
 });
 
-describe('gateway condition schema with plugins', () => {
+describe("gateway condition schema with plugins", () => {
   let gatewaySrv;
 
-  afterEach('close gateway srv', () => {
+  afterEach("close gateway srv", () => {
     gatewaySrv.close();
   });
 
-  it('should call condition', () => {
+  it("should call condition", () => {
     return gateway({
       plugins: {
         conditions: [
           {
-            name: 'test-condition-1',
+            name: "test-condition-1",
             schema: {
-              $id: 'http://express-gateway.io/schemas/conditions/test-condition-1.json',
-              type: 'object',
+              $id: "http://express-gateway.io/schemas/conditions/test-condition-1.json",
+              type: "object",
               properties: {
-                param1: { type: ['boolean'] },
+                param1: { type: ["boolean"] },
               },
-              required: ['param1'],
+              required: ["param1"],
             },
             handler: (req, conditionConfig) => {
               should(conditionConfig.param1).be.ok();
-              should(req.url).be.eql('/test');
+              should(req.url).be.eql("/test");
               return conditionConfig.param1 === req.url;
             },
           },
         ],
       },
       config,
-    }).then(srv => {
+    }).then((srv) => {
       gatewaySrv = srv.app;
       const req = Object.create(express.request);
-      req.url = '/test';
-      should(conditions['test-condition-1']({ param1: true })(req)).be.false();
+      req.url = "/test";
+      should(conditions["test-condition-1"]({ param1: true })(req)).be.false();
     });
   });
 
-  it('should throw on condition schema validation', () => {
+  it("should throw on condition schema validation", () => {
     return gateway({
       plugins: {
         conditions: [
           {
-            name: 'test-condition-2',
+            name: "test-condition-2",
             schema: {
-              $id: 'http://express-gateway.io/schemas/conditions/test-policy.json',
-              type: 'object',
+              $id: "http://express-gateway.io/schemas/conditions/test-policy.json",
+              type: "object",
               properties: {
-                param2: { type: ['string'] },
+                param2: { type: ["string"] },
               },
-              required: ['param2'],
+              required: ["param2"],
             },
-            handler(req, config) {
+            handler(_req, _config) {
               should.fail();
             },
           },
         ],
       },
       config,
-    }).then(srv => {
+    }).then((srv) => {
       gatewaySrv = srv.app;
       const req = Object.create(express.request);
-      req.url = '/test';
-      should.throws(() => conditions['test-condition-2']({ param1: true })(req));
+      req.url = "/test";
+      should.throws(() =>
+        conditions["test-condition-2"]({ param1: true })(req),
+      );
     });
   });
 });

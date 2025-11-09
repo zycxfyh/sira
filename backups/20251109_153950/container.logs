@@ -1,0 +1,7 @@
+ai-gateway-prod-1  | 🚀 启动Sira AI Gateway...
+ai-gateway-prod-1  | ✅ 依赖加载成功
+ai-gateway-prod-1  | 🚀 Sira AI Gateway 运行在端口 8080
+ai-gateway-prod-1  | 📱 健康检查: http://localhost:8080/health
+ai-gateway-prod-1  | 🧪 测试路由: http://localhost:8080/test
+ai-gateway-prod-1  | 🤖 AI聊天API: http://localhost:8080/api/ai/chat
+ai-gateway-prod-1  | 📊 AI提供商状态: http://localhost:8080/api/ai/providers

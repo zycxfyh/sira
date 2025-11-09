@@ -1,7 +1,7 @@
-const crypto = require('crypto');
-const axios = require('axios');
-const fs = require('fs').promises;
-const path = require('path');
+const crypto = require("node:crypto");
+const axios = require("axios");
+const fs = require("node:fs").promises;
+const path = require("node:path");
 
 /**
  * Webhook通知系统 - 借鉴Stripe和GitHub的设计理念
@@ -9,15 +9,17 @@ const path = require('path');
  */
 class WebhookManager {
   constructor(options = {}) {
-    this.configPath = options.configPath || path.join(__dirname, '../config/webhooks.json');
+    this.configPath =
+      options.configPath || path.join(__dirname, "../config/webhooks.json");
     this.deliveryLogPath =
-      options.deliveryLogPath || path.join(__dirname, '../data/webhook-deliveries.json');
+      options.deliveryLogPath ||
+      path.join(__dirname, "../data/webhook-deliveries.json");
 
     // 安全检查：不允许使用默认密钥
     this.secretKey = options.secretKey || process.env.WEBHOOK_SECRET;
     if (!this.secretKey) {
       throw new Error(
-        'Webhook configuration error: Missing required security credentials. Please check your environment configuration.'
+        "Webhook configuration error: Missing required security credentials. Please check your environment configuration.",
       );
     }
     this.maxRetries = options.maxRetries || 5;
@@ -48,9 +50,11 @@ class WebhookManager {
       this.startDeliveryProcessor();
 
       this.initialized = true;
-      console.log(`✅ Webhook管理器已初始化，加载了 ${this.webhooks.size} 个webhook配置`);
+      console.log(
+        `✅ Webhook管理器已初始化，加载了 ${this.webhooks.size} 个webhook配置`,
+      );
     } catch (error) {
-      console.error('❌ Webhook管理器初始化失败:', error.message);
+      console.error("❌ Webhook管理器初始化失败:", error.message);
       throw error;
     }
   }
@@ -68,7 +72,7 @@ class WebhookManager {
     const webhook = {
       id: webhookId,
       url: webhookConfig.url,
-      events: webhookConfig.events || ['*'], // 支持通配符*
+      events: webhookConfig.events || ["*"], // 支持通配符*
       secret: webhookConfig.secret || this.generateSecret(),
       userId: webhookConfig.userId,
       description: webhookConfig.description,
@@ -78,7 +82,7 @@ class WebhookManager {
         retryDelays: this.retryDelays,
       },
       filters: webhookConfig.filters || {}, // 事件过滤条件
-      status: 'active', // active, paused, disabled
+      status: "active", // active, paused, disabled
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       lastTriggeredAt: null,
@@ -106,9 +110,14 @@ class WebhookManager {
     }
 
     // 不允许更新关键字段
-    const restrictedFields = ['id', 'createdAt', 'successCount', 'failureCount'];
-    restrictedFields.forEach(field => {
-      if (Object.prototype.hasOwnProperty.call(updates, field)) {
+    const restrictedFields = [
+      "id",
+      "createdAt",
+      "successCount",
+      "failureCount",
+    ];
+    restrictedFields.forEach((field) => {
+      if (Object.hasOwn(updates, field)) {
         delete updates[field];
       }
     });
@@ -151,7 +160,7 @@ class WebhookManager {
       type: eventType,
       data: eventData,
       timestamp: new Date().toISOString(),
-      source: options.source || 'sira-gateway',
+      source: options.source || "sira-gateway",
       userId: options.userId,
       requestId: options.requestId,
     };
@@ -160,8 +169,8 @@ class WebhookManager {
 
     // 查找匹配的webhooks
     const matchingWebhooks = Array.from(this.webhooks.values())
-      .filter(webhook => webhook.status === 'active')
-      .filter(webhook => this.matchesEvent(webhook, event));
+      .filter((webhook) => webhook.status === "active")
+      .filter((webhook) => this.matchesEvent(webhook, event));
 
     if (matchingWebhooks.length === 0) {
       console.log(`⚠️ 无匹配的Webhook配置: ${eventType}`);
@@ -177,7 +186,7 @@ class WebhookManager {
         webhookId: webhook.id,
         event,
         attempts: 0,
-        status: 'pending',
+        status: "pending",
         createdAt: new Date().toISOString(),
         nextRetryAt: new Date().toISOString(),
       };
@@ -191,7 +200,7 @@ class WebhookManager {
     // 等待队列处理（可选）
     if (options.waitForDelivery) {
       // 简单等待机制，实际应用中可能需要更复杂的处理
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     return {
@@ -206,11 +215,13 @@ class WebhookManager {
    */
   async retryFailedDeliveries(webhookId = null) {
     const failedDeliveries = this.deliveryQueue.filter(
-      delivery => delivery.status === 'failed' && (!webhookId || delivery.webhookId === webhookId)
+      (delivery) =>
+        delivery.status === "failed" &&
+        (!webhookId || delivery.webhookId === webhookId),
     );
 
     for (const delivery of failedDeliveries) {
-      delivery.status = 'pending';
+      delivery.status = "pending";
       delivery.nextRetryAt = new Date().toISOString();
     }
 
@@ -237,7 +248,9 @@ class WebhookManager {
         successCount: webhook.successCount,
         failureCount: webhook.failureCount,
         successRate:
-          history.length > 0 ? ((webhook.successCount / history.length) * 100).toFixed(2) : 0,
+          history.length > 0
+            ? ((webhook.successCount / history.length) * 100).toFixed(2)
+            : 0,
         lastTriggeredAt: webhook.lastTriggeredAt,
         recentDeliveries: history.slice(-10).reverse(), // 最近10次投递
       };
@@ -258,7 +271,9 @@ class WebhookManager {
         successCount: webhook.successCount,
         failureCount: webhook.failureCount,
         successRate:
-          history.length > 0 ? ((webhook.successCount / history.length) * 100).toFixed(2) : 0,
+          history.length > 0
+            ? ((webhook.successCount / history.length) * 100).toFixed(2)
+            : 0,
         lastTriggeredAt: webhook.lastTriggeredAt,
       });
     }
@@ -277,19 +292,19 @@ class WebhookManager {
 
     const testEvent = {
       id: this.generateEventId(),
-      type: 'webhook.test',
+      type: "webhook.test",
       data: {
-        message: 'This is a test webhook delivery',
+        message: "This is a test webhook delivery",
         timestamp: new Date().toISOString(),
       },
       timestamp: new Date().toISOString(),
-      source: 'sira-gateway-test',
+      source: "sira-gateway-test",
     };
 
     try {
       await this.deliverWebhook(webhook, testEvent);
       console.log(`✅ Webhook测试成功: ${webhookId}`);
-      return { success: true, message: '测试成功' };
+      return { success: true, message: "测试成功" };
     } catch (error) {
       console.log(`❌ Webhook测试失败: ${webhookId} - ${error.message}`);
       return { success: false, message: error.message };
@@ -302,36 +317,36 @@ class WebhookManager {
    * 生成webhook ID
    */
   generateWebhookId() {
-    return `wh_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `wh_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 生成事件ID
    */
   generateEventId() {
-    return `evt_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `evt_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
    * 生成webhook密钥
    */
   generateSecret() {
-    return crypto.randomBytes(32).toString('hex');
+    return crypto.randomBytes(32).toString("hex");
   }
 
   /**
    * 验证webhook配置
    */
   validateWebhookConfig(webhook) {
-    if (!webhook.url) throw new Error('Webhook URL不能为空');
-    if (!this.isValidUrl(webhook.url)) throw new Error('无效的URL格式');
+    if (!webhook.url) throw new Error("Webhook URL不能为空");
+    if (!this.isValidUrl(webhook.url)) throw new Error("无效的URL格式");
 
     if (!webhook.events || !Array.isArray(webhook.events)) {
-      throw new Error('events必须是数组');
+      throw new Error("events必须是数组");
     }
 
     if (webhook.events.length === 0) {
-      throw new Error('至少需要订阅一个事件');
+      throw new Error("至少需要订阅一个事件");
     }
   }
 
@@ -341,7 +356,7 @@ class WebhookManager {
   isValidUrl(string) {
     try {
       const url = new URL(string);
-      return url.protocol === 'http:' || url.protocol === 'https:';
+      return url.protocol === "http:" || url.protocol === "https:";
     } catch (_) {
       return false;
     }
@@ -352,9 +367,9 @@ class WebhookManager {
    */
   matchesEvent(webhook, event) {
     // 检查事件类型
-    const eventMatches = webhook.events.some(pattern => {
-      if (pattern === '*') return true;
-      if (pattern.endsWith('*')) {
+    const eventMatches = webhook.events.some((pattern) => {
+      if (pattern === "*") return true;
+      if (pattern.endsWith("*")) {
         return event.type.startsWith(pattern.slice(0, -1));
       }
       return pattern === event.type;
@@ -392,13 +407,15 @@ class WebhookManager {
 
     // 找到待处理的投递
     const pendingDelivery = this.deliveryQueue.find(
-      delivery => delivery.status === 'pending' && new Date(delivery.nextRetryAt) <= new Date()
+      (delivery) =>
+        delivery.status === "pending" &&
+        new Date(delivery.nextRetryAt) <= new Date(),
     );
 
     if (!pendingDelivery) return;
 
     // 标记为正在处理
-    pendingDelivery.status = 'processing';
+    pendingDelivery.status = "processing";
     this.activeDeliveries.add(pendingDelivery.event.id);
 
     // 异步处理投递
@@ -412,14 +429,14 @@ class WebhookManager {
    */
   async processDelivery(delivery) {
     const webhook = this.webhooks.get(delivery.webhookId);
-    if (!webhook || webhook.status !== 'active') {
-      delivery.status = 'cancelled';
+    if (!webhook || webhook.status !== "active") {
+      delivery.status = "cancelled";
       return;
     }
 
     try {
       await this.deliverWebhook(webhook, delivery.event);
-      delivery.status = 'delivered';
+      delivery.status = "delivered";
       webhook.successCount++;
       webhook.lastTriggeredAt = new Date().toISOString();
 
@@ -427,12 +444,14 @@ class WebhookManager {
       this.recordDeliveryHistory(webhook.id, {
         eventId: delivery.event.id,
         eventType: delivery.event.type,
-        status: 'success',
+        status: "success",
         deliveredAt: new Date().toISOString(),
         attempt: delivery.attempts + 1,
       });
 
-      console.log(`✅ Webhook投递成功: ${webhook.id} -> ${delivery.event.type}`);
+      console.log(
+        `✅ Webhook投递成功: ${webhook.id} -> ${delivery.event.type}`,
+      );
     } catch (error) {
       delivery.attempts++;
       webhook.failureCount++;
@@ -441,7 +460,7 @@ class WebhookManager {
       this.recordDeliveryHistory(webhook.id, {
         eventId: delivery.event.id,
         eventType: delivery.event.type,
-        status: 'failed',
+        status: "failed",
         error: error.message,
         attempt: delivery.attempts,
         failedAt: new Date().toISOString(),
@@ -450,14 +469,15 @@ class WebhookManager {
       // 检查是否需要重试
       const { maxRetries } = webhook.retryPolicy;
       if (delivery.attempts < maxRetries) {
-        delivery.status = 'pending';
-        const delay = webhook.retryPolicy.retryDelays[delivery.attempts - 1] || 30000;
+        delivery.status = "pending";
+        const delay =
+          webhook.retryPolicy.retryDelays[delivery.attempts - 1] || 30000;
         delivery.nextRetryAt = new Date(Date.now() + delay).toISOString();
         console.log(
-          `🔄 Webhook重试安排: ${webhook.id}, ${delivery.attempts}/${maxRetries}, 延迟${delay}ms`
+          `🔄 Webhook重试安排: ${webhook.id}, ${delivery.attempts}/${maxRetries}, 延迟${delay}ms`,
         );
       } else {
-        delivery.status = 'failed';
+        delivery.status = "failed";
         console.log(`❌ Webhook投递最终失败: ${webhook.id}, 超过最大重试次数`);
       }
     }
@@ -476,11 +496,11 @@ class WebhookManager {
     const signature = this.generateSignature(payload, webhook.secret);
 
     const headers = {
-      'Content-Type': 'application/json',
-      'User-Agent': 'Sira-Webhook/1.0',
-      'X-Sira-Webhook-ID': webhook.id,
-      'X-Sira-Event-Type': event.type,
-      'X-Sira-Signature': signature,
+      "Content-Type": "application/json",
+      "User-Agent": "Sira-Webhook/1.0",
+      "X-Sira-Webhook-ID": webhook.id,
+      "X-Sira-Event-Type": event.type,
+      "X-Sira-Signature": signature,
       ...webhook.headers,
     };
 
@@ -488,7 +508,7 @@ class WebhookManager {
       const response = await axios.post(webhook.url, payload, {
         headers,
         timeout: this.timeout,
-        validateStatus: status => status < 500, // 接受4xx错误，只重试5xx错误
+        validateStatus: (status) => status < 500, // 接受4xx错误，只重试5xx错误
       });
 
       // 检查响应状态
@@ -503,20 +523,20 @@ class WebhookManager {
         if (error.response.status >= 400 && error.response.status < 500) {
           // 客户端错误，不重试
           throw new Error(
-            `Webhook客户端错误: ${error.response.status} - ${error.response.statusText}`
+            `Webhook客户端错误: ${error.response.status} - ${error.response.statusText}`,
           );
         } else {
           // 服务器错误，重试
           throw new Error(
-            `Webhook服务器错误: ${error.response.status} - ${error.response.statusText}`
+            `Webhook服务器错误: ${error.response.status} - ${error.response.statusText}`,
           );
         }
-      } else if (error.code === 'ECONNREFUSED') {
-        throw new Error('Webhook连接被拒绝');
-      } else if (error.code === 'ENOTFOUND') {
-        throw new Error('Webhook域名无法解析');
-      } else if (error.code === 'ETIMEDOUT') {
-        throw new Error('Webhook请求超时');
+      } else if (error.code === "ECONNREFUSED") {
+        throw new Error("Webhook连接被拒绝");
+      } else if (error.code === "ENOTFOUND") {
+        throw new Error("Webhook域名无法解析");
+      } else if (error.code === "ETIMEDOUT") {
+        throw new Error("Webhook请求超时");
       } else {
         throw new Error(`Webhook投递失败: ${error.message}`);
       }
@@ -527,9 +547,9 @@ class WebhookManager {
    * 生成签名
    */
   generateSignature(payload, secret) {
-    const hmac = crypto.createHmac('sha256', secret);
-    hmac.update(payload, 'utf8');
-    return `sha256=${hmac.digest('hex')}`;
+    const hmac = crypto.createHmac("sha256", secret);
+    hmac.update(payload, "utf8");
+    return `sha256=${hmac.digest("hex")}`;
   }
 
   /**
@@ -537,7 +557,10 @@ class WebhookManager {
    */
   verifySignature(payload, signature, secret) {
     const expectedSignature = this.generateSignature(payload, secret);
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+    return crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature),
+    );
   }
 
   /**
@@ -562,15 +585,15 @@ class WebhookManager {
    */
   async loadWebhookConfigurations() {
     try {
-      const data = await fs.readFile(this.configPath, 'utf8');
+      const data = await fs.readFile(this.configPath, "utf8");
       const configs = JSON.parse(data);
 
       for (const [webhookId, config] of Object.entries(configs)) {
         this.webhooks.set(webhookId, config);
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载Webhook配置失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载Webhook配置失败:", error.message);
       }
     }
   }
@@ -593,15 +616,15 @@ class WebhookManager {
    */
   async loadDeliveryHistory() {
     try {
-      const data = await fs.readFile(this.deliveryLogPath, 'utf8');
+      const data = await fs.readFile(this.deliveryLogPath, "utf8");
       const history = JSON.parse(data);
 
       for (const [webhookId, records] of Object.entries(history)) {
         this.deliveryHistory.set(webhookId, records);
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载Webhook投递历史失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载Webhook投递历史失败:", error.message);
       }
     }
   }

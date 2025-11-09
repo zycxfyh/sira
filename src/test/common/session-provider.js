@@ -7,9 +7,7 @@ class Provider {
   on() {}
 }
 
-module.exports = function (session) {
-  return Provider;
-};
+module.exports = (_session) => Provider;
 
 module.exports.getOptions = () => {
   return data;

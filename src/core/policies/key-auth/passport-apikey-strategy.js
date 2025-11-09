@@ -1,19 +1,20 @@
-const passport = require('passport');
-const util = require('util');
+const passport = require("passport");
+const util = require("node:util");
 
 function Strategy(options, verify) {
-  if (typeof options === 'function') {
+  if (typeof options === "function") {
     verify = options;
     options = {};
   }
-  if (!verify) throw new Error('local authentication strategy requires a verify function');
+  if (!verify)
+    throw new Error("local authentication strategy requires a verify function");
 
   this._apiKeyField = options.apiKeyField;
   this._apiKeyHeader = options.apiKeyHeader;
   this._apiKeyHeaderScheme = options.apiKeyHeaderScheme;
 
   passport.Strategy.call(this);
-  this.name = 'localapikey';
+  this.name = "localapikey";
   this._verify = verify;
   this._passReqToCallback = options.passReqToCallback;
 }
@@ -25,9 +26,12 @@ Strategy.prototype.authenticate = function (req, options) {
   let apikey;
 
   if (!options.disableHeaders) {
-    apikey = lookup(req.headers, (options.apiKeyHeader || this._apiKeyHeader || '').toLowerCase());
+    apikey = lookup(
+      req.headers,
+      (options.apiKeyHeader || this._apiKeyHeader || "").toLowerCase(),
+    );
     if (apikey) {
-      const parts = apikey.split(' ');
+      const parts = apikey.split(" ");
       apikey = parts[parts.length - 1];
       // enforcing scheme in the header
       if (!options.disableHeadersScheme) {
@@ -45,7 +49,7 @@ Strategy.prototype.authenticate = function (req, options) {
   }
 
   if (!apikey) {
-    return this.fail(new Error(options.badRequestMessage || 'Missing API Key'));
+    return this.fail(new Error(options.badRequestMessage || "Missing API Key"));
   }
 
   const self = this;
@@ -70,13 +74,13 @@ Strategy.prototype.authenticate = function (req, options) {
     if (!obj) {
       return null;
     }
-    const chain = field.split(']').join('').split('[');
+    const chain = field.split("]").join("").split("[");
     for (let i = 0, len = chain.length; i < len; i++) {
       const prop = obj[chain[i]];
-      if (typeof prop === 'undefined') {
+      if (typeof prop === "undefined") {
         return null;
       }
-      if (typeof prop !== 'object') {
+      if (typeof prop !== "object") {
         return prop;
       }
       obj = prop;

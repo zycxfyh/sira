@@ -1,7 +1,7 @@
-const superagent = require('superagent');
-const logger = require('../../logger').policy;
+const superagent = require("superagent");
+const logger = require("../../logger").policy;
 
-module.exports = options => {
+module.exports = (options) => {
   return (token, tokenTypeHint) => {
     const data = { token };
 
@@ -13,18 +13,18 @@ module.exports = options => {
 
     return superagent
       .post(options.endpoint)
-      .set('authorization', options.authorization_value)
-      .type('form')
+      .set("authorization", options.authorization_value)
+      .type("form")
       .send(data)
       .timeout({ response: options.timeout })
-      .then(res => {
+      .then((res) => {
         if (res.body.active === true) {
-          logger.debug('token-introspector : Token is active');
+          logger.debug("token-introspector : Token is active");
           return res.body;
         }
-        logger.debug('token-introspector : Token is not active');
+        logger.debug("token-introspector : Token is not active");
 
-        throw new Error('Token not active');
+        throw new Error("Token not active");
       });
   };
 };

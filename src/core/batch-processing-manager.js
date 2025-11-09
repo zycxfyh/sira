@@ -1,5 +1,5 @@
-const { EventEmitter } = require('events');
-const crypto = require('crypto');
+const { EventEmitter } = require("node:events");
+const crypto = require("node:crypto");
 
 /**
  * 批量处理管理器
@@ -11,7 +11,8 @@ class BatchProcessingManager extends EventEmitter {
     super();
 
     this.configPath =
-      options.configPath || require('path').join(__dirname, '../config/batch-processing.json');
+      options.configPath ||
+      require("node:path").join(__dirname, "../config/batch-processing.json");
 
     // 批量处理配置
     this.maxBatchSize = options.maxBatchSize || 100; // 最大批量大小
@@ -72,9 +73,11 @@ class BatchProcessingManager extends EventEmitter {
       // 启动缓存清理
       this.startCacheCleanup();
 
-      console.log(`✅ 批量处理管理器已初始化，最大并发数: ${this.maxConcurrency}`);
+      console.log(
+        `✅ 批量处理管理器已初始化，最大并发数: ${this.maxConcurrency}`,
+      );
     } catch (error) {
-      console.error('❌ 批量处理管理器初始化失败:', error.message);
+      console.error("❌ 批量处理管理器初始化失败:", error.message);
       throw error;
     }
   }
@@ -97,22 +100,23 @@ class BatchProcessingManager extends EventEmitter {
       id: batchId,
       name: batchRequest.name || `Batch ${batchId}`,
       description: batchRequest.description,
-      userId: batchRequest.userId || context.userId || 'anonymous',
+      userId: batchRequest.userId || context.userId || "anonymous",
       requests: batchRequest.requests || [],
       totalRequests: batchRequest.requests?.length || 0,
 
       // 配置
       config: {
-        priority: batchRequest.priority || 'normal',
+        priority: batchRequest.priority || "normal",
         timeout: batchRequest.timeout || this.defaultTimeout,
-        maxConcurrency: batchRequest.maxConcurrency || Math.min(5, this.maxConcurrency),
+        maxConcurrency:
+          batchRequest.maxConcurrency || Math.min(5, this.maxConcurrency),
         continueOnError: batchRequest.continueOnError !== false,
         collectMetrics: batchRequest.collectMetrics !== false,
         ...batchRequest.config,
       },
 
       // 执行状态
-      status: 'queued',
+      status: "queued",
       progress: {
         completed: 0,
         failed: 0,
@@ -137,7 +141,7 @@ class BatchProcessingManager extends EventEmitter {
 
       // 元数据
       metadata: {
-        source: batchRequest.source || 'api',
+        source: batchRequest.source || "api",
         tags: batchRequest.tags || [],
         customMetadata: batchRequest.metadata || {},
       },
@@ -149,9 +153,11 @@ class BatchProcessingManager extends EventEmitter {
     // 保存配置
     await this.saveConfiguration();
 
-    console.log(`📦 批量任务已提交: ${batchId} (${batch.totalRequests} 个请求)`);
+    console.log(
+      `📦 批量任务已提交: ${batchId} (${batch.totalRequests} 个请求)`,
+    );
 
-    this.emit('batchSubmitted', batch);
+    this.emit("batchSubmitted", batch);
 
     return batch;
   }
@@ -176,19 +182,19 @@ class BatchProcessingManager extends EventEmitter {
   /**
    * 取消批量处理
    */
-  async cancelBatch(batchId, reason = 'user_cancelled') {
+  async cancelBatch(batchId, reason = "user_cancelled") {
     const batch = this.activeBatches.get(batchId);
 
     if (!batch) {
       throw new Error(`批量任务 ${batchId} 不存在或已完成`);
     }
 
-    if (batch.status === 'completed' || batch.status === 'failed') {
+    if (batch.status === "completed" || batch.status === "failed") {
       throw new Error(`批量任务 ${batchId} 已经完成`);
     }
 
     // 更新状态
-    batch.status = 'cancelled';
+    batch.status = "cancelled";
     batch.monitoring.completedAt = new Date().toISOString();
     batch.monitoring.cancelReason = reason;
 
@@ -203,7 +209,7 @@ class BatchProcessingManager extends EventEmitter {
 
     console.log(`🛑 批量任务已取消: ${batchId} (${reason})`);
 
-    this.emit('batchCancelled', batch);
+    this.emit("batchCancelled", batch);
 
     return batch;
   }
@@ -245,16 +251,21 @@ class BatchProcessingManager extends EventEmitter {
     const allBatches = [
       ...Array.from(this.activeBatches.values()),
       ...Array.from(this.completedBatches.values()),
-    ].filter(batch => batch.userId === userId);
+    ].filter((batch) => batch.userId === userId);
 
     // 按创建时间倒序排序
-    allBatches.sort((a, b) => new Date(b.monitoring.createdAt) - new Date(a.monitoring.createdAt));
+    allBatches.sort(
+      (a, b) =>
+        new Date(b.monitoring.createdAt) - new Date(a.monitoring.createdAt),
+    );
 
     // 过滤状态
     let filteredBatches = allBatches;
     if (status) {
       const statusList = Array.isArray(status) ? status : [status];
-      filteredBatches = allBatches.filter(batch => statusList.includes(batch.status));
+      filteredBatches = allBatches.filter((batch) =>
+        statusList.includes(batch.status),
+      );
     }
 
     // 分页
@@ -263,7 +274,7 @@ class BatchProcessingManager extends EventEmitter {
 
     return {
       userId,
-      batches: batches.map(batch => ({
+      batches: batches.map((batch) => ({
         id: batch.id,
         name: batch.name,
         status: batch.status,
@@ -287,11 +298,11 @@ class BatchProcessingManager extends EventEmitter {
    */
   validateBatchRequest(batchRequest) {
     if (!batchRequest.requests || !Array.isArray(batchRequest.requests)) {
-      throw new Error('批量请求必须包含requests数组');
+      throw new Error("批量请求必须包含requests数组");
     }
 
     if (batchRequest.requests.length === 0) {
-      throw new Error('批量请求不能为空');
+      throw new Error("批量请求不能为空");
     }
 
     if (batchRequest.requests.length > this.maxBatchSize) {
@@ -302,7 +313,7 @@ class BatchProcessingManager extends EventEmitter {
     for (let i = 0; i < batchRequest.requests.length; i++) {
       const request = batchRequest.requests[i];
 
-      if (!request || typeof request !== 'object') {
+      if (!request || typeof request !== "object") {
         throw new Error(`请求 ${i} 格式无效`);
       }
 
@@ -319,10 +330,10 @@ class BatchProcessingManager extends EventEmitter {
   addToQueue(batch) {
     // 根据优先级添加到不同队列
     switch (batch.config.priority) {
-      case 'high':
+      case "high":
         this.scheduler.priorityQueue.push(batch);
         break;
-      case 'low':
+      case "low":
         this.scheduler.lowPriorityQueue.push(batch);
         break;
       default:
@@ -370,21 +381,24 @@ class BatchProcessingManager extends EventEmitter {
       this.activeWorkers++;
       this.activeBatches.set(batch.id, batch);
 
-      batch.status = 'processing';
+      batch.status = "processing";
       batch.monitoring.startedAt = new Date().toISOString();
 
-      console.log(`🚀 开始处理批量任务: ${batch.id} (${batch.totalRequests} 个请求)`);
+      console.log(
+        `🚀 开始处理批量任务: ${batch.id} (${batch.totalRequests} 个请求)`,
+      );
 
-      this.emit('batchStarted', batch);
+      this.emit("batchStarted", batch);
 
       // 执行批量处理
       await this.executeBatch(batch);
 
       // 处理完成
-      batch.status = 'completed';
+      batch.status = "completed";
       batch.monitoring.completedAt = new Date().toISOString();
       batch.monitoring.duration =
-        new Date(batch.monitoring.completedAt) - new Date(batch.monitoring.startedAt);
+        new Date(batch.monitoring.completedAt) -
+        new Date(batch.monitoring.startedAt);
 
       // 计算统计信息
       this.calculateBatchStatistics(batch);
@@ -397,14 +411,14 @@ class BatchProcessingManager extends EventEmitter {
       this.updatePerformanceStats(batch);
 
       console.log(
-        `✅ 批量任务完成: ${batch.id} (${batch.progress.completed}/${batch.totalRequests})`
+        `✅ 批量任务完成: ${batch.id} (${batch.progress.completed}/${batch.totalRequests})`,
       );
 
-      this.emit('batchCompleted', batch);
+      this.emit("batchCompleted", batch);
     } catch (error) {
       console.error(`批量任务失败: ${batch.id} - ${error.message}`);
 
-      batch.status = 'failed';
+      batch.status = "failed";
       batch.monitoring.completedAt = new Date().toISOString();
       batch.monitoring.error = error.message;
 
@@ -412,7 +426,7 @@ class BatchProcessingManager extends EventEmitter {
       this.activeBatches.delete(batch.id);
       this.completedBatches.set(batch.id, batch);
 
-      this.emit('batchFailed', { batch, error });
+      this.emit("batchFailed", { batch, error });
     } finally {
       this.activeWorkers--;
     }
@@ -430,7 +444,7 @@ class BatchProcessingManager extends EventEmitter {
 
     // 创建处理任务
     const tasks = requests.map((request, index) =>
-      this.processSingleRequest(batch, request, index, semaphore)
+      this.processSingleRequest(batch, request, index, semaphore),
     );
 
     // 并发执行所有任务
@@ -440,7 +454,7 @@ class BatchProcessingManager extends EventEmitter {
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
 
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         batch.results.push(result.value);
         batch.progress.completed++;
       } else {
@@ -462,7 +476,9 @@ class BatchProcessingManager extends EventEmitter {
 
     // 计算成功率
     batch.progress.successRate =
-      batch.totalRequests > 0 ? batch.progress.completed / batch.totalRequests : 0;
+      batch.totalRequests > 0
+        ? batch.progress.completed / batch.totalRequests
+        : 0;
   }
 
   /**
@@ -501,7 +517,8 @@ class BatchProcessingManager extends EventEmitter {
 
       // 更新批量统计
       batch.monitoring.avgResponseTime =
-        (batch.monitoring.avgResponseTime * batch.progress.completed + processingTime) /
+        (batch.monitoring.avgResponseTime * batch.progress.completed +
+          processingTime) /
         (batch.progress.completed + 1);
 
       if (result.usage) {
@@ -530,23 +547,23 @@ class BatchProcessingManager extends EventEmitter {
   /**
    * 执行AI请求（需要集成实际的路由器）
    */
-  async executeAIRequest(request, context) {
+  async executeAIRequest(request, _context) {
     // 这里应该集成ai-router来执行实际的AI请求
     // 暂时使用模拟实现
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       setTimeout(
         () => {
           // 模拟AI响应
           resolve({
             id: `response_${Date.now()}`,
-            object: 'text_completion',
+            object: "text_completion",
             created: Date.now(),
-            model: request.model || 'gpt-3.5-turbo',
+            model: request.model || "gpt-3.5-turbo",
             choices: [
               {
-                text: `这是对 "${request.prompt || request.messages?.[0]?.content || '请求'}" 的模拟响应`,
+                text: `这是对 "${request.prompt || request.messages?.[0]?.content || "请求"}" 的模拟响应`,
                 index: 0,
-                finish_reason: 'stop',
+                finish_reason: "stop",
               },
             ],
             usage: {
@@ -556,7 +573,7 @@ class BatchProcessingManager extends EventEmitter {
             },
           });
         },
-        Math.random() * 1000 + 500
+        Math.random() * 1000 + 500,
       ); // 500-1500ms随机延迟
     });
   }
@@ -567,8 +584,12 @@ class BatchProcessingManager extends EventEmitter {
   calculateBatchStatistics(batch) {
     if (batch.results.length === 0) return;
 
-    const totalProcessingTime = batch.results.reduce((sum, r) => sum + r.processingTime, 0);
-    batch.monitoring.avgResponseTime = totalProcessingTime / batch.results.length;
+    const totalProcessingTime = batch.results.reduce(
+      (sum, r) => sum + r.processingTime,
+      0,
+    );
+    batch.monitoring.avgResponseTime =
+      totalProcessingTime / batch.results.length;
 
     const totalTokens = batch.results.reduce((sum, r) => {
       return sum + (r.result.usage?.total_tokens || 0);
@@ -585,7 +606,7 @@ class BatchProcessingManager extends EventEmitter {
   updatePerformanceStats(batch) {
     this.performanceStats.totalBatches++;
 
-    if (batch.status === 'completed') {
+    if (batch.status === "completed") {
       this.performanceStats.completedBatches++;
     } else {
       this.performanceStats.failedBatches++;
@@ -594,7 +615,8 @@ class BatchProcessingManager extends EventEmitter {
     // 更新平均处理时间
     const alpha = 0.1; // 指数移动平均
     this.performanceStats.avgProcessingTime =
-      this.performanceStats.avgProcessingTime * (1 - alpha) + batch.monitoring.duration * alpha;
+      this.performanceStats.avgProcessingTime * (1 - alpha) +
+      batch.monitoring.duration * alpha;
 
     // 更新吞吐量
     const throughput = batch.totalRequests / (batch.monitoring.duration / 1000);
@@ -613,7 +635,7 @@ class BatchProcessingManager extends EventEmitter {
    * 生成批量ID
    */
   generateBatchId() {
-    return `batch_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `batch_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   }
 
   /**
@@ -628,10 +650,10 @@ class BatchProcessingManager extends EventEmitter {
       temperature: request.temperature,
     };
 
-    const crypto = require('crypto');
-    const hash = crypto.createHash('md5');
+    const crypto = require("node:crypto");
+    const hash = crypto.createHash("md5");
     hash.update(JSON.stringify(keyData));
-    return hash.digest('hex');
+    return hash.digest("hex");
   }
 
   /**
@@ -643,7 +665,7 @@ class BatchProcessingManager extends EventEmitter {
 
     return {
       acquire: () => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           if (permits > 0) {
             permits--;
             resolve();
@@ -670,7 +692,7 @@ class BatchProcessingManager extends EventEmitter {
   startPerformanceMonitoring() {
     // 每分钟记录性能统计
     setInterval(() => {
-      this.emit('performanceStats', this.performanceStats);
+      this.emit("performanceStats", this.performanceStats);
     }, 60000);
   }
 
@@ -695,7 +717,7 @@ class BatchProcessingManager extends EventEmitter {
           console.log(`🧹 清理过期缓存: ${cleaned} 条`);
         }
       },
-      30 * 60 * 1000
+      30 * 60 * 1000,
     );
   }
 
@@ -704,8 +726,8 @@ class BatchProcessingManager extends EventEmitter {
    */
   async loadConfiguration() {
     try {
-      const fs = require('fs').promises;
-      const data = await fs.readFile(this.configPath, 'utf8');
+      const fs = require("node:fs").promises;
+      const data = await fs.readFile(this.configPath, "utf8");
       const config = JSON.parse(data);
 
       if (config.activeBatches) {
@@ -715,17 +737,22 @@ class BatchProcessingManager extends EventEmitter {
       }
 
       if (config.completedBatches) {
-        for (const [batchId, batch] of Object.entries(config.completedBatches)) {
+        for (const [batchId, batch] of Object.entries(
+          config.completedBatches,
+        )) {
           this.completedBatches.set(batchId, batch);
         }
       }
 
       if (config.performanceStats) {
-        this.performanceStats = { ...this.performanceStats, ...config.performanceStats };
+        this.performanceStats = {
+          ...this.performanceStats,
+          ...config.performanceStats,
+        };
       }
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.warn('加载批量处理配置失败:', error.message);
+      if (error.code !== "ENOENT") {
+        console.warn("加载批量处理配置失败:", error.message);
       }
     }
   }
@@ -735,20 +762,22 @@ class BatchProcessingManager extends EventEmitter {
    */
   async saveConfiguration() {
     try {
-      const fs = require('fs').promises;
+      const fs = require("node:fs").promises;
       const config = {
         activeBatches: Object.fromEntries(this.activeBatches),
         completedBatches: Object.fromEntries(
-          Array.from(this.completedBatches.entries()).slice(-100) // 只保存最近100个
+          Array.from(this.completedBatches.entries()).slice(-100), // 只保存最近100个
         ),
         performanceStats: this.performanceStats,
         lastUpdated: new Date().toISOString(),
       };
 
-      await fs.mkdir(require('path').dirname(this.configPath), { recursive: true });
+      await fs.mkdir(require("node:path").dirname(this.configPath), {
+        recursive: true,
+      });
       await fs.writeFile(this.configPath, JSON.stringify(config, null, 2));
     } catch (error) {
-      console.error('保存批量处理配置失败:', error.message);
+      console.error("保存批量处理配置失败:", error.message);
     }
   }
 

@@ -1,10 +1,10 @@
-const request = require('supertest');
-const express = require('express');
-const should = require('should');
-const sinon = require('sinon');
-const serverHelper = require('../../common/server-helper');
-const config = require('../../../src/core/config');
-const testHelper = require('../../common/routing.helper')();
+const request = require("supertest");
+const express = require("express");
+const should = require("should");
+const sinon = require("sinon");
+const serverHelper = require("../../common/server-helper");
+const config = require("../../../core/config");
+const testHelper = require("../../common/routing.helper")();
 
 const originalGatewayConfig = JSON.parse(JSON.stringify(config.gatewayConfig));
 const originalSystemConfig = JSON.parse(JSON.stringify(config.systemConfig));
@@ -23,30 +23,30 @@ const gatewayConfig = (backendPort, introspectionPort) => ({
   },
   apiEndpoints: {
     authorizedEndpoint: {
-      host: '*',
-      scopes: ['read', 'write'],
+      host: "*",
+      scopes: ["read", "write"],
     },
   },
-  policies: ['oauth2-introspect', 'proxy'],
+  policies: ["oauth2-introspect", "proxy"],
   pipelines: {
     pipeline1: {
-      apiEndpoints: ['authorizedEndpoint'],
+      apiEndpoints: ["authorizedEndpoint"],
       policies: [
         {
-          'oauth2-introspect': {
+          "oauth2-introspect": {
             action: {
               endpoint: `http://localhost:${introspectionPort}/introspect`,
-              authorization_value: 'YXBpMTpzZWNyZXQ=',
+              authorization_value: "YXBpMTpzZWNyZXQ=",
             },
           },
         },
-        { proxy: [{ action: { serviceEndpoint: 'backend' } }] },
+        { proxy: [{ action: { serviceEndpoint: "backend" } }] },
       ],
     },
   },
 });
 
-describe('oAuth2 Introspection Policy', () => {
+describe("oAuth2 Introspection Policy", () => {
   before(() => {
     return serverHelper
       .findOpenPortNumbers(2)
@@ -57,27 +57,31 @@ describe('oAuth2 Introspection Policy', () => {
         const returnToken = sinon
           .stub()
           .onFirstCall()
-          .callsFake(res => {
+          .callsFake((res) => {
             res.json({ active: true });
           })
-          .callsFake(res => {
-            res.json({ active: true, scopes: 'read write' });
+          .callsFake((res) => {
+            res.json({ active: true, scopes: "read write" });
           });
 
         introspectEndpointSpy = sinon.spy((req, res) => {
-          if (req.header('authorization') !== 'YXBpMTpzZWNyZXQ=') {
+          if (req.header("authorization") !== "YXBpMTpzZWNyZXQ=") {
             return res.sendStatus(401);
           }
 
-          if (!['token_value_1', 'token_value_2'].includes(req.body.token)) {
+          if (!["token_value_1", "token_value_2"].includes(req.body.token)) {
             return res.json({ active: false });
           }
 
           returnToken(res);
         });
-        app.post('/introspect', express.urlencoded({ extended: true }), introspectEndpointSpy);
+        app.post(
+          "/introspect",
+          express.urlencoded({ extended: true }),
+          introspectEndpointSpy,
+        );
         return new Promise((resolve, reject) => {
-          introspectApp = app.listen(introspectionPort, err => {
+          introspectApp = app.listen(introspectionPort, (err) => {
             if (err) return reject(err);
             resolve();
           });
@@ -92,32 +96,42 @@ describe('oAuth2 Introspection Policy', () => {
       });
   });
 
-  it('should return 401 when no token is provided', () => request(gateway).get('/').expect(401));
+  it("should return 401 when no token is provided", () =>
+    request(gateway).get("/").expect(401));
 
-  it('should return 401 when an invalid token is sent', () =>
-    request(gateway).get('/').set('Authorization', 'Bearer nasino').expect(401));
-
-  it('should return 401 when a valid token is sent, but not sufficient scopes', () =>
-    request(gateway).get('/').set('Authorization', 'Bearer token_value_1').expect(401));
-
-  it('should return 200 when valid token and sufficient scopes are provided', () =>
-    request(gateway).get('/').set('Authorization', 'Bearer token_value_2').expect(200));
-
-  it('should not call the introspection endpoint again because the token is valid already', () =>
+  it("should return 401 when an invalid token is sent", () =>
     request(gateway)
-      .get('/')
-      .set('Authorization', 'Bearer token_value_2')
+      .get("/")
+      .set("Authorization", "Bearer nasino")
+      .expect(401));
+
+  it("should return 401 when a valid token is sent, but not sufficient scopes", () =>
+    request(gateway)
+      .get("/")
+      .set("Authorization", "Bearer token_value_1")
+      .expect(401));
+
+  it("should return 200 when valid token and sufficient scopes are provided", () =>
+    request(gateway)
+      .get("/")
+      .set("Authorization", "Bearer token_value_2")
+      .expect(200));
+
+  it("should not call the introspection endpoint again because the token is valid already", () =>
+    request(gateway)
+      .get("/")
+      .set("Authorization", "Bearer token_value_2")
       .expect(200)
       .then(() => should(introspectEndpointSpy.callCount).equal(3)));
 
-  it('should call the introspection endpoint again because a different token is sent', () =>
+  it("should call the introspection endpoint again because a different token is sent", () =>
     request(gateway)
-      .get('/')
-      .set('Authorization', 'Bearer hola')
+      .get("/")
+      .set("Authorization", "Bearer hola")
       .expect(401)
       .then(() => should(introspectEndpointSpy.callCount).equal(4)));
 
-  after('cleanup', done => {
+  after("cleanup", (done) => {
     config.systemConfig = originalSystemConfig;
     config.gatewayConfig = originalGatewayConfig;
     backend.close(() => gateway.close(() => introspectApp.close(done)));

@@ -1,0 +1,7 @@
+备份时间: 2025年11月 9日 15:39:51
+Docker版本: Docker version 28.5.1, build e180ab8
+Docker Compose版本: Docker Compose version v2.40.0-desktop.1
+容器状态:
+NAME                     IMAGE                        COMMAND                   SERVICE           CREATED          STATUS                    PORTS
+sira-ai-gateway-1        sira-ai-gateway              "docker-entrypoint.s…"   ai-gateway        3 hours ago      Up 3 hours (healthy)      0.0.0.0:8081->8080/tcp, [::]:8081->8080/tcp
+sira-ai-gateway-prod-1   sira-ai-gateway:production   "docker-entrypoint.s…"   ai-gateway-prod   47 seconds ago   Up 47 seconds (healthy)   0.0.0.0:8083->8080/tcp, [::]:8083->8080/tcp

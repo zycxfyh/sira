@@ -3,7 +3,7 @@
  * 统一管理和转换AI模型的微调参数
  */
 
-const EventEmitter = require('events');
+const EventEmitter = require("node:events");
 
 class ParameterManager extends EventEmitter {
   constructor(options = {}) {
@@ -28,8 +28,8 @@ class ParameterManager extends EventEmitter {
     // 预设参数模板
     this.parameterPresets = this.initializeParameterPresets();
 
-    this.emit('initialized');
-    console.log('✅ 参数管理模块初始化完成');
+    this.emit("initialized");
+    console.log("✅ 参数管理模块初始化完成");
   }
 
   /**
@@ -39,125 +39,125 @@ class ParameterManager extends EventEmitter {
     return {
       // 通用参数映射
       common: {
-        temperature: 'temperature',
-        top_p: 'top_p',
-        top_k: 'top_k',
-        max_tokens: 'max_tokens',
-        frequency_penalty: 'frequency_penalty',
-        presence_penalty: 'presence_penalty',
-        stop: 'stop',
-        stream: 'stream',
-        seed: 'seed',
+        temperature: "temperature",
+        top_p: "top_p",
+        top_k: "top_k",
+        max_tokens: "max_tokens",
+        frequency_penalty: "frequency_penalty",
+        presence_penalty: "presence_penalty",
+        stop: "stop",
+        stream: "stream",
+        seed: "seed",
       },
 
       // 供应商特定映射
       providers: {
         openai: {
-          temperature: 'temperature',
-          top_p: 'top_p',
-          max_tokens: 'max_tokens',
-          frequency_penalty: 'frequency_penalty',
-          presence_penalty: 'presence_penalty',
-          stop: 'stop',
-          stream: 'stream',
-          seed: 'seed',
+          temperature: "temperature",
+          top_p: "top_p",
+          max_tokens: "max_tokens",
+          frequency_penalty: "frequency_penalty",
+          presence_penalty: "presence_penalty",
+          stop: "stop",
+          stream: "stream",
+          seed: "seed",
           top_k: null, // 不支持
           min_p: null, // 不支持
         },
         anthropic: {
-          temperature: 'temperature',
+          temperature: "temperature",
           top_p: null, // 不支持top_p
-          top_k: 'top_k',
-          max_tokens: 'max_tokens_to_sample',
+          top_k: "top_k",
+          max_tokens: "max_tokens_to_sample",
           frequency_penalty: null, // 不支持
           presence_penalty: null, // 不支持
-          stop: 'stop_sequences',
+          stop: "stop_sequences",
           stream: null, // 不同格式
           seed: null, // 不支持
           min_p: null, // 不支持
         },
         google_gemini: {
-          temperature: 'temperature',
-          top_p: 'topP',
-          top_k: 'topK',
-          max_tokens: 'maxOutputTokens',
+          temperature: "temperature",
+          top_p: "topP",
+          top_k: "topK",
+          max_tokens: "maxOutputTokens",
           frequency_penalty: null, // 不支持
           presence_penalty: null, // 不支持
-          stop: 'stopSequences',
-          stream: 'stream',
+          stop: "stopSequences",
+          stream: "stream",
           seed: null, // 不支持
           min_p: null, // 不支持
         },
         deepseek: {
-          temperature: 'temperature',
-          top_p: 'top_p',
-          max_tokens: 'max_tokens',
-          frequency_penalty: 'frequency_penalty',
-          presence_penalty: 'presence_penalty',
-          stop: 'stop',
-          stream: 'stream',
+          temperature: "temperature",
+          top_p: "top_p",
+          max_tokens: "max_tokens",
+          frequency_penalty: "frequency_penalty",
+          presence_penalty: "presence_penalty",
+          stop: "stop",
+          stream: "stream",
           seed: null, // 不支持
           top_k: null, // 不支持
           min_p: null, // 不支持
         },
         qwen: {
-          temperature: 'temperature',
-          top_p: 'top_p',
-          max_tokens: 'max_tokens',
-          frequency_penalty: 'repetition_penalty',
+          temperature: "temperature",
+          top_p: "top_p",
+          max_tokens: "max_tokens",
+          frequency_penalty: "repetition_penalty",
           presence_penalty: null, // 不支持
-          stop: 'stop',
-          stream: 'incremental_output',
+          stop: "stop",
+          stream: "incremental_output",
           seed: null, // 不支持
-          top_k: 'top_k',
+          top_k: "top_k",
           min_p: null, // 不支持
         },
         ernie: {
-          temperature: 'temperature',
-          top_p: 'top_p',
-          max_tokens: 'max_output_tokens',
-          frequency_penalty: 'penalty_score',
+          temperature: "temperature",
+          top_p: "top_p",
+          max_tokens: "max_output_tokens",
+          frequency_penalty: "penalty_score",
           presence_penalty: null, // 不支持
-          stop: 'stop',
+          stop: "stop",
           stream: null, // 不同格式
           seed: null, // 不支持
           top_k: null, // 不支持
           min_p: null, // 不支持
         },
         glm: {
-          temperature: 'temperature',
-          top_p: 'top_p',
-          max_tokens: 'max_tokens',
-          frequency_penalty: 'repetition_penalty',
+          temperature: "temperature",
+          top_p: "top_p",
+          max_tokens: "max_tokens",
+          frequency_penalty: "repetition_penalty",
           presence_penalty: null, // 不支持
-          stop: 'stop',
+          stop: "stop",
           stream: null, // 不同格式
           seed: null, // 不支持
           top_k: null, // 不支持
           min_p: null, // 不支持
         },
         kimi: {
-          temperature: 'temperature',
-          top_p: 'top_p',
-          max_tokens: 'max_tokens',
-          frequency_penalty: 'frequency_penalty',
-          presence_penalty: 'presence_penalty',
-          stop: 'stop',
-          stream: 'stream',
+          temperature: "temperature",
+          top_p: "top_p",
+          max_tokens: "max_tokens",
+          frequency_penalty: "frequency_penalty",
+          presence_penalty: "presence_penalty",
+          stop: "stop",
+          stream: "stream",
           seed: null, // 不支持
           top_k: null, // 不支持
           min_p: null, // 不支持
         },
         doubao: {
-          temperature: 'temperature',
-          top_p: 'top_p',
-          max_tokens: 'max_tokens',
-          frequency_penalty: 'repetition_penalty',
+          temperature: "temperature",
+          top_p: "top_p",
+          max_tokens: "max_tokens",
+          frequency_penalty: "repetition_penalty",
           presence_penalty: null, // 不支持
-          stop: 'stop',
-          stream: 'stream',
+          stop: "stop",
+          stream: "stream",
           seed: null, // 不支持
-          top_k: 'top_k',
+          top_k: "top_k",
           min_p: null, // 不支持
         },
       },
@@ -173,49 +173,49 @@ class ParameterManager extends EventEmitter {
         min: 0,
         max: 2,
         default: 1.0,
-        description: '控制输出的随机性，0-1之间降低随机性，1-2之间增加随机性',
+        description: "控制输出的随机性，0-1之间降低随机性，1-2之间增加随机性",
       },
       top_p: {
         min: 0,
         max: 1,
         default: 1.0,
-        description: '核采样参数，与temperature结合使用',
+        description: "核采样参数，与temperature结合使用",
       },
       top_k: {
         min: 1,
         max: 1000,
         default: null,
-        description: '从前K个最可能的token中采样',
+        description: "从前K个最可能的token中采样",
       },
       min_p: {
         min: 0,
         max: 1,
         default: null,
-        description: '最小概率阈值，过滤低概率token',
+        description: "最小概率阈值，过滤低概率token",
       },
       max_tokens: {
         min: 1,
         max: 32768,
         default: 4096,
-        description: '最大输出token数量',
+        description: "最大输出token数量",
       },
       frequency_penalty: {
         min: -2.0,
         max: 2.0,
         default: 0,
-        description: '减少重复token的惩罚系数',
+        description: "减少重复token的惩罚系数",
       },
       presence_penalty: {
         min: -2.0,
         max: 2.0,
         default: 0,
-        description: '减少已出现token的惩罚系数',
+        description: "减少已出现token的惩罚系数",
       },
       seed: {
         min: 0,
         max: Number.MAX_SAFE_INTEGER,
         default: null,
-        description: '随机种子，确保输出可重现',
+        description: "随机种子，确保输出可重现",
       },
     };
   }
@@ -267,19 +267,19 @@ class ParameterManager extends EventEmitter {
 
       // 模型特定优化
       modelOptimization: {
-        'gpt-4': {
+        "gpt-4": {
           max_tokens: 8192,
           temperature: { optimal: [0.1, 0.9] },
         },
-        'claude-3-opus': {
+        "claude-3-opus": {
           max_tokens: 4096,
           temperature: { optimal: [0.1, 1.0] },
         },
-        'deepseek-chat': {
+        "deepseek-chat": {
           max_tokens: 4096,
           temperature: { optimal: [0.1, 0.9] },
         },
-        'qwen-max': {
+        "qwen-max": {
           max_tokens: 6144,
           temperature: { optimal: [0.1, 1.0] },
         },
@@ -294,8 +294,8 @@ class ParameterManager extends EventEmitter {
     return {
       // 创作类任务
       creative: {
-        name: '创意写作',
-        description: '适合小说、故事、诗歌创作',
+        name: "创意写作",
+        description: "适合小说、故事、诗歌创作",
         parameters: {
           temperature: 0.9,
           top_p: 0.9,
@@ -307,8 +307,8 @@ class ParameterManager extends EventEmitter {
 
       // 编程类任务
       coding: {
-        name: '代码生成',
-        description: '适合编程、代码解释、调试',
+        name: "代码生成",
+        description: "适合编程、代码解释、调试",
         parameters: {
           temperature: 0.2,
           top_p: 0.1,
@@ -320,8 +320,8 @@ class ParameterManager extends EventEmitter {
 
       // 分析类任务
       analytical: {
-        name: '数据分析',
-        description: '适合逻辑推理、数据分析、科学研究',
+        name: "数据分析",
+        description: "适合逻辑推理、数据分析、科学研究",
         parameters: {
           temperature: 0.1,
           top_p: 0.1,
@@ -333,8 +333,8 @@ class ParameterManager extends EventEmitter {
 
       // 对话类任务
       conversational: {
-        name: '日常对话',
-        description: '适合聊天、客服、日常问答',
+        name: "日常对话",
+        description: "适合聊天、客服、日常问答",
         parameters: {
           temperature: 0.7,
           top_p: 0.9,
@@ -346,8 +346,8 @@ class ParameterManager extends EventEmitter {
 
       // 翻译类任务
       translation: {
-        name: '文本翻译',
-        description: '适合中英文翻译、专业翻译',
+        name: "文本翻译",
+        description: "适合中英文翻译、专业翻译",
         parameters: {
           temperature: 0.3,
           top_p: 0.5,
@@ -359,8 +359,8 @@ class ParameterManager extends EventEmitter {
 
       // 总结类任务
       summarization: {
-        name: '内容总结',
-        description: '适合文章摘要、会议纪要',
+        name: "内容总结",
+        description: "适合文章摘要、会议纪要",
         parameters: {
           temperature: 0.1,
           top_p: 0.2,
@@ -372,8 +372,8 @@ class ParameterManager extends EventEmitter {
 
       // 自定义模板
       custom: {
-        name: '自定义参数',
-        description: '用户自定义参数设置',
+        name: "自定义参数",
+        description: "用户自定义参数设置",
         parameters: {
           temperature: 1.0,
           top_p: 1.0,
@@ -392,8 +392,8 @@ class ParameterManager extends EventEmitter {
     const errors = [];
     const warnings = [];
 
-    if (!parameters || typeof parameters !== 'object') {
-      errors.push('参数必须是对象类型');
+    if (!parameters || typeof parameters !== "object") {
+      errors.push("参数必须是对象类型");
       return { valid: false, errors, warnings };
     }
 
@@ -407,7 +407,11 @@ class ParameterManager extends EventEmitter {
       }
 
       // 类型检查
-      if (typeof paramValue !== 'number' && paramValue !== null && paramValue !== undefined) {
+      if (
+        typeof paramValue !== "number" &&
+        paramValue !== null &&
+        paramValue !== undefined
+      ) {
         errors.push(`${paramName} 必须是数字类型`);
         continue;
       }
@@ -424,12 +428,12 @@ class ParameterManager extends EventEmitter {
 
       // 特殊检查
       if (
-        paramName === 'top_p' &&
+        paramName === "top_p" &&
         parameters.temperature &&
         parameters.temperature > 0.5 &&
         paramValue < 0.5
       ) {
-        warnings.push('temperature较高时，建议top_p不要设置过低');
+        warnings.push("temperature较高时，建议top_p不要设置过低");
       }
     }
 
@@ -479,28 +483,34 @@ class ParameterManager extends EventEmitter {
   /**
    * 应用供应商特定的转换
    */
-  applyProviderSpecificTransformations(parameters, provider, model) {
+  applyProviderSpecificTransformations(parameters, provider, _model) {
     switch (provider) {
-      case 'anthropic':
+      case "anthropic":
         // Anthropic 使用不同的max_tokens参数名
         if (parameters.max_tokens_to_sample) {
           parameters.max_tokens = parameters.max_tokens_to_sample;
           delete parameters.max_tokens_to_sample;
         }
         // Anthropic 的stop参数是数组
-        if (parameters.stop_sequences && !Array.isArray(parameters.stop_sequences)) {
+        if (
+          parameters.stop_sequences &&
+          !Array.isArray(parameters.stop_sequences)
+        ) {
           parameters.stop_sequences = [parameters.stop_sequences];
         }
         break;
 
-      case 'google_gemini':
+      case "google_gemini":
         // Gemini 的stop参数是数组
-        if (parameters.stopSequences && !Array.isArray(parameters.stopSequences)) {
+        if (
+          parameters.stopSequences &&
+          !Array.isArray(parameters.stopSequences)
+        ) {
           parameters.stopSequences = [parameters.stopSequences];
         }
         break;
 
-      case 'qwen':
+      case "qwen":
         // Qwen 使用repetition_penalty替代frequency_penalty
         if (parameters.repetition_penalty !== undefined) {
           // 转换逻辑：frequency_penalty = 1 + repetition_penalty
@@ -508,7 +518,7 @@ class ParameterManager extends EventEmitter {
         }
         break;
 
-      case 'ernie':
+      case "ernie":
         // ERNIE 使用不同的参数名
         if (parameters.max_output_tokens) {
           parameters.max_tokens = parameters.max_output_tokens;
@@ -541,10 +551,13 @@ class ParameterManager extends EventEmitter {
     // 模型特定优化
     if (model && this.optimizationRules.modelOptimization[model]) {
       const modelRules = this.optimizationRules.modelOptimization[model];
-      if (modelRules.max_tokens && optimized.max_tokens > modelRules.max_tokens) {
+      if (
+        modelRules.max_tokens &&
+        optimized.max_tokens > modelRules.max_tokens
+      ) {
         optimized.max_tokens = modelRules.max_tokens;
       }
-      if (modelRules.temperature && modelRules.temperature.optimal) {
+      if (modelRules.temperature?.optimal) {
         const temp = optimized.temperature;
         const [min, max] = modelRules.temperature.optimal;
         if (temp < min || temp > max) {
@@ -617,15 +630,20 @@ class ParameterManager extends EventEmitter {
 
     // 生成建议
     if (analysis.unsupported.length > 0) {
-      analysis.warnings.push(`${provider}不支持以下参数: ${analysis.unsupported.join(', ')}`);
+      analysis.warnings.push(
+        `${provider}不支持以下参数: ${analysis.unsupported.join(", ")}`,
+      );
     }
 
     // 模型特定建议
     if (model && this.optimizationRules.modelOptimization[model]) {
       const modelRules = this.optimizationRules.modelOptimization[model];
-      if (modelRules.max_tokens && parameters.max_tokens > modelRules.max_tokens) {
+      if (
+        modelRules.max_tokens &&
+        parameters.max_tokens > modelRules.max_tokens
+      ) {
         analysis.suggestions.push(
-          `建议将max_tokens降低到 ${modelRules.max_tokens} 以获得更好的性能`
+          `建议将max_tokens降低到 ${modelRules.max_tokens} 以获得更好的性能`,
         );
       }
     }
@@ -646,7 +664,9 @@ class ParameterManager extends EventEmitter {
    */
   getParameterRange(paramName) {
     const rule = this.validationRules[paramName];
-    return rule ? { min: rule.min, max: rule.max, default: rule.default } : null;
+    return rule
+      ? { min: rule.min, max: rule.max, default: rule.default }
+      : null;
   }
 
   /**
@@ -658,7 +678,7 @@ class ParameterManager extends EventEmitter {
       validationRules: this.validationRules,
       optimizationRules: this.optimizationRules,
       presets: this.parameterPresets,
-      version: '1.0.0',
+      version: "1.0.0",
     };
   }
 
@@ -668,10 +688,11 @@ class ParameterManager extends EventEmitter {
   importConfiguration(config) {
     if (config.mappings) this.parameterMappings = config.mappings;
     if (config.validationRules) this.validationRules = config.validationRules;
-    if (config.optimizationRules) this.optimizationRules = config.optimizationRules;
+    if (config.optimizationRules)
+      this.optimizationRules = config.optimizationRules;
     if (config.presets) this.parameterPresets = config.presets;
 
-    this.emit('configurationImported');
+    this.emit("configurationImported");
   }
 
   /**

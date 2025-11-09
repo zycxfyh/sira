@@ -1,18 +1,18 @@
-const express = require('express');
-const { apiKeyManager } = require('../../api-key-manager');
+const express = require("express");
+const { apiKeyManager } = require("../../api-key-manager");
 
 /**
  * API Keys Management API Routes
  * 提供API密钥管理相关的REST API接口
  */
 
-module.exports = function ({ logger }) {
+module.exports = ({ logger }) => {
   const router = express.Router();
   /**
    * GET /api-keys
    * 获取API密钥概览
    */
-  router.get('/api-keys', async (req, res) => {
+  router.get("/api-keys", async (_req, res) => {
     try {
       const overview = apiKeyManager.getOverview();
 
@@ -22,10 +22,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取API密钥概览失败:', error);
+      logger.error("获取API密钥概览失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取API密钥概览失败',
+        error: "获取API密钥概览失败",
         message: error.message,
       });
     }
@@ -35,7 +35,7 @@ module.exports = function ({ logger }) {
    * GET /api-keys/providers/:provider
    * 获取指定供应商的所有密钥
    */
-  router.get('/api-keys/providers/:provider', async (req, res) => {
+  router.get("/api-keys/providers/:provider", async (req, res) => {
     try {
       const { provider } = req.params;
       const availableKeys = apiKeyManager.getAvailableKeys(provider);
@@ -50,10 +50,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取供应商密钥失败:', error);
+      logger.error("获取供应商密钥失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取供应商密钥失败',
+        error: "获取供应商密钥失败",
         message: error.message,
       });
     }
@@ -63,24 +63,24 @@ module.exports = function ({ logger }) {
    * POST /api-keys
    * 添加新的API密钥
    */
-  router.post('/api-keys', async (req, res) => {
+  router.post("/api-keys", async (req, res) => {
     try {
       const {
         provider,
         key,
         name,
-        permissions = ['read', 'write'],
+        permissions = ["read", "write"],
         limits = {},
         tags = [],
-        description = '',
+        description = "",
         createdBy,
       } = req.body;
 
       if (!provider || !key) {
         return res.status(400).json({
           success: false,
-          error: '缺少必要参数',
-          message: 'provider和key参数都是必需的',
+          error: "缺少必要参数",
+          message: "provider和key参数都是必需的",
         });
       }
 
@@ -96,7 +96,7 @@ module.exports = function ({ logger }) {
         tokensPerDay: limits.tokensPerDay || 1000000,
         tags,
         description,
-        createdBy: createdBy || req.headers['x-user-id'] || 'api',
+        createdBy: createdBy || req.headers["x-user-id"] || "api",
       };
 
       const keyId = apiKeyManager.addKey(provider, keyData);
@@ -106,24 +106,24 @@ module.exports = function ({ logger }) {
         data: {
           keyId,
           provider,
-          message: 'API密钥添加成功',
+          message: "API密钥添加成功",
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('添加API密钥失败:', error);
+      logger.error("添加API密钥失败:", error);
 
-      if (error.message.includes('达到上限')) {
+      if (error.message.includes("达到上限")) {
         return res.status(409).json({
           success: false,
-          error: '密钥数量达到上限',
+          error: "密钥数量达到上限",
           message: error.message,
         });
       }
 
       res.status(500).json({
         success: false,
-        error: '添加API密钥失败',
+        error: "添加API密钥失败",
         message: error.message,
       });
     }
@@ -133,7 +133,7 @@ module.exports = function ({ logger }) {
    * GET /api-keys/:provider/:keyId
    * 获取特定API密钥的详细信息
    */
-  router.get('/api-keys/:provider/:keyId', async (req, res) => {
+  router.get("/api-keys/:provider/:keyId", async (req, res) => {
     try {
       const { provider, keyId } = req.params;
       const keyData = apiKeyManager.getKey(provider, keyId);
@@ -141,7 +141,7 @@ module.exports = function ({ logger }) {
       if (!keyData) {
         return res.status(404).json({
           success: false,
-          error: 'API密钥不存在',
+          error: "API密钥不存在",
           message: `供应商 ${provider} 的密钥 ${keyId} 不存在`,
         });
       }
@@ -156,10 +156,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取API密钥详情失败:', error);
+      logger.error("获取API密钥详情失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取API密钥详情失败',
+        error: "获取API密钥详情失败",
         message: error.message,
       });
     }
@@ -169,17 +169,17 @@ module.exports = function ({ logger }) {
    * PUT /api-keys/:provider/:keyId
    * 更新API密钥配置
    */
-  router.put('/api-keys/:provider/:keyId', async (req, res) => {
+  router.put("/api-keys/:provider/:keyId", async (req, res) => {
     try {
       const { provider, keyId } = req.params;
-      const updateData = req.body;
+      const _updateData = req.body;
 
       // 检查密钥是否存在
       const existingKey = apiKeyManager.getKey(provider, keyId);
       if (!existingKey) {
         return res.status(404).json({
           success: false,
-          error: 'API密钥不存在',
+          error: "API密钥不存在",
           message: `供应商 ${provider} 的密钥 ${keyId} 不存在`,
         });
       }
@@ -188,14 +188,14 @@ module.exports = function ({ logger }) {
       // 暂时返回不支持
       res.status(501).json({
         success: false,
-        error: '功能暂未实现',
-        message: 'API密钥更新功能暂未实现',
+        error: "功能暂未实现",
+        message: "API密钥更新功能暂未实现",
       });
     } catch (error) {
-      logger.error('更新API密钥失败:', error);
+      logger.error("更新API密钥失败:", error);
       res.status(500).json({
         success: false,
-        error: '更新API密钥失败',
+        error: "更新API密钥失败",
         message: error.message,
       });
     }
@@ -205,7 +205,7 @@ module.exports = function ({ logger }) {
    * PUT /api-keys/:provider/:keyId/rotate
    * 轮换API密钥
    */
-  router.put('/api-keys/:provider/:keyId/rotate', async (req, res) => {
+  router.put("/api-keys/:provider/:keyId/rotate", async (req, res) => {
     try {
       const { provider, keyId } = req.params;
       const { newKey, name, description } = req.body;
@@ -213,8 +213,8 @@ module.exports = function ({ logger }) {
       if (!newKey) {
         return res.status(400).json({
           success: false,
-          error: '缺少必要参数',
-          message: 'newKey参数是必需的',
+          error: "缺少必要参数",
+          message: "newKey参数是必需的",
         });
       }
 
@@ -231,25 +231,25 @@ module.exports = function ({ logger }) {
         data: {
           provider,
           keyId,
-          message: 'API密钥轮换成功',
+          message: "API密钥轮换成功",
           nextRotation: updatedKey.rotation.nextRotation,
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('轮换API密钥失败:', error);
+      logger.error("轮换API密钥失败:", error);
 
-      if (error.message.includes('不存在')) {
+      if (error.message.includes("不存在")) {
         return res.status(404).json({
           success: false,
-          error: 'API密钥不存在',
+          error: "API密钥不存在",
           message: error.message,
         });
       }
 
       res.status(500).json({
         success: false,
-        error: '轮换API密钥失败',
+        error: "轮换API密钥失败",
         message: error.message,
       });
     }
@@ -259,10 +259,10 @@ module.exports = function ({ logger }) {
    * PUT /api-keys/:provider/:keyId/disable
    * 禁用API密钥
    */
-  router.put('/api-keys/:provider/:keyId/disable', async (req, res) => {
+  router.put("/api-keys/:provider/:keyId/disable", async (req, res) => {
     try {
       const { provider, keyId } = req.params;
-      const { reason = 'api_request' } = req.body;
+      const { reason = "api_request" } = req.body;
 
       apiKeyManager.disableKey(provider, keyId, reason);
 
@@ -271,24 +271,24 @@ module.exports = function ({ logger }) {
         data: {
           provider,
           keyId,
-          message: 'API密钥已禁用',
+          message: "API密钥已禁用",
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('禁用API密钥失败:', error);
+      logger.error("禁用API密钥失败:", error);
 
-      if (error.message.includes('不存在')) {
+      if (error.message.includes("不存在")) {
         return res.status(404).json({
           success: false,
-          error: 'API密钥不存在',
+          error: "API密钥不存在",
           message: error.message,
         });
       }
 
       res.status(500).json({
         success: false,
-        error: '禁用API密钥失败',
+        error: "禁用API密钥失败",
         message: error.message,
       });
     }
@@ -298,7 +298,7 @@ module.exports = function ({ logger }) {
    * PUT /api-keys/:provider/:keyId/enable
    * 启用API密钥
    */
-  router.put('/api-keys/:provider/:keyId/enable', async (req, res) => {
+  router.put("/api-keys/:provider/:keyId/enable", async (req, res) => {
     try {
       const { provider, keyId } = req.params;
 
@@ -309,24 +309,24 @@ module.exports = function ({ logger }) {
         data: {
           provider,
           keyId,
-          message: 'API密钥已启用',
+          message: "API密钥已启用",
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('启用API密钥失败:', error);
+      logger.error("启用API密钥失败:", error);
 
-      if (error.message.includes('不存在')) {
+      if (error.message.includes("不存在")) {
         return res.status(404).json({
           success: false,
-          error: 'API密钥不存在',
+          error: "API密钥不存在",
           message: error.message,
         });
       }
 
       res.status(500).json({
         success: false,
-        error: '启用API密钥失败',
+        error: "启用API密钥失败",
         message: error.message,
       });
     }
@@ -336,7 +336,7 @@ module.exports = function ({ logger }) {
    * DELETE /api-keys/:provider/:keyId
    * 删除API密钥
    */
-  router.delete('/api-keys/:provider/:keyId', async (req, res) => {
+  router.delete("/api-keys/:provider/:keyId", async (req, res) => {
     try {
       const { provider, keyId } = req.params;
 
@@ -347,24 +347,24 @@ module.exports = function ({ logger }) {
         data: {
           provider,
           keyId,
-          message: 'API密钥已删除',
+          message: "API密钥已删除",
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('删除API密钥失败:', error);
+      logger.error("删除API密钥失败:", error);
 
-      if (error.message.includes('不存在')) {
+      if (error.message.includes("不存在")) {
         return res.status(404).json({
           success: false,
-          error: 'API密钥不存在',
+          error: "API密钥不存在",
           message: error.message,
         });
       }
 
       res.status(500).json({
         success: false,
-        error: '删除API密钥失败',
+        error: "删除API密钥失败",
         message: error.message,
       });
     }
@@ -374,7 +374,7 @@ module.exports = function ({ logger }) {
    * GET /api-keys/:provider/:keyId/usage
    * 获取API密钥使用统计
    */
-  router.get('/api-keys/:provider/:keyId/usage', async (req, res) => {
+  router.get("/api-keys/:provider/:keyId/usage", async (req, res) => {
     try {
       const { keyId } = req.params;
       const usage = apiKeyManager.getKeyUsageStats(keyId);
@@ -388,10 +388,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取API密钥使用统计失败:', error);
+      logger.error("获取API密钥使用统计失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取API密钥使用统计失败',
+        error: "获取API密钥使用统计失败",
         message: error.message,
       });
     }
@@ -401,15 +401,15 @@ module.exports = function ({ logger }) {
    * POST /api-keys/permissions
    * 设置用户权限
    */
-  router.post('/api-keys/permissions', async (req, res) => {
+  router.post("/api-keys/permissions", async (req, res) => {
     try {
       const { userId, permissions } = req.body;
 
       if (!userId || !permissions) {
         return res.status(400).json({
           success: false,
-          error: '缺少必要参数',
-          message: 'userId和permissions参数都是必需的',
+          error: "缺少必要参数",
+          message: "userId和permissions参数都是必需的",
         });
       }
 
@@ -420,15 +420,15 @@ module.exports = function ({ logger }) {
         data: {
           userId,
           permissions,
-          message: '用户权限设置成功',
+          message: "用户权限设置成功",
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('设置用户权限失败:', error);
+      logger.error("设置用户权限失败:", error);
       res.status(500).json({
         success: false,
-        error: '设置用户权限失败',
+        error: "设置用户权限失败",
         message: error.message,
       });
     }
@@ -438,33 +438,42 @@ module.exports = function ({ logger }) {
    * GET /api-keys/select/:provider
    * 为用户选择最佳API密钥
    */
-  router.get('/api-keys/select/:provider', async (req, res) => {
+  router.get("/api-keys/select/:provider", async (req, res) => {
     try {
       const { provider } = req.params;
-      const { userId, permissions = ['read', 'write'], strategy = 'least_used' } = req.query;
+      const {
+        userId,
+        permissions = ["read", "write"],
+        strategy = "least_used",
+      } = req.query;
 
       const availableKeys = apiKeyManager.getAvailableKeys(
         provider,
         userId,
-        permissions.split(',')
+        permissions.split(","),
       );
       if (availableKeys.length === 0) {
         return res.status(404).json({
           success: false,
-          error: '无可用API密钥',
+          error: "无可用API密钥",
           message: `供应商 ${provider} 没有符合条件的可用密钥`,
         });
       }
 
-      const selectedKey = apiKeyManager.selectBestKey(provider, userId, permissions.split(','), {
-        strategy,
-      });
+      const selectedKey = apiKeyManager.selectBestKey(
+        provider,
+        userId,
+        permissions.split(","),
+        {
+          strategy,
+        },
+      );
 
       if (!selectedKey) {
         return res.status(404).json({
           success: false,
-          error: '无法选择API密钥',
-          message: '无法根据当前条件选择合适的API密钥',
+          error: "无法选择API密钥",
+          message: "无法根据当前条件选择合适的API密钥",
         });
       }
 
@@ -482,10 +491,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('选择API密钥失败:', error);
+      logger.error("选择API密钥失败:", error);
       res.status(500).json({
         success: false,
-        error: '选择API密钥失败',
+        error: "选择API密钥失败",
         message: error.message,
       });
     }
@@ -495,7 +504,7 @@ module.exports = function ({ logger }) {
    * GET /api-keys/rotation/status
    * 获取密钥轮换状态
    */
-  router.get('/api-keys/rotation/status', async (req, res) => {
+  router.get("/api-keys/rotation/status", async (_req, res) => {
     try {
       // 这里需要实现轮换状态检查逻辑
       // 暂时返回模拟数据
@@ -505,15 +514,15 @@ module.exports = function ({ logger }) {
           autoRotationEnabled: apiKeyManager.options.enableAutoRotation,
           rotationInterval: apiKeyManager.options.rotationInterval,
           gracePeriod: apiKeyManager.options.gracePeriod,
-          message: '轮换状态检查功能正在开发中',
+          message: "轮换状态检查功能正在开发中",
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取轮换状态失败:', error);
+      logger.error("获取轮换状态失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取轮换状态失败',
+        error: "获取轮换状态失败",
         message: error.message,
       });
     }
@@ -523,7 +532,7 @@ module.exports = function ({ logger }) {
    * POST /api-keys/export
    * 导出API密钥配置
    */
-  router.post('/api-keys/export', async (req, res) => {
+  router.post("/api-keys/export", async (req, res) => {
     try {
       const { includeKeys = false } = req.body;
 
@@ -542,15 +551,17 @@ module.exports = function ({ logger }) {
         success: true,
         data: {
           config,
-          message: includeKeys ? '包含完整密钥数据的配置已导出' : '不含密钥数据的配置已导出',
+          message: includeKeys
+            ? "包含完整密钥数据的配置已导出"
+            : "不含密钥数据的配置已导出",
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('导出API密钥配置失败:', error);
+      logger.error("导出API密钥配置失败:", error);
       res.status(500).json({
         success: false,
-        error: '导出API密钥配置失败',
+        error: "导出API密钥配置失败",
         message: error.message,
       });
     }
@@ -560,15 +571,15 @@ module.exports = function ({ logger }) {
    * POST /api-keys/import
    * 导入API密钥配置
    */
-  router.post('/api-keys/import', async (req, res) => {
+  router.post("/api-keys/import", async (req, res) => {
     try {
       const { config } = req.body;
 
       if (!config) {
         return res.status(400).json({
           success: false,
-          error: '缺少必要参数',
-          message: 'config参数是必需的',
+          error: "缺少必要参数",
+          message: "config参数是必需的",
         });
       }
 
@@ -577,20 +588,20 @@ module.exports = function ({ logger }) {
       res.json({
         success: true,
         data: {
-          message: 'API密钥配置导入成功',
+          message: "API密钥配置导入成功",
         },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('导入API密钥配置失败:', error);
+      logger.error("导入API密钥配置失败:", error);
       res.status(500).json({
         success: false,
-        error: '导入API密钥配置失败',
+        error: "导入API密钥配置失败",
         message: error.message,
       });
     }
   });
 
-  logger.info('API Keys Management API routes loaded');
+  logger.info("API Keys Management API routes loaded");
   return router;
 };

@@ -1,1 +1,1 @@
-exports.Generator = require('./eg-generator');
+exports.Generator = require("./eg-generator");

@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const yargs = require('yargs');
-const yeoman = require('yeoman-environment');
+const fs = require("node:fs");
+const path = require("node:path");
+const yargs = require("yargs");
+const yeoman = require("yeoman-environment");
 
-const { executeInScope } = require('./execution-scope');
+const { executeInScope } = require("./execution-scope");
 
 exports.bootstrap = (eg, adapter) => {
   const env = yeoman.createEnv();
@@ -20,15 +20,15 @@ exports.bootstrap = (eg, adapter) => {
 
   const program = yargs;
 
-  const generatorsPath = path.join(__dirname, 'generators');
+  const generatorsPath = path.join(__dirname, "generators");
 
-  const prefix = 'express-gateway';
+  const prefix = "express-gateway";
 
   const commands = [];
   const subCommands = {};
 
-  const dirs = fs.readdirSync(generatorsPath).filter(dir => {
-    if (dir[0] === '.') {
+  const dirs = fs.readdirSync(generatorsPath).filter((dir) => {
+    if (dir[0] === ".") {
       return false;
     }
 
@@ -36,11 +36,11 @@ exports.bootstrap = (eg, adapter) => {
     return stat.isDirectory();
   });
 
-  dirs.forEach(dir => {
+  dirs.forEach((dir) => {
     const directoryPath = path.join(generatorsPath, dir);
 
-    const files = fs.readdirSync(directoryPath).filter(file => {
-      if (file[0] === '.') {
+    const files = fs.readdirSync(directoryPath).filter((file) => {
+      if (file[0] === ".") {
         return false;
       }
 
@@ -48,8 +48,8 @@ exports.bootstrap = (eg, adapter) => {
       return stat.isFile();
     });
 
-    files.forEach(file => {
-      if (file === 'index.js') {
+    files.forEach((file) => {
+      if (file === "index.js") {
         const namespace = `${prefix}:${dir}`;
         commands.push({ namespace, path: directoryPath });
         env.register(directoryPath, namespace);
@@ -59,7 +59,7 @@ exports.bootstrap = (eg, adapter) => {
       const filePath = path.join(directoryPath, file);
       const namespace = `${prefix}:${dir}:${file.slice(0, -3)}`;
 
-      if (!Object.prototype.hasOwnProperty.call(subCommands, dir)) {
+      if (!Object.hasOwn(subCommands, dir)) {
         subCommands[dir] = [];
       }
 
@@ -77,7 +77,7 @@ exports.bootstrap = (eg, adapter) => {
   //       'user': 'users',
   //       'users': 'users'
   //     }
-  commands.forEach(command => {
+  commands.forEach((command) => {
     const generator = env.create(command.namespace);
 
     let aliases = generator._configuration.command;
@@ -85,13 +85,13 @@ exports.bootstrap = (eg, adapter) => {
       aliases = [aliases];
     }
 
-    aliases = aliases.map(alias => {
+    aliases = aliases.map((alias) => {
       return alias.split(/\s/)[0];
     });
 
-    const commandName = command.namespace.split(':')[1];
+    const commandName = command.namespace.split(":")[1];
 
-    aliases.forEach(a => {
+    aliases.forEach((a) => {
       commandAliases[a] = commandName;
     });
 
@@ -105,12 +105,12 @@ exports.bootstrap = (eg, adapter) => {
   //         'remove: 'remove'
   //       }
   //     }
-  Object.keys(subCommands).forEach(key => {
+  Object.keys(subCommands).forEach((key) => {
     const subCommandArray = subCommands[key];
 
     subCommandAliases[key] = {};
 
-    subCommandArray.forEach(s => {
+    subCommandArray.forEach((s) => {
       const generator = env.create(s.namespace);
 
       let aliases = generator._configuration.command;
@@ -119,13 +119,13 @@ exports.bootstrap = (eg, adapter) => {
         aliases = [aliases];
       }
 
-      aliases = aliases.map(alias => {
+      aliases = aliases.map((alias) => {
         return alias.split(/\s/)[0];
       });
 
-      const commandName = s.namespace.split(':')[2];
+      const commandName = s.namespace.split(":")[2];
 
-      aliases.forEach(a => {
+      aliases.forEach((a) => {
         subCommandAliases[key][a] = commandName;
       });
     });
@@ -134,11 +134,11 @@ exports.bootstrap = (eg, adapter) => {
   env.commandAliases = [commandAliases, subCommandAliases];
 
   program
-    .usage('Usage: $0 <command> [options]')
+    .usage("Usage: $0 <command> [options]")
     .demandCommand()
     .recommendCommands()
     .strict()
-    .alias('h', 'help')
+    .alias("h", "help")
     .wrap(Math.min(90, yargs.terminalWidth()));
 
   return { program, env };

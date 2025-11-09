@@ -1,36 +1,36 @@
-const testHelper = require('../common/routing.helper');
-const config = require('../../../src/core/config');
+const testHelper = require("../common/routing.helper");
+const config = require("../../../core/config");
 
-describe('Multi entry api endpoint with default host', () => {
+describe("Multi entry api endpoint with default host", () => {
   const helper = testHelper();
   const originalGatewayConfig = config.gatewayConfig;
-  helper.addPolicy('test', () => (req, res) => {
+  helper.addPolicy("test", () => (req, res) => {
     res.json({
-      result: 'test',
+      result: "test",
       hostname: req.hostname,
       url: req.url,
       apiEndpoint: req.egContext.apiEndpoint,
     });
   });
 
-  before('setup', () => {
+  before("setup", () => {
     config.gatewayConfig = {
       http: { port: 9081 },
       apiEndpoints: {
         api: [
           {
             // Contains 2 entries with different configs
-            pathRegex: '/wild-cats$',
+            pathRegex: "/wild-cats$",
           },
           {
-            paths: '/admin',
+            paths: "/admin",
           },
         ],
       },
-      policies: ['test'],
+      policies: ["test"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['api'],
+          apiEndpoints: ["api"],
           policies: { test: {} },
         },
       },
@@ -39,68 +39,68 @@ describe('Multi entry api endpoint with default host', () => {
     return helper.setup();
   });
 
-  after('cleanup', () => {
+  after("cleanup", () => {
     config.gatewayConfig = originalGatewayConfig;
     return helper.cleanup();
   });
 
   it(
-    'should serve for random host and pathRegex matched',
+    "should serve for random host and pathRegex matched",
     helper.validateSuccess({
       setup: {
-        host: 'zu.io',
-        url: '/wild-cats',
+        host: "zu.io",
+        url: "/wild-cats",
       },
       test: {
-        host: 'zu.io',
-        url: '/wild-cats',
-        result: 'test',
+        host: "zu.io",
+        url: "/wild-cats",
+        result: "test",
       },
-    })
+    }),
   );
 
   it(
-    'should serve for default host and pathRegex matched',
+    "should serve for default host and pathRegex matched",
     helper.validateSuccess({
       setup: {
         host: undefined,
-        url: '/wild-cats',
+        url: "/wild-cats",
       },
       test: {
-        host: '127.0.0.1',
-        url: '/wild-cats',
-        result: 'test',
+        host: "127.0.0.1",
+        url: "/wild-cats",
+        result: "test",
       },
-    })
+    }),
   );
   it(
-    'should 404 for default host + regexPath not matched',
+    "should 404 for default host + regexPath not matched",
     helper.validate404({
       setup: {
-        url: '/wild-cats2',
+        url: "/wild-cats2",
       },
-    })
+    }),
   );
 
   it(
-    'should serve for default host + path matched',
+    "should serve for default host + path matched",
     helper.validateSuccess({
       setup: {
-        url: '/admin',
+        url: "/admin",
       },
       test: {
-        host: '127.0.0.1',
-        url: '/admin',
-        result: 'test',
+        host: "127.0.0.1",
+        url: "/admin",
+        result: "test",
       },
-    })
+    }),
   );
   it(
-    'should 404 for default host and path not matched',
+    "should 404 for default host and path not matched",
     helper.validate404({
       setup: {
-        url: '/admin/new',
+        url: "/admin/new",
       },
-    })
+    }),
   );
 });

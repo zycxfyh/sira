@@ -1,18 +1,18 @@
-const express = require('express');
-const { parameterManager } = require('../../parameter-manager');
+const express = require("express");
+const { parameterManager } = require("../../parameter-manager");
 
 /**
  * Parameters API Routes
  * 提供参数管理和查询相关的API接口
  */
 
-module.exports = function ({ logger }) {
+module.exports = ({ logger }) => {
   const router = express.Router();
   /**
    * GET /parameters
    * 获取所有参数信息
    */
-  router.get('/parameters', async (req, res) => {
+  router.get("/parameters", async (req, res) => {
     try {
       const { provider, model, preset, detailed = false } = req.query;
 
@@ -24,12 +24,16 @@ module.exports = function ({ logger }) {
       } else if (provider && model) {
         // 获取特定供应商和模型的参数映射
         result.mapping = parameterManager.parameterMappings.providers[provider];
-        result.analysis = parameterManager.analyzeParameterUsage({}, provider, model);
+        result.analysis = parameterManager.analyzeParameterUsage(
+          {},
+          provider,
+          model,
+        );
       } else {
         // 获取所有信息
         result.presets = parameterManager.getAllPresets();
 
-        if (detailed === 'true') {
+        if (detailed === "true") {
           result.mappings = parameterManager.parameterMappings;
           result.validationRules = parameterManager.validationRules;
           result.optimizationRules = parameterManager.optimizationRules;
@@ -42,10 +46,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取参数信息失败:', error);
+      logger.error("获取参数信息失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取参数信息失败',
+        error: "获取参数信息失败",
         message: error.message,
       });
     }
@@ -55,15 +59,15 @@ module.exports = function ({ logger }) {
    * POST /parameters/validate
    * 验证参数配置
    */
-  router.post('/parameters/validate', async (req, res) => {
+  router.post("/parameters/validate", async (req, res) => {
     try {
       const { parameters, provider, model } = req.body;
 
-      if (!parameters || typeof parameters !== 'object') {
+      if (!parameters || typeof parameters !== "object") {
         return res.status(400).json({
           success: false,
-          error: '参数格式不正确',
-          message: 'parameters必须是对象',
+          error: "参数格式不正确",
+          message: "parameters必须是对象",
         });
       }
 
@@ -73,7 +77,11 @@ module.exports = function ({ logger }) {
       // 分析参数使用情况
       let analysis = {};
       if (provider) {
-        analysis = parameterManager.analyzeParameterUsage(parameters, provider, model);
+        analysis = parameterManager.analyzeParameterUsage(
+          parameters,
+          provider,
+          model,
+        );
       }
 
       res.json({
@@ -86,10 +94,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('参数验证失败:', error);
+      logger.error("参数验证失败:", error);
       res.status(500).json({
         success: false,
-        error: '参数验证失败',
+        error: "参数验证失败",
         message: error.message,
       });
     }
@@ -99,20 +107,24 @@ module.exports = function ({ logger }) {
    * POST /parameters/optimize
    * 优化参数配置
    */
-  router.post('/parameters/optimize', async (req, res) => {
+  router.post("/parameters/optimize", async (req, res) => {
     try {
       const { parameters, taskType, model, provider } = req.body;
 
-      if (!parameters || typeof parameters !== 'object') {
+      if (!parameters || typeof parameters !== "object") {
         return res.status(400).json({
           success: false,
-          error: '参数格式不正确',
-          message: 'parameters必须是对象',
+          error: "参数格式不正确",
+          message: "parameters必须是对象",
         });
       }
 
       // 优化参数
-      const optimized = parameterManager.optimizeParameters(parameters, taskType, model);
+      const optimized = parameterManager.optimizeParameters(
+        parameters,
+        taskType,
+        model,
+      );
 
       // 验证优化后的参数
       const validation = parameterManager.validateParameters(optimized);
@@ -121,10 +133,14 @@ module.exports = function ({ logger }) {
       let transformed = null;
       if (provider) {
         try {
-          transformed = parameterManager.transformParameters(optimized, provider, model);
+          transformed = parameterManager.transformParameters(
+            optimized,
+            provider,
+            model,
+          );
         } catch (error) {
           // 转换失败不影响优化结果
-          logger.warn('参数转换失败:', error.message);
+          logger.warn("参数转换失败:", error.message);
         }
       }
 
@@ -140,10 +156,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('参数优化失败:', error);
+      logger.error("参数优化失败:", error);
       res.status(500).json({
         success: false,
-        error: '参数优化失败',
+        error: "参数优化失败",
         message: error.message,
       });
     }
@@ -153,31 +169,39 @@ module.exports = function ({ logger }) {
    * POST /parameters/transform
    * 转换参数为供应商特定格式
    */
-  router.post('/parameters/transform', async (req, res) => {
+  router.post("/parameters/transform", async (req, res) => {
     try {
       const { parameters, provider, model } = req.body;
 
-      if (!parameters || typeof parameters !== 'object') {
+      if (!parameters || typeof parameters !== "object") {
         return res.status(400).json({
           success: false,
-          error: '参数格式不正确',
-          message: 'parameters必须是对象',
+          error: "参数格式不正确",
+          message: "parameters必须是对象",
         });
       }
 
       if (!provider) {
         return res.status(400).json({
           success: false,
-          error: '缺少必要参数',
-          message: 'provider参数是必需的',
+          error: "缺少必要参数",
+          message: "provider参数是必需的",
         });
       }
 
       // 转换参数
-      const transformed = parameterManager.transformParameters(parameters, provider, model);
+      const transformed = parameterManager.transformParameters(
+        parameters,
+        provider,
+        model,
+      );
 
       // 分析转换结果
-      const analysis = parameterManager.analyzeParameterUsage(parameters, provider, model);
+      const analysis = parameterManager.analyzeParameterUsage(
+        parameters,
+        provider,
+        model,
+      );
 
       res.json({
         success: true,
@@ -191,10 +215,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('参数转换失败:', error);
+      logger.error("参数转换失败:", error);
       res.status(500).json({
         success: false,
-        error: '参数转换失败',
+        error: "参数转换失败",
         message: error.message,
       });
     }
@@ -204,7 +228,7 @@ module.exports = function ({ logger }) {
    * GET /parameters/presets
    * 获取所有参数预设
    */
-  router.get('/parameters/presets', async (req, res) => {
+  router.get("/parameters/presets", async (_req, res) => {
     try {
       const presets = parameterManager.getAllPresets();
 
@@ -217,10 +241,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取参数预设失败:', error);
+      logger.error("获取参数预设失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取参数预设失败',
+        error: "获取参数预设失败",
         message: error.message,
       });
     }
@@ -230,7 +254,7 @@ module.exports = function ({ logger }) {
    * GET /parameters/presets/:name
    * 获取特定参数预设
    */
-  router.get('/parameters/presets/:name', async (req, res) => {
+  router.get("/parameters/presets/:name", async (req, res) => {
     try {
       const { name } = req.params;
       const preset = parameterManager.getParameterPreset(name);
@@ -238,7 +262,7 @@ module.exports = function ({ logger }) {
       if (!preset) {
         return res.status(404).json({
           success: false,
-          error: '预设不存在',
+          error: "预设不存在",
           message: `参数预设 '${name}' 不存在`,
         });
       }
@@ -252,10 +276,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取参数预设失败:', error);
+      logger.error("获取参数预设失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取参数预设失败',
+        error: "获取参数预设失败",
         message: error.message,
       });
     }
@@ -265,7 +289,7 @@ module.exports = function ({ logger }) {
    * GET /parameters/rules
    * 获取参数验证规则
    */
-  router.get('/parameters/rules', async (req, res) => {
+  router.get("/parameters/rules", async (req, res) => {
     try {
       const { parameter } = req.query;
 
@@ -275,7 +299,7 @@ module.exports = function ({ logger }) {
         if (!rules) {
           return res.status(404).json({
             success: false,
-            error: '参数不存在',
+            error: "参数不存在",
             message: `参数 '${parameter}' 的规则不存在`,
           });
         }
@@ -290,10 +314,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取参数规则失败:', error);
+      logger.error("获取参数规则失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取参数规则失败',
+        error: "获取参数规则失败",
         message: error.message,
       });
     }
@@ -303,7 +327,7 @@ module.exports = function ({ logger }) {
    * GET /parameters/mappings
    * 获取参数映射配置
    */
-  router.get('/parameters/mappings', async (req, res) => {
+  router.get("/parameters/mappings", async (req, res) => {
     try {
       const { provider } = req.query;
 
@@ -313,7 +337,7 @@ module.exports = function ({ logger }) {
         if (!mappings) {
           return res.status(404).json({
             success: false,
-            error: '供应商不存在',
+            error: "供应商不存在",
             message: `供应商 '${provider}' 的映射不存在`,
           });
         }
@@ -327,10 +351,10 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('获取参数映射失败:', error);
+      logger.error("获取参数映射失败:", error);
       res.status(500).json({
         success: false,
-        error: '获取参数映射失败',
+        error: "获取参数映射失败",
         message: error.message,
       });
     }
@@ -340,21 +364,21 @@ module.exports = function ({ logger }) {
    * POST /parameters/test
    * 测试参数配置（发送测试请求）
    */
-  router.post('/parameters/test', async (req, res) => {
+  router.post("/parameters/test", async (req, res) => {
     try {
       const {
         parameters,
         provider,
         model,
-        message = 'Hello, this is a parameter test.',
+        message = "Hello, this is a parameter test.",
         taskType,
       } = req.body;
 
       if (!provider || !model) {
         return res.status(400).json({
           success: false,
-          error: '缺少必要参数',
-          message: 'provider和model参数是必需的',
+          error: "缺少必要参数",
+          message: "provider和model参数是必需的",
         });
       }
 
@@ -362,7 +386,7 @@ module.exports = function ({ logger }) {
       const optimizedParams = parameterManager.optimizeParameters(
         parameters || {},
         taskType,
-        model
+        model,
       );
 
       // 验证参数
@@ -371,7 +395,7 @@ module.exports = function ({ logger }) {
       if (!validation.valid) {
         return res.status(400).json({
           success: false,
-          error: '参数验证失败',
+          error: "参数验证失败",
           data: { validation },
         });
       }
@@ -383,7 +407,7 @@ module.exports = function ({ logger }) {
         validation,
         mockResponse: {
           success: true,
-          message: 'Parameter test successful',
+          message: "Parameter test successful",
           model,
           provider,
           input: message,
@@ -397,16 +421,16 @@ module.exports = function ({ logger }) {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error('参数测试失败:', error);
+      logger.error("参数测试失败:", error);
       res.status(500).json({
         success: false,
-        error: '参数测试失败',
+        error: "参数测试失败",
         message: error.message,
       });
     }
   });
 
-  logger.info('Parameters API routes loaded');
+  logger.info("Parameters API routes loaded");
   return router;
 };
 

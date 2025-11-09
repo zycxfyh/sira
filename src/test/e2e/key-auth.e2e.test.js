@@ -1,47 +1,47 @@
-const request = require('supertest');
-const cliHelper = require('../common/cli.helper');
-const gwHelper = require('../common/gateway.helper');
-const idGen = require('uuid62');
+const request = require("supertest");
+const cliHelper = require("../common/cli.helper");
+const gwHelper = require("../common/gateway.helper");
+const idGen = require("uuid62");
 
 const username = idGen.v4();
-const headerName = 'Authorization';
+const headerName = "Authorization";
 
 let gatewayPort, adminPort, configDirectoryPath, gatewayProcess, backendServer;
 let keyCred;
 
 const proxyPolicy = {
-  proxy: { action: { serviceEndpoint: 'backend' } },
+  proxy: { action: { serviceEndpoint: "backend" } },
 };
 
-describe('E2E: key-auth Policy', () => {
-  before('setup', () => {
+describe("E2E: key-auth Policy", () => {
+  beforeAll(async () => {
     const gatewayConfig = {
       apiEndpoints: {
         authorizedEndpoint: {
-          host: '*',
-          paths: ['/authorizedPath'],
-          scopes: ['authorizedScope'],
+          host: "*",
+          paths: ["/authorizedPath"],
+          scopes: ["authorizedScope"],
         },
         onlyQueryParamEndpoint: {
-          host: '*',
-          paths: ['/by_query'],
+          host: "*",
+          paths: ["/by_query"],
         },
         unauthorizedEndpoint: {
-          host: '*',
-          paths: ['/unauthorizedPath'],
-          scopes: ['unauthorizedScope'],
+          host: "*",
+          paths: ["/unauthorizedPath"],
+          scopes: ["unauthorizedScope"],
         },
       },
-      policies: ['key-auth', 'proxy'],
+      policies: ["key-auth", "proxy"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['authorizedEndpoint'],
+          apiEndpoints: ["authorizedEndpoint"],
           policies: [
             {
-              'key-auth': {
+              "key-auth": {
                 action: {
-                  apiKeyHeader: 'TEST_HEADER',
-                  apiKeyHeaderScheme: 'SCHEME1',
+                  apiKeyHeader: "TEST_HEADER",
+                  apiKeyHeaderScheme: "SCHEME1",
                 },
               },
             },
@@ -49,22 +49,22 @@ describe('E2E: key-auth Policy', () => {
           ],
         },
         pipeline2: {
-          apiEndpoints: ['unauthorizedEndpoint'],
+          apiEndpoints: ["unauthorizedEndpoint"],
           policies: [
             {
-              'key-auth': {},
+              "key-auth": {},
             },
             proxyPolicy,
           ],
         },
         pipeline_by_query: {
-          apiEndpoints: ['onlyQueryParamEndpoint'],
+          apiEndpoints: ["onlyQueryParamEndpoint"],
           policies: [
             {
-              'key-auth': [
+              "key-auth": [
                 {
                   action: {
-                    apiKeyField: 'customApiKeyParam',
+                    apiKeyField: "customApiKeyParam",
                     disableHeaders: true,
                   },
                 },
@@ -77,10 +77,10 @@ describe('E2E: key-auth Policy', () => {
     };
     return cliHelper
       .bootstrapFolder()
-      .then(dirInfo => {
+      .then((dirInfo) => {
         return gwHelper.startGatewayInstance({ dirInfo, gatewayConfig });
       })
-      .then(gwInfo => {
+      .then((gwInfo) => {
         gatewayProcess = gwInfo.gatewayProcess;
         backendServer = gwInfo.backendServers[0];
         gatewayPort = gwInfo.gatewayPort;
@@ -88,108 +88,127 @@ describe('E2E: key-auth Policy', () => {
         configDirectoryPath = gwInfo.dirInfo.configDirectoryPath;
 
         return cliHelper.runCLICommand({
-          cliArgs: ['scopes create', 'authorizedScope', 'unauthorizedScope'],
+          cliArgs: ["scopes create", "authorizedScope", "unauthorizedScope"],
           adminPort,
           configDirectoryPath,
         });
       })
-      .then(scopes => {
-        const args = ['-p', `username=${username}`, '-p', 'firstname=Kate', '-p', 'lastname=Smith'];
+      .then((_scopes) => {
+        const args = [
+          "-p",
+          `username=${username}`,
+          "-p",
+          "firstname=Kate",
+          "-p",
+          "lastname=Smith",
+        ];
         return cliHelper.runCLICommand({
-          cliArgs: ['users create'].concat(args),
+          cliArgs: ["users create"].concat(args),
           adminPort,
           configDirectoryPath,
         });
       })
-      .then(newUser => {
+      .then((newUser) => {
         return cliHelper.runCLICommand({
-          cliArgs: ['credentials create -t key-auth -p "scopes=authorizedScope" -c', newUser.id],
+          cliArgs: [
+            'credentials create -t key-auth -p "scopes=authorizedScope" -c',
+            newUser.id,
+          ],
           adminPort,
           configDirectoryPath,
         });
       })
-      .then(cred => {
+      .then((cred) => {
         keyCred = cred;
       });
   });
 
-  after(done => {
-    gatewayProcess.kill();
-    backendServer.close(done);
+  afterAll(async () => {
+    // GitHub Best Practice: 安全清理资源，检查是否存在
+    if (gatewayProcess && typeof gatewayProcess.kill === "function") {
+      gatewayProcess.kill("SIGTERM");
+      // 等待进程优雅退出
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    if (backendServer && typeof backendServer.close === "function") {
+      await new Promise((resolve) => backendServer.close(resolve));
+    }
   });
 
-  it('should not authenticate key for requests without authorization header', () => {
-    return request(`http://localhost:${gatewayPort}`).get('/authorizedPath').expect(401);
+  test("should not authenticate key for requests without authorization header", () => {
+    return request(`http://localhost:${gatewayPort}`)
+      .get("/authorizedPath")
+      .expect(401);
   });
 
-  it("should not authorise key for requests if requester doesn't have authorized scopes", done => {
-    const apikey = 'apiKey ' + keyCred.keyId + ':' + keyCred.keySecret;
+  test("should not authorise key for requests if requester doesn't have authorized scopes", (done) => {
+    const apikey = `apiKey ${keyCred.keyId}:${keyCred.keySecret}`;
 
     request(`http://localhost:${gatewayPort}`)
-      .get('/unauthorizedPath')
+      .get("/unauthorizedPath")
       .set(headerName, apikey)
       .expect(403)
-      .end(err => {
+      .end((err) => {
         done(err);
       });
   });
 
-  it('should authenticate key with scheme in headers for requests with scopes if requester is authorized', done => {
-    const apikey = 'SCHEME1 ' + keyCred.keyId + ':' + keyCred.keySecret;
+  test("should authenticate key with scheme in headers for requests with scopes if requester is authorized", (done) => {
+    const apikey = `SCHEME1 ${keyCred.keyId}:${keyCred.keySecret}`;
 
     request(`http://localhost:${gatewayPort}`)
-      .get('/authorizedPath')
-      .set('TEST_HEADER', apikey)
+      .get("/authorizedPath")
+      .set("TEST_HEADER", apikey)
       .expect(200)
       .end(done);
   });
 
-  it('should authenticate key with scheme ignoring case in headers for requests with scopes if requester is authorized', done => {
-    const apikey = 'scheME1 ' + keyCred.keyId + ':' + keyCred.keySecret;
+  test("should authenticate key with scheme ignoring case in headers for requests with scopes if requester is authorized", (done) => {
+    const apikey = `scheME1 ${keyCred.keyId}:${keyCred.keySecret}`;
 
     request(`http://localhost:${gatewayPort}`)
-      .get('/authorizedPath')
-      .set('TEST_HEADER', apikey)
+      .get("/authorizedPath")
+      .set("TEST_HEADER", apikey)
       .expect(200)
       .end(done);
   });
 
-  it('should authenticate key in query for requests with scopes if requester is authorized ', done => {
-    const apikey = keyCred.keyId + ':' + keyCred.keySecret;
+  test("should authenticate key in query for requests with scopes if requester is authorized ", (done) => {
+    const apikey = `${keyCred.keyId}:${keyCred.keySecret}`;
 
     request(`http://localhost:${gatewayPort}`)
-      .get('/authorizedPath?apiKey=' + apikey)
+      .get(`/authorizedPath?apiKey=${apikey}`)
       .expect(200)
       .end(done);
   });
 
-  it('should not authorize invalid key', done => {
-    const apikey = 'apiKey test:wrong';
+  test("should not authorize invalid key", (done) => {
+    const apikey = "apiKey test:wrong";
 
     request(`http://localhost:${gatewayPort}`)
-      .get('/authorizedPath')
+      .get("/authorizedPath")
       .set(headerName, apikey)
       .expect(401)
       .end(done);
   });
 
-  it('should authenticate key in query if endpoint allows only query ', done => {
-    const apikey = keyCred.keyId + ':' + keyCred.keySecret;
+  test("should authenticate key in query if endpoint allows only query ", (done) => {
+    const apikey = `${keyCred.keyId}:${keyCred.keySecret}`;
 
     request(`http://localhost:${gatewayPort}`)
-      .get('/by_query?customApiKeyParam=' + apikey)
+      .get(`/by_query?customApiKeyParam=${apikey}`)
       .expect(200)
       .end(done);
   });
 
-  it('should not authenticate with header of EP allows only query', done => {
-    const apikey = 'apiKey ' + keyCred.keyId + ':' + keyCred.keySecret;
+  test("should not authenticate with header of EP allows only query", (done) => {
+    const apikey = `apiKey ${keyCred.keyId}:${keyCred.keySecret}`;
 
     request(`http://localhost:${gatewayPort}`)
-      .get('/by_query')
+      .get("/by_query")
       .set(headerName, apikey)
       .expect(401)
-      .end(err => {
+      .end((err) => {
         done(err);
       });
   });

@@ -3,20 +3,20 @@
  * 提供完整的语音转文字和文字转语音接口
  */
 
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
+const express = require("express");
+const multer = require("multer");
+const path = require("node:path");
 const {
   voiceProcessorManager,
   VOICE_STYLES,
   LANGUAGE_MAPPING,
   VOICE_PROVIDERS,
-} = require('../../voice-processor-manager');
+} = require("../../voice-processor-manager");
 
 const router = express.Router();
 
 // 中间件：异步错误处理
-const asyncHandler = fn => (req, res, next) => {
+const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
@@ -26,7 +26,7 @@ const validateJobId = (req, res, next) => {
   if (!jobId) {
     return res.status(400).json({
       success: false,
-      error: '缺少任务ID',
+      error: "缺少任务ID",
     });
   }
 
@@ -34,7 +34,7 @@ const validateJobId = (req, res, next) => {
   if (!job) {
     return res.status(404).json({
       success: false,
-      error: '任务不存在',
+      error: "任务不存在",
     });
   }
 
@@ -44,12 +44,15 @@ const validateJobId = (req, res, next) => {
 
 // 配置multer用于文件上传
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, '/tmp/uploads'); // 使用临时目录
+  destination: (_req, _file, cb) => {
+    cb(null, "/tmp/uploads"); // 使用临时目录
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  filename: (_req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(
+      null,
+      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`,
+    );
   },
 });
 
@@ -58,24 +61,24 @@ const upload = multer({
   limits: {
     fileSize: 25 * 1024 * 1024, // 25MB
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     const allowedTypes = [
-      'audio/mpeg',
-      'audio/mp3',
-      'audio/mp4',
-      'audio/mpeg',
-      'audio/mpga',
-      'audio/m4a',
-      'audio/wav',
-      'audio/webm',
-      'audio/flac',
-      'audio/ogg',
+      "audio/mpeg",
+      "audio/mp3",
+      "audio/mp4",
+      "audio/mpeg",
+      "audio/mpga",
+      "audio/m4a",
+      "audio/wav",
+      "audio/webm",
+      "audio/flac",
+      "audio/ogg",
     ];
 
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('不支持的音频格式'), false);
+      cb(new Error("不支持的音频格式"), false);
     }
   },
 });
@@ -87,22 +90,22 @@ const upload = multer({
  * POST /voice/stt/upload
  */
 router.post(
-  '/stt/upload',
-  upload.single('audio'),
+  "/stt/upload",
+  upload.single("audio"),
   asyncHandler(async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        error: '没有上传音频文件',
+        error: "没有上传音频文件",
       });
     }
 
     const {
-      userId = 'anonymous',
-      provider = 'openai_whisper',
-      model = 'whisper-1',
-      language = 'auto',
-      outputFormat = 'json',
+      userId = "anonymous",
+      provider = "openai_whisper",
+      model = "whisper-1",
+      language = "auto",
+      outputFormat = "json",
     } = req.body;
 
     try {
@@ -119,8 +122,8 @@ router.post(
         success: true,
         data: {
           jobId,
-          message: '语音转文字任务已创建',
-          estimatedWaitTime: '10-30秒',
+          message: "语音转文字任务已创建",
+          estimatedWaitTime: "10-30秒",
         },
       });
     } catch (error) {
@@ -129,7 +132,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -137,21 +140,21 @@ router.post(
  * POST /voice/stt/url
  */
 router.post(
-  '/stt/url',
+  "/stt/url",
   asyncHandler(async (req, res) => {
     const {
-      userId = 'anonymous',
+      userId = "anonymous",
       audioUrl,
-      provider = 'openai_whisper',
-      model = 'whisper-1',
-      language = 'auto',
-      outputFormat = 'json',
+      provider = "openai_whisper",
+      model = "whisper-1",
+      language = "auto",
+      outputFormat = "json",
     } = req.body;
 
     if (!audioUrl) {
       return res.status(400).json({
         success: false,
-        error: '缺少音频URL',
+        error: "缺少音频URL",
       });
     }
 
@@ -171,7 +174,7 @@ router.post(
         success: true,
         data: {
           jobId,
-          message: '语音转文字任务已创建',
+          message: "语音转文字任务已创建",
         },
       });
     } catch (error) {
@@ -180,7 +183,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 文字转语音 (TTS) ====================
@@ -190,31 +193,31 @@ router.post(
  * POST /voice/tts
  */
 router.post(
-  '/tts',
+  "/tts",
   asyncHandler(async (req, res) => {
     const {
-      userId = 'anonymous',
+      userId = "anonymous",
       text,
-      provider = 'openai_tts',
-      model = 'tts-1',
-      voice = 'alloy',
-      style = 'natural',
-      outputFormat = 'mp3',
+      provider = "openai_tts",
+      model = "tts-1",
+      voice = "alloy",
+      style = "natural",
+      outputFormat = "mp3",
       speed = 1.0,
-      language = 'zh-CN',
+      language = "zh-CN",
     } = req.body;
 
     if (!text) {
       return res.status(400).json({
         success: false,
-        error: '缺少文本内容',
+        error: "缺少文本内容",
       });
     }
 
     if (text.length > 4096) {
       return res.status(400).json({
         success: false,
-        error: '文本长度不能超过4096字符',
+        error: "文本长度不能超过4096字符",
       });
     }
 
@@ -235,8 +238,8 @@ router.post(
         success: true,
         data: {
           jobId,
-          message: '文字转语音任务已创建',
-          estimatedWaitTime: '5-15秒',
+          message: "文字转语音任务已创建",
+          estimatedWaitTime: "5-15秒",
         },
       });
     } catch (error) {
@@ -245,7 +248,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 任务管理 ====================
@@ -254,7 +257,7 @@ router.post(
  * 获取任务状态
  * GET /voice/job/:jobId
  */
-router.get('/job/:jobId', validateJobId, (req, res) => {
+router.get("/job/:jobId", validateJobId, (req, res) => {
   const { job } = req;
 
   res.json({
@@ -286,17 +289,17 @@ router.get('/job/:jobId', validateJobId, (req, res) => {
  * GET /voice/history/:userId
  */
 router.get(
-  '/history/:userId',
+  "/history/:userId",
   asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const { limit = 20, type } = req.query;
 
     try {
-      let jobs = voiceProcessorManager.getUserJobs(userId, parseInt(limit));
+      let jobs = voiceProcessorManager.getUserJobs(userId, parseInt(limit, 10));
 
       // 按类型过滤
       if (type) {
-        jobs = jobs.filter(job => job.type === type);
+        jobs = jobs.filter((job) => job.type === type);
       }
 
       res.json({
@@ -312,21 +315,21 @@ router.get(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
  * 取消任务
  * DELETE /voice/job/:jobId
  */
-router.delete('/job/:jobId', validateJobId, (req, res) => {
+router.delete("/job/:jobId", validateJobId, (req, res) => {
   const { job } = req;
 
   // 检查任务是否可以取消
-  if (['completed', 'failed'].includes(job.status)) {
+  if (["completed", "failed"].includes(job.status)) {
     return res.status(400).json({
       success: false,
-      error: '已完成或失败的任务无法取消',
+      error: "已完成或失败的任务无法取消",
     });
   }
 
@@ -335,7 +338,7 @@ router.delete('/job/:jobId', validateJobId, (req, res) => {
 
   res.json({
     success: true,
-    message: '任务取消请求已提交',
+    message: "任务取消请求已提交",
   });
 });
 
@@ -345,7 +348,7 @@ router.delete('/job/:jobId', validateJobId, (req, res) => {
  * 获取队列统计
  * GET /voice/stats
  */
-router.get('/stats', (req, res) => {
+router.get("/stats", (_req, res) => {
   const stats = voiceProcessorManager.getQueueStats();
 
   res.json({
@@ -360,8 +363,8 @@ router.get('/stats', (req, res) => {
  * 获取支持的STT提供商
  * GET /voice/stt/providers
  */
-router.get('/stt/providers', (req, res) => {
-  const providers = voiceProcessorManager.getProviders('stt');
+router.get("/stt/providers", (_req, res) => {
+  const providers = voiceProcessorManager.getProviders("stt");
 
   res.json({
     success: true,
@@ -375,8 +378,8 @@ router.get('/stt/providers', (req, res) => {
  * 获取支持的TTS提供商
  * GET /voice/tts/providers
  */
-router.get('/tts/providers', (req, res) => {
-  const providers = voiceProcessorManager.getProviders('tts');
+router.get("/tts/providers", (_req, res) => {
+  const providers = voiceProcessorManager.getProviders("tts");
 
   res.json({
     success: true,
@@ -390,7 +393,7 @@ router.get('/tts/providers', (req, res) => {
  * 获取所有支持的提供商
  * GET /voice/providers
  */
-router.get('/providers', (req, res) => {
+router.get("/providers", (_req, res) => {
   const providers = voiceProcessorManager.getProviders();
 
   res.json({
@@ -405,14 +408,14 @@ router.get('/providers', (req, res) => {
  * 获取提供商详细信息
  * GET /voice/providers/:provider
  */
-router.get('/providers/:provider', (req, res) => {
+router.get("/providers/:provider", (req, res) => {
   const { provider } = req.params;
 
   const providerConfig = VOICE_PROVIDERS[provider];
   if (!providerConfig) {
     return res.status(404).json({
       success: false,
-      error: '提供商不存在',
+      error: "提供商不存在",
     });
   }
 
@@ -436,7 +439,7 @@ router.get('/providers/:provider', (req, res) => {
  * 获取支持的语音风格
  * GET /voice/styles
  */
-router.get('/styles', (req, res) => {
+router.get("/styles", (_req, res) => {
   const styles = voiceProcessorManager.getVoiceStyles();
 
   res.json({
@@ -451,7 +454,7 @@ router.get('/styles', (req, res) => {
  * 获取支持的语言
  * GET /voice/languages
  */
-router.get('/languages', (req, res) => {
+router.get("/languages", (_req, res) => {
   const languages = voiceProcessorManager.getSupportedLanguages();
 
   res.json({
@@ -469,21 +472,21 @@ router.get('/languages', (req, res) => {
  * POST /voice/stt/batch
  */
 router.post(
-  '/stt/batch',
-  upload.array('audio', 10),
+  "/stt/batch",
+  upload.array("audio", 10),
   asyncHandler(async (req, res) => {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
-        error: '没有上传音频文件',
+        error: "没有上传音频文件",
       });
     }
 
     const {
-      userId = 'anonymous',
-      provider = 'openai_whisper',
-      model = 'whisper-1',
-      language = 'auto',
+      userId = "anonymous",
+      provider = "openai_whisper",
+      model = "whisper-1",
+      language = "auto",
     } = req.body;
 
     try {
@@ -513,7 +516,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 /**
@@ -521,21 +524,26 @@ router.post(
  * POST /voice/tts/batch
  */
 router.post(
-  '/tts/batch',
+  "/tts/batch",
   asyncHandler(async (req, res) => {
-    const { userId = 'anonymous', texts = [], provider = 'openai_tts', voice = 'alloy' } = req.body;
+    const {
+      userId = "anonymous",
+      texts = [],
+      provider = "openai_tts",
+      voice = "alloy",
+    } = req.body;
 
     if (!Array.isArray(texts) || texts.length === 0) {
       return res.status(400).json({
         success: false,
-        error: '批量请求必须是非空数组',
+        error: "批量请求必须是非空数组",
       });
     }
 
     if (texts.length > 10) {
       return res.status(400).json({
         success: false,
-        error: '批量请求数量不能超过10个',
+        error: "批量请求数量不能超过10个",
       });
     }
 
@@ -567,7 +575,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 模板 ====================
@@ -576,42 +584,42 @@ router.post(
  * 获取TTS模板
  * GET /voice/tts/templates
  */
-router.get('/tts/templates', (req, res) => {
+router.get("/tts/templates", (_req, res) => {
   const templates = [
     {
-      id: 'greeting',
-      name: '问候语',
-      description: '友好的问候和欢迎语',
-      text: '您好！欢迎使用我们的语音服务。我是您的AI助手，很高兴为您服务。',
-      category: '通用',
+      id: "greeting",
+      name: "问候语",
+      description: "友好的问候和欢迎语",
+      text: "您好！欢迎使用我们的语音服务。我是您的AI助手，很高兴为您服务。",
+      category: "通用",
     },
     {
-      id: 'announcement',
-      name: '公告通知',
-      description: '正式的公告或通知',
-      text: '尊敬的用户，我们非常高兴地宣布，系统已成功升级到最新版本，带来更好的性能和用户体验。',
-      category: '商务',
+      id: "announcement",
+      name: "公告通知",
+      description: "正式的公告或通知",
+      text: "尊敬的用户，我们非常高兴地宣布，系统已成功升级到最新版本，带来更好的性能和用户体验。",
+      category: "商务",
     },
     {
-      id: 'story',
-      name: '故事叙述',
-      description: '适合讲故事的叙述风格',
-      text: '从前，在一个遥远的村庄里，住着一只勇敢的小兔子。它总是充满好奇心，喜欢探索周围的世界。',
-      category: '娱乐',
+      id: "story",
+      name: "故事叙述",
+      description: "适合讲故事的叙述风格",
+      text: "从前，在一个遥远的村庄里，住着一只勇敢的小兔子。它总是充满好奇心，喜欢探索周围的世界。",
+      category: "娱乐",
     },
     {
-      id: 'tutorial',
-      name: '教程指导',
-      description: '清晰的教学和指导内容',
-      text: '首先，请确保您已经安装了必要的软件。然后，按照以下步骤进行配置。',
-      category: '教育',
+      id: "tutorial",
+      name: "教程指导",
+      description: "清晰的教学和指导内容",
+      text: "首先，请确保您已经安装了必要的软件。然后，按照以下步骤进行配置。",
+      category: "教育",
     },
     {
-      id: 'poetry',
-      name: '诗歌朗诵',
-      description: '富有韵律的诗歌朗诵',
-      text: '床前明月光，疑是地上霜。举头望明月，低头思故乡。',
-      category: '文艺',
+      id: "poetry",
+      name: "诗歌朗诵",
+      description: "富有韵律的诗歌朗诵",
+      text: "床前明月光，疑是地上霜。举头望明月，低头思故乡。",
+      category: "文艺",
     },
   ];
 
@@ -628,22 +636,22 @@ router.get('/tts/templates', (req, res) => {
  * POST /voice/tts/from-template
  */
 router.post(
-  '/tts/from-template',
+  "/tts/from-template",
   asyncHandler(async (req, res) => {
-    const { templateId, userId = 'anonymous', customizations = {} } = req.body;
+    const { templateId, userId = "anonymous", customizations = {} } = req.body;
 
     // 获取模板
     const templates = [
-      { id: 'greeting', text: '您好！欢迎使用我们的语音服务。' },
-      { id: 'announcement', text: '尊敬的用户，我们非常高兴地宣布...' },
-      { id: 'story', text: '从前，在一个遥远的村庄里...' },
+      { id: "greeting", text: "您好！欢迎使用我们的语音服务。" },
+      { id: "announcement", text: "尊敬的用户，我们非常高兴地宣布..." },
+      { id: "story", text: "从前，在一个遥远的村庄里..." },
     ];
 
-    const template = templates.find(t => t.id === templateId);
+    const template = templates.find((t) => t.id === templateId);
     if (!template) {
       return res.status(404).json({
         success: false,
-        error: '模板不存在',
+        error: "模板不存在",
       });
     }
 
@@ -665,7 +673,7 @@ router.post(
         data: {
           jobId,
           template: templateId,
-          message: '使用模板的文字转语音任务已创建',
+          message: "使用模板的文字转语音任务已创建",
         },
       });
     } catch (error) {
@@ -674,7 +682,7 @@ router.post(
         error: error.message,
       });
     }
-  })
+  }),
 );
 
 // ==================== 健康检查 ====================
@@ -683,24 +691,24 @@ router.post(
  * 健康检查
  * GET /voice/health
  */
-router.get('/health', (req, res) => {
+router.get("/health", (_req, res) => {
   const stats = voiceProcessorManager.getQueueStats();
 
   res.json({
     success: true,
     data: {
-      status: 'healthy',
+      status: "healthy",
       timestamp: new Date(),
       uptime: process.uptime(),
       queueStats: stats,
-      version: '1.0',
+      version: "1.0",
     },
   });
 });
 
 // 创建上传目录
-const fs = require('fs');
-const uploadDir = '/tmp/uploads';
+const fs = require("node:fs");
+const uploadDir = "/tmp/uploads";
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }

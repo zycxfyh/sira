@@ -1,10 +1,10 @@
-const assert = require('assert');
-const adminHelper = require('../../common/admin-helper')();
-const environment = require('../../fixtures/cli/environment');
-const namespace = 'express-gateway:users:info';
-const idGen = require('uuid62');
+const assert = require("node:assert");
+const adminHelper = require("../../common/admin-helper")();
+const environment = require("../../fixtures/cli/environment");
+const namespace = "express-gateway:users:info";
+const idGen = require("uuid62");
 
-describe('eg users info', () => {
+describe("eg users info", () => {
   let program, env, userId, username;
 
   before(() => {
@@ -20,10 +20,10 @@ describe('eg users info', () => {
     return adminHelper.admin.users
       .create({
         username,
-        firstname: 'La',
-        lastname: 'Deeda',
+        firstname: "La",
+        lastname: "Deeda",
       })
-      .then(user => {
+      .then((user) => {
         userId = user.id;
       });
   });
@@ -32,25 +32,25 @@ describe('eg users info', () => {
     env.resetHijack();
   });
 
-  it('returns user info', done => {
-    env.hijack(namespace, generator => {
+  it("returns user info", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
       let error = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           error = message;
         };
-        generator.stdout = message => {
+        generator.stdout = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         const user = JSON.parse(output);
 
-        assert.strictEqual(user.firstname, 'La');
-        assert.strictEqual(user.lastname, 'Deeda');
+        assert.strictEqual(user.firstname, "La");
+        assert.strictEqual(user.lastname, "Deeda");
         assert(user.isActive);
 
         assert.strictEqual(error, null);
@@ -59,24 +59,24 @@ describe('eg users info', () => {
       });
     });
 
-    env.argv = program.parse('users info ' + username);
+    env.argv = program.parse(`users info ${username}`);
   });
 
-  it('prints only the user id when using the --quiet flag', done => {
-    env.hijack(namespace, generator => {
+  it("prints only the user id when using the --quiet flag", (done) => {
+    env.hijack(namespace, (generator) => {
       let output = null;
       let error = null;
 
-      generator.once('run', () => {
-        generator.log.error = message => {
+      generator.once("run", () => {
+        generator.log.error = (message) => {
           error = message;
         };
-        generator.stdout = message => {
+        generator.stdout = (message) => {
           output = message;
         };
       });
 
-      generator.once('end', () => {
+      generator.once("end", () => {
         assert.strictEqual(output, userId);
         assert.strictEqual(error, null);
 
@@ -84,6 +84,6 @@ describe('eg users info', () => {
       });
     });
 
-    env.argv = program.parse('users info ' + username + ' -q');
+    env.argv = program.parse(`users info ${username} -q`);
   });
 });

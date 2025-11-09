@@ -1,13 +1,13 @@
-const testHelper = require('../common/routing.helper');
-const config = require('../../../src/core/config');
+const testHelper = require("../common/routing.helper");
+const config = require("../../../core/config");
 
-describe('When scopes defined for apiEndpoint', () => {
+describe("When scopes defined for apiEndpoint", () => {
   const helper = testHelper();
 
-  before('setup', () => {
+  before("setup", () => {
     const scopes = [
-      { scope: 'admin', verbs: 'GET' },
-      { scope: 'profile', verbs: ['GET', 'POST'] },
+      { scope: "admin", verbs: "GET" },
+      { scope: "profile", verbs: ["GET", "POST"] },
     ];
     config.gatewayConfig = {
       http: { port: 0 },
@@ -16,10 +16,10 @@ describe('When scopes defined for apiEndpoint', () => {
           scopes,
         },
       },
-      policies: ['scopeTest'],
+      policies: ["scopeTest"],
       pipelines: {
         pipeline1: {
-          apiEndpoints: ['test_default'],
+          apiEndpoints: ["test_default"],
           policies: { scopeTest: {} },
         },
       },
@@ -27,30 +27,34 @@ describe('When scopes defined for apiEndpoint', () => {
     const plugins = {
       policies: [
         {
-          name: 'scopeTest',
+          name: "scopeTest",
           policy: () => (req, res) =>
-            res.json({ url: req.url, scopes, apiEndpoint: req.egContext.apiEndpoint }),
+            res.json({
+              url: req.url,
+              scopes,
+              apiEndpoint: req.egContext.apiEndpoint,
+            }),
         },
       ],
     };
     return helper.setup({ config, plugins });
   });
 
-  after('cleanup', helper.cleanup);
+  after("cleanup", helper.cleanup);
 
   it(
-    'should set scopes to egContext',
+    "should set scopes to egContext",
     helper.validateSuccess({
       setup: {
-        url: '/',
+        url: "/",
       },
       test: {
-        url: '/',
+        url: "/",
         scopes: [
-          { scope: 'admin', verbs: 'GET' },
-          { scope: 'profile', verbs: ['GET', 'POST'] },
+          { scope: "admin", verbs: "GET" },
+          { scope: "profile", verbs: ["GET", "POST"] },
         ],
       },
-    })
+    }),
   );
 });

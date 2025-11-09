@@ -11,8 +11,8 @@
  * - 隐私保护: 数据加密和访问控制
  */
 
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const crypto = require("node:crypto");
+const { EventEmitter } = require("node:events");
 
 // 对话配置
 const CONVERSATION_CONFIG = {
@@ -22,8 +22,8 @@ const CONVERSATION_CONFIG = {
   compressionThreshold: 100, // 压缩阈值
   retentionPeriod: 90 * 24 * 60 * 60 * 1000, // 90天保留期
   summaryInterval: 50, // 每50条消息生成一次摘要
-  memoryImportanceLevels: ['low', 'medium', 'high', 'critical'],
-  defaultProvider: 'redis', // 存储提供商
+  memoryImportanceLevels: ["low", "medium", "high", "critical"],
+  defaultProvider: "redis", // 存储提供商
   enableCrossSessionLearning: true, // 启用跨会话学习
 };
 
@@ -31,12 +31,12 @@ const CONVERSATION_CONFIG = {
 class ConversationSession {
   constructor(options = {}) {
     this.id = options.id || crypto.randomUUID();
-    this.userId = options.userId || 'anonymous';
-    this.title = options.title || '新对话';
+    this.userId = options.userId || "anonymous";
+    this.title = options.title || "新对话";
     this.createdAt = options.createdAt || new Date();
     this.updatedAt = new Date();
     this.lastActivity = new Date();
-    this.status = options.status || 'active'; // active, archived, deleted
+    this.status = options.status || "active"; // active, archived, deleted
     this.metadata = options.metadata || {};
 
     // 消息历史
@@ -53,7 +53,8 @@ class ConversationSession {
     };
 
     // 上下文管理
-    this.contextWindow = options.contextWindow || CONVERSATION_CONFIG.contextWindowSize;
+    this.contextWindow =
+      options.contextWindow || CONVERSATION_CONFIG.contextWindowSize;
     this.memory = new Map(); // 会话级记忆
     this.summary = null; // 会话摘要
     this.topics = new Set(); // 对话主题
@@ -69,12 +70,12 @@ class ConversationSession {
       timestamp: new Date(),
       tokens: message.tokens || this.estimateTokens(message.content),
       metadata: message.metadata || {},
-      importance: message.importance || 'medium',
+      importance: message.importance || "medium",
     };
 
     // 检查消息格式
-    if (!['user', 'assistant', 'system'].includes(messageEntry.role)) {
-      throw new Error('无效的消息角色');
+    if (!["user", "assistant", "system"].includes(messageEntry.role)) {
+      throw new Error("无效的消息角色");
     }
 
     this.messages.push(messageEntry);
@@ -85,9 +86,9 @@ class ConversationSession {
     this.stats.totalMessages++;
     this.stats.totalTokens += messageEntry.tokens;
 
-    if (messageEntry.role === 'user') {
+    if (messageEntry.role === "user") {
       this.stats.userMessages++;
-    } else if (messageEntry.role === 'assistant') {
+    } else if (messageEntry.role === "assistant") {
       this.stats.assistantMessages++;
     }
 
@@ -97,7 +98,11 @@ class ConversationSession {
     }
 
     // 更新会话标题（基于第一条用户消息）
-    if (this.title === '新对话' && messageEntry.role === 'user' && this.messages.length === 1) {
+    if (
+      this.title === "新对话" &&
+      messageEntry.role === "user" &&
+      this.messages.length === 1
+    ) {
       this.updateTitleFromMessage(messageEntry.content);
     }
 
@@ -121,7 +126,7 @@ class ConversationSession {
     if (this.summary && recentMessages.length < this.messages.length) {
       return [
         {
-          role: 'system',
+          role: "system",
           content: `对话摘要: ${this.summary}`,
           timestamp: this.createdAt,
           isSummary: true,
@@ -150,7 +155,7 @@ class ConversationSession {
     this.messages = [
       {
         id: crypto.randomUUID(),
-        role: 'system',
+        role: "system",
         content: `早期对话摘要: ${earlySummary}`,
         timestamp: earlyMessages[0]?.timestamp || this.createdAt,
         isSummary: true,
@@ -171,32 +176,42 @@ class ConversationSession {
   // 摘要消息内容
   summarizeMessages(messages, detailed = false) {
     // 这里应该调用AI生成摘要，暂时使用简单文本摘要
-    const textContent = messages
-      .filter(m => m.role !== 'system' || !m.isSummary)
-      .map(m => `${m.role}: ${m.content.substring(0, 100)}`)
-      .join(' | ');
+    const _textContent = messages
+      .filter((m) => m.role !== "system" || !m.isSummary)
+      .map((m) => `${m.role}: ${m.content.substring(0, 100)}`)
+      .join(" | ");
 
     if (detailed) {
-      return `用户与AI的对话，涉及主题: ${Array.from(this.topics).join(', ')}，共${messages.length}条消息。`;
+      return `用户与AI的对话，涉及主题: ${Array.from(this.topics).join(", ")}，共${messages.length}条消息。`;
     }
 
-    return `对话包含${messages.length}条消息，主要讨论${Array.from(this.topics).slice(0, 3).join('、')}等话题。`;
+    return `对话包含${messages.length}条消息，主要讨论${Array.from(this.topics).slice(0, 3).join("、")}等话题。`;
   }
 
   // 从消息更新标题
   updateTitleFromMessage(content) {
     // 简单的标题生成逻辑
-    const words = content.split(' ').slice(0, 5);
-    this.title = words.join(' ') + (words.length >= 5 ? '...' : '');
+    const words = content.split(" ").slice(0, 5);
+    this.title = words.join(" ") + (words.length >= 5 ? "..." : "");
   }
 
   // 提取主题和实体
   extractTopicsAndEntities(message) {
     // 简单的关键词提取（实际应该使用NLP）
     const content = message.content.toLowerCase();
-    const keywords = ['如何', '什么', '为什么', '怎么', '请', '帮', '需要', '问题', '解决'];
+    const keywords = [
+      "如何",
+      "什么",
+      "为什么",
+      "怎么",
+      "请",
+      "帮",
+      "需要",
+      "问题",
+      "解决",
+    ];
 
-    keywords.forEach(keyword => {
+    keywords.forEach((keyword) => {
       if (content.includes(keyword)) {
         this.topics.add(keyword);
       }
@@ -213,7 +228,9 @@ class ConversationSession {
   estimateTokens(content) {
     // 简单的估算：中文大约1个字符=1.5个token，英文1个单词=1.3个token
     const chineseChars = (content.match(/[\u4e00-\u9fff]/g) || []).length;
-    const englishWords = content.replace(/[\u4e00-\u9fff]/g, '').split(/\s+/).length;
+    const englishWords = content
+      .replace(/[\u4e00-\u9fff]/g, "")
+      .split(/\s+/).length;
     return Math.ceil(chineseChars * 1.5 + englishWords * 1.3);
   }
 
@@ -275,7 +292,7 @@ class MemoryNetwork {
   retrieveMemories(query, limit = 5) {
     const relevant = [];
 
-    for (const [key, memory] of this.memories) {
+    for (const [_key, memory] of this.memories) {
       const relevance = this.calculateRelevance(query, memory.content);
       if (relevance > this.importanceThreshold) {
         relevant.push({
@@ -289,7 +306,7 @@ class MemoryNetwork {
     relevant.sort((a, b) => b.relevance - a.relevance);
 
     // 更新访问信息
-    relevant.slice(0, limit).forEach(memory => {
+    relevant.slice(0, limit).forEach((memory) => {
       memory.accessCount++;
       memory.lastAccessed = new Date();
     });
@@ -302,8 +319,11 @@ class MemoryNetwork {
     const queryWords = query.toLowerCase().split(/\s+/);
     const contentWords = content.toLowerCase().split(/\s+/);
 
-    const commonWords = queryWords.filter(word =>
-      contentWords.some(contentWord => contentWord.includes(word) || word.includes(contentWord))
+    const commonWords = queryWords.filter((word) =>
+      contentWords.some(
+        (contentWord) =>
+          contentWord.includes(word) || word.includes(contentWord),
+      ),
     );
 
     return commonWords.length / Math.max(queryWords.length, 1);
@@ -374,13 +394,13 @@ class ConversationManager extends EventEmitter {
     // 启动清理任务
     this.startCleanupTask();
 
-    logInfo('对话历史管理器初始化完成');
+    logInfo("对话历史管理器初始化完成");
   }
 
   // 创建新会话
   createSession(userId, options = {}) {
     if (this.getUserSessions(userId).length >= this.config.maxSessionsPerUser) {
-      throw new Error('达到用户最大会话数量限制');
+      throw new Error("达到用户最大会话数量限制");
     }
 
     const session = new ConversationSession({
@@ -392,7 +412,7 @@ class ConversationManager extends EventEmitter {
     this.stats.totalSessions++;
     this.stats.activeSessions++;
 
-    this.emit('sessionCreated', session);
+    this.emit("sessionCreated", session);
 
     logInfo(`创建对话会话: ${session.id} - ${session.title}`);
 
@@ -408,13 +428,13 @@ class ConversationManager extends EventEmitter {
   updateSession(sessionId, updates) {
     const session = this.sessions.get(sessionId);
     if (!session) {
-      throw new Error('会话不存在');
+      throw new Error("会话不存在");
     }
 
     Object.assign(session, updates);
     session.updatedAt = new Date();
 
-    this.emit('sessionUpdated', session);
+    this.emit("sessionUpdated", session);
 
     return session;
   }
@@ -426,10 +446,10 @@ class ConversationManager extends EventEmitter {
       return false;
     }
 
-    session.status = 'deleted';
+    session.status = "deleted";
     this.stats.activeSessions--;
 
-    this.emit('sessionDeleted', session);
+    this.emit("sessionDeleted", session);
 
     logInfo(`删除对话会话: ${sessionId}`);
 
@@ -440,13 +460,13 @@ class ConversationManager extends EventEmitter {
   archiveSession(sessionId) {
     const session = this.sessions.get(sessionId);
     if (!session) {
-      throw new Error('会话不存在');
+      throw new Error("会话不存在");
     }
 
-    session.status = 'archived';
+    session.status = "archived";
     session.archivedAt = new Date();
 
-    this.emit('sessionArchived', session);
+    this.emit("sessionArchived", session);
 
     return session;
   }
@@ -455,11 +475,11 @@ class ConversationManager extends EventEmitter {
   addMessage(sessionId, message) {
     const session = this.sessions.get(sessionId);
     if (!session) {
-      throw new Error('会话不存在');
+      throw new Error("会话不存在");
     }
 
-    if (session.status !== 'active') {
-      throw new Error('会话状态不允许添加消息');
+    if (session.status !== "active") {
+      throw new Error("会话状态不允许添加消息");
     }
 
     const messageEntry = session.addMessage(message);
@@ -467,7 +487,7 @@ class ConversationManager extends EventEmitter {
     this.stats.totalTokens += messageEntry.tokens;
 
     // 添加到记忆网络
-    if (message.importance === 'high' || message.importance === 'critical') {
+    if (message.importance === "high" || message.importance === "critical") {
       const memoryKey = `${sessionId}_${messageEntry.id}`;
       this.memoryNetwork.addMemory(memoryKey, message.content, {
         sessionId,
@@ -477,7 +497,7 @@ class ConversationManager extends EventEmitter {
       });
     }
 
-    this.emit('messageAdded', { session, message: messageEntry });
+    this.emit("messageAdded", { session, message: messageEntry });
 
     return messageEntry;
   }
@@ -486,20 +506,25 @@ class ConversationManager extends EventEmitter {
   getContext(sessionId, limit = null) {
     const session = this.sessions.get(sessionId);
     if (!session) {
-      throw new Error('会话不存在');
+      throw new Error("会话不存在");
     }
 
     const contextMessages = session.getContextMessages(limit);
 
     // 补充全局记忆
-    const recentUserMessage = contextMessages.filter(m => m.role === 'user').pop();
+    const recentUserMessage = contextMessages
+      .filter((m) => m.role === "user")
+      .pop();
 
     if (recentUserMessage) {
-      const globalMemories = this.memoryNetwork.retrieveMemories(recentUserMessage.content, 2);
+      const globalMemories = this.memoryNetwork.retrieveMemories(
+        recentUserMessage.content,
+        2,
+      );
       if (globalMemories.length > 0) {
         contextMessages.unshift({
-          role: 'system',
-          content: `相关历史记忆: ${globalMemories.map(m => m.content.substring(0, 100)).join('; ')}`,
+          role: "system",
+          content: `相关历史记忆: ${globalMemories.map((m) => m.content.substring(0, 100)).join("; ")}`,
           timestamp: new Date(),
           isMemory: true,
         });
@@ -510,10 +535,10 @@ class ConversationManager extends EventEmitter {
   }
 
   // 获取用户的所有会话
-  getUserSessions(userId, status = 'active') {
+  getUserSessions(userId, status = "active") {
     const userSessions = [];
 
-    for (const [id, session] of this.sessions) {
+    for (const [_id, session] of this.sessions) {
       if (session.userId === userId && session.status === status) {
         userSessions.push({
           id: session.id,
@@ -528,14 +553,16 @@ class ConversationManager extends EventEmitter {
     }
 
     // 按最后活动时间排序
-    userSessions.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
+    userSessions.sort(
+      (a, b) => new Date(b.lastActivity) - new Date(a.lastActivity),
+    );
 
     return userSessions;
   }
 
   // 搜索会话
   searchSessions(userId, query, options = {}) {
-    const { status = 'active', limit = 20 } = options;
+    const { status = "active", limit = 20 } = options;
     const userSessions = this.getUserSessions(userId, status);
 
     if (!query) {
@@ -543,8 +570,10 @@ class ConversationManager extends EventEmitter {
     }
 
     // 简单的文本搜索
-    const results = userSessions.filter(session => {
-      const titleMatch = session.title.toLowerCase().includes(query.toLowerCase());
+    const results = userSessions.filter((session) => {
+      const titleMatch = session.title
+        .toLowerCase()
+        .includes(query.toLowerCase());
       // 这里可以扩展到搜索消息内容，但需要更多计算
       return titleMatch;
     });
@@ -556,7 +585,7 @@ class ConversationManager extends EventEmitter {
   exportSession(sessionId) {
     const session = this.sessions.get(sessionId);
     if (!session) {
-      throw new Error('会话不存在');
+      throw new Error("会话不存在");
     }
 
     return session.export();
@@ -567,7 +596,7 @@ class ConversationManager extends EventEmitter {
     const session = ConversationSession.fromData(data);
     this.sessions.set(session.id, session);
 
-    this.emit('sessionImported', session);
+    this.emit("sessionImported", session);
 
     return session;
   }
@@ -575,17 +604,23 @@ class ConversationManager extends EventEmitter {
   // 获取统计信息
   getStats() {
     const sessions = Array.from(this.sessions.values());
-    const activeSessions = sessions.filter(s => s.status === 'active');
+    const activeSessions = sessions.filter((s) => s.status === "active");
 
     return {
       ...this.stats,
       activeSessionsCount: activeSessions.length,
-      archivedSessionsCount: sessions.filter(s => s.status === 'archived').length,
-      deletedSessionsCount: sessions.filter(s => s.status === 'deleted').length,
+      archivedSessionsCount: sessions.filter((s) => s.status === "archived")
+        .length,
+      deletedSessionsCount: sessions.filter((s) => s.status === "deleted")
+        .length,
       avgMessagesPerSession:
-        sessions.length > 0 ? Math.round(this.stats.totalMessages / sessions.length) : 0,
+        sessions.length > 0
+          ? Math.round(this.stats.totalMessages / sessions.length)
+          : 0,
       avgTokensPerSession:
-        sessions.length > 0 ? Math.round(this.stats.totalTokens / sessions.length) : 0,
+        sessions.length > 0
+          ? Math.round(this.stats.totalTokens / sessions.length)
+          : 0,
     };
   }
 
@@ -594,9 +629,9 @@ class ConversationManager extends EventEmitter {
     const cutoff = new Date(Date.now() - this.config.retentionPeriod);
     let cleanedCount = 0;
 
-    for (const [id, session] of this.sessions) {
-      if (session.lastActivity < cutoff && session.status === 'active') {
-        session.status = 'archived';
+    for (const [_id, session] of this.sessions) {
+      if (session.lastActivity < cutoff && session.status === "active") {
+        session.status = "archived";
         cleanedCount++;
       }
     }
@@ -620,7 +655,7 @@ class ConversationManager extends EventEmitter {
       () => {
         this.cleanup();
       },
-      24 * 60 * 60 * 1000
+      24 * 60 * 60 * 1000,
     );
   }
 }
@@ -630,8 +665,10 @@ function logInfo(message) {
   console.log(`[ConversationManager] ${new Date().toISOString()} - ${message}`);
 }
 
-function logError(message) {
-  console.error(`[ConversationManager Error] ${new Date().toISOString()} - ${message}`);
+function _logError(message) {
+  console.error(
+    `[ConversationManager Error] ${new Date().toISOString()} - ${message}`,
+  );
 }
 
 // 导出单例实例

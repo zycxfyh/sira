@@ -3,13 +3,15 @@
  * 提供预设提示词模板，支持变量替换和智能提示
  */
 
-const fs = require('fs').promises;
-const path = require('path');
+const _fs = require("node:fs").promises;
+const path = require("node:path");
 
 class PromptTemplateManager {
   constructor(options = {}) {
     this.options = {
-      templatesDir: options.templatesDir || path.join(process.cwd(), 'templates', 'prompts'),
+      templatesDir:
+        options.templatesDir ||
+        path.join(process.cwd(), "templates", "prompts"),
       enableCaching: options.enableCaching !== false,
       maxCacheSize: options.maxCacheSize || 100,
       ...options,
@@ -32,11 +34,12 @@ class PromptTemplateManager {
 
     // 变量处理器
     this.variableProcessors = {
-      date: () => new Date().toLocaleDateString('zh-CN'),
-      time: () => new Date().toLocaleTimeString('zh-CN'),
-      datetime: () => new Date().toLocaleString('zh-CN'),
-      random: (min = 1, max = 100) => Math.floor(Math.random() * (max - min + 1)) + min,
-      uuid: () => require('crypto').randomUUID(),
+      date: () => new Date().toLocaleDateString("zh-CN"),
+      time: () => new Date().toLocaleTimeString("zh-CN"),
+      datetime: () => new Date().toLocaleString("zh-CN"),
+      random: (min = 1, max = 100) =>
+        Math.floor(Math.random() * (max - min + 1)) + min,
+      uuid: () => require("node:crypto").randomUUID(),
     };
 
     this.initializeTemplates();
@@ -49,8 +52,8 @@ class PromptTemplateManager {
     // 创意写作模板
     this.templates.creative = {
       story_writer: {
-        name: '故事作家',
-        description: '专业的小说和故事写作助手',
+        name: "故事作家",
+        description: "专业的小说和故事写作助手",
         template: `你是一位专业的故事作家，请根据以下要求创作一个引人入胜的故事：
 
 故事主题：{{theme}}
@@ -67,21 +70,28 @@ class PromptTemplateManager {
 5. 字数控制在{{word_count}}字左右
 
 请开始创作：`,
-        variables: ['theme', 'genre', 'characters', 'setting', 'plot_points', 'word_count'],
+        variables: [
+          "theme",
+          "genre",
+          "characters",
+          "setting",
+          "plot_points",
+          "word_count",
+        ],
         defaultValues: {
-          theme: '友谊与背叛',
-          genre: '奇幻冒险',
-          characters: '年轻的魔法师、神秘的导师、邪恶的反派',
-          setting: '中世纪魔法王国',
-          plot_points: '发现隐藏的秘密、面临艰难选择、最终的救赎',
-          word_count: '2000',
+          theme: "友谊与背叛",
+          genre: "奇幻冒险",
+          characters: "年轻的魔法师、神秘的导师、邪恶的反派",
+          setting: "中世纪魔法王国",
+          plot_points: "发现隐藏的秘密、面临艰难选择、最终的救赎",
+          word_count: "2000",
         },
-        tags: ['小说', '故事', '创意写作', '文学创作'],
+        tags: ["小说", "故事", "创意写作", "文学创作"],
       },
 
       poem_writer: {
-        name: '诗歌创作者',
-        description: '专业的诗歌创作助手',
+        name: "诗歌创作者",
+        description: "专业的诗歌创作助手",
         template: `你是一位才华横溢的诗人，请根据以下要求创作一首优美的诗歌：
 
 诗歌主题：{{theme}}
@@ -97,20 +107,20 @@ class PromptTemplateManager {
 4. 结构和谐，层次分明
 
 请创作诗歌：`,
-        variables: ['theme', 'form', 'tone', 'keywords', 'length'],
+        variables: ["theme", "form", "tone", "keywords", "length"],
         defaultValues: {
-          theme: '秋天的思念',
-          form: '自由诗',
-          tone: ' melancholic',
-          keywords: '落叶、思念、时光、季节',
-          length: '20',
+          theme: "秋天的思念",
+          form: "自由诗",
+          tone: " melancholic",
+          keywords: "落叶、思念、时光、季节",
+          length: "20",
         },
-        tags: ['诗歌', '文学', '创意写作', '艺术'],
+        tags: ["诗歌", "文学", "创意写作", "艺术"],
       },
 
       script_writer: {
-        name: '剧本作家',
-        description: '专业的剧本和对话创作助手',
+        name: "剧本作家",
+        description: "专业的剧本和对话创作助手",
         template: `你是一位经验丰富的剧本作家，请根据以下要求创作一段精彩的剧本片段：
 
 剧本类型：{{genre}}
@@ -127,24 +137,31 @@ class PromptTemplateManager {
 5. 长度控制在{{duration}}分钟的剧本量
 
 请开始创作剧本：`,
-        variables: ['genre', 'setting', 'characters', 'plot', 'dialogue_style', 'duration'],
+        variables: [
+          "genre",
+          "setting",
+          "characters",
+          "plot",
+          "dialogue_style",
+          "duration",
+        ],
         defaultValues: {
-          genre: '现代戏剧',
-          setting: '咖啡馆，夜晚',
-          characters: 'Alex（男，28岁，程序员），Sarah（女，26岁，设计师）',
-          plot: '两个陌生人在咖啡馆相遇，分享彼此的故事',
-          dialogue_style: '自然、现代、富有情感',
-          duration: '5',
+          genre: "现代戏剧",
+          setting: "咖啡馆，夜晚",
+          characters: "Alex（男，28岁，程序员），Sarah（女，26岁，设计师）",
+          plot: "两个陌生人在咖啡馆相遇，分享彼此的故事",
+          dialogue_style: "自然、现代、富有情感",
+          duration: "5",
         },
-        tags: ['剧本', '对话', '影视', '表演'],
+        tags: ["剧本", "对话", "影视", "表演"],
       },
     };
 
     // 编程开发模板
     this.templates.coding = {
       code_explanation: {
-        name: '代码解释助手',
-        description: '详细解释代码功能和原理',
+        name: "代码解释助手",
+        description: "详细解释代码功能和原理",
         template: `你是一位经验丰富的程序员，请详细解释以下代码的功能、原理和使用方法：
 
 编程语言：{{language}}
@@ -164,19 +181,19 @@ class PromptTemplateManager {
 6. **潜在问题**：可能存在的问题和改进建议
 
 请用清晰易懂的语言进行解释，适合{{audience}}水平的开发者理解。`,
-        variables: ['language', 'function', 'code', 'audience'],
+        variables: ["language", "function", "code", "audience"],
         defaultValues: {
-          language: 'JavaScript',
-          function: '用户数据验证',
-          code: 'function validateUser(user) { return user.name && user.email; }',
-          audience: '初级',
+          language: "JavaScript",
+          function: "用户数据验证",
+          code: "function validateUser(user) { return user.name && user.email; }",
+          audience: "初级",
         },
-        tags: ['代码解释', '编程', '技术文档', '学习'],
+        tags: ["代码解释", "编程", "技术文档", "学习"],
       },
 
       bug_fixer: {
-        name: 'Bug修复助手',
-        description: '分析和修复代码中的bug',
+        name: "Bug修复助手",
+        description: "分析和修复代码中的bug",
         template: `你是一位专业的代码调试专家，请帮我分析和修复以下代码中的问题：
 
 编程语言：{{language}}
@@ -206,19 +223,19 @@ class PromptTemplateManager {
    - 测试建议
 
 请提供完整的修复后的代码和详细的解释。`,
-        variables: ['language', 'problem', 'error_message', 'code'],
+        variables: ["language", "problem", "error_message", "code"],
         defaultValues: {
-          language: 'JavaScript',
-          problem: '函数返回undefined',
-          error_message: 'TypeError: Cannot read property of undefined',
-          code: 'function getUserName(user) { return user.name; }',
+          language: "JavaScript",
+          problem: "函数返回undefined",
+          error_message: "TypeError: Cannot read property of undefined",
+          code: "function getUserName(user) { return user.name; }",
         },
-        tags: ['Bug修复', '调试', '代码质量', '问题解决'],
+        tags: ["Bug修复", "调试", "代码质量", "问题解决"],
       },
 
       code_generator: {
-        name: '代码生成器',
-        description: '根据需求生成高质量代码',
+        name: "代码生成器",
+        description: "根据需求生成高质量代码",
         template: `你是一位资深的软件工程师，请根据以下需求生成高质量的代码：
 
 项目类型：{{project_type}}
@@ -237,28 +254,28 @@ class PromptTemplateManager {
 
 请生成完整的、可直接运行的代码，并附上使用说明。`,
         variables: [
-          'project_type',
-          'language',
-          'requirements',
-          'tech_stack',
-          'quality_requirements',
+          "project_type",
+          "language",
+          "requirements",
+          "tech_stack",
+          "quality_requirements",
         ],
         defaultValues: {
-          project_type: 'Web应用',
-          language: 'JavaScript',
-          requirements: '用户注册和登录功能',
-          tech_stack: 'Node.js, Express, MongoDB',
-          quality_requirements: '生产级别，可扩展，高性能',
+          project_type: "Web应用",
+          language: "JavaScript",
+          requirements: "用户注册和登录功能",
+          tech_stack: "Node.js, Express, MongoDB",
+          quality_requirements: "生产级别，可扩展，高性能",
         },
-        tags: ['代码生成', '软件开发', '架构设计', '最佳实践'],
+        tags: ["代码生成", "软件开发", "架构设计", "最佳实践"],
       },
     };
 
     // 商业应用模板
     this.templates.business = {
       email_writer: {
-        name: '商务邮件撰写',
-        description: '专业的商务邮件撰写助手',
+        name: "商务邮件撰写",
+        description: "专业的商务邮件撰写助手",
         template: `你是一位专业的商务沟通专家，请帮我撰写一封商务邮件：
 
 邮件类型：{{email_type}}
@@ -281,33 +298,33 @@ class PromptTemplateManager {
 4. 明确的行动呼吁
 5. 专业的结束语`,
         variables: [
-          'email_type',
-          'recipient',
-          'sender',
-          'subject',
-          'purpose',
-          'key_points',
-          'tone',
-          'language_style',
-          'length',
+          "email_type",
+          "recipient",
+          "sender",
+          "subject",
+          "purpose",
+          "key_points",
+          "tone",
+          "language_style",
+          "length",
         ],
         defaultValues: {
-          email_type: '商务合作',
-          recipient: '尊敬的客户',
-          sender: '您的合作伙伴',
-          subject: '关于合作事宜的讨论',
-          purpose: '探讨潜在的合作机会',
-          key_points: '项目介绍、合作优势、后续行动',
-          tone: '专业、友好、积极',
-          language_style: '正式、简洁、有说服力',
-          length: '适中（200-300字）',
+          email_type: "商务合作",
+          recipient: "尊敬的客户",
+          sender: "您的合作伙伴",
+          subject: "关于合作事宜的讨论",
+          purpose: "探讨潜在的合作机会",
+          key_points: "项目介绍、合作优势、后续行动",
+          tone: "专业、友好、积极",
+          language_style: "正式、简洁、有说服力",
+          length: "适中（200-300字）",
         },
-        tags: ['商务邮件', '沟通', '专业写作', '客户服务'],
+        tags: ["商务邮件", "沟通", "专业写作", "客户服务"],
       },
 
       report_writer: {
-        name: '报告撰写助手',
-        description: '专业的商务报告撰写',
+        name: "报告撰写助手",
+        description: "专业的商务报告撰写",
         template: `你是一位经验丰富的商业分析师，请根据以下要求撰写一份专业的商务报告：
 
 报告类型：{{report_type}}
@@ -333,23 +350,29 @@ class PromptTemplateManager {
 - 建议可操作，切实可行
 
 请撰写完整的报告内容。`,
-        variables: ['report_type', 'subject', 'audience', 'purpose', 'data_points'],
+        variables: [
+          "report_type",
+          "subject",
+          "audience",
+          "purpose",
+          "data_points",
+        ],
         defaultValues: {
-          report_type: '市场分析报告',
-          subject: '2024年AI市场发展趋势',
-          audience: '公司管理层',
-          purpose: '为公司战略决策提供参考',
-          data_points: '市场规模数据、增长趋势、技术发展、竞争格局、投资机会',
+          report_type: "市场分析报告",
+          subject: "2024年AI市场发展趋势",
+          audience: "公司管理层",
+          purpose: "为公司战略决策提供参考",
+          data_points: "市场规模数据、增长趋势、技术发展、竞争格局、投资机会",
         },
-        tags: ['商务报告', '市场分析', '战略规划', '数据分析'],
+        tags: ["商务报告", "市场分析", "战略规划", "数据分析"],
       },
     };
 
     // 教育学习模板
     this.templates.education = {
       lesson_planner: {
-        name: '课程设计助手',
-        description: '专业的课程和教学计划设计',
+        name: "课程设计助手",
+        description: "专业的课程和教学计划设计",
         template: `你是一位资深的教学设计专家，请根据以下要求设计一堂完整的课程：
 
 课程主题：{{subject}}
@@ -376,27 +399,27 @@ class PromptTemplateManager {
 
 请确保课程设计符合教育教学原则，适合目标学生群体。`,
         variables: [
-          'subject',
-          'grade_level',
-          'duration',
-          'learning_objectives',
-          'student_characteristics',
-          'available_resources',
+          "subject",
+          "grade_level",
+          "duration",
+          "learning_objectives",
+          "student_characteristics",
+          "available_resources",
         ],
         defaultValues: {
-          subject: '人工智能基础',
-          grade_level: '高中生',
-          duration: '45分钟',
-          learning_objectives: '理解AI基本概念，认识AI应用场景',
-          student_characteristics: '对技术感兴趣，基础数学知识良好',
-          available_resources: '电脑、多媒体设备、互联网接入',
+          subject: "人工智能基础",
+          grade_level: "高中生",
+          duration: "45分钟",
+          learning_objectives: "理解AI基本概念，认识AI应用场景",
+          student_characteristics: "对技术感兴趣，基础数学知识良好",
+          available_resources: "电脑、多媒体设备、互联网接入",
         },
-        tags: ['课程设计', '教学计划', '教育', '学习活动'],
+        tags: ["课程设计", "教学计划", "教育", "学习活动"],
       },
 
       quiz_generator: {
-        name: '测验题生成器',
-        description: '自动生成高质量的测验题目',
+        name: "测验题生成器",
+        description: "自动生成高质量的测验题目",
         template: `你是一位专业的教育评估专家，请根据以下要求生成一套测验题目：
 
 测验主题：{{subject}}
@@ -424,30 +447,30 @@ class PromptTemplateManager {
 
 确保测验题具有良好的区分度和信度。`,
         variables: [
-          'subject',
-          'difficulty',
-          'question_types',
-          'question_count',
-          'target_students',
-          'knowledge_points',
+          "subject",
+          "difficulty",
+          "question_types",
+          "question_count",
+          "target_students",
+          "knowledge_points",
         ],
         defaultValues: {
-          subject: '计算机网络基础',
-          difficulty: '中级',
-          question_types: '选择题、判断题、简答题',
-          question_count: '20',
-          target_students: '大学本科生',
-          knowledge_points: 'TCP/IP协议、HTTP/HTTPS、网络安全、路由算法',
+          subject: "计算机网络基础",
+          difficulty: "中级",
+          question_types: "选择题、判断题、简答题",
+          question_count: "20",
+          target_students: "大学本科生",
+          knowledge_points: "TCP/IP协议、HTTP/HTTPS、网络安全、路由算法",
         },
-        tags: ['测验题', '教育评估', '学习测试', '教学辅助'],
+        tags: ["测验题", "教育评估", "学习测试", "教学辅助"],
       },
     };
 
     // 沟通交流模板
     this.templates.communication = {
       meeting_summarizer: {
-        name: '会议纪要生成',
-        description: '自动生成会议纪要和行动项',
+        name: "会议纪要生成",
+        description: "自动生成会议纪要和行动项",
         template: `你是一位专业的行政助理，请根据会议记录生成详细的会议纪要：
 
 会议主题：{{meeting_topic}}
@@ -481,21 +504,27 @@ class PromptTemplateManager {
    - 下次会议安排
 
 请确保纪要内容完整、准确、条理清晰。`,
-        variables: ['meeting_topic', 'meeting_time', 'attendees', 'facilitator', 'meeting_notes'],
+        variables: [
+          "meeting_topic",
+          "meeting_time",
+          "attendees",
+          "facilitator",
+          "meeting_notes",
+        ],
         defaultValues: {
-          meeting_topic: 'Q4项目进度评审',
-          meeting_time: '{{date}} 下午2:00-4:00',
-          attendees: '项目经理、开发团队、产品经理、测试团队',
-          facilitator: '项目经理',
+          meeting_topic: "Q4项目进度评审",
+          meeting_time: "{{date}} 下午2:00-4:00",
+          attendees: "项目经理、开发团队、产品经理、测试团队",
+          facilitator: "项目经理",
           meeting_notes:
-            '项目进度85%，遇到技术难题，需要额外资源；客户需求变更，需要调整计划；建议增加自动化测试覆盖率',
+            "项目进度85%，遇到技术难题，需要额外资源；客户需求变更，需要调整计划；建议增加自动化测试覆盖率",
         },
-        tags: ['会议纪要', '行政管理', '项目管理', '沟通记录'],
+        tags: ["会议纪要", "行政管理", "项目管理", "沟通记录"],
       },
 
       feedback_analyzer: {
-        name: '反馈分析助手',
-        description: '分析用户反馈并提供改进建议',
+        name: "反馈分析助手",
+        description: "分析用户反馈并提供改进建议",
         template: `你是一位专业的用户体验分析师，请分析以下用户反馈并提供改进建议：
 
 产品/服务名称：{{product_name}}
@@ -517,21 +546,22 @@ class PromptTemplateManager {
 - 实施时间表和成功指标
 
 确保分析客观、专业，具有可操作性。`,
-        variables: ['product_name', 'feedback_source', 'feedback_content'],
+        variables: ["product_name", "feedback_source", "feedback_content"],
         defaultValues: {
-          product_name: 'AI聊天助手',
-          feedback_source: '用户调查问卷',
-          feedback_content: '响应速度太慢，有时回答不准确，希望能支持更多语言，界面设计比较简陋',
+          product_name: "AI聊天助手",
+          feedback_source: "用户调查问卷",
+          feedback_content:
+            "响应速度太慢，有时回答不准确，希望能支持更多语言，界面设计比较简陋",
         },
-        tags: ['用户反馈', '体验分析', '改进建议', '用户研究'],
+        tags: ["用户反馈", "体验分析", "改进建议", "用户研究"],
       },
     };
 
     // 数据分析模板
     this.templates.analysis = {
       data_interpreter: {
-        name: '数据解读助手',
-        description: '专业的数据分析和解读',
+        name: "数据解读助手",
+        description: "专业的数据分析和解读",
         template: `你是一位资深的数据分析师，请对以下数据进行专业解读和分析：
 
 数据来源：{{data_source}}
@@ -558,20 +588,28 @@ class PromptTemplateManager {
 - 建议具体可行的行动方案
 
 请用清晰的语言呈现分析结果，适合{{audience}}理解。`,
-        variables: ['data_source', 'analysis_goal', 'data_description', 'data_content', 'audience'],
+        variables: [
+          "data_source",
+          "analysis_goal",
+          "data_description",
+          "data_content",
+          "audience",
+        ],
         defaultValues: {
-          data_source: '网站访问日志',
-          analysis_goal: '用户行为分析和转化率优化',
-          data_description: '过去30天的网站访问数据，包括PV、UV、停留时间、跳出率等',
-          data_content: 'PV: 15000, UV: 8000, 平均停留时间: 3.5分钟, 跳出率: 45%, 转化率: 2.8%',
-          audience: '产品经理和技术团队',
+          data_source: "网站访问日志",
+          analysis_goal: "用户行为分析和转化率优化",
+          data_description:
+            "过去30天的网站访问数据，包括PV、UV、停留时间、跳出率等",
+          data_content:
+            "PV: 15000, UV: 8000, 平均停留时间: 3.5分钟, 跳出率: 45%, 转化率: 2.8%",
+          audience: "产品经理和技术团队",
         },
-        tags: ['数据分析', '商业智能', '趋势分析', '洞察发现'],
+        tags: ["数据分析", "商业智能", "趋势分析", "洞察发现"],
       },
 
       research_summarizer: {
-        name: '研究报告摘要',
-        description: '生成研究报告的结构化摘要',
+        name: "研究报告摘要",
+        description: "生成研究报告的结构化摘要",
         template: `你是一位专业的科研工作者，请为以下研究内容生成结构化的摘要：
 
 研究领域：{{research_field}}
@@ -606,31 +644,34 @@ class PromptTemplateManager {
 
 请用学术性的语言撰写摘要。`,
         variables: [
-          'research_field',
-          'paper_title',
-          'institution',
-          'publication_date',
-          'abstract',
-          'methodology',
-          'findings',
+          "research_field",
+          "paper_title",
+          "institution",
+          "publication_date",
+          "abstract",
+          "methodology",
+          "findings",
         ],
         defaultValues: {
-          research_field: '人工智能',
-          paper_title: '基于深度学习的图像识别新方法',
-          institution: '清华大学计算机系',
-          publication_date: '2024年3月',
-          abstract: '提出了一种新的深度学习方法用于图像识别任务',
-          methodology: '使用CNN和Transformer的混合架构',
-          findings: '在标准数据集上取得了92.5%的准确率，超过了现有方法',
+          research_field: "人工智能",
+          paper_title: "基于深度学习的图像识别新方法",
+          institution: "清华大学计算机系",
+          publication_date: "2024年3月",
+          abstract: "提出了一种新的深度学习方法用于图像识别任务",
+          methodology: "使用CNN和Transformer的混合架构",
+          findings: "在标准数据集上取得了92.5%的准确率，超过了现有方法",
         },
-        tags: ['研究摘要', '学术写作', '文献综述', '科研辅助'],
+        tags: ["研究摘要", "学术写作", "文献综述", "科研辅助"],
       },
     };
 
     console.log(
-      '✅ 提示词模板库初始化完成，包含',
-      Object.values(this.templates).reduce((sum, cat) => sum + Object.keys(cat).length, 0),
-      '个模板'
+      "✅ 提示词模板库初始化完成，包含",
+      Object.values(this.templates).reduce(
+        (sum, cat) => sum + Object.keys(cat).length,
+        0,
+      ),
+      "个模板",
     );
   }
 
@@ -688,7 +729,7 @@ class PromptTemplateManager {
       return {};
     }
 
-    return Object.keys(this.templates[category]).map(templateId => ({
+    return Object.keys(this.templates[category]).map((templateId) => ({
       id: templateId,
       name: this.templates[category][templateId].name,
       description: this.templates[category][templateId].description,
@@ -704,7 +745,11 @@ class PromptTemplateManager {
 
     for (const [category, templates] of Object.entries(this.templates)) {
       for (const [templateId, template] of Object.entries(templates)) {
-        if (template.tags && template.tags.some(t => t.toLowerCase().includes(tag.toLowerCase()))) {
+        if (
+          template.tags?.some((t) =>
+            t.toLowerCase().includes(tag.toLowerCase()),
+          )
+        ) {
           results.push({
             category,
             id: templateId,
@@ -733,7 +778,7 @@ class PromptTemplateManager {
     // 替换变量
     for (const [key, value] of Object.entries(finalVariables)) {
       const placeholder = `{{${key}}}`;
-      rendered = rendered.replace(new RegExp(placeholder, 'g'), value);
+      rendered = rendered.replace(new RegExp(placeholder, "g"), value);
     }
 
     // 处理特殊变量
@@ -759,7 +804,7 @@ class PromptTemplateManager {
     processed = processed.replace(functionRegex, (match, funcName, args) => {
       if (this.variableProcessors[funcName]) {
         try {
-          const argList = args ? args.split(',').map(arg => arg.trim()) : [];
+          const argList = args ? args.split(",").map((arg) => arg.trim()) : [];
           return this.variableProcessors[funcName](...argList);
         } catch (error) {
           console.warn(`变量函数处理失败: ${funcName}`, error);
@@ -803,7 +848,7 @@ class PromptTemplateManager {
 
     // 检查变量值有效性
     for (const [key, value] of Object.entries(variables)) {
-      if (typeof value !== 'string' && typeof value !== 'number') {
+      if (typeof value !== "string" && typeof value !== "number") {
         invalid.push(`${key}: 必须是字符串或数字`);
       }
     }
@@ -825,7 +870,7 @@ class PromptTemplateManager {
     }
 
     // 验证模板数据
-    const requiredFields = ['name', 'description', 'template', 'variables'];
+    const requiredFields = ["name", "description", "template", "variables"];
     for (const field of requiredFields) {
       if (!templateData[field]) {
         throw new Error(`模板缺少必需字段: ${field}`);
@@ -834,7 +879,7 @@ class PromptTemplateManager {
 
     this.templates[category][templateId] = {
       ...templateData,
-      tags: templateData.tags || ['自定义'],
+      tags: templateData.tags || ["自定义"],
       defaultValues: templateData.defaultValues || {},
     };
 
@@ -852,8 +897,8 @@ class PromptTemplateManager {
 
     // 不允许删除内置模板
     const template = this.templates[category][templateId];
-    if (!template.tags || !template.tags.includes('自定义')) {
-      throw new Error('不能删除内置模板');
+    if (!template.tags || !template.tags.includes("自定义")) {
+      throw new Error("不能删除内置模板");
     }
 
     delete this.templates[category][templateId];
@@ -882,7 +927,7 @@ class PromptTemplateManager {
       // 统计标签
       for (const template of Object.values(templates)) {
         if (template.tags) {
-          template.tags.forEach(tag => {
+          template.tags.forEach((tag) => {
             stats.popularTags.set(tag, (stats.popularTags.get(tag) || 0) + 1);
           });
         }
@@ -892,7 +937,7 @@ class PromptTemplateManager {
     stats.popularTags = Object.fromEntries(
       Array.from(stats.popularTags.entries())
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
+        .slice(0, 10),
     );
 
     return stats;
@@ -905,12 +950,12 @@ class PromptTemplateManager {
     return {
       templates: this.templates,
       metadata: {
-        version: '1.0.0',
+        version: "1.0.0",
         exportTime: new Date().toISOString(),
         totalCategories: Object.keys(this.templates).length,
         totalTemplates: Object.values(this.templates).reduce(
           (sum, cat) => sum + Object.keys(cat).length,
-          0
+          0,
         ),
       },
     };
@@ -928,14 +973,14 @@ class PromptTemplateManager {
         }
 
         for (const [templateId, template] of Object.entries(templates)) {
-          if (template.tags && template.tags.includes('自定义')) {
+          if (template.tags?.includes("自定义")) {
             this.templates[category][templateId] = template;
           }
         }
       }
     }
 
-    console.log('✅ 模板配置导入完成');
+    console.log("✅ 模板配置导入完成");
   }
 
   /**
@@ -950,27 +995,30 @@ class PromptTemplateManager {
         let score = 0;
 
         // 基于描述匹配度评分
-        if (template.description.toLowerCase().includes(description)) score += 3;
+        if (template.description.toLowerCase().includes(description))
+          score += 3;
         if (template.name.toLowerCase().includes(description)) score += 2;
-        if (template.tags && template.tags.some(tag => description.includes(tag.toLowerCase())))
+        if (
+          template.tags?.some((tag) => description.includes(tag.toLowerCase()))
+        )
           score += 2;
 
         // 基于标签相关性评分
         const relevantTags = {
-          写: ['写作', '创作', '文学'],
-          代码: ['编程', '代码', '开发'],
-          邮件: ['邮件', '沟通', '商务'],
-          报告: ['报告', '分析', '总结'],
-          会议: ['会议', '纪要', '讨论'],
-          教学: ['教学', '课程', '教育'],
-          数据: ['数据', '分析', '统计'],
+          写: ["写作", "创作", "文学"],
+          代码: ["编程", "代码", "开发"],
+          邮件: ["邮件", "沟通", "商务"],
+          报告: ["报告", "分析", "总结"],
+          会议: ["会议", "纪要", "讨论"],
+          教学: ["教学", "课程", "教育"],
+          数据: ["数据", "分析", "统计"],
         };
 
         for (const [keyword, tags] of Object.entries(relevantTags)) {
           if (
             description.includes(keyword) &&
             template.tags &&
-            template.tags.some(tag => tags.includes(tag))
+            template.tags.some((tag) => tags.includes(tag))
           ) {
             score += 1;
           }

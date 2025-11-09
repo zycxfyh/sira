@@ -1,4 +1,4 @@
 module.exports = {
-  policy: require('./ai-rate-limit'),
-  schema: require('./schema.json'),
+  policy: require("./ai-rate-limit"),
+  schema: require("./schema.json"),
 };

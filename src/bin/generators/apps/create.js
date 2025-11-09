@@ -1,5 +1,5 @@
-const eg = require('../../eg');
-const SCHEMA = 'http://express-gateway.io/models/applications.json';
+const eg = require("../../eg");
+const SCHEMA = "http://express-gateway.io/models/applications.json";
 
 module.exports = class extends eg.Generator {
   constructor(args, opts) {
@@ -8,33 +8,33 @@ module.exports = class extends eg.Generator {
     this.stdin = process.stdin;
 
     this.configureCommand({
-      command: 'create [options]',
-      desc: 'Create an application',
-      builder: yargs =>
+      command: "create [options]",
+      desc: "Create an application",
+      builder: (yargs) =>
         yargs
           .usage(`Usage: $0 ${process.argv[2]} create [options]`)
           .example(`$0 ${process.argv[2]} create -u jdoe`)
           .example(
             `$0 ${process.argv[2]} create -u jdoe -p 'name=mobile-app' ` +
-              "-p 'redirectUri=http://localhost/cb'"
+              "-p 'redirectUri=http://localhost/cb'",
           )
           .example(
             'echo \'{"user":"jdoe","name":"mobile-app"}\'' +
-              ` | $0 ${process.argv[2]} create --stdin`
+              ` | $0 ${process.argv[2]} create --stdin`,
           )
           .example(`cat all_apps.json | $0 ${process.argv[2]} create --stdin`)
-          .string(['p', 'u'])
-          .boolean(['stdin'])
-          .describe('u', 'User ID or username associated with the app')
-          .describe('p', "App property in the form [-p 'foo=bar']")
-          .describe('stdin', 'Import newline-delimited JSON via standard input')
-          .alias('u', 'user')
-          .nargs('u', 1)
-          .alias('p', 'property')
-          .group(['u', 'p', 'stdin'], 'Options:')
-          .check((args, opts) => {
+          .string(["p", "u"])
+          .boolean(["stdin"])
+          .describe("u", "User ID or username associated with the app")
+          .describe("p", "App property in the form [-p 'foo=bar']")
+          .describe("stdin", "Import newline-delimited JSON via standard input")
+          .alias("u", "user")
+          .nargs("u", 1)
+          .alias("p", "property")
+          .group(["u", "p", "stdin"], "Options:")
+          .check((args, _opts) => {
             if (!args.stdin && !args.user) {
-              throw new Error('must include --stdin or -u, --user');
+              throw new Error("must include --stdin or -u, --user");
             }
             return true;
           }),
@@ -65,11 +65,11 @@ module.exports = class extends eg.Generator {
 
     let hasInvalidProperty = false;
 
-    propertyValues.forEach(p => {
-      const equalIndex = p.indexOf('=');
+    propertyValues.forEach((p) => {
+      const equalIndex = p.indexOf("=");
 
       if (equalIndex === -1 || equalIndex === p.length - 1) {
-        this.log.error('invalid property option:', p);
+        this.log.error("invalid property option:", p);
         hasInvalidProperty = true;
         return;
       }
@@ -85,8 +85,8 @@ module.exports = class extends eg.Generator {
     }
 
     return this._promptAndValidate(app, SCHEMA)
-      .then(app => this.admin.apps.create(argv.user, app))
-      .then(newApp => {
+      .then((app) => this.admin.apps.create(argv.user, app))
+      .then((newApp) => {
         if (!argv.q) {
           this.log.ok(`Created ${newApp.id}`);
           this.stdout(JSON.stringify(newApp, null, 2));
@@ -94,31 +94,29 @@ module.exports = class extends eg.Generator {
           this.stdout(newApp.id);
         }
       })
-      .catch(err => {
-        this.log.error(
-          (err.response && err.response.error && err.response.error.text) || err.message
-        );
+      .catch((err) => {
+        this.log.error(err.response?.error?.text || err.message);
       });
   }
 
   _createFromStdin() {
     const { argv } = this;
-    this.stdin.setEncoding('utf8');
+    this.stdin.setEncoding("utf8");
 
     const bufs = [];
 
-    this.stdin.on('readable', () => {
+    this.stdin.on("readable", () => {
       const chunk = this.stdin.read();
 
       if (chunk) {
         bufs.push(chunk);
       }
     });
-    return new Promise((resolve, reject) => {
-      this.stdin.on('end', () => {
-        const lines = bufs.join('').split('\n');
+    return new Promise((resolve, _reject) => {
+      this.stdin.on("end", () => {
+        const lines = bufs.join("").split("\n");
         const promises = lines
-          .filter(line => line.length > 0)
+          .filter((line) => line.length > 0)
           .map((line, index) => {
             const app = JSON.parse(line);
             let user;
@@ -137,8 +135,8 @@ module.exports = class extends eg.Generator {
             };
 
             return this._promptAndValidate(app, SCHEMA, options)
-              .then(app => this.admin.apps.create(options.user, app))
-              .then(newApp => {
+              .then((app) => this.admin.apps.create(options.user, app))
+              .then((newApp) => {
                 if (newApp) {
                   if (!argv.q) {
                     this.log.ok(`Created ${newApp.id}`);
@@ -147,10 +145,8 @@ module.exports = class extends eg.Generator {
                   }
                 }
               })
-              .catch(err => {
-                this.log.error(
-                  (err.response && err.response.error && err.response.error.text) || err.message
-                );
+              .catch((err) => {
+                this.log.error(err.response?.error?.text || err.message);
               });
           });
 

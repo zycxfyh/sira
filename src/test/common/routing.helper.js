@@ -1,25 +1,31 @@
-const request = require('supertest');
-const should = require('should');
-const gateway = require('../../../src/core/gateway');
-const config = require('../../../src/core/config');
-let policies = require('../../../src/core/policies');
+const request = require("supertest");
+const should = require("should");
+const gateway = require("../../../core/gateway");
+const config = require("../../../core/config");
+let policies = require("../../../core/policies");
 
-module.exports = function () {
+module.exports = () => {
   let app, httpsApp, originalGatewayConfig, originalPolicies;
   function prepareScenario(testCase) {
     let testScenario = request(app);
     if (testCase.setup.putData) {
-      testScenario = testScenario.put(testCase.setup.url, testCase.setup.putData);
+      testScenario = testScenario.put(
+        testCase.setup.url,
+        testCase.setup.putData,
+      );
     } else if (testCase.setup.postData) {
-      testScenario = testScenario.post(testCase.setup.url, testCase.setup.postData);
+      testScenario = testScenario.post(
+        testCase.setup.url,
+        testCase.setup.postData,
+      );
     } else {
       testScenario = testScenario.get(testCase.setup.url);
     }
 
-    testScenario.set('Content-Type', 'application/json');
+    testScenario.set("Content-Type", "application/json");
 
     if (testCase.setup.host) {
-      testScenario.set('Host', testCase.setup.host);
+      testScenario.set("Host", testCase.setup.host);
     }
     return testScenario;
   }
@@ -31,13 +37,13 @@ module.exports = function () {
     setup: ({ config, plugins } = {}) => {
       originalPolicies = policies;
 
-      return gateway({ config, plugins }).then(apps => {
+      return gateway({ config, plugins }).then((apps) => {
         app = apps.app;
         httpsApp = apps.httpsApp;
         return apps;
       });
     },
-    setupApp: preparedApp => {
+    setupApp: (preparedApp) => {
       app = preparedApp;
     },
     cleanup: () => {
@@ -49,20 +55,20 @@ module.exports = function () {
       config.unwatch();
 
       return Promise.all(
-        [app, httpsApp].map(app => {
+        [app, httpsApp].map((app) => {
           if (!app) {
             return Promise.resolve();
           }
 
           return new Promise((resolve, reject) => {
-            app.close(err => {
+            app.close((err) => {
               if (err) {
                 return reject(err);
               }
               return resolve();
             });
           });
-        })
+        }),
       );
     },
     validate404(testCase) {
@@ -70,26 +76,26 @@ module.exports = function () {
       testCase.test.errorCode = 404;
       return this.validateError(testCase);
     },
-    validateError: testCase => {
-      return done => {
+    validateError: (testCase) => {
+      return (done) => {
         const testScenario = prepareScenario(testCase);
         testScenario
           .expect(testCase.test.errorCode)
-          .expect('Content-Type', /text\/html/)
-          .end((err, res) => {
+          .expect("Content-Type", /text\/html/)
+          .end((err, _res) => {
             done(err);
           });
       };
     },
-    validateOptions: testCase => {
-      return done => {
+    validateOptions: (testCase) => {
+      return (done) => {
         const testScenario = request(app).options(testCase.setup.url);
 
         if (testCase.setup.host) {
-          testScenario.set('Host', testCase.setup.host);
+          testScenario.set("Host", testCase.setup.host);
         }
         if (testCase.setup.origin) {
-          testScenario.set('Origin', testCase.setup.origin);
+          testScenario.set("Origin", testCase.setup.origin);
         }
         if (testCase.test.headers) {
           for (const el in testCase.test.headers) {
@@ -101,23 +107,23 @@ module.exports = function () {
         }
         if (testCase.test.excludedHeaders) {
           for (const excludedHeader of testCase.test.excludedHeaders) {
-            testScenario.expect(res => {
+            testScenario.expect((res) => {
               should(res.get(excludedHeader)).be.undefined();
             });
           }
         }
-        testScenario.expect(204).end((err, res) => {
+        testScenario.expect(204).end((err, _res) => {
           done(err);
         });
       };
     },
-    validateSuccess: testCase => {
-      return done => {
+    validateSuccess: (testCase) => {
+      return (done) => {
         const testScenario = prepareScenario(testCase);
         testScenario
           .expect(200)
-          .expect('Content-Type', /json/)
-          .expect(res => {
+          .expect("Content-Type", /json/)
+          .expect((res) => {
             if (testCase.test.result) {
               should(res.body.result).be.eql(testCase.test.result);
             }
@@ -126,22 +132,24 @@ module.exports = function () {
               should(res.body.hostname).be.eql(testCase.test.host);
             }
             if (testCase.test.scopes) {
-              should(res.body.apiEndpoint.scopes).be.deepEqual(testCase.test.scopes);
+              should(res.body.apiEndpoint.scopes).be.deepEqual(
+                testCase.test.scopes,
+              );
             }
           })
-          .end((err, res) => {
+          .end((err, _res) => {
             done(err);
           });
       };
     },
-    validateParams: testCase => {
-      return done => {
+    validateParams: (testCase) => {
+      return (done) => {
         const testScenario = prepareScenario(testCase);
         testScenario
-          .expect(res => {
+          .expect((res) => {
             should(res.body.params).be.deepEqual(testCase.test.params);
           })
-          .end((err, res) => {
+          .end((err, _res) => {
             done(err);
           });
       };

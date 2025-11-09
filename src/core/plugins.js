@@ -1,12 +1,12 @@
-const logger = require('./logger').plugins;
-const eventBus = require('./eventBus');
-const schemas = require('./schemas');
-const parentRequire = require('parent-require');
-const engineVersion = '1.2.0';
-const semver = require('semver');
-const prefix = 'express-gateway-plugin-'; // TODO make configurable
-module.exports.load = function ({ config }) {
-  config = config || require('./config');
+const logger = require("./logger").plugins;
+const eventBus = require("./eventBus");
+const schemas = require("./schemas");
+const parentRequire = require("parent-require");
+const engineVersion = "1.2.0";
+const semver = require("semver");
+const prefix = "express-gateway-plugin-"; // TODO make configurable
+module.exports.load = ({ config }) => {
+  config = config || require("./config");
   const pluginsSettings = config.systemConfig.plugins || {};
 
   const loadedPlugins = [];
@@ -25,25 +25,25 @@ module.exports.load = function ({ config }) {
       let plugin;
       try {
         plugin = require(requireName); // EG loaded as main module
-      } catch (err) {
+      } catch (_err) {
         plugin = parentRequire(requireName); // EG loaded as library (after eg gateway create)
       }
       if (semver.lt(engineVersion, plugin.version)) {
         // TODO: versioning of plugins
         logger.warn(
-          `${plugin.version} is higher than engine version: ${engineVersion}; trying to load`
+          `${plugin.version} is higher than engine version: ${engineVersion}; trying to load`,
         );
       }
 
       // register schema and validate settings
-      const validate = schemas.register('plugin', pluginName, plugin.schema);
+      const validate = schemas.register("plugin", pluginName, plugin.schema);
       const { isValid, error } = validate(settings);
       if (!isValid) {
         // Stop loading plugin.
         throw new Error(`Failed to validate settings: ${error}`);
       }
 
-      const services = require('./services');
+      const services = require("./services");
       const context = new PluginContext({ settings, config, services });
       plugin.init(context);
       loadedPlugins.push(context);
@@ -56,11 +56,11 @@ module.exports.load = function ({ config }) {
   // Note: All logic to handle different plugin version should be here
   // Note: Rest of EG code must use only one standard interface
   return {
-    policies: extract(loadedPlugins, 'policies'),
-    conditions: extract(loadedPlugins, 'conditions'),
-    gatewayRoutes: extract(loadedPlugins, 'gatewayRoutes'),
-    adminRoutes: extract(loadedPlugins, 'adminRoutes'),
-    cliExtensions: extract(loadedPlugins, 'cliExtensions'),
+    policies: extract(loadedPlugins, "policies"),
+    conditions: extract(loadedPlugins, "conditions"),
+    gatewayRoutes: extract(loadedPlugins, "gatewayRoutes"),
+    adminRoutes: extract(loadedPlugins, "adminRoutes"),
+    cliExtensions: extract(loadedPlugins, "cliExtensions"),
   };
 };
 
