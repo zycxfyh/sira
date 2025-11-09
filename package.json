@@ -138,7 +138,7 @@
     "proxy-agent": "^6.5.0",
     "redis": "5.9.0",
     "semver": "^6.3.0",
-    "superagent": "^5.1.0",
+    "superagent": "^10.2.3",
     "superagent-logger": "^1.1.0",
     "superagent-prefix": "0.0.2",
     "uuid": "^3.3.3",
