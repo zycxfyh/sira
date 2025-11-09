@@ -138,7 +138,7 @@ class E2ETestingTool extends EventEmitter {
           name: "添加新密钥",
           action: "addApiKey",
           provider: "openai",
-          key: "sk-test-key",
+          key: process.env.DEEPSEEK_API_KEY || "sk-test-key",
         },
         { name: "验证密钥状态", action: "verifyKeyStatus" },
         { name: "测试密钥连接", action: "testKeyConnection" },

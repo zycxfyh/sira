@@ -183,7 +183,7 @@ class PerformanceTestingTool extends EventEmitter {
       endpoint: "/api-keys/validate",
       method: "POST",
       payload: {
-        key: "sk-test-key-123",
+        key: process.env.DEEPSEEK_API_KEY || "sk-test-key",
         permissions: ["read", "write"],
       },
       weight: 0.1, // 10%的请求
