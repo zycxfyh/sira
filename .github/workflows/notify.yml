@@ -16,7 +16,7 @@ jobs:
     if: github.event.workflow_run.workflow.name == 'CI Pipeline'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Send CI notification
         run: |
@@ -87,7 +87,7 @@ jobs:
     if: github.event.workflow_run.workflow.name == 'Deploy'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Send deploy notification
         run: |
@@ -126,7 +126,7 @@ jobs:
     if: github.event.workflow_run.workflow.name == 'Release'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get release info
         run: |
@@ -169,7 +169,7 @@ jobs:
     if: github.event_name == 'schedule'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
