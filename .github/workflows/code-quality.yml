@@ -74,7 +74,7 @@ jobs:
         npx jscpd . --reporters json > duplication-report.json || true
 
     - name: Upload analysis results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v5
       with:
         name: code-analysis
         path: |
