@@ -1,270 +1,265 @@
-# 贡献指南
+# 🤝 贡献指南
 
-感谢您对 Sira AI Gateway 项目的兴趣！我们欢迎任何形式的贡献，包括但不限于：
+欢迎来到 **Sira AI Gateway** 贡献者社区！我们非常感谢您对项目的兴趣和贡献。
 
-- 🐛 报告 Bug
-- 💡 提出新功能建议
-- 📝 改进文档
-- 🔧 提交代码修复
-- 🧪 编写测试
+## 📋 目录
 
-## 🚀 快速开始
+- [行为准则](#行为准则)
+- [开始贡献](#开始贡献)
+- [开发环境设置](#开发环境设置)
+- [贡献类型](#贡献类型)
+- [提交规范](#提交规范)
+- [测试要求](#测试要求)
+- [文档要求](#文档要求)
+- [审查流程](#审查流程)
 
-### 环境要求
+## 🎯 行为准则
 
-- Node.js 18.0.0 或更高版本
-- npm 或 pnpm
-- Git
+我们致力于维护一个开放、包容和尊重的社区。请遵循以下行为准则：
 
-### 本地开发设置
+### ✅ 鼓励的行为
+- 友好的沟通和建设性的反馈
+- 尊重不同的观点和经验水平
+- 专注于解决问题而不是批评人
+- 主动帮助新贡献者
 
-1. **克隆仓库**
-   ```bash
-   git clone https://github.com/your-username/sira-ai-gateway.git
-   cd sira-ai-gateway
-   ```
+### ❌ 禁止的行为
+- 侮辱性、歧视性或贬低性的言论
+- 故意发布误导信息
+- 侵犯隐私或泄露个人信息
+- 其他违反社区规范的行为
 
-2. **安装依赖**
-   ```bash
-   npm install
-   # 或使用 pnpm
-   pnpm install
-   ```
+## 🚀 开始贡献
 
-3. **环境配置**
-   ```bash
-   cp env.template .env
-   # 编辑 .env 文件，配置 API 密钥
-   ```
+### 1. 选择任务
+查看 [GitHub Issues](https://github.com/your-repo/sira-ai-gateway/issues) 寻找适合的任务：
 
-4. **启动开发服务器**
-   ```bash
-   npm run start:dev
-   ```
+- **🐛 Good First Issue**: 适合新贡献者的简单任务
+- **✨ Feature Request**: 新功能需求
+- **🐛 Bug Report**: 缺陷修复
+- **📚 Documentation**: 文档改进
 
-5. **运行测试**
-   ```bash
-   npm test
-   ```
-
-## 🐛 报告 Bug
-
-当您发现 Bug 时，请：
-
-1. 检查 [Issues](../../issues) 页面，确认是否已被报告
-2. 如果没有，请创建一个新的 Issue
-3. 提供详细的复现步骤
-4. 包含环境信息（Node.js 版本、操作系统等）
-
-### Bug 报告模板
-
-```markdown
-## Bug 描述
-
-[清晰简洁地描述问题]
-
-## 复现步骤
-
-1. 执行 '...'
-2. 点击 '...'
-3. 出现错误
-
-## 期望行为
-
-[描述期望的结果]
-
-## 实际行为
-
-[描述实际发生的情况]
-
-## 环境信息
-
-- OS: [e.g., Windows 10]
-- Node.js: [e.g., 18.17.0]
-- 浏览器: [e.g., Chrome 119]
-
-## 附加信息
-
-[任何其他相关信息]
+### 2. Fork 项目
+```bash
+# Fork 项目到你的 GitHub 账户
+# 然后克隆到本地
+git clone https://github.com/YOUR_USERNAME/sira-ai-gateway.git
+cd sira-ai-gateway
 ```
 
-## 💡 功能请求
+### 3. 创建特性分支
+```bash
+# 创建特性分支
+git checkout -b feature/amazing-feature
 
-我们欢迎新功能建议！请：
-
-1. 检查现有功能和路线图
-2. 创建 [Feature Request](../../issues/new?template=feature_request.md) Issue
-3. 详细描述功能需求
-4. 说明为什么这个功能对项目有益
-
-## 🔧 代码贡献
-
-### 开发工作流
-
-1. **创建分支**
-   ```bash
-   git checkout -b feature/your-feature-name
-   # 或
-   git checkout -b fix/issue-number
-   ```
-
-2. **编写代码**
-   - 遵循现有的代码风格
-   - 添加必要的测试
-   - 更新文档
-
-3. **代码质量检查**
-   ```bash
-   # 运行 ESLint
-   npm run lint
-
-   # 运行测试
-   npm test
-
-   # 格式化代码
-   npm run format
-   ```
-
-4. **提交代码**
-   ```bash
-   git add .
-   git commit -m "feat: add new feature
-
-   - Add detailed description
-   - Mention related issues
-   - Explain breaking changes"
-   ```
-
-5. **推送分支**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-6. **创建 Pull Request**
-   - 提供清晰的 PR 描述
-   - 关联相关 Issue
-   - 请求审查
-
-### 代码风格
-
-我们使用以下工具确保代码质量：
-
-- **ESLint**: JavaScript 代码检查
-- **Prettier**: 代码格式化
-- **Biome**: 快速代码检查和格式化
-- **Jest**: 单元测试和集成测试
-
-### 提交信息规范
-
-我们遵循 [Conventional Commits](https://conventionalcommits.org/) 规范：
-
+# 或者修复分支
+git checkout -b fix/bug-description
 ```
-type(scope): description
+
+## 🛠️ 开发环境设置
+
+### 系统要求
+- **Node.js**: 18.0.0 或更高版本
+- **npm**: 8.0.0 或更高版本
+- **Git**: 2.30.0 或更高版本
+
+### 安装依赖
+```bash
+# 安装项目依赖
+npm install
+
+# 安装开发依赖（如需要）
+npm install --save-dev <package-name>
+```
+
+### 环境配置
+```bash
+# 复制环境配置文件
+cp .env.example .env
+
+# 编辑配置文件
+nano .env
+```
+
+### 启动开发服务器
+```bash
+# 启动开发服务器
+npm run start:dev
+
+# 或者使用热重载
+npm run dev
+```
+
+## 📝 贡献类型
+
+### 🐛 Bug 修复
+1. 在 Issues 中报告问题或找到现有问题
+2. 编写测试用例重现问题
+3. 修复问题
+4. 确保所有测试通过
+
+### ✨ 新功能
+1. 在 Discussions 中提出功能想法
+2. 创建详细的功能需求文档
+3. 实现功能并编写测试
+4. 更新相关文档
+
+### 📚 文档改进
+1. 识别文档问题或缺失内容
+2. 更新或创建相关文档
+3. 确保文档清晰易懂
+
+### 🧪 测试改进
+1. 识别测试覆盖不足的代码
+2. 编写新的测试用例
+3. 改进现有测试
+
+## 📝 提交规范
+
+我们使用 [Conventional Commits](https://conventionalcommits.org/) 规范：
+
+### 格式
+```
+<type>[optional scope]: <description>
 
 [optional body]
 
-[optional footer]
+[optional footer(s)]
 ```
 
-类型包括：
-- `feat`: 新功能
-- `fix`: 修复 Bug
-- `docs`: 文档更新
-- `style`: 代码格式调整
-- `refactor`: 代码重构
-- `test`: 测试相关
-- `chore`: 构建过程或工具配置
+### 类型
+- **feat**: 新功能
+- **fix**: 缺陷修复
+- **docs**: 文档更新
+- **style**: 代码风格调整
+- **refactor**: 代码重构
+- **test**: 测试相关
+- **chore**: 构建过程或工具配置
 
-## 🧪 测试
+### 示例
+```bash
+# 新功能
+git commit -m "feat: add AI model routing based on complexity"
+
+# 缺陷修复
+git commit -m "fix: resolve memory leak in cache manager"
+
+# 文档更新
+git commit -m "docs: update API documentation for v2.1.0"
+```
+
+## 🧪 测试要求
 
 ### 运行测试
-
 ```bash
 # 运行所有测试
 npm test
 
-# 运行特定测试文件
-npm test -- src/test/server.test.js
+# 运行单元测试
+npm run test:unit
 
-# 运行带覆盖率的测试
-npm run test:coverage
+# 运行集成测试
+npm run test:integration
 
-# 监听模式运行测试
-npm run test:watch
+# 运行端到端测试
+npm run test:e2e
+
+# 运行性能测试
+npm run test:performance
 ```
 
-### 编写测试
+### 测试覆盖率
+- 新代码需要有相应的测试
+- 总体测试覆盖率应保持在 90% 以上
+- 核心功能测试覆盖率应达到 95%+
 
-- 使用 Jest 作为测试框架
-- 测试文件放在 `src/test/` 目录
-- 测试文件名格式：`*.test.js` 或 `*.spec.js`
-- 使用 `describe` 和 `it` 组织测试
-- 遵循 AAA 模式（Arrange, Act, Assert）
+### 性能测试
+- 性能相关更改需要运行性能测试
+- 确保不会引入性能回归
+- 记录性能测试结果
 
+## 📚 文档要求
+
+### 代码文档
 ```javascript
-describe('Server', () => {
-  it('should respond to health check', async () => {
-    // Arrange
-    const expected = { status: 'healthy' };
-
-    // Act
-    const response = await request(app).get('/health');
-
-    // Assert
-    expect(response.status).toBe(200);
-    expect(response.body).toMatchObject(expected);
-  });
-});
+/**
+ * 函数描述
+ * @param {类型} 参数名 - 参数描述
+ * @returns {类型} 返回值描述
+ */
+function exampleFunction(param) {
+  // 函数实现
+}
 ```
 
-## 📚 文档
+### API 文档
+- 使用 JSDoc 注释公共 API
+- 更新 README.md 中的使用示例
+- 更新 CHANGELOG.md
 
-### 更新文档
-
-- README.md: 项目主要说明
-- API.md: API 接口文档
-- CONTRIBUTING.md: 本文件
-- docs/: 详细文档
-
-### 文档标准
-
-- 使用 Markdown 格式
+### 用户文档
+- 更新 README.md
+- 创建使用指南和教程
 - 提供代码示例
-- 包含使用说明
-- 及时更新
 
-## 🤝 行为准则
+## 🔍 审查流程
 
-### 我们的承诺
+### 1. 创建 Pull Request
+```bash
+# 推送你的分支
+git push origin feature/amazing-feature
 
-我们致力于为所有人提供一个无骚扰的环境，无论年龄、体型、残疾、民族、性别认同和表达、经验水平、国籍、个人外貌、种族、宗教或性取向。
+# 在 GitHub 上创建 Pull Request
+```
 
-### 标准
+### 2. PR 要求
+- [ ] 清晰的标题和描述
+- [ ] 关联相关 Issues
+- [ ] 通过所有 CI 检查
+- [ ] 代码审查通过
+- [ ] 文档更新完成
 
-有助于创造积极环境的行为包括：
+### 3. 代码审查
+PR 将由维护者审查，包括：
+- 代码质量和风格
+- 测试覆盖率
+- 性能影响
+- 文档完整性
+- 向后兼容性
 
-- 使用友好的语言
-- 尊重不同观点和经验
-- 优雅地接受建设性批评
-- 关注对社区最有利的事情
-- 对其他社区成员表示同理心
+### 4. 合并
+一旦审查通过，PR 将被合并到主分支。
 
-不可接受的行为包括：
+## 🐛 报告问题
 
-- 使用性暗示语言或图像
-- 侮辱性评论
-- 公开或私下骚扰
-- 未经明确许可发布他人私人信息
-- 其他不道德或不专业行为
+### Bug 报告
+请使用 [GitHub Issues](https://github.com/your-repo/sira-ai-gateway/issues) 报告问题。
 
-### 责任
+**好的 Bug 报告包含：**
+- 清晰的标题
+- 重现步骤
+- 期望行为 vs 实际行为
+- 环境信息（OS、Node.js 版本等）
+- 相关日志或错误信息
 
-项目维护者有责任澄清行为标准，并对任何不可接受行为采取适当和公平的纠正措施。
+### 功能请求
+请使用 [GitHub Discussions](https://github.com/your-repo/sira-ai-gateway/discussions) 提出功能请求。
 
-## 📞 联系方式
+## 💬 沟通渠道
 
-- 📧 Email: your-email@example.com
-- 💬 Discord: [加入我们的 Discord](https://discord.gg/example)
-- 🐛 Issues: [GitHub Issues](../../issues)
+- **GitHub Issues**: 报告问题和缺陷
+- **GitHub Discussions**: 功能讨论和技术问题
+- **Discord**: 实时聊天和社区交流
+- **邮件**: dev@sira-ai-gateway.com
 
-感谢您的贡献！🎉
+## 📄 许可证
+
+通过贡献代码，您同意您的贡献将根据项目的 Apache 2.0 许可证进行许可。
+
+## 🙏 致谢
+
+感谢所有贡献者让这个项目变得更好！
+
+---
+
+**Sira AI Gateway** - 连接AI时代的智能桥梁 🚀

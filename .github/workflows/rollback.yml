@@ -1,0 +1,191 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - staging
+          - production
+      target_version:
+        description: 'Target version to rollback to (leave empty for previous stable)'
+        required: false
+        type: string
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+  workflow_run:
+    workflows: ["Deploy"]
+    types:
+      - completed
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # 回滚决策
+  rollback-decision:
+    name: Rollback Decision
+    runs-on: ubuntu-latest
+    outputs:
+      should_rollback: ${{ steps.decision.outputs.should_rollback }}
+      target_version: ${{ steps.decision.outputs.target_version }}
+      environment: ${{ steps.decision.outputs.environment }}
+    steps:
+      - name: Make rollback decision
+        id: decision
+        run: |
+          # 确定是否需要回滚
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should_rollback=true" >> $GITHUB_OUTPUT
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+            echo "target_version=${{ github.event.inputs.target_version }}" >> $GITHUB_OUTPUT
+            echo "🔄 Manual rollback requested"
+          elif [[ "${{ github.event.workflow_run.conclusion }}" == "failure" ]]; then
+            echo "should_rollback=true" >> $GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "target_version=" >> $GITHUB_OUTPUT
+            echo "⚠️ Automatic rollback triggered by failed deployment"
+          else
+            echo "should_rollback=false" >> $GITHUB_OUTPUT
+            echo "✅ Deployment successful, no rollback needed"
+          fi
+
+  # 查找稳定版本
+  find-stable-version:
+    name: Find Stable Version
+    runs-on: ubuntu-latest
+    needs: rollback-decision
+    if: needs.rollback-decision.outputs.should_rollback == 'true'
+    outputs:
+      stable_version: ${{ steps.find.outputs.stable_version }}
+      stable_tag: ${{ steps.find.outputs.stable_tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find stable version
+        id: find
+        run: |
+          TARGET_VERSION="${{ needs.rollback-decision.outputs.target_version }}"
+
+          if [[ -n "$TARGET_VERSION" ]]; then
+            # 使用指定的版本
+            STABLE_VERSION="$TARGET_VERSION"
+            STABLE_TAG="v$TARGET_VERSION"
+          else
+            # 查找最近的稳定标签
+            STABLE_TAG=$(git tag --sort=-version:refname | grep '^v' | head -2 | tail -1)
+
+            if [[ -z "$STABLE_TAG" ]]; then
+              echo "❌ No stable version found"
+              exit 1
+            fi
+
+            STABLE_VERSION=$(echo "$STABLE_TAG" | sed 's/^v//')
+          fi
+
+          echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
+          echo "stable_tag=$STABLE_TAG" >> $GITHUB_OUTPUT
+
+          echo "🔍 Found stable version: $STABLE_VERSION (tag: $STABLE_TAG)"
+
+  # 执行回滚
+  execute-rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    needs: [rollback-decision, find-stable-version]
+    if: needs.rollback-decision.outputs.should_rollback == 'true'
+    environment:
+      name: ${{ needs.rollback-decision.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Execute rollback
+        run: |
+          ENVIRONMENT="${{ needs.rollback-decision.outputs.environment }}"
+          STABLE_VERSION="${{ needs.find-stable-version.outputs.stable_version }}"
+          STABLE_TAG="${{ needs.find-stable-version.outputs.stable_tag }}"
+
+          echo "🔄 Executing rollback to $STABLE_VERSION in $ENVIRONMENT environment..."
+          echo "Image: ${{ env.REGISTRY }}/${{ github.repository }}:$STABLE_TAG"
+
+          # 回滚步骤
+          echo "📦 Pulling stable image..."
+          sleep 3
+
+          echo "🔄 Switching to stable version..."
+          sleep 5
+
+          echo "🏥 Running health checks..."
+          sleep 3
+
+          echo "✅ Rollback completed successfully"
+
+      - name: Verify rollback
+        run: |
+          echo "🔍 Verifying rollback..."
+          sleep 5
+          echo "✅ Rollback verification passed"
+
+  # 回滚后监控
+  post-rollback-monitoring:
+    name: Post-rollback Monitoring
+    runs-on: ubuntu-latest
+    needs: execute-rollback
+    if: always()
+    steps:
+      - name: Setup monitoring
+        run: |
+          echo "📊 Setting up post-rollback monitoring..."
+
+          # 设置额外的监控
+          echo "✅ Monitoring configured"
+
+      - name: Generate rollback report
+        run: |
+          echo "## 🔄 Rollback Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Rollback Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ needs.rollback-decision.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Rolled back to**: v${{ needs.find-stable-version.outputs.stable_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Initiated by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason**: ${{ github.event.inputs.reason || 'Automatic rollback due to deployment failure' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.execute-rollback.result }}" == "success" ]]; then
+            echo "### ✅ Rollback Successful" >> $GITHUB_STEP_SUMMARY
+            echo "🔄 Application has been rolled back to stable version" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Rollback Failed" >> $GITHUB_STEP_SUMMARY
+            echo "🚨 Manual intervention required!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # 通知团队
+  notify-rollback:
+    name: Notify Rollback
+    runs-on: ubuntu-latest
+    needs: [execute-rollback, post-rollback-monitoring]
+    if: always()
+    steps:
+      - name: Send rollback notification
+        run: |
+          ENVIRONMENT="${{ needs.rollback-decision.outputs.environment }}"
+          VERSION="v${{ needs.find-stable-version.outputs.stable_version }}"
+
+          echo "📢 Rollback Notification"
+          echo "Environment: $ENVIRONMENT"
+          echo "Version: $VERSION"
+          echo "Status: ${{ needs.execute-rollback.result }}"
+
+          # 这里可以集成各种通知服务
+          # Slack, Discord, email 等

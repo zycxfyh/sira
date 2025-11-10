@@ -1,0 +1,51 @@
+# CI/CD Cache Configuration
+# This file contains optimized caching strategies for different CI jobs
+
+# Node.js dependencies cache
+node-cache:
+  key: "${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}"
+  restore-keys: |
+    ${{ runner.os }}-node-
+    ${{ runner.os }}-
+
+# Jest cache
+jest-cache:
+  key: "${{ runner.os }}-jest-${{ hashFiles('**/package-lock.json') }}"
+  restore-keys: |
+    ${{ runner.os }}-jest-
+    ${{ runner.os }}-
+
+# Docker layer cache
+docker-cache:
+  key: "docker-${{ runner.os }}-${{ hashFiles('**/Dockerfile*', '**/docker-compose*.yml') }}"
+  restore-keys: |
+    docker-${{ runner.os }}-
+    docker-
+
+# ESLint cache
+eslint-cache:
+  key: "${{ runner.os }}-eslint-${{ hashFiles('**/*.{js,ts}', '.eslintrc*') }}"
+  restore-keys: |
+    ${{ runner.os }}-eslint-
+    ${{ runner.os }}-
+
+# Build artifacts cache
+build-cache:
+  key: "${{ runner.os }}-build-${{ github.sha }}"
+  restore-keys: |
+    ${{ runner.os }}-build-
+    ${{ runner.os }}-
+
+# Test results cache
+test-results-cache:
+  key: "${{ runner.os }}-test-results-${{ github.run_id }}"
+  restore-keys: |
+    ${{ runner.os }}-test-results-
+    ${{ runner.os }}-
+
+# Coverage reports cache
+coverage-cache:
+  key: "${{ runner.os }}-coverage-${{ github.sha }}"
+  restore-keys: |
+    ${{ runner.os }}-coverage-
+    ${{ runner.os }}-

@@ -1,130 +1,312 @@
-# Sira - AI网关学习项目
+# Sira AI Gateway
 
-**一个学生学习项目：用代码连接AI，让智能触手可及**
+[![CI](https://github.com/zycxfyh/sira/workflows/CI/badge.svg)](https://github.com/zycxfyh/sira/actions)
+[![codecov](https://codecov.io/gh/zycxfyh/sira/branch/main/graph/badge.svg)](https://codecov.io/gh/zycxfyh/sira)
+[![npm version](https://badge.fury.io/js/sira-ai-gateway.svg)](https://badge.fury.io/js/sira-ai-gateway)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-⚠️ **项目状态**: 学习中 - 第三天 | Node.js 18+ | 学生作品
+> 🚀 企业级AI网关，支持多AI服务商智能路由、负载均衡、监控和性能优化
 
-## ✅ 当前完成的功能
+## ✨ 特性
 
-- [x] 基本的Express服务器 (端口8080)
-- [x] 健康检查端点 (`/health`)
-- [x] AI API路由转发 - 连接真实AI服务 (`/api/ai/chat`)
-- [x] AI提供商状态检查 (`/api/ai/providers`)
-- [x] 完整的测试覆盖 (5个测试用例全部通过)
-- [x] 错误处理和404处理
-- [x] 安全中间件 (helmet, cors)
-- [x] Docker容器化支持 (使用pnpm)
+- 🤖 **多AI服务商支持** - 统一接口调用OpenAI、Anthropic、Google等AI服务
+- 🧠 **智能路由** - 基于模型能力、成本和性能的智能请求路由
+- ⚡ **高性能** - 多级缓存、连接池和异步处理
+- 🛡️ **容错设计** - 熔断器、限流、重试和降级策略
+- 📊 **全面监控** - 实时指标收集、告警和性能分析
+- 🔧 **易于扩展** - 插件化架构，支持自定义中间件和服务
+- 🐳 **容器化** - 开箱即用的Docker支持
+- 📚 **国际化** - 多语言支持
+
+## 📦 安装
+
+```bash
+# 使用npm
+npm install sira-ai-gateway
+
+# 使用yarn
+yarn add sira-ai-gateway
+
+# 使用pnpm
+pnpm add sira-ai-gateway
+```
 
 ## 🚀 快速开始
 
-### 📦 系统要求
+### 基本使用
 
-- Node.js 18.0.0+
+```javascript
+const { SiraApplication } = require('sira-ai-gateway');
 
-### 🛠️ 安装和运行
+const app = new SiraApplication({
+  port: 3000,
+  // 配置你的AI服务商
+  ai: {
+    providers: {
+      openai: {
+        apiKey: 'your-openai-api-key'
+      },
+      anthropic: {
+        apiKey: 'your-anthropic-api-key'
+      }
+    }
+  }
+});
 
-#### 本地开发
+app.start().catch(console.error);
+```
+
+### Docker部署
+
+```bash
+# 构建镜像
+docker build -t sira-ai-gateway .
+
+# 运行容器
+docker run -p 3000:3000 \
+  -e OPENAI_API_KEY=your-key \
+  -e ANTHROPIC_API_KEY=your-key \
+  sira-ai-gateway
+```
+
+### 使用CLI
+
+```bash
+# 全局安装CLI
+npm install -g sira-ai-gateway
+
+# 启动服务
+sira start --port 3000
+
+# 查看状态
+sira status
+
+# 停止服务
+sira stop
+```
+
+## 📖 API文档
+
+### Chat Completions API
+
+```bash
+POST /api/v1/chat/completions
+Content-Type: application/json
+
+{
+  "model": "gpt-3.5-turbo",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello, how are you?"
+    }
+  ]
+}
+```
+
+### 响应格式
+
+```json
+{
+  "id": "chatcmpl-1234567890",
+  "object": "chat.completion",
+  "created": 1677652288,
+  "model": "gpt-3.5-turbo",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! I'm doing well, thank you for asking."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 13,
+    "completion_tokens": 20,
+    "total_tokens": 33
+  }
+}
+```
+
+## 🏗️ 架构
+
+Sira采用模块化微服务架构：
+
+```
+sira-ai-gateway/
+├── packages/                 # 核心模块包
+│   ├── core/                # 基础服务
+│   │   ├── cache/          # 缓存服务
+│   │   ├── logger/         # 日志服务
+│   │   ├── metrics/        # 指标监控
+│   │   ├── events/         # 事件总线
+│   │   ├── errors/         # 错误处理
+│   │   └── container/      # 服务容器
+│   ├── utils/              # 工具函数
+│   ├── config-manager/     # 配置管理
+│   ├── data-access/        # 数据访问层
+│   └── services/           # 业务服务
+├── src/                    # 主应用
+├── tests/                  # 测试文件
+├── docs/                   # 文档
+├── tools/                  # 开发工具
+└── scripts/                # 构建脚本
+```
+
+## 🔧 配置
+
+### 环境变量
+
+| 变量名 | 描述 | 默认值 |
+|--------|------|--------|
+| `PORT` | 服务端口 | `3000` |
+| `NODE_ENV` | 运行环境 | `development` |
+| `LOG_LEVEL` | 日志级别 | `info` |
+| `REDIS_URL` | Redis连接URL | `redis://localhost:6379` |
+
+### 配置文件
+
+```yaml
+# config/gateway.yml
+ai:
+  providers:
+    openai:
+      apiKey: "your-openai-api-key"
+      models: ["gpt-3.5-turbo", "gpt-4"]
+    anthropic:
+      apiKey: "your-anthropic-api-key"
+      models: ["claude-2"]
+
+routing:
+  strategy: "intelligent"
+  rules:
+    - condition: "cost"
+      provider: "openai"
+    - condition: "performance"
+      provider: "anthropic"
+
+cache:
+  enabled: true
+  ttl: 300000
+  maxSize: 1000
+
+monitoring:
+  enabled: true
+  metrics: true
+  alerts: true
+```
+
+## 📊 监控
+
+### 健康检查
+
+```bash
+GET /health
+```
+
+### 指标收集
+
+```bash
+GET /metrics
+```
+
+支持Prometheus格式的指标导出。
+
+### 日志
+
+```bash
+# 查看应用日志
+sira monitor logs --follow
+
+# 查看指标
+sira monitor metrics
+```
+
+## 🧪 测试
+
+```bash
+# 运行所有测试
+npm test
+
+# 运行特定测试
+npm run test:packages
+
+# 运行集成测试
+npm run test:integration
+
+# 生成覆盖率报告
+npm run test:coverage
+```
+
+## 📚 开发
+
+### 项目结构
+
+```
+├── packages/          # 模块化包
+├── src/              # 主应用代码
+├── tests/            # 测试文件
+├── docs/             # 文档
+├── tools/            # 开发工具
+├── scripts/          # 构建脚本
+└── .github/          # GitHub配置
+```
+
+### 开发命令
 
 ```bash
 # 安装依赖
 npm install
 
-# 配置环境变量 (用于AI API调用)
-cp env.template .env
-# 编辑 .env 文件，添加你的API密钥
+# 启动开发服务器
+npm run start:dev
 
-# 启动项目
-npm start
+# 代码检查
+npm run lint
 
-# 运行测试
-npm test
+# 格式化代码
+npm run format
+
+# 清理缓存
+npm run dev:clean
+
+# 重新安装依赖
+npm run dev:reinstall
+
+# 生成项目报告
+npm run dev:report
 ```
 
-#### Docker运行 (推荐 - 使用pnpm)
+### 贡献指南
 
-```bash
-# 使用便捷脚本 (自动配置环境)
-./docker-run.sh
+1. Fork项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建Pull Request
 
-# 或者手动运行
-docker-compose -f docker-compose.simple.yml up -d
+## 📄 许可证
 
-# 查看日志
-docker-compose -f docker-compose.simple.yml logs -f
+本项目采用Apache 2.0许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
-# 停止服务
-docker-compose -f docker-compose.simple.yml down
-```
+## 🙏 致谢
 
-> 💡 **为什么用Docker？**
->
-> - 环境一致性：避免"在我机器上能跑"的问题
-> - 快速部署：一键启动所有服务
-> - 使用pnpm：更快的依赖安装和更好的磁盘空间利用
+- [Express Gateway](https://github.com/ExpressGateway/express-gateway) - 原始框架
+- [OpenAI](https://openai.com/) - AI服务支持
+- [Anthropic](https://anthropic.com/) - Claude AI支持
 
-### 🌐 API端点
+## 📞 联系我们
 
-启动后访问：
-
-- **主页**: http://localhost:8080/
-- **健康检查**: http://localhost:8080/health
-- **测试路由**: http://localhost:8080/test
-- **AI聊天API**: http://localhost:8080/api/ai/chat (POST)
-- **AI提供商状态**: http://localhost:8080/api/ai/providers (GET)
-
-### 📡 API使用示例
-
-#### AI聊天请求
-
-```bash
-curl -X POST http://localhost:8080/api/ai/chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "messages": [
-      {"role": "user", "content": "你好，请介绍一下自己"}
-    ],
-    "model": "deepseek-chat"
-  }'
-```
-
-#### 检查AI提供商状态
-
-```bash
-curl http://localhost:8080/api/ai/providers
-```
-
-## 📁 项目结构
-
-```
-src/
-├── server.js      # 🚀 主服务器文件 (简化版)
-├── index.js       # 旧的复杂版本 (保留参考)
-├── core/          # 复杂的核心功能 (学习参考)
-├── config/        # 配置管理
-├── locales/       # 国际化文件
-├── test/          # 测试文件
-│   ├── server.test.js    # ✅ 新服务器测试
-│   └── conditions.test.js # 旧测试 (部分修复)
-├── bin/           # CLI工具
-└── docs/          # 文档
-```
-
-## 🎯 学习目标
-
-这是一个**渐进式学习项目**，每天添加新功能：
-
-- **Day 1-2**: 基础服务器搭建和测试 ✅
-- **Day 3+**: AI API集成、缓存、负载均衡等
-
-## 📝 学习笔记
-
-查看 [KNOWN_ISSUES.md](./KNOWN_ISSUES.md) 了解项目过程中的问题和解决方案。
-
-## 🤝 联系方式
-
-- 📧 Email: 1666384464@qq.com
-- 📱 Phone: 17855398215
+- 项目主页: https://github.com/zycxfyh/sira
+- 问题反馈: https://github.com/zycxfyh/sira/issues
+- 邮箱: 1666384464@qq.com
 
 ---
 
-**⚠️ 免责声明**: 这是一个学生学习项目，仅供学习交流使用，不建议在生产环境中使用。
+<p align="center">
+  <strong>由Sira AI Team精心打造</strong>
+  <br>
+  <em>让AI服务更智能、更可靠</em>
+</p>

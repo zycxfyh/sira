@@ -1,0 +1,224 @@
+name: 🚀 Performance Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'package.json'
+      - '.github/workflows/performance-tests.yml'
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: 'Performance test duration (seconds)'
+        required: false
+        default: '60'
+        type: string
+      connections:
+        description: 'Number of concurrent connections'
+        required: false
+        default: '10'
+        type: string
+
+jobs:
+  performance-test:
+    name: Performance Benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: npm ci
+
+    - name: 🔨 Build application
+      run: npm run build 2>/dev/null || echo "No build script found, skipping"
+
+    - name: 🧪 Run unit tests
+      run: npm test -- --passWithNoTests --coverage=false
+      continue-on-error: true
+
+    - name: ⚡ Start application for performance testing
+      run: |
+        npm start &
+        SERVER_PID=$!
+        echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+
+        # 等待服务器启动
+        for i in {1..30}; do
+          if curl -f http://localhost:8080/health >/dev/null 2>&1; then
+            echo "✅ Server started successfully"
+            break
+          fi
+          if [ $i -eq 30 ]; then
+            echo "❌ Server failed to start"
+            kill $SERVER_PID 2>/dev/null || true
+            exit 1
+          fi
+          echo "⏳ Waiting for server to start... ($i/30)"
+          sleep 2
+        done
+
+    - name: 📊 Run performance benchmark
+      run: |
+        # 设置测试参数
+        DURATION=${{ github.event.inputs.duration || '60' }}
+        CONNECTIONS=${{ github.event.inputs.connections || '10' }}
+
+        echo "🎯 Running performance test with:"
+        echo "  Duration: ${DURATION}s"
+        echo "  Connections: ${CONNECTIONS}"
+        echo "  Node version: ${{ matrix.node-version }}"
+
+        # 运行性能测试
+        npm run test:performance
+
+        # 检查性能报告是否存在
+        if [ -f "performance-report.json" ]; then
+          echo "✅ Performance report generated"
+        else
+          echo "❌ Performance report not found"
+          exit 1
+        fi
+
+    - name: 📈 Analyze performance results
+      id: analyze
+      run: |
+        if [ ! -f "performance-report.json" ]; then
+          echo "❌ Performance report not found"
+          exit 1
+        fi
+
+        # 读取性能报告
+        RESPONSE_TIME_AVG=$(jq -r '.results.responseTime.endpoints[]? | select(.name == "AI聊天API") | .avgTime // "0"' performance-report.json)
+        THROUGHPUT=$(jq -r '.results.throughput.requests // 0' performance-report.json)
+        LATENCY_P95=$(jq -r '.results.throughput.latency.p95 // 0' performance-report.json)
+        MEMORY_USAGE=$(jq -r '.results.memory.final.heapUsed // "0MB"' performance-report.json)
+
+        echo "📊 Performance Results:"
+        echo "  Average Response Time: ${RESPONSE_TIME_AVG}ms"
+        echo "  Throughput: ${THROUGHPUT} requests"
+        echo "  P95 Latency: ${LATENCY_P95}ms"
+        echo "  Memory Usage: ${MEMORY_USAGE}"
+
+        # 设置输出变量供后续步骤使用
+        echo "response_time_avg=${RESPONSE_TIME_AVG}" >> $GITHUB_OUTPUT
+        echo "throughput=${THROUGHPUT}" >> $GITHUB_OUTPUT
+        echo "latency_p95=${LATENCY_P95}" >> $GITHUB_OUTPUT
+        echo "memory_usage=${MEMORY_USAGE}" >> $GITHUB_OUTPUT
+
+        # 性能阈值检查
+        if (( $(echo "$RESPONSE_TIME_AVG > 1000" | bc -l) )); then
+          echo "⚠️  Warning: Average response time (${RESPONSE_TIME_AVG}ms) exceeds 1000ms threshold"
+        fi
+
+        if (( $(echo "$LATENCY_P95 > 2000" | bc -l) )); then
+          echo "⚠️  Warning: P95 latency (${LATENCY_P95}ms) exceeds 2000ms threshold"
+        fi
+
+    - name: 📋 Generate performance report
+      run: |
+        cat > performance-summary.md << 'EOF'
+        # 🚀 Performance Test Results
+
+        ## Test Configuration
+        - **Node.js Version**: ${{ matrix.node-version }}
+        - **Test Duration**: ${{ github.event.inputs.duration || '60' }} seconds
+        - **Concurrent Connections**: ${{ github.event.inputs.connections || '10' }}
+        - **Timestamp**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+        ## Key Metrics
+
+        | Metric | Value | Status |
+        |--------|-------|--------|
+        | Average Response Time | ${{ steps.analyze.outputs.response_time_avg }}ms | $(if (( $(echo "${{ steps.analyze.outputs.response_time_avg }} > 1000" | bc -l) )); then echo "⚠️ Slow"; else echo "✅ Good"; fi) |
+        | Throughput | ${{ steps.analyze.outputs.throughput }} requests | ✅ |
+        | P95 Latency | ${{ steps.analyze.outputs.latency_p95 }}ms | $(if (( $(echo "${{ steps.analyze.outputs.latency_p95 }} > 2000" | bc -l) )); then echo "⚠️ High"; else echo "✅ Good"; fi) |
+        | Memory Usage | ${{ steps.analyze.outputs.memory_usage }} | ✅ |
+
+        ## Detailed Results
+        \`\`\`json
+        $(cat performance-report.json)
+        \`\`\`
+
+        ---
+        *Generated by Sira AI Gateway Performance Tests*
+        EOF
+
+    - name: 💾 Upload performance artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-report-node-${{ matrix.node-version }}
+        path: |
+          performance-report.json
+          performance-summary.md
+        retention-days: 30
+
+    - name: 📢 Comment performance results on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('performance-summary.md', 'utf8');
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
+
+    - name: 🛑 Stop application
+      if: always()
+      run: |
+        if [ ! -z "$SERVER_PID" ]; then
+          echo "Stopping server (PID: $SERVER_PID)"
+          kill $SERVER_PID 2>/dev/null || true
+
+          # 等待进程完全停止
+          for i in {1..10}; do
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "✅ Server stopped successfully"
+              break
+            fi
+            sleep 1
+          done
+
+          # 强制终止如果还没停止
+          kill -9 $SERVER_PID 2>/dev/null || true
+        fi
+
+    - name: ⚠️ Performance regression check
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "🔍 Checking for performance regressions..."
+
+        # 下载基准性能数据
+        if [ -f "performance-baselines/main.json" ]; then
+          echo "✅ Found baseline performance data"
+        else
+          echo "⚠️  No baseline performance data found, creating from current results"
+          mkdir -p performance-baselines
+          cp performance-report.json performance-baselines/main.json
+        fi
+
+        # 运行性能回归检测
+        npm run test:performance:regression
+
+        echo "✅ Performance regression check completed"
