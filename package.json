@@ -139,7 +139,7 @@
     "chai": "^6.2.0",
     "codecov": "^3.5.0",
     "commander": "^14.0.2",
-    "cross-env": "^5.2.1",
+    "cross-env": "^10.1.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-config-standard": "^14.1.1",
