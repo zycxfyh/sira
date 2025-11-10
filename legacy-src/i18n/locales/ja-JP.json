@@ -1,0 +1,220 @@
+{
+  "_name": "Japanese",
+  "_nativeName": "日本語",
+  "_direction": "ltr",
+  "_pluralRules": "japanese",
+
+  "common": {
+    "yes": "はい",
+    "no": "いいえ",
+    "ok": "OK",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "remove": "削除",
+    "close": "閉じる",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "warning": "警告",
+    "info": "情報"
+  },
+
+  "navigation": {
+    "home": "ホーム",
+    "dashboard": "ダッシュボード",
+    "settings": "設定",
+    "profile": "プロフィール",
+    "logout": "ログアウト",
+    "login": "ログイン",
+    "register": "登録"
+  },
+
+  "api": {
+    "errors": {
+      "unauthorized": "認証が必要です",
+      "forbidden": "アクセスが拒否されました",
+      "notFound": "リソースが見つかりません",
+      "badRequest": "リクエストが無効です",
+      "internalError": "サーバー内部エラー",
+      "serviceUnavailable": "サービスが利用できません",
+      "rateLimited": "レート制限を超過しました",
+      "validationFailed": "検証に失敗しました"
+    },
+    "messages": {
+      "requestSuccess": "リクエストが成功しました",
+      "dataSaved": "データが保存されました",
+      "dataDeleted": "データが削除されました",
+      "operationCompleted": "操作が完了しました"
+    }
+  },
+
+  "ai": {
+    "chat": {
+      "placeholder": "質問を入力してください...",
+      "send": "送信",
+      "typing": "AIが考えています...",
+      "error": "メッセージ送信エラー",
+      "retry": "再試行"
+    },
+    "providers": {
+      "deepseek": "DeepSeek",
+      "openai": "OpenAI",
+      "anthropic": "Anthropic",
+      "google": "Google",
+      "status": {
+        "available": "利用可能",
+        "unavailable": "利用不可",
+        "configuring": "設定中"
+      }
+    },
+    "models": {
+      "gpt-4": "GPT-4",
+      "gpt-3.5-turbo": "GPT-3.5 Turbo",
+      "deepseek-chat": "DeepSeek Chat",
+      "claude-3": "Claude 3",
+      "gemini-pro": "Gemini Pro"
+    }
+  },
+
+  "monitoring": {
+    "title": "システム監視",
+    "metrics": {
+      "responseTime": "応答時間",
+      "throughput": "スループット",
+      "memoryUsage": "メモリ使用量",
+      "cpuUsage": "CPU使用量",
+      "errorRate": "エラー率",
+      "uptime": "稼働時間"
+    },
+    "status": {
+      "healthy": "正常",
+      "warning": "警告",
+      "critical": "重大",
+      "unknown": "不明"
+    }
+  },
+
+  "admin": {
+    "title": "Sira AIゲートウェイ - 管理パネル",
+    "header": {
+      "title": "🚀 Sira AIゲートウェイ管理パネル",
+      "subtitle": "システム監視とビジネス指標の概要"
+    },
+    "refresh": "🔄 データを更新",
+    "loading": "読み込み中...",
+    "system": {
+      "title": "🖥️ システム健全性ステータス",
+      "overall_status": "全体ステータス",
+      "memory_usage": "メモリ使用量",
+      "cpu_usage": "CPU使用量",
+      "uptime": "稼働時間"
+    },
+    "routing": {
+      "title": "🎯 AIルーティングパフォーマンス",
+      "total_requests": "総リクエスト数",
+      "success_rate": "成功率",
+      "top_provider": "トッププロバイダー"
+    },
+    "cost": {
+      "title": "💰 コスト監視",
+      "total_cost": "総コスト",
+      "avg_cost_per_request": "リクエストあたりの平均コスト",
+      "highest_cost_provider": "最高コストプロバイダー"
+    },
+    "users": {
+      "title": "👥 ユーザー統計",
+      "active_users": "アクティブユーザー",
+      "avg_requests_per_user": "ユーザーあたりの平均リクエスト"
+    },
+    "charts": {
+      "title": "📊 パフォーマンストレンド",
+      "placeholder": "チャート機能開発中..."
+    },
+    "status": {
+      "healthy": "正常",
+      "warning": "警告",
+      "critical": "重大",
+      "unknown": "不明"
+    },
+    "error": {
+      "title": "❌ エラー",
+      "retry": "再試行"
+    }
+  },
+
+  "business": {
+    "metrics": {
+      "totalRequests": "総リクエスト数",
+      "activeUsers": "アクティブユーザー",
+      "totalCost": "総コスト",
+      "avgResponseTime": "平均応答時間",
+      "successRate": "成功率"
+    },
+    "analytics": {
+      "userBehavior": "ユーザー行動分析",
+      "usagePatterns": "使用パターン",
+      "costAnalysis": "コスト分析",
+      "performanceTrends": "パフォーマンストレンド"
+    }
+  },
+
+  "errors": {
+    "networkError": "ネットワーク接続エラー",
+    "timeout": "リクエストタイムアウト",
+    "serverError": "サーバーエラー",
+    "validationError": "検証エラー",
+    "authenticationError": "認証エラー",
+    "authorizationError": "認可エラー",
+    "rateLimitExceeded": "レート制限超過",
+    "serviceUnavailable": "サービス利用不可"
+  },
+
+  "validation": {
+    "required": "このフィールドは必須です",
+    "email": "有効なメールアドレスを入力してください",
+    "minLength": "最小文字数は {{min}} 文字です",
+    "maxLength": "最大文字数は {{max}} 文字です",
+    "numeric": "数字である必要があります",
+    "positive": "正の数である必要があります",
+    "url": "有効なURLを入力してください",
+    "json": "有効なJSON形式である必要があります"
+  },
+
+  "time": {
+    "now": "たった今",
+    "minute": "1分前",
+    "minutes": "{{count}}分前",
+    "hour": "1時間前",
+    "hours": "{{count}}時間前",
+    "day": "1日前",
+    "days": "{{count}}日前",
+    "week": "1週間前",
+    "weeks": "{{count}}週間前",
+    "month": "1ヶ月前",
+    "months": "{{count}}ヶ月前"
+  },
+
+  "units": {
+    "milliseconds": "ミリ秒",
+    "seconds": "秒",
+    "minutes": "分",
+    "hours": "時間",
+    "days": "日",
+    "bytes": "バイト",
+    "kilobytes": "KB",
+    "megabytes": "MB",
+    "gigabytes": "GB",
+    "terabytes": "TB",
+    "percentage": "%",
+    "requests": "リクエスト",
+    "users": "ユーザー",
+    "dollars": "ドル",
+    "cents": "セント"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$id": "http://express-gateway.io/schemas/policies/ai-rate-limit.json",
+  "type": "object",
+  "properties": {
+    "windowMs": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 86400000,
+      "default": 900000,
+      "description": "Time window in milliseconds"
+    },
+    "maxRequests": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000,
+      "default": 100,
+      "description": "Maximum requests per window"
+    },
+    "maxTokens": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 1000000,
+      "default": 10000,
+      "description": "Maximum tokens per window"
+    },
+    "skipSuccessfulRequests": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip rate limiting for successful requests"
+    },
+    "skipFailedRequests": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip rate limiting for failed requests"
+    },
+    "keyGenerator": {
+      "type": "string",
+      "enum": ["user", "ip", "api-key"],
+      "default": "user",
+      "description": "How to generate rate limit keys"
+    }
+  },
+  "additionalProperties": false
+}

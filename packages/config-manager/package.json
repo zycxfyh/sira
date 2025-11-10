@@ -1,0 +1,30 @@
+{
+  "name": "@sira/config-manager",
+  "version": "1.0.0",
+  "description": "配置管理模块 - 统一管理所有配置文件的加载、验证和合并",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "keywords": ["config", "configuration", "loader", "validator", "manager"],
+  "author": "Sira Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "ajv": "^6.10.2",
+    "ajv-formats": "^2.1.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@sira/foundation": "^1.0.0"
+  }
+}

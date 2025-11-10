@@ -1,0 +1,45 @@
+{
+  "$id": "http://express-gateway.io/schemas/policies/ai-response-processor.json",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable AI response processing"
+    },
+    "usageTracking": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable token usage tracking"
+    },
+    "responseTransformation": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable response format transformation"
+    },
+    "providers": {
+      "type": "object",
+      "properties": {
+        "openai": {
+          "type": "object",
+          "properties": {
+            "transformResponse": { "type": "boolean", "default": true }
+          }
+        },
+        "anthropic": {
+          "type": "object",
+          "properties": {
+            "transformResponse": { "type": "boolean", "default": true }
+          }
+        },
+        "google": {
+          "type": "object",
+          "properties": {
+            "transformResponse": { "type": "boolean", "default": true }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

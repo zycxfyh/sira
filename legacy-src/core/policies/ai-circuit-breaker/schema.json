@@ -1,0 +1,47 @@
+{
+  "$id": "http://express-gateway.io/schemas/policies/ai-circuit-breaker.json",
+  "type": "object",
+  "properties": {
+    "timeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000,
+      "default": 30000,
+      "description": "Request timeout in milliseconds"
+    },
+    "errorThresholdPercentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50,
+      "description": "Error rate threshold percentage to open circuit"
+    },
+    "resetTimeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000,
+      "default": 30000,
+      "description": "Time to wait before trying requests again"
+    },
+    "rollingCountTimeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000,
+      "default": 10000,
+      "description": "Rolling window duration"
+    },
+    "rollingCountBuckets": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10,
+      "description": "Number of buckets in rolling window"
+    },
+    "name": {
+      "type": "string",
+      "default": "ai-circuit-breaker",
+      "description": "Circuit breaker name for identification"
+    }
+  },
+  "additionalProperties": false
+}

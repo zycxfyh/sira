@@ -1,0 +1,55 @@
+{
+  "$id": "http://express-gateway.io/schemas/policies/ai-queue.json",
+  "type": "object",
+  "properties": {
+    "natsUrl": {
+      "type": "string",
+      "default": "nats://localhost:4222",
+      "description": "NATS server URL"
+    },
+    "queueName": {
+      "type": "string",
+      "default": "ai.requests",
+      "description": "Queue name for AI requests"
+    },
+    "consumerName": {
+      "type": "string",
+      "default": "ai-gateway-consumer",
+      "description": "Consumer name for queue processing"
+    },
+    "maxQueueSize": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 100000,
+      "default": 10000,
+      "description": "Maximum queue size"
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000,
+      "default": 30000,
+      "description": "Request timeout in milliseconds"
+    },
+    "retryAttempts": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "default": 3,
+      "description": "Number of retry attempts"
+    },
+    "enableAsync": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable async processing by default"
+    },
+    "asyncThreshold": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 120000,
+      "default": 10000,
+      "description": "Response time threshold for async processing"
+    }
+  },
+  "additionalProperties": false
+}

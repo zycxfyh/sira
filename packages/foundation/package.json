@@ -1,0 +1,25 @@
+{
+  "name": "@sira/foundation",
+  "version": "1.0.0",
+  "description": "基础服务层 - 提供通用的系统服务组件",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "keywords": ["foundation", "services", "cache", "logger", "metrics"],
+  "author": "Sira Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

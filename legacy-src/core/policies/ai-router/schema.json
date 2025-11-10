@@ -1,0 +1,88 @@
+{
+  "$id": "http://express-gateway.io/schemas/policies/ai-router.json",
+  "type": "object",
+  "properties": {
+    "timeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000,
+      "default": 30000,
+      "description": "Request timeout in milliseconds"
+    },
+    "cacheEnabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable response caching"
+    },
+    "cacheTtl": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 86400,
+      "default": 300,
+      "description": "Cache TTL in seconds"
+    },
+    "circuitBreakerEnabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable circuit breaker for provider failover"
+    },
+    "circuitBreakerThreshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.5,
+      "description": "Error rate threshold to open circuit breaker"
+    },
+    "costOptimizationEnabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable cost-based provider selection"
+    },
+    "providers": {
+      "type": "object",
+      "properties": {
+        "openai": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "apiKey": { "type": "string" },
+            "priority": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            }
+          }
+        },
+        "anthropic": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "apiKey": { "type": "string" },
+            "priority": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            }
+          }
+        },
+        "azure": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "apiKey": { "type": "string" },
+            "endpoint": { "type": "string" },
+            "priority": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

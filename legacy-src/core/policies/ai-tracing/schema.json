@@ -1,0 +1,50 @@
+{
+  "$id": "http://express-gateway.io/schemas/policies/ai-tracing.json",
+  "type": "object",
+  "properties": {
+    "serviceName": {
+      "type": "string",
+      "default": "ai-gateway",
+      "description": "Service name for tracing"
+    },
+    "serviceVersion": {
+      "type": "string",
+      "default": "1.0.0",
+      "description": "Service version"
+    },
+    "environment": {
+      "type": "string",
+      "default": "development",
+      "description": "Environment name"
+    },
+    "exporter": {
+      "type": "string",
+      "enum": ["console", "jaeger", "zipkin", "otlp"],
+      "default": "console",
+      "description": "Tracing exporter type"
+    },
+    "sampleRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 1.0,
+      "description": "Sampling rate (0.0 to 1.0)"
+    },
+    "jaegerEndpoint": {
+      "type": "string",
+      "default": "http://localhost:14268/api/traces",
+      "description": "Jaeger collector endpoint"
+    },
+    "zipkinEndpoint": {
+      "type": "string",
+      "default": "http://localhost:9411/api/v2/spans",
+      "description": "Zipkin collector endpoint"
+    },
+    "otlpEndpoint": {
+      "type": "string",
+      "default": "http://localhost:4318/v1/traces",
+      "description": "OTLP collector endpoint"
+    }
+  },
+  "additionalProperties": false
+}

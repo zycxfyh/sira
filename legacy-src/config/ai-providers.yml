@@ -1,0 +1,471 @@
+# AI API 供应商配置
+# Sira AI网关支持的AI提供商列表
+
+version: '1.0.0'
+
+# AI提供商配置
+providers:
+  # 🌟 国际主流供应商
+  openai:
+    name: 'OpenAI'
+    description: 'OpenAI GPT系列模型'
+    base_url: 'https://api.openai.com/v1'
+    pricing_url: 'https://openai.com/api/pricing/'
+    models:
+      - 'gpt-4'
+      - 'gpt-4-turbo'
+      - 'gpt-4o'
+      - 'gpt-4o-mini'
+      - 'gpt-3.5-turbo'
+      - 'gpt-3.5-turbo-16k'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - embeddings
+      - image_generation
+      - audio_transcription
+    pricing_tier: 'premium'
+    region: 'global'
+
+  anthropic:
+    name: 'Anthropic'
+    description: 'Claude AI模型系列'
+    base_url: 'https://api.anthropic.com'
+    pricing_url: 'https://www.anthropic.com/api#pricing'
+    models:
+      - 'claude-3-opus'
+      - 'claude-3-sonnet'
+      - 'claude-3-haiku'
+      - 'claude-3-5-sonnet'
+      - 'claude-2.1'
+      - 'claude-2'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - embeddings
+    pricing_tier: 'premium'
+    region: 'us-west'
+
+  azure_openai:
+    name: 'Azure OpenAI'
+    description: 'Microsoft Azure托管的OpenAI服务'
+    base_url_template: 'https://{resource-name}.openai.azure.com/openai/deployments/{deployment-name}'
+    base_url: 'https://your-resource.openai.azure.com/openai/deployments'
+    pricing_url: 'https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/'
+    models:
+      - 'gpt-4'
+      - 'gpt-4-turbo'
+      - 'gpt-35-turbo'
+      - 'gpt-4o'
+      - 'gpt-4o-mini'
+    auth_type: 'api_key'
+    features:
+      - chat_completion
+      - embeddings
+      - image_generation
+    pricing_tier: 'enterprise'
+    region: 'multi-region'
+
+  google_gemini:
+    name: 'Google Gemini'
+    description: 'Google的Gemini AI模型'
+    base_url: 'https://generativelanguage.googleapis.com/v1beta'
+    pricing_url: 'https://ai.google.dev/pricing'
+    models:
+      - 'gemini-pro'
+      - 'gemini-pro-vision'
+      - 'gemini-1.5-pro'
+      - 'gemini-1.5-flash'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - image_generation
+      - embeddings
+    pricing_tier: 'standard'
+    region: 'multi-region'
+
+  # 🇨🇳 国内主流供应商
+  deepseek:
+    name: 'DeepSeek'
+    description: '深度求索的AI模型'
+    base_url: 'https://api.deepseek.com/v1'
+    pricing_url: 'https://platform.deepseek.com/api-docs/pricing'
+    models:
+      - 'deepseek-chat'
+      - 'deepseek-coder'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - code_generation
+    pricing_tier: 'budget'
+    region: 'china'
+
+  qwen:
+    name: '通义千问 (Qwen)'
+    description: '阿里巴巴的通义千问AI模型'
+    base_url: 'https://dashscope.aliyuncs.com/api/v1'
+    pricing_url: 'https://help.aliyun.com/zh/model-studio/developer-reference/tongyi-qianwen-pricing'
+    models:
+      - 'qwen-turbo'
+      - 'qwen-plus'
+      - 'qwen-max'
+      - 'qwen-max-longcontext'
+      - 'qwen-vl-plus'
+      - 'qwen-audio-turbo'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - image_generation
+      - audio_transcription
+      - embeddings
+    pricing_tier: 'standard'
+    region: 'china'
+
+  ernie:
+    name: '文心一言 (ERNIE)'
+    description: '百度的文心一言AI模型'
+    base_url: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1'
+    pricing_url: 'https://cloud.baidu.com/doc/WENXINYIYAN/s/9lrzhegbe'
+    models:
+      - 'ernie-4.0-8k'
+      - 'ernie-4.0-turbo-8k'
+      - 'ernie-3.5-8k'
+      - 'ernie-lite-8k'
+      - 'ernie-speed-8k'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - embeddings
+    pricing_tier: 'standard'
+    region: 'china'
+
+  glm:
+    name: '智谱GLM'
+    description: '智谱AI的GLM模型系列'
+    base_url: 'https://open.bigmodel.cn/api/paas/v4'
+    pricing_url: 'https://open.bigmodel.cn/pricing'
+    models:
+      - 'glm-4'
+      - 'glm-4v'
+      - 'glm-3-turbo'
+      - 'glm-4-plus'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - image_generation
+    pricing_tier: 'standard'
+    region: 'china'
+
+  kimi:
+    name: 'Kimi (月之暗面)'
+    description: '月之暗面的Kimi AI模型'
+    base_url: 'https://api.moonshot.cn/v1'
+    pricing_url: 'https://platform.moonshot.cn/docs/pricing'
+    models:
+      - 'moonshot-v1-8k'
+      - 'moonshot-v1-32k'
+      - 'moonshot-v1-128k'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - embeddings
+    pricing_tier: 'budget'
+    region: 'china'
+
+  doubao:
+    name: '豆包 (Doubao)'
+    description: '字节跳动的豆包AI模型'
+    base_url: 'https://ark.cn-beijing.volces.com/api/v3'
+    pricing_url: 'https://www.volcengine.com/product/doubao'
+    models:
+      - 'doubao-lite-4k'
+      - 'doubao-lite-32k'
+      - 'doubao-pro-4k'
+      - 'doubao-pro-32k'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - embeddings
+    pricing_tier: 'standard'
+    region: 'china'
+
+  hunyuan:
+    name: '腾讯混元 (Hunyuan)'
+    description: '腾讯的混元AI模型'
+    base_url: 'https://api.hunyuan.cloud.tencent.com/v1'
+    pricing_url: 'https://cloud.tencent.com/product/hunyuan/pricing'
+    models:
+      - 'hunyuan-turbo'
+      - 'hunyuan-standard'
+      - 'hunyuan-lite'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - embeddings
+    pricing_tier: 'standard'
+    region: 'china'
+
+  qianfan:
+    name: '百度千帆 (Qianfan)'
+    description: '百度智能云的千帆AI平台'
+    base_url: 'https://qianfan.baidubce.com/v2'
+    pricing_url: 'https://cloud.baidu.com/product/wenxinworkshop'
+    models:
+      - 'ernie-4.0-8k'
+      - 'ernie-3.5-8k'
+      - 'ernie-lite-8k'
+      - 'ernie-speed-8k'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - embeddings
+    pricing_tier: 'standard'
+    region: 'china'
+
+  # 🌍 其他国际供应商
+  cohere:
+    name: 'Cohere'
+    description: 'Cohere的AI模型'
+    base_url: 'https://api.cohere.ai/v1'
+    pricing_url: 'https://cohere.com/pricing'
+    models:
+      - 'command'
+      - 'command-light'
+      - 'command-nightly'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - embeddings
+    pricing_tier: 'standard'
+    region: 'us-east'
+
+  ai21:
+    name: 'AI21 Labs'
+    description: 'AI21 Labs的Jurassic模型'
+    base_url: 'https://api.ai21.com/studio/v1'
+    pricing_url: 'https://www.ai21.com/pricing'
+    models:
+      - 'j2-ultra'
+      - 'j2-mid'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - embeddings
+    pricing_tier: 'standard'
+    region: 'us-east'
+
+  stability:
+    name: 'Stability AI'
+    description: 'Stability AI的图像生成模型'
+    base_url: 'https://api.stability.ai/v1'
+    pricing_url: 'https://platform.stability.ai/account/billing'
+    models:
+      - 'stable-diffusion-xl-1024-v1-0'
+      - 'stable-diffusion-xl-1024-v0-9'
+      - 'stable-diffusion-v1-6'
+    auth_type: 'bearer'
+    features:
+      - image_generation
+    pricing_tier: 'standard'
+    region: 'us-west'
+
+  midjourney:
+    name: 'Midjourney'
+    description: 'Midjourney图像生成服务'
+    base_url: 'https://api.midjourney.com/v1'
+    pricing_url: 'https://docs.midjourney.com/docs/plans'
+    models:
+      - 'midjourney'
+      - 'midjourney-v5'
+    auth_type: 'bearer'
+    features:
+      - image_generation
+    pricing_tier: 'premium'
+    region: 'us-east'
+
+  replicate:
+    name: 'Replicate'
+    description: 'Replicate AI模型平台'
+    base_url: 'https://api.replicate.com/v1'
+    pricing_url: 'https://replicate.com/pricing'
+    models:
+      - 'llama-2-70b-chat'
+      - 'stable-diffusion'
+      - 'codellama-34b-instruct'
+    auth_type: 'bearer'
+    features:
+      - chat_completion
+      - image_generation
+      - code_generation
+    pricing_tier: 'standard'
+    region: 'us-west'
+
+# 路由策略配置
+routing:
+  default_strategy: 'cost_optimized'
+  strategies:
+    cost_optimized:
+      description: '成本优先策略'
+      priority_order:
+        - 'deepseek'
+        - 'kimi'
+        - 'glm'
+        - 'ernie'
+        - 'qwen'
+        - 'doubao'
+        - 'hunyuan'
+        - 'qianfan'
+        - 'google_gemini'
+        - 'cohere'
+        - 'ai21'
+        - 'anthropic'
+        - 'openai'
+        - 'azure_openai'
+
+    performance_optimized:
+      description: '性能优先策略'
+      priority_order:
+        - 'openai'
+        - 'azure_openai'
+        - 'anthropic'
+        - 'google_gemini'
+        - 'qwen'
+        - 'ernie'
+        - 'glm'
+        - 'doubao'
+        - 'hunyuan'
+        - 'qianfan'
+        - 'cohere'
+        - 'ai21'
+        - 'deepseek'
+        - 'kimi'
+
+    reliability_optimized:
+      description: '可靠性优先策略'
+      priority_order:
+        - 'azure_openai'
+        - 'openai'
+        - 'anthropic'
+        - 'google_gemini'
+        - 'qwen'
+        - 'ernie'
+        - 'glm'
+        - 'doubao'
+        - 'hunyuan'
+        - 'qianfan'
+        - 'cohere'
+        - 'ai21'
+        - 'deepseek'
+        - 'kimi'
+
+# 模型映射配置
+model_mapping:
+  # 通用模型别名
+  aliases:
+    'gpt-4': ['gpt-4', 'gpt-4-latest']
+    'gpt-3.5': ['gpt-3.5-turbo', 'gpt-3.5-turbo-16k']
+    'claude': ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku']
+    'gemini': ['gemini-pro', 'gemini-1.5-pro']
+
+  # 功能映射
+  capabilities:
+    chat_completion:
+      - 'gpt-4*'
+      - 'claude-*'
+      - 'gemini-*'
+      - 'qwen-*'
+      - 'ernie-*'
+      - 'glm-*'
+      - 'kimi-*'
+      - 'doubao-*'
+      - 'hunyuan-*'
+
+    image_generation:
+      - 'dall-e-*'
+      - 'stable-diffusion-*'
+      - 'midjourney*'
+      - 'gemini-pro-vision'
+      - 'qwen-vl-*'
+
+    embeddings:
+      - 'text-embedding-*'
+      - 'ernie-text-embedding'
+      - 'qwen-embeddings'
+
+    audio_transcription:
+      - 'whisper-*'
+      - 'qwen-audio-*'
+
+# 区域配置
+regions:
+  china:
+    providers:
+      - deepseek
+      - qwen
+      - ernie
+      - glm
+      - kimi
+      - doubao
+      - hunyuan
+      - qianfan
+    latency: 'low'
+    compliance: ['china_data_security']
+
+  us_west:
+    providers:
+      - openai
+      - anthropic
+      - google_gemini
+      - stability
+      - replicate
+    latency: 'medium'
+    compliance: ['gdpr', 'ccpa']
+
+  us_east:
+    providers:
+      - openai
+      - azure_openai
+      - cohere
+      - ai21
+      - midjourney
+    latency: 'low'
+    compliance: ['gdpr', 'ccpa']
+
+  eu_west:
+    providers:
+      - azure_openai
+      - cohere
+    latency: 'medium'
+    compliance: ['gdpr']
+
+  global:
+    providers:
+      - azure_openai
+    latency: 'high'
+    compliance: ['multi-region']
+
+# 定价配置
+pricing:
+  tiers:
+    budget: '¥0.001-0.01/1K tokens'
+    standard: '¥0.01-0.1/1K tokens'
+    premium: '¥0.1-1.0/1K tokens'
+    enterprise: '自定义定价'
+
+  models:
+    # GPT-4系列
+    gpt-4: 'premium'
+    gpt-4-turbo: 'premium'
+    gpt-4o: 'premium'
+
+    # Claude系列
+    claude-3-opus: 'premium'
+    claude-3-sonnet: 'premium'
+    claude-3-haiku: 'standard'
+
+    # 国内模型
+    deepseek-chat: 'budget'
+    kimi: 'budget'
+    qwen-turbo: 'budget'
+    qwen-plus: 'standard'
+    qwen-max: 'premium'

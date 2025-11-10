@@ -1,0 +1,25 @@
+{
+  "name": "@sira/core",
+  "version": "1.0.0",
+  "description": "核心服务容器 - 依赖注入和服务管理",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "keywords": ["core", "container", "di", "dependency-injection"],
+  "author": "Sira Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@sira/cache": "^1.0.0",
+    "@sira/logger": "^1.0.0",
+    "@sira/metrics": "^1.0.0",
+    "@sira/events": "^1.0.0",
+    "@sira/errors": "^1.0.0",
+    "@sira/utils": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

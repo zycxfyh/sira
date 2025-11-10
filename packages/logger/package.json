@@ -1,0 +1,20 @@
+{
+  "name": "@sira/logger",
+  "version": "1.0.0",
+  "description": "结构化日志服务 - 基于Winston的日志记录和监控",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "keywords": ["logger", "logging", "winston", "structured"],
+  "author": "Sira Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "winston": "^3.2.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@sira/ai-core",
+  "version": "1.0.0",
+  "description": "AI核心服务 - 多提供商AI模型集成和智能请求处理",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "keywords": ["ai", "artificial-intelligence", "openai", "anthropic", "models"],
+  "author": "Sira Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@sira/core": "^1.0.0",
+    "@sira/utils": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@sira/utils",
+  "version": "1.0.0",
+  "description": "通用工具函数库 - 异步处理、数据验证、对象操作等",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "keywords": ["utils", "utilities", "helpers", "async"],
+  "author": "Sira Team",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
