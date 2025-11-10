@@ -222,7 +222,7 @@ jobs:
           echo "Compare with baseline performance metrics." >> $GITHUB_STEP_SUMMARY
 
       - name: Upload performance results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: performance-results
           path: performance-results/
@@ -284,7 +284,7 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
 
       - name: Upload load test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: load-test-results
           path: load-test-*.txt
