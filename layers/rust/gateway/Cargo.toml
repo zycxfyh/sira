@@ -1,0 +1,51 @@
+[package]
+name = "sira-gateway"
+version = "0.1.0"
+edition = "2021"
+description = "HTTP Gateway - High-performance HTTP request processing and intelligent routing"
+license = "Apache-2.0"
+
+[[bin]]
+name = "gateway"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-trait = "0.1"
+thiserror = "1.0"
+tracing = "0.1"
+anyhow = "1.0"
+sira-core = { path = "../core" }
+sira-utils = { path = "../utils" }
+sira-ai-backends = { path = "../ai-backends" }
+sira-session = { path = "../session" }
+
+# HTTP server dependencies
+hyper = { version = "0.14", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.4", features = ["full"] }
+axum = { version = "0.6", features = ["json", "multipart", "ws"] }
+
+# Additional utilities
+regex = "1.10"
+futures = "0.3"
+bytes = "1.5"
+http = "0.2"
+headers = "0.3"
+mime = "0.3"
+url = "2.4"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+urlencoding = "2.1"
+
+# WebSocket support
+tokio-tungstenite = "0.20"
+futures-util = { version = "0.3", features = ["sink", "std"] }
+
+[features]
+default = ["cors", "compression", "rate-limit"]
+cors = ["tower-http/cors"]
+compression = ["tower-http/compression-gzip", "tower-http/compression-deflate"]
+rate-limit = []

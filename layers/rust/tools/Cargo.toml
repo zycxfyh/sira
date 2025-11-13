@@ -1,0 +1,33 @@
+[package]
+name = "sira-tools"
+version = "0.1.0"
+edition = "2021"
+description = "Tools Ecosystem - Plugin-based tool system and orchestration"
+license = "Apache-2.0"
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+sira-core = { path = "../core" }
+sira-utils = { path = "../utils" }
+sira-intelligence = { path = "../intelligence" }
+
+# Additional dependencies for tools
+regex.workspace = true
+futures.workspace = true
+bytes.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+
+[features]
+default = ["builtin-tools", "orchestration"]
+builtin-tools = []
+orchestration = []
+marketplace = []
+sandbox = []
+full = ["builtin-tools", "orchestration", "marketplace", "sandbox"]

@@ -1,0 +1,32 @@
+[package]
+name = "sira-vcp"
+version = "0.1.0"
+edition = "2021"
+description = "VCP Meta-Thinking Chain - Ultra-dynamic recursive thinking mechanism"
+license = "Apache-2.0"
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+sira-core = { path = "../core" }
+sira-utils = { path = "../utils" }
+sira-intelligence = { path = "../intelligence" }
+sira-ai-backends = { path = "../ai-backends" }
+
+# Additional dependencies for VCP
+regex.workspace = true
+futures.workspace = true
+bytes.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+
+[features]
+default = ["recursive", "adaptive"]
+recursive = []
+adaptive = []
+full = ["recursive", "adaptive"]

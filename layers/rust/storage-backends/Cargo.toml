@@ -1,0 +1,48 @@
+[package]
+name = "sira-storage-backends"
+version = "0.1.0"
+edition = "2021"
+description = "Storage Backends - Multi-backend storage abstraction layer"
+license = "Apache-2.0"
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+sira-core = { path = "../core" }
+sira-utils = { path = "../utils" }
+sira-session = { path = "../session" }
+
+# Core dependencies
+futures.workspace = true
+bytes.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+
+# Optional dependencies for different storage backends
+redis = { version = "0.23", optional = true }
+tokio-postgres = { version = "0.7", optional = true }
+postgres-types = { version = "0.2", optional = true }
+mysql_async = { version = "0.32", optional = true }
+rusqlite = { version = "0.29", optional = true }
+sled = { version = "0.34", optional = true }
+rocksdb = { version = "0.21", optional = true }
+
+[features]
+default = ["memory", "file"]
+memory = []
+file = []
+redis = ["dep:redis"]
+postgres = ["dep:tokio-postgres", "dep:postgres-types"]
+mysql = ["dep:mysql_async"]
+sqlite = ["dep:rusqlite"]
+sled = ["dep:sled"]
+rocksdb = ["dep:rocksdb"]
+full = ["memory", "file", "redis", "postgres", "mysql", "sqlite", "sled", "rocksdb"]
+
+[dev-dependencies]
+tempfile = "3.0"

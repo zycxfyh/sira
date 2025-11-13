@@ -1,0 +1,32 @@
+[package]
+name = "sira-intelligence"
+version = "0.1.0"
+edition = "2021"
+description = "Intelligence Engine - Adaptive learning and decision making"
+license = "Apache-2.0"
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+sira-core = { path = "../core" }
+sira-utils = { path = "../utils" }
+sira-ai-backends = { path = "../ai-backends" }
+
+# Additional dependencies for intelligence
+regex = "1.10"
+futures = "0.3"
+bytes = "1.5"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+rand = "0.8"
+
+[features]
+default = ["ml", "nlp"]
+ml = []
+nlp = []
+full = ["ml", "nlp"]
