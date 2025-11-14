@@ -11,6 +11,34 @@ Sira Tools 是智能网关的**Agent协作扩展模块**，专注于实现"Assem
 - **工具自主创造**：Agent能为自己创造和优化工具
 - **协作效率革命**：从固定流程走向智能编排
 
+## AOS技术栈映射
+
+### 🎯 对应技术领域
+**AI社会的"物理法则" + AI个体的"大脑"——通信与协作**
+
+### 🔧 核心技术栈
+
+#### 自组织的服务发现与路由 (Self-Organizing Service Discovery)
+- **向量化工具描述**: 将工具能力转换为向量表示存储在向量数据库
+- **动态协作拓扑生成**: "Assemble Your Crew"论文的实现，基于任务需求生成最优Agent组合
+- **语义匹配算法**: ANN搜索找到能力最匹配的工具和Agent
+
+#### 自主学习与进化 (Autonomous Learning & Evolution)
+- **工具自动创造**: ToolCreator Agent自动编写、测试和注册新工具
+- **经验合成学习**: 通过合成经验加速工具学习过程
+- **递归自我改进**: STOP (Self-Taught Optimizer) 递归改进代码生成
+
+#### 多Agent协作框架 (Multi-Agent Collaboration Framework)
+- **协作拓扑设计**: 自动设计Agent间的通信网络结构
+- **动态角色分配**: 根据任务复杂度动态调整Agent角色和责任
+- **协作效率优化**: 学习历史协作模式以优化未来组合
+
+#### 相关研究论文
+- **"Assemble Your Crew: Automatic Multi-agent Communication Topology Design"**
+- **"Scaling Agent Learning via Experience Synthesis"** (Meta, UC Berkeley)
+- **"Self-Taught Optimizer (STOP): Recursively Self-Improving Code Generation"** (Google)
+- **"Semantic Routing for Multi-Agent Communication"** (2024, ICML)
+
 ## 核心组件
 
 ### 🔧 工具执行器 (Tool Executor)

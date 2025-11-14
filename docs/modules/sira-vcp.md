@@ -11,6 +11,34 @@ Sira VCP 是智能网关的**多模态理解扩展模块**，专注于解决AI�
 - **视频思维范式**：通过生成视频进行复杂推理
 - **物理真实性建模**：基于第一性原理而非相似度拟合
 
+## AOS技术栈映射
+
+### 🎯 对应技术领域
+**AI的"感官"——多模态信息的原生处理**
+
+### 🔧 核心技术栈
+
+#### 多模态特征提取与融合 (Multimodal Feature Extraction & Fusion)
+- **感知模型流水线**: CLIP (图像-文本), Whisper (语音), ImageBind (跨模态)
+- **融合Transformer**: Cross-Attention 机制整合多模态特征
+- **联合嵌入架构**: 将多种模态映射到同一向量空间
+
+#### 物理世界理解 (Physical World Understanding)
+- **可微物理引擎**: NVIDIA PhysX, Brax 进行物理模拟和校验
+- **世界模型**: 自监督模型预测"下一帧会发生什么"
+- **物理信息神经网络**: Physics-Informed Neural Networks (PINN)
+
+#### 视频思维与生成 (Video Thinking & Generation)
+- **时空张量处理**: 视频作为时间×空间×颜色的复杂张量
+- **视频推理范式**: 通过生成视频表达和验证复杂想法
+- **多模态推理框架**: 结合视觉和语言的联合推理
+
+#### 相关研究论文
+- **ImageBind: One Embedding Space To Bind Them All** (Meta AI)
+- **"Thinking with Video: Video Generation as a Promising Multimodal Reasoning Paradigm"**
+- **"Physics-Driven Spatiotemporal Modeling for AI-Generated Video Detection"**
+- **Cambrian-S: Towards Spatial Supersensing in Video** (NYU - Yann LeCun)
+
 ## 核心概念
 
 ### 🧠 可变认知过程 (Variable Cognitive Process)

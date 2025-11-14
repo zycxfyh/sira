@@ -11,6 +11,27 @@ Sira Kernel 是基于AOS哲学构建的**张量原生微内核**，它是智能�
 - **自组织**：Agent可以动态注册和管理自己的能力
 - **自主进化**：系统能从运行数据中学习并优化自身
 
+## AOS技术栈映射
+
+### 🎯 对应技术领域
+**AI社会的"物理法则"——底层协议与通信**
+
+### 🔧 核心技术栈
+
+#### 原生张量协议 (Native Tensor Protocol)
+- **序列化技术**: Protocol Buffers (Protobuf), FlatBuffers, Apache Avro
+- **传输框架**: gRPC (高性能RPC), Apache Arrow Flight (零拷贝优化)
+- **通信协议**: 张量原生消息传递，无需JSON转换开销
+
+#### 自组织的服务发现与路由 (Self-Organizing Service Discovery)
+- **向量化服务描述**: Qdrant, Weaviate, Milvus 向量数据库
+- **语义路由**: ANN (近似最近邻)搜索算法
+- **动态注册**: Agent能力实时向量化并注册到共享向量空间
+
+#### 相关研究论文
+- **"Agent as a Vector"** (arXiv:2309.07875) - Agent向量化的奠基之作
+- **"Semantic Routing for Multi-Agent Communication"** (2024, ICML)
+
 ## 核心组件
 
 ### 🧠 张量原生Agent管理器 (Tensor-Native Agent Manager)

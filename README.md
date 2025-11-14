@@ -98,6 +98,11 @@
 - **[sira-kernel-todo](docs/modules/sira-kernel-todo.md)** - 微内核开发任务清单
 - **[sira-gateway-todo](docs/modules/sira-gateway-todo.md)** - 网关开发任务清单
 - **[sira-intelligence-todo](docs/modules/sira-intelligence-todo.md)** - 智能引擎开发任务清单
+
+### 🔬 AOS技术栈全景图
+- **[AOS技术栈全景图](docs/architecture/AOS_TECH_STACK_PANORAMA.md)** - 从理论到落地的完整技术路线图
+- **[AOS世界模型宪法](docs/philosophy/WORLD_MODEL_CONSTITUTION.md)** - 张量原生·自组织·自主进化的哲学基础
+- **[智能网关架构设计](docs/architecture/INTELLIGENT_GATEWAY_ARCHITECTURE.md)** - 三层AOS架构的技术实现
 - **[sira-tools-todo](docs/modules/sira-tools-todo.md)** - 工具系统开发任务清单
 - **[sira-session-todo](docs/modules/sira-session-todo.md)** - 会话管理开发任务清单
 - **[sira-storage-backends-todo](docs/modules/sira-storage-backends-todo.md)** - 存储系统开发任务清单

@@ -11,6 +11,34 @@ Sira Gateway 是基于AOS哲学构建的**智能网关核心**，它是整个Sir
 - **自组织推理**：通过动态Agent协作进行智能决策
 - **自主进化**：从每个请求中学习并持续优化
 
+## AOS技术栈映射
+
+### 🎯 对应技术领域
+**AI社会的"物理法则" + AI个体的"大脑" + AI的"感官"**
+
+### 🔧 核心技术栈
+
+#### 张量感知层技术栈
+- **多模态特征提取**: CLIP (图像-文本), Whisper (语音), ImageBind (跨模态)
+- **序列化协议**: Protocol Buffers, FlatBuffers 用于张量数据传输
+- **实时流处理**: Apache Arrow Flight 支持流式张量数据
+
+#### 自组织推理层技术栈
+- **结构化推理框架**: Graph of Thoughts (GoT), Tree of Thoughts (ToT)
+- **多Agent辩论系统**: AutoGen GroupChat, ChatDev 角色扮演链
+- **向量数据库路由**: Qdrant/Weaviate 用于Agent能力匹配
+
+#### 自主进化层技术栈
+- **经验学习系统**: 强化学习 (RL), Model-based RL
+- **性能监控**: Prometheus + 自定义指标收集
+- **自适应算法**: 基于历史数据的策略优化
+
+#### 相关研究论文
+- **"Graph of Thoughts: Solving Elaborate Problems with Large Language Models"** (arXiv:2308.09687)
+- **"Tree of Thoughts: Deliberate Problem Solving with Large Language Models"** (arXiv:2305.10601)
+- **"Agent as a Vector"** (arXiv:2309.07875)
+- **ImageBind: One Embedding Space To Bind Them All** (Meta AI)
+
 ## 核心功能
 
 ### 🎯 张量感知层 (Tensor Perception Layer)

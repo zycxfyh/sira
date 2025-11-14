@@ -11,6 +11,33 @@ Sira Storage Backends 是智能网关的**存储优化扩展模块**，专注于
 - **智能压缩优化**：基于NVIDIA和Tsinghua研究的压缩技术
 - **自适应存储策略**：根据访问模式动态调整存储策略
 
+## AOS技术栈映射
+
+### 🎯 对应技术领域
+**AI社会的"物理法则"——底层协议与通信 (存储优化方向)**
+
+### 🔧 核心技术栈
+
+#### 张量原生存储协议 (Tensor-Native Storage Protocol)
+- **序列化优化**: FlatBuffers, Apache Avro 用于高效张量序列化
+- **零拷贝传输**: Apache Arrow Flight 支持大规模张量数据传输
+- **原生张量格式**: 支持任意维度张量的直接存储，无需转换
+
+#### 智能存储压缩与优化 (Intelligent Storage Compression)
+- **KV Cache压缩**: NVIDIA研究方向，压缩LLM推理时的上下文存储
+- **注意力存储优化**: INFLLM-V2启发的自适应注意力机制存储
+- **视觉token压缩**: Vision-centric Token Compression研究应用
+
+#### 自适应存储策略 (Adaptive Storage Strategy)
+- **访问模式学习**: 从历史访问模式中学习最优存储策略
+- **多后端智能路由**: 根据数据特征和访问模式选择最佳存储后端
+- **性能监控优化**: 实时监控并调整存储策略以优化性能
+
+#### 相关研究论文
+- **KV Cache压缩相关研究** (NVIDIA)
+- **"INFLLM-V2: Dense-Sparse Switchable Attention"** (Tsinghua, OpenBMB)
+- **"Vision-centric Token Compression in Large Language Model"** (Nanjing University)
+
 ## 核心组件
 
 ### 💾 存储抽象接口 (Storage Abstraction Interface)

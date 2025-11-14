@@ -11,6 +11,33 @@ Sira Session 是智能网关的**上下文持久化扩展模块**，专注于实
 - **经验合成存储**：实现Agent的试错学习和经验积累
 - **协作状态共享**：维护多Agent协作的共享上下文
 
+## AOS技术栈映射
+
+### 🎯 对应技术领域
+**AI个体的"大脑"——记忆、推理与学习**
+
+### 🔧 核心技术栈
+
+#### 混合记忆系统 (Hybrid Memory System)
+- **向量数据库**: 存储对话嵌入和语义相似度检索 (Qdrant, Weaviate)
+- **图数据库**: 存储实体关系和逻辑推理 (Neo4j, NebulaGraph)
+- **张量会话存储**: 原生支持多维张量数据的持久化
+
+#### 经验回放与强化学习 (Experience Replay & RL)
+- **经验数据库**: 存储Agent的"行动-结果"对用于学习
+- **基于模型的RL**: Model-based RL学习最优策略
+- **合成经验加速**: 通过经验合成加速Agent学习过程
+
+#### 上下文感知管理 (Context-Aware Management)
+- **多模态上下文**: 支持文本、图像、音频等多模态上下文
+- **注意力机制**: 选择性关注相关上下文信息
+- **协作状态同步**: 维护多Agent间的共享状态
+
+#### 相关研究论文
+- **"Scaling Agent Learning via Experience Synthesis"** (Meta, UC Berkeley)
+- **"Graph-based RAG"** 相关研究 (知识图谱与RAG结合)
+- **Reinforcement Learning from Agent Feedback (RLAF)** 相关工作
+
 ## 核心组件
 
 ### 🔄 会话生命周期管理 (Session Lifecycle Management)

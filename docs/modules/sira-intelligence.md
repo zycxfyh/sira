@@ -11,6 +11,34 @@ Sira Intelligence 是智能网关的**推理深化扩展模块**，专注于解�
 - **多Agent协作**：专家Agent间的推理辩论和制衡
 - **自主进化**：从经验中学习更有效的推理策略
 
+## AOS技术栈映射
+
+### 🎯 对应技术领域
+**AI个体的"大脑"——记忆、推理与学习**
+
+### 🔧 核心技术栈
+
+#### 混合记忆系统 (Hybrid Memory System)
+- **向量数据库**: 存储嵌入和语义相似度检索 (Qdrant, Weaviate, Milvus)
+- **图数据库**: 存储实体-关系三元组和逻辑推理 (Neo4j, NebulaGraph)
+- **混合检索**: 同时在向量和图数据库中进行检索并融合结果
+
+#### 结构化推理框架 (Structured Reasoning Framework)
+- **思维图实现**: Graph of Thoughts (GoT) 执行引擎
+- **辩论式推理**: 多Agent辩论机制 (AutoGen GroupChat, ChatDev)
+- **图推理引擎**: 管理推理图状态和条件跳转
+
+#### 自主学习与进化 (Autonomous Learning & Evolution)
+- **经验回放系统**: 存储"行动-结果"对的数据库
+- **强化学习**: Model-based RL 学习世界模型和最优策略
+- **自动化工具创造**: ToolCreator Agent 自动编写和注册新工具
+
+#### 相关研究论文
+- **"Graph of Thoughts: Solving Elaborate Problems with Large Language Models"** (arXiv:2308.09687)
+- **"Tree of Thoughts: Deliberate Problem Solving with Large Language Models"** (arXiv:2305.10601)
+- **"Scaling Agent Learning via Experience Synthesis"** (Meta, UC Berkeley)
+- **"Self-Taught Optimizer (STOP): Recursively Self-Improving Code Generation"** (Google)
+
 ## 核心组件
 
 ### 🧠 推理深化引擎 (Reasoning Enhancement Engine)
