@@ -8,9 +8,9 @@
 [![Go](https://img.shields.io/badge/go-1.19+-cyan.svg)](https://golang.org/)
 [![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org/)
 
-> 🚀 **微内核+插件驱动的分层微服务架构** - 融合微内核和微服务的双重优势，开创AI基础设施新范式
+> 🚀 **智能网关核心系统 + 可选扩展能力** - 以AI原生网关为核心，配备丰富的可选扩展模块
 >
-> **专注网关，深刻拓展** - 为AI应用提供完整的网关解决方案，同时为系统集成提供标准接口
+> **智能网关驱动，扩展按需加载** - 核心网关提供完整的AI请求处理能力，扩展模块根据需求灵活启用
 
 <div align="center">
   <img src="https://img.shields.io/github/stars/zycxfyh/sira?style=social" alt="GitHub Stars">
@@ -21,14 +21,24 @@
 
 ## 🎯 项目愿景
 
-**Sira不仅仅是一个AI网关，更是世界级的智能AI生态操作系统。**
+**Sira是一个以智能网关为核心的AI生态系统**，通过可选扩展模块提供丰富的增强能力。
 
-通过"微内核+插件驱动的分层微服务"架构，我们致力于打造：
+### 🌟 核心定位：智能网关驱动
+- **🎯 智能网关为核心**：提供完整的AI请求处理、智能路由、多模态支持等核心功能
+- **🔧 扩展按需加载**：根据使用场景选择性启用推理增强、多模态处理、工具集成等扩展能力
+- **📦 模块化架构**：核心网关轻量化，扩展模块独立部署，支持灵活组合
 
-1. **世界级架构标杆**：融合微内核和微服务的双重优势，开创AI基础设施新范式
-2. **统一插件生态**：构建跨越技术栈的插件市场，让创新触手可及
-3. **企业级AI平台**：从单体应用到分布式集群的无缝扩展能力
-4. **开源商业化典范**：开源驱动创新，商业服务赋能，为开发者创造价值
+### 🚀 AI前沿技术吸收
+基于2024年AI研究前沿分析，我们在智能网关中吸收了关键技术洞察：
+- **张量原生处理**：网关内部使用张量表示提升效率
+- **自组织协作**：动态编排Agent网络处理复杂任务
+- **自主学习优化**：从请求历史中持续优化路由策略
+
+### 💡 产品价值主张
+- **开箱即用**：核心网关提供完整AI服务能力，无需复杂配置
+- **按需增强**：根据具体需求启用相应扩展模块
+- **渐进式扩展**：从小规模应用逐步扩展到企业级部署
+- **技术前沿**：持续吸收AI最新研究成果，提升网关智能化水平
 
 ## ✨ 核心特性
 
@@ -80,16 +90,16 @@
 
 ## 📚 模块文档
 
-### 🎯 智能网关核心
-- **[sira-kernel](docs/modules/sira-kernel.md)** - 张量原生微内核，Agent生态基础设施
-- **[sira-gateway](docs/modules/sira-gateway.md)** - 智能网关核心，张量感知·自组织推理·自主进化
+### 🎯 智能网关核心系统
+- **[sira-gateway](docs/modules/sira-gateway.md)** - 智能网关核心，AI原生网关的中央处理枢纽
+- **[sira-kernel](docs/modules/sira-kernel.md)** - 网关基础设施，张量原生微内核和基础支撑
 
-### 🔧 扩展能力模块
-- **[sira-intelligence](docs/modules/sira-intelligence.md)** - 推理深化扩展，幻觉检测和数学推理
-- **[sira-vcp](docs/modules/sira-vcp.md)** - 多模态理解扩展，视频思维和物理建模
-- **[sira-tools](docs/modules/sira-tools.md)** - Agent协作扩展，动态拓扑和工具编排
-- **[sira-session](docs/modules/sira-session.md)** - 上下文持久化扩展，张量会话管理
-- **[sira-storage-backends](docs/modules/sira-storage-backends.md)** - 存储优化扩展，张量原生存储
+### 🔧 可选扩展能力模块
+- **[sira-intelligence](docs/modules/sira-intelligence.md)** - 推理增强扩展，复杂推理任务的专业处理
+- **[sira-vcp](docs/modules/sira-vcp.md)** - 多模态增强扩展，图像/视频/音频的深度处理
+- **[sira-tools](docs/modules/sira-tools.md)** - 工具执行扩展，丰富的工具生态和API集成
+- **[sira-session](docs/modules/sira-session.md)** - 会话管理扩展，多轮对话和上下文持久化
+- **[sira-storage-backends](docs/modules/sira-storage-backends.md)** - 存储优化扩展，高性能数据存储和管理
 
 ### 🤖 AI服务集成
 - **sira-ai-backends** - AI后端适配，统一多模型接口
