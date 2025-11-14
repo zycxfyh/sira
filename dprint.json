@@ -1,6 +1,0 @@
-{
-  "lineWidth": 80,
-  "indentWidth": 2,
-  "includes": ["src/**/*.{js,ts}", "**/*.json", "**/*.md"],
-  "excludes": ["node_modules/**", "dist/**", "build/**", "coverage/**"]
-}
