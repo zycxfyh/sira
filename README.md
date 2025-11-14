@@ -28,11 +28,12 @@
 - **🔧 扩展按需加载**：根据使用场景选择性启用推理增强、多模态处理、工具集成等扩展能力
 - **📦 模块化架构**：核心网关轻量化，扩展模块独立部署，支持灵活组合
 
-### 🚀 AI前沿技术吸收
-基于2024年AI研究前沿分析，我们在智能网关中吸收了关键技术洞察：
-- **张量原生处理**：网关内部使用张量表示提升效率
-- **自组织协作**：动态编排Agent网络处理复杂任务
-- **自主学习优化**：从请求历史中持续优化路由策略
+### 🚀 AOS哲学驱动的技术创新
+基于**张量原生·自组织·自主进化**的核心哲学，我们将AI研究前沿转化为具体技术实现：
+
+- **🎯 张量原生处理**：网关内部使用张量作为第一性原理，实现多模态信息的统一数学表达
+- **🔄 自组织协作**：Agent网络不再是预定义工作流，而是基于任务特征的动态涌现协作
+- **🚀 自主进化能力**：网关从每个请求中学习，通过试错机制实现持续的性能优化和能力扩展
 
 ### 💡 产品价值主张
 - **开箱即用**：核心网关提供完整AI服务能力，无需复杂配置
@@ -63,12 +64,22 @@
 - **学习演化层** - Python - ML生态 + 算法创新
 - **系统治理层** - Go/Rust - 高并发 + 安全稳定
 
-### 🧠 智能网关架构 (基于AOS哲学)
-- **张量感知层** - 多模态信息原生张量处理
-- **自组织推理层** - 动态Agent协作网络
-- **自主进化层** - 持续学习与创新发现
+### 🧠 AOS智能网关架构
+基于**张量原生·自组织·自主进化**哲学的全新架构设计：
 
-详见：[智能网关架构设计](docs/architecture/INTELLIGENT_GATEWAY_ARCHITECTURE.md)
+#### 三层AOS架构
+- **🎯 张量感知层** - 多模态信息原生张量转换与处理
+- **🔄 自组织推理层** - 动态Agent协作网络生成与编排
+- **🚀 自主进化层** - 持续学习、经验合成与系统优化
+
+**核心数据流**：`原始请求 → 张量化 → 推理编排 → 经验学习 → 持续优化`
+
+#### AOS架构的核心优势
+- **⚡ 张量原生效率**：统一数学表示，消除转换开销
+- **🧠 自组织智能**：任务驱动的Agent动态组合
+- **🔄 自主进化能力**：从每个请求中学习持续改进
+
+详见：[AOS智能网关架构设计](docs/architecture/AOS_GATEWAY_ARCHITECTURE.md)
 
 ### 🎯 AI网关核心能力
 - **统一API** - 标准化OpenAI、Anthropic、Google等AI服务接口
@@ -112,7 +123,7 @@
 ### 🔬 AOS技术栈全景图
 - **[AOS技术栈全景图](docs/architecture/AOS_TECH_STACK_PANORAMA.md)** - 从理论到落地的完整技术路线图
 - **[AOS世界模型宪法](docs/philosophy/WORLD_MODEL_CONSTITUTION.md)** - 张量原生·自组织·自主进化的哲学基础
-- **[智能网关架构设计](docs/architecture/INTELLIGENT_GATEWAY_ARCHITECTURE.md)** - 三层AOS架构的技术实现
+- **[AOS智能网关架构设计](docs/architecture/AOS_GATEWAY_ARCHITECTURE.md)** - 张量原生·自组织·自主进化的完整架构蓝图
 - **[sira-tools-todo](docs/modules/sira-tools-todo.md)** - 工具系统开发任务清单
 - **[sira-session-todo](docs/modules/sira-session-todo.md)** - 会话管理开发任务清单
 - **[sira-storage-backends-todo](docs/modules/sira-storage-backends-todo.md)** - 存储系统开发任务清单
