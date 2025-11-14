@@ -80,19 +80,19 @@
 
 ## 📚 模块文档
 
-### 🧠 核心模块
-- **[sira-kernel](docs/modules/sira-kernel.md)** - 微内核核心，插件管理和服务注册
-- **[sira-gateway](docs/modules/sira-gateway.md)** - 高性能AI网关，智能路由和负载均衡
-- **[sira-intelligence](docs/modules/sira-intelligence.md)** - AI智能引擎，决策制定和学习优化
+### 🎯 智能网关核心
+- **[sira-kernel](docs/modules/sira-kernel.md)** - 张量原生微内核，Agent生态基础设施
+- **[sira-gateway](docs/modules/sira-gateway.md)** - 智能网关核心，张量感知·自组织推理·自主进化
 
-### 🔧 功能模块
-- **[sira-tools](docs/modules/sira-tools.md)** - 工具生态系统，工作流编排和执行
-- **[sira-session](docs/modules/sira-session.md)** - 会话管理，状态持久化和事件处理
-- **[sira-storage-backends](docs/modules/sira-storage-backends.md)** - 多后端存储抽象，智能路由和数据管理
+### 🔧 扩展能力模块
+- **[sira-intelligence](docs/modules/sira-intelligence.md)** - 推理深化扩展，幻觉检测和数学推理
+- **[sira-vcp](docs/modules/sira-vcp.md)** - 多模态理解扩展，视频思维和物理建模
+- **[sira-tools](docs/modules/sira-tools.md)** - Agent协作扩展，动态拓扑和工具编排
+- **[sira-session](docs/modules/sira-session.md)** - 上下文持久化扩展，张量会话管理
+- **[sira-storage-backends](docs/modules/sira-storage-backends.md)** - 存储优化扩展，张量原生存储
 
-### 🤖 AI能力模块
-- **sira-ai-backends** - AI服务集成，OpenAI、Anthropic等提供商适配
-- **sira-vcp** - Variable Cognitive Process，革命性的认知过程架构
+### 🤖 AI服务集成
+- **sira-ai-backends** - AI后端适配，统一多模型接口
 
 ### 📋 开发任务
 - **[sira-kernel-todo](docs/modules/sira-kernel-todo.md)** - 微内核开发任务清单

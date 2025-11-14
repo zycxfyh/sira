@@ -1,16 +1,25 @@
-# Sira Intelligence - AI智能引擎
+# Sira Intelligence - 推理深化扩展 (Reasoning Enhancement Extension)
 
 ## 概述
 
-Sira Intelligence 是Sira系统的智能大脑，负责决策制定、学习优化、上下文感知和个性化服务。它集成了多种AI算法和机器学习模型，为系统提供智能决策能力和自适应优化功能。
+Sira Intelligence 是智能网关的**推理深化扩展模块**，专注于解决AI的"智商"和"可靠性"问题。它为网关的多Agent推理层提供高级的逻辑推理、幻觉检测和数学探索能力，是陶哲轩研究方向的实践实现。
+
+**在智能网关生态中的定位**：作为扩展模块为复杂任务提供更强的推理能力，当网关遇到需要深入逻辑验证或数学推理的任务时，会调用Intelligence模块进行增强处理。
+
+**AOS哲学体现**：
+- **推理深化**：从相似度匹配走向第一性原理验证
+- **多Agent协作**：专家Agent间的推理辩论和制衡
+- **自主进化**：从经验中学习更有效的推理策略
 
 ## 核心组件
 
-### 🧠 决策引擎 (Decision Engine)
+### 🧠 推理深化引擎 (Reasoning Enhancement Engine)
 
-#### 决策策略
+**核心理念**：决策不再是简单的权重计算，而是多层次的逻辑推理和验证过程，能够识别和纠正AI的幻觉问题。
 
-##### 基于权重的决策
+#### AOS增强推理策略
+
+##### 多Agent推理辩论
 ```rust
 #[derive(Debug)]
 pub struct WeightedDecisionEngine {

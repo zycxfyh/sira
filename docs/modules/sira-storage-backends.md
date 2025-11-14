@@ -1,8 +1,15 @@
-# Sira Storage Backends - 多后端存储抽象
+# Sira Storage Backends - 存储优化扩展 (Storage Optimization Extension)
 
 ## 概述
 
-Sira Storage Backends 是Sira系统的存储抽象层，提供统一的多后端存储接口，支持内存、文件系统、Redis、PostgreSQL、MySQL、SQLite、Sled和RocksDB等多种存储后端。它实现了智能的存储策略选择、数据一致性保证、性能优化和故障恢复功能。
+Sira Storage Backends 是智能网关的**存储优化扩展模块**，专注于实现张量原生存储和高效的数据管理。它为网关的自主进化层提供性能优化的存储后端，包括KV Cache压缩、注意力存储优化和多模态数据压缩。
+
+**在智能网关生态中的定位**：作为扩展模块为大规模张量存储和高效检索提供优化能力，当网关需要处理大量张量数据或实现高性能缓存时，会调用Storage模块进行增强处理。
+
+**AOS哲学体现**：
+- **张量原生存储**：支持任意维度张量的直接存储
+- **智能压缩优化**：基于NVIDIA和Tsinghua研究的压缩技术
+- **自适应存储策略**：根据访问模式动态调整存储策略
 
 ## 核心组件
 
