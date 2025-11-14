@@ -166,6 +166,14 @@ coverage/
 !**/jest.config.js
 !**/eslint.config.js
 
+# Rust build artifacts
+target/
+Cargo.lock
+**/*.rs.bk
+
+# Rust documentation
+doc/
+
 # Lock files (uncomment if using specific package manager)
 # package-lock.json
 # yarn.lock
