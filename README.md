@@ -53,6 +53,13 @@
 - **学习演化层** - Python - ML生态 + 算法创新
 - **系统治理层** - Go/Rust - 高并发 + 安全稳定
 
+### 🧠 智能网关架构 (基于AOS哲学)
+- **张量感知层** - 多模态信息原生张量处理
+- **自组织推理层** - 动态Agent协作网络
+- **自主进化层** - 持续学习与创新发现
+
+详见：[智能网关架构设计](docs/architecture/INTELLIGENT_GATEWAY_ARCHITECTURE.md)
+
 ### 🎯 AI网关核心能力
 - **统一API** - 标准化OpenAI、Anthropic、Google等AI服务接口
 - **智能路由** - 基于模型能力、成本、性能的动态请求调度
