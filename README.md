@@ -125,6 +125,7 @@
 - **[AOS世界模型宪法](docs/philosophy/WORLD_MODEL_CONSTITUTION.md)** - 张量原生·自组织·自主进化的哲学基础
 - **[AOS智能网关架构设计](docs/architecture/AOS_GATEWAY_ARCHITECTURE.md)** - 张量原生·自组织·自主进化的完整架构蓝图
 - **[AOS架构实现指南](docs/architecture/AOS_IMPLEMENTATION_GUIDE.md)** - 从框架到落地，从业务到应用的完整实现路径
+- **[AOS技术架构可行性分析](docs/architecture/AOS_TECHNICAL_FEASIBILITY_ANALYSIS.md)** - 详细的技术实现分析、性能评估和风险控制
 - **[sira-tools-todo](docs/modules/sira-tools-todo.md)** - 工具系统开发任务清单
 - **[sira-session-todo](docs/modules/sira-session-todo.md)** - 会话管理开发任务清单
 - **[sira-storage-backends-todo](docs/modules/sira-storage-backends-todo.md)** - 存储系统开发任务清单
